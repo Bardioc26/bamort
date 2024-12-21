@@ -5,21 +5,13 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE NOT NULL
 );
 
-
-CREATE TABLE users (
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL
-);
-
 CREATE TABLE characters (
     character_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     name VARCHAR(100),
     rasse VARCHAR(50),
     typ VARCHAR(50),
-    alter INT,
+    age INT,
     anrede VARCHAR(20),
     grad INT,
     groesse INT,

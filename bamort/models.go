@@ -13,7 +13,7 @@ type Character struct {
 	Name        string
 	Rasse       string
 	Typ         string
-	Alter       int
+	Age         int
 	Anrede      string
 	Grad        int
 	Groesse     int

@@ -5,6 +5,7 @@
     <input v-model="password" type="password" placeholder="Password" required />
     <button type="submit">Login</button>
     <p v-if="error" class="error">{{ error }}</p>
+    <p>Don't have an account? <router-link to="/register">Register here</router-link>.</p>
   </form>
 </template>
 

@@ -55,6 +55,22 @@ func LoginUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
 }
 
+// Apply middleware to protected routes
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := c.GetHeader("Authorization")
+		if token == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			c.Abort()
+			return
+		}
+
+		// Add token validation logic here
+
+		c.Next()
+	}
+}
+
 /*
 Character Handlers
 

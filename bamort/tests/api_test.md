@@ -11,7 +11,7 @@ API Testing
 
     Create Character:
         POST /characters
-        Body: { "user_id": 1, "name": "Hero", "rasse": "Elf", "typ": "Warrior", "alter": 25 }
+        Body: { "user_id": 1, "name": "Hero", "rasse": "Elf", "typ": "Warrior", "age": 25 }
 
     Get Characters:
         GET /characters

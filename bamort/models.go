@@ -37,6 +37,21 @@ type Eigenschaften struct {
 	Zt              int
 }
 
+type Ausruestung struct {
+	AusruestungID uint    `gorm:"primaryKey"`
+	CharacterID   uint    `gorm:"index"`
+	Name          string  `json:"name"`
+	Anzahl        int     `json:"anzahl"`
+	Gewicht       float64 `json:"gewicht"`
+	Wert          float64 `json:"wert"`
+	BeinhaltetIn  *string `json:"beinhaltet_in"`
+	Beschreibung  *string `json:"beschreibung"`
+	Bonus         *int    `json:"bonus"`
+	IstMagisch    bool    `json:"ist_magisch"`
+	Abw           *int    `json:"abw"`
+	Ausgebrannt   bool    `json:"ausgebrannt"`
+}
+
 /*
 Define models for each table
 Add other models for Ausruestung, Fertigkeiten, etc., following the same pattern.

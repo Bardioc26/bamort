@@ -1,15 +1,20 @@
 <template>
   <div id="app">
+    <Menu />
     <router-view />
   </div>
 </template>
 
 <script>
+import Menu from "./components/Menu.vue";
+
 export default {
-  name: "App",
+  components: {
+    Menu,
+  },
 };
 </script>
 
 <style>
-/* Add your global styles here */
+/* Global styles can go here */
 </style>

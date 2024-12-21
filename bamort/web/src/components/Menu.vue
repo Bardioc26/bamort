@@ -4,11 +4,14 @@
       <li>
         <router-link to="/dashboard" active-class="active">Dashboard</router-link>
       </li>
-      <li v-if="!isLoggedIn">
-        <router-link to="/register" active-class="active">Register</router-link>
+      <li>
+        <router-link to="/upload" active-class="active">Import Data</router-link>
       </li>
       <li v-if="isLoggedIn">
         <button @click="logout">Logout</button>
+      </li>
+      <li v-if="!isLoggedIn">
+        <router-link to="/register" active-class="active">Register</router-link>
       </li>
     </ul>
   </nav>

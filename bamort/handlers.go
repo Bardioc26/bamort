@@ -6,6 +6,7 @@ Add handlers for user registration and login:
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -165,4 +166,35 @@ func DeleteAusruestung(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Ausruestung deleted successfully"})
+}
+
+// Upload files
+
+func UploadFiles(c *gin.Context) {
+	// Get files from the request
+	file_vtt, err1 := c.FormFile("file_vtt")
+	file_csv, err2 := c.FormFile("file_csv")
+
+	if err1 != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file_vtt is required"})
+		return
+	}
+
+	// Save File 1
+	err := c.SaveUploadedFile(file_vtt, fmt.Sprintf("./uploads/%s", file_vtt.Filename))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file_vtt"})
+		return
+	}
+
+	// Save File 2 if provided
+	if err2 == nil {
+		err := c.SaveUploadedFile(file_csv, fmt.Sprintf("./uploads/%s", file_csv.Filename))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file_csv"})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Files uploaded successfully"})
 }

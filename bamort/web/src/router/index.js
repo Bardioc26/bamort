@@ -4,12 +4,17 @@ import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import DashboardView from "../views/DashboardView.vue";
 import AusruestungView from "../views/AusruestungView.vue";
+import FileUploadPage from "../views/FileUploadPage.vue";
+
+
+
 
 const routes = [
   { path: "/", name: "Login", component: LoginView },
   { path: "/register", name: "Register", component: RegisterView },
   { path: "/dashboard", name: "Dashboard", component: DashboardView, meta: { requiresAuth: true } },
   { path: "/ausruestung/:characterId", name: "Ausruestung", component: AusruestungView, meta: { requiresAuth: true } },
+  { path: "/upload", name: "FileUpload", component: FileUploadPage },
 ];
 
 const router = createRouter({

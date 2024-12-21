@@ -8,6 +8,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -179,6 +181,15 @@ func UploadFiles(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "file_vtt is required"})
 		return
 	}
+	if !isValidFileType(file_vtt.Filename) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File1 must be a .csv or .json file"})
+		return
+	}
+	// Validate file2 if provided
+	if file_csv != nil && !isValidFileType(file_csv.Filename) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File2 must be a .csv or .json file"})
+		return
+	}
 
 	// Save File 1
 	err := c.SaveUploadedFile(file_vtt, fmt.Sprintf("./uploads/%s", file_vtt.Filename))
@@ -197,4 +208,15 @@ func UploadFiles(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Files uploaded successfully"})
+}
+
+func isValidFileType(filename string) bool {
+	allowedExtensions := []string{".csv", ".json"}
+	ext := strings.ToLower(filepath.Ext(filename))
+	for _, allowedExt := range allowedExtensions {
+		if ext == allowedExt {
+			return true
+		}
+	}
+	return false
 }

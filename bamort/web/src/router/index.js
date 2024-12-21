@@ -15,6 +15,7 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  //linkActiveClass: "current-page", // Custom active class
 });
 
 // Navigation guard

@@ -6,8 +6,10 @@ Add handlers for user registration and login:
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -208,6 +210,29 @@ func UploadFiles(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Files uploaded successfully"})
+
+	// Open and parse JSON
+	var character Character
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})
+		return
+	}
+	if err := json.Unmarshal(fileContent, &character); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON structure"})
+		return
+	}
+
+	// Save character data to the database
+	if err := saveCharacterToDB(&character); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save character to database"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":   "Character imported successfully",
+		"character": character,
+	})
 }
 
 func isValidFileType(filename string) bool {

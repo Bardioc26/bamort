@@ -21,3 +21,41 @@ func ConnectDatabase() {
 /*
 Replace user, password, and dbname with your MySQL credentials and database name.
 */
+
+func saveCharacterToDB(character *Character) error {
+	// Use GORM to save the character and its relationships
+	err := DB.Transaction(func(tx *gorm.DB) error {
+		// Save the main character
+		if err := tx.Create(character).Error; err != nil {
+			return err
+		}
+
+		// Save Eigenschaften (Attributes)
+		for i := range character.Eigenschaften {
+			character.Eigenschaften[i].CharacterID = character.ID
+		}
+		if err := tx.Create(&character.Eigenschaften).Error; err != nil {
+			return err
+		}
+
+		// Save Ausruestung (Equipment)
+		for i := range character.Ausruestung {
+			character.Ausruestung[i].CharacterID = character.ID
+		}
+		if err := tx.Create(&character.Ausruestung).Error; err != nil {
+			return err
+		}
+
+		// Save Fertigkeiten (Skills)
+		for i := range character.Fertigkeiten {
+			character.Fertigkeiten[i].CharacterID = character.ID
+		}
+		if err := tx.Create(&character.Fertigkeiten).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return err
+}

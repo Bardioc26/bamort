@@ -8,48 +8,45 @@ type User struct {
 }
 
 type Character struct {
-	CharacterID uint `gorm:"primaryKey"`
-	UserID      uint `gorm:"index"`
-	Name        string
-	Rasse       string
-	Typ         string
-	Age         int
-	Anrede      string
-	Grad        int
-	Groesse     int
-	Gewicht     int
-	Glaube      string
-	Hand        string
-	Image       string
+	ID            uint          `gorm:"primaryKey" json:"id"`
+	Name          string        `json:"name"`
+	Rasse         string        `json:"rasse"`
+	Typ           string        `json:"typ"`
+	Alter         int           `json:"alter"`
+	Anrede        string        `json:"anrede"`
+	Grad          int           `json:"grad"`
+	Groesse       int           `json:"groesse"`
+	Gewicht       int           `json:"gewicht"`
+	Glaube        string        `json:"glaube"`
+	Hand          string        `json:"hand"`
+	Eigenschaften []Eigenschaft `gorm:"foreignKey:CharacterID" json:"eigenschaften"`
+	Ausruestung   []Ausruestung `gorm:"foreignKey:CharacterID" json:"ausruestung"`
+	Fertigkeiten  []Fertigkeit  `gorm:"foreignKey:CharacterID" json:"fertigkeiten"`
 }
 
-type Eigenschaften struct {
-	EigenschaftenID uint `gorm:"primaryKey"`
-	CharacterID     uint `gorm:"index"`
-	Au              int
-	Gs              int
-	Gw              int
-	In              int
-	Ko              int
-	Pa              int
-	St              int
-	Wk              int
-	Zt              int
+type Eigenschaft struct {
+	ID          uint   `gorm:"primaryKey"`
+	CharacterID uint   `gorm:"index" json:"character_id"`
+	Name        string `json:"name"`
+	Value       int    `json:"value"`
 }
 
 type Ausruestung struct {
-	AusruestungID uint    `gorm:"primaryKey"`
-	CharacterID   uint    `gorm:"index"`
-	Name          string  `json:"name"`
-	Anzahl        int     `json:"anzahl"`
-	Gewicht       float64 `json:"gewicht"`
-	Wert          float64 `json:"wert"`
-	BeinhaltetIn  *string `json:"beinhaltet_in"`
-	Beschreibung  *string `json:"beschreibung"`
-	Bonus         *int    `json:"bonus"`
-	IstMagisch    bool    `json:"ist_magisch"`
-	Abw           *int    `json:"abw"`
-	Ausgebrannt   bool    `json:"ausgebrannt"`
+	ID           uint    `gorm:"primaryKey"`
+	CharacterID  uint    `gorm:"index" json:"character_id"`
+	Name         string  `json:"name"`
+	Anzahl       int     `json:"anzahl"`
+	Gewicht      float64 `json:"gewicht"`
+	Wert         float64 `json:"wert"`
+	Beschreibung string  `json:"beschreibung"`
+}
+
+type Fertigkeit struct {
+	ID              uint   `gorm:"primaryKey"`
+	CharacterID     uint   `gorm:"index" json:"character_id"`
+	Name            string `json:"name"`
+	Fertigkeitswert int    `json:"fertigkeitswert"`
+	Beschreibung    string `json:"beschreibung"`
 }
 
 /*

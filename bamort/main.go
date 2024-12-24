@@ -7,7 +7,7 @@ import (
 
 func main() {
 	ConnectDatabase()
-	DB.AutoMigrate(&User{}, &Character{}, &Eigenschaften{}) // Add other models here
+	DB.AutoMigrate(&User{}, &Character{}, &Eigenschaft{}) // Add other models here
 
 	r := gin.Default()
 

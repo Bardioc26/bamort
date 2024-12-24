@@ -213,6 +213,7 @@ func UploadFiles(c *gin.Context) {
 
 	// Open and parse JSON
 	var character Character
+	filePath := fmt.Sprintf("./uploads/%s", file_vtt.Filename)
 	fileContent, err := os.ReadFile(filePath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})

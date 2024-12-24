@@ -8,7 +8,8 @@ type User struct {
 }
 
 type Character struct {
-	ID                 uint               `gorm:"primaryKey" json:"id"`
+	ID                 uint               `gorm:"primaryKey" json:"dbid"`
+	ImportID           string             `json:"id"`
 	Name               string             `json:"name"`
 	Rasse              string             `json:"rasse"`
 	Typ                string             `json:"typ"`
@@ -48,7 +49,8 @@ type Eigenschaft struct {
 }
 
 type Ausruestung struct {
-	ID           uint               `gorm:"primaryKey"`
+	ID           uint               `gorm:"primaryKey"json:"dbid"`
+	ImportID     string             `json:"id"`
 	CharacterID  uint               `gorm:"index" json:"character_id"`
 	Name         string             `json:"name"`
 	Beschreibung string             `json:"beschreibung"`
@@ -61,7 +63,8 @@ type Ausruestung struct {
 }
 
 type Fertigkeit struct {
-	ID              uint   `gorm:"primaryKey"`
+	ID              uint   `gorm:"primaryKey"json:"dbid"`
+	ImportID        string `json:"id"`
 	CharacterID     uint   `gorm:"index" json:"character_id"`
 	Name            string `json:"name"`
 	Beschreibung    string `json:"beschreibung"`
@@ -81,7 +84,8 @@ type Zauber struct {
 }
 
 type Waffenfertigkeit struct {
-	ID              uint   `gorm:"primaryKey"`
+	ID              uint   `gorm:"primaryKey"json:"dbid"`
+	ImportID        string `json:"id"`
 	CharacterID     uint   `gorm:"index" json:"character_id"`
 	Name            string `json:"name"`
 	Beschreibung    string `json:"beschreibung"`
@@ -92,7 +96,8 @@ type Waffenfertigkeit struct {
 }
 
 type Waffe struct {
-	ID                      uint         `gorm:"primaryKey"`
+	ID                      uint         `gorm:"primaryKey"json:"dbid"`
+	ImportID                string       `json:"id"`
 	CharacterID             uint         `gorm:"index" json:"character_id"`
 	Name                    string       `json:"name"`
 	Beschreibung            string       `json:"beschreibung"`
@@ -135,7 +140,6 @@ type Erfahrungsschatz struct {
 	Value       int  `json:"value"`
 }
 
-/*
 type Eigenschaften struct {
 	ID          uint `gorm:"primaryKey"`
 	CharacterID uint `gorm:"index" json:"character_id"`
@@ -149,7 +153,6 @@ type Eigenschaften struct {
 	Wk          int  `json:"wk"`
 	Zt          int  `json:"zt"`
 }
-*/
 
 type Bennies struct {
 	ID          uint `gorm:"primaryKey"`
@@ -160,7 +163,8 @@ type Bennies struct {
 }
 
 type Behaeltniss struct {
-	ID           uint   `gorm:"primaryKey"`
+	ID           uint   `gorm:"primaryKey"json:"dbid"`
+	ImportID     string `json:"id"`
 	CharacterID  uint   `gorm:"index" json:"character_id"`
 	Name         string `json:"name"`
 	Beschreibung string `json:"beschreibung"`
@@ -243,3 +247,36 @@ type MagischTransport struct {
 Define models for each table
 Add other models for Ausruestung, Fertigkeiten, etc., following the same pattern.
 */
+type CharacterImport struct {
+	ID                 uint               `gorm:"primaryKey" json:"dbid"`
+	ImportID           string             `json:"id"`
+	Name               string             `json:"name"`
+	Rasse              string             `json:"rasse"`
+	Typ                string             `json:"typ"`
+	Alter              int                `json:"alter"`
+	Anrede             string             `json:"anrede"`
+	Grad               int                `json:"grad"`
+	Groesse            int                `json:"groesse"`
+	Gewicht            int                `json:"gewicht"`
+	Glaube             string             `json:"glaube"`
+	Hand               string             `json:"hand"`
+	Fertigkeiten       []Fertigkeit       `gorm:"foreignKey:CharacterID" json:"fertigkeiten"`
+	Zauber             []Zauber           `gorm:"foreignKey:CharacterID" json:"zauber"`
+	Lp                 Lp                 `gorm:"foreignKey:CharacterID" json:"lp"`
+	Eigenschaften      Eigenschaften      `gorm:"foreignKey:CharacterID" json:"eigenschaften"`
+	Merkmale           Merkmale           `gorm:"foreignKey:CharacterID" json:"merkmale"`
+	Bennies            Bennies            `gorm:"foreignKey:CharacterID" json:"bennies"`
+	Gestalt            Gestalt            `gorm:"foreignKey:CharacterID" json:"gestalt"`
+	Ap                 Ap                 `gorm:"foreignKey:CharacterID" json:"ap"`
+	B                  B                  `gorm:"foreignKey:CharacterID" json:"b"`
+	Erfahrungsschatz   Erfahrungsschatz   `gorm:"foreignKey:CharacterID" json:"erfahrungsschatz"`
+	Transportmittel    []Transportation   `gorm:"foreignKey:CharacterID" json:"transportmittel"`
+	Ausruestung        []Ausruestung      `gorm:"foreignKey:CharacterID" json:"ausruestung"`
+	Behaeltnisse       []Behaeltniss      `gorm:"foreignKey:CharacterID" json:"behaeltnisse"`
+	Waffen             []Waffe            `gorm:"foreignKey:CharacterID" json:"waffen"`
+	Waffenfertigkeiten []Waffenfertigkeit `gorm:"foreignKey:CharacterID" json:"waffenfertigkeiten"`
+	Spezialisierung    StringArray        `gorm:"type:TEXT"  json:"spezialisierung"`
+	/*
+		Image              string             `json:"image,omitempty"`
+	*/
+}

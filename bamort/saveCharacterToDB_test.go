@@ -17,8 +17,23 @@ func SetupTestDB() *gorm.DB {
 	}
 
 	// Auto-migrate the schemas for all related models
-	db.AutoMigrate(&Character{}, &Fertigkeit{}, &Zauber{}, &Lp{}, &Eigenschaft{}, &Merkmale{}) //, &Ausruestung{}, &Behaeltniss{}, &Waffenfertigkeit{},
-	// &Waffe{}, &Ap{}, &B{}, &Transportmittel{}, &Erfahrungsschatz{}, &Magisch{})
+	db.AutoMigrate(&Character{},
+		&Fertigkeit{}, &Zauber{}, &Lp{},
+		&Eigenschaft{}, &Merkmale{},
+		&Bennies{},
+		&Gestalt{},
+		&Ap{}, &B{},
+		&Erfahrungsschatz{},
+		&MagischTransport{},
+		&Transportation{},
+		&MagischAusruestung{},
+		&Ausruestung{},
+		&MagischBehaelter{},
+		&Behaeltniss{},
+		&MagischWaffe{},
+		&Waffe{},
+		//  &Waffenfertigkeit{},
+	)
 	return db
 }
 
@@ -44,14 +59,6 @@ func TestSaveCharacterToDB(t *testing.T) {
 			{Name: "St", Value: 80},
 			{Name: "Zt", Value: 100},
 		},
-		/*
-			Ausruestung: []Ausruestung{
-					{Name: "Staff", Beschreibung: "Magic Staff", Anzahl: 1, Gewicht: 2.5, Wert: 500},
-				},
-				Behaeltnisse: []Behaeltniss{
-					{Name: "Backpack", Beschreibung: "Leather backpack", Gewicht: 1.5, Tragkraft: 10, Volumen: 20, Wert: 50},
-				},
-		*/
 		Fertigkeiten: []Fertigkeit{
 			{Name: "Stehlen", Beschreibung: "jemandem etwas wegnehmen ohne das der es merkt", Fertigkeitswert: 6},
 			{Name: "Geländelauf", Beschreibung: "Lauf um Hindernisse herum", Fertigkeitswert: 12},
@@ -68,12 +75,49 @@ func TestSaveCharacterToDB(t *testing.T) {
 			Haarfarbe:  "Blonde",
 			Sonstige:   "Scar on the left cheek",
 		},
-		/*
-			Ap: Ap{
-				Max:   50,
-				Value: 40,
+		Bennies: Bennies{
+			Gg: 1,
+			Gp: 0,
+			Sg: 2,
+		},
+		Gestalt: Gestalt{
+			Breite:  "schmal",
+			Groesse: "klein",
+		},
+		Ap: Ap{
+			Max:   50,
+			Value: 40,
+		},
+		B: B{
+
+			Max:   25,
+			Value: 20,
+		},
+		Erfahrungsschatz: Erfahrungsschatz{
+			Value: 2768,
+		},
+		Transportmittel: []Transportation{
+			{Name: "Karren",
+				Beschreibung: "ein Karren",
+				Gewicht:      100, Tragkraft: 300, Wert: 55,
+				Magisch: MagischTransport{IstMagisch: true, Abw: 30, Ausgebrannt: false},
 			},
-		*/
+		},
+		Ausruestung: []Ausruestung{
+			{Name: "Staff", Beschreibung: "Magic Staff", Anzahl: 1, Gewicht: 2.5, Wert: 500,
+				Magisch: MagischAusruestung{IstMagisch: true, Abw: 10, Ausgebrannt: false},
+			},
+		},
+		Behaeltnisse: []Behaeltniss{
+			{Name: "Backpack", Beschreibung: "Leather backpack",
+				Gewicht: 1.5, Tragkraft: 10, Volumen: 20, Wert: 50,
+				//Magisch: MagischBehaelter{IstMagisch: false},
+			},
+		},
+		Waffen: []Waffe{
+			{Name: "Schwert", Beschreibung: "Ein schwert", Abwb: 0, Anb: 0, Gewicht: 1.5, NameFuerSpezialisierung: "Schwert", Schb: 0, Wert: 3,
+				Magisch: MagischWaffe{IstMagisch: false}},
+		},
 	}
 
 	fmt.Println(character)
@@ -87,8 +131,22 @@ func TestSaveCharacterToDB(t *testing.T) {
 	var savedCharacter Character
 	//err = DB.Preload("Eigenschaften").Preload("Ausruestung").Preload("Behaeltnisse").
 	//	Preload("Fertigkeiten").Preload("Merkmale").Preload("Lp").Preload("Ap").
-	err = DB.Preload("Fertigkeiten").Preload("Zauber").Preload("Lp").
-		Preload("Eigenschaften").Preload("Merkmale").
+	err = DB.
+		Preload("Eigenschaften").
+		Preload("Fertigkeiten").
+		Preload("Zauber").
+		Preload("Lp").
+		Preload("Merkmale").
+		Preload("Bennies").
+		Preload("Gestalt").
+		Preload("Ap").
+		Preload("B").
+		Preload("Erfahrungsschatz").
+		//Preload("Magisch").
+		Preload("Transportmittel").
+		Preload("Ausruestung").
+		Preload("Behaeltnisse").
+		Preload("Waffen").
 		First(&savedCharacter, "name = ?", "Test Character").Error
 	assert.NoError(t, err, "Expected to find the character in the database")
 	assert.Equal(t, "Test Character", savedCharacter.Name)
@@ -100,10 +158,12 @@ func TestSaveCharacterToDB(t *testing.T) {
 	assert.Equal(t, "Au", savedCharacter.Eigenschaften[0].Name)
 	assert.Equal(t, 50, savedCharacter.Eigenschaften[0].Value)
 	assert.Equal(t, "Blau", savedCharacter.Merkmale.Augenfarbe)
+	assert.Equal(t, 1, len(savedCharacter.Ausruestung))
+	assert.Equal(t, "Staff", savedCharacter.Ausruestung[0].Name)
+	assert.Equal(t, "Blau", savedCharacter.Merkmale.Augenfarbe)
+	assert.Equal(t, "Backpack", savedCharacter.Behaeltnisse[0].Name)
+	assert.Equal(t, "Schwert", savedCharacter.Waffen[0].Name)
 	/*
-		assert.Equal(t, 1, len(savedCharacter.Ausruestung))
-		assert.Equal(t, "Staff", savedCharacter.Ausruestung[0].Name)
-		assert.Equal(t, "Blue", savedCharacter.Merkmale.Augenfarbe)
 		assert.Equal(t, 40, savedCharacter.Ap.Value)
 	*/
 }

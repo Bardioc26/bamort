@@ -1,6 +1,10 @@
 package main
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
+
 	"fmt"
 	"log"
 
@@ -157,4 +161,27 @@ func saveCharacterToDB(character *Character) error {
 
 		return nil
 	})
+}
+
+// StringArray is a custom type for []string
+type StringArray []string
+
+// Value implements the driver.Valuer interface for database storage
+func (s StringArray) Value() (driver.Value, error) {
+	return json.Marshal(s) // Serialize []string to JSON
+}
+
+// Scan implements the sql.Scanner interface for database retrieval
+func (s *StringArray) Scan(value interface{}) error {
+	if value == nil {
+		*s = []string{}
+		return nil
+	}
+
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New("failed to convert database value to []byte")
+	}
+
+	return json.Unmarshal(bytes, s) // Deserialize JSON to []string
 }

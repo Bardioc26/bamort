@@ -32,7 +32,7 @@ func SetupTestDB() *gorm.DB {
 		&Behaeltniss{},
 		&MagischWaffe{},
 		&Waffe{},
-		//  &Waffenfertigkeit{},
+		&Waffenfertigkeit{},
 	)
 	return db
 }
@@ -118,6 +118,13 @@ func TestSaveCharacterToDB(t *testing.T) {
 			{Name: "Schwert", Beschreibung: "Ein schwert", Abwb: 0, Anb: 0, Gewicht: 1.5, NameFuerSpezialisierung: "Schwert", Schb: 0, Wert: 3,
 				Magisch: MagischWaffe{IstMagisch: false}},
 		},
+		Waffenfertigkeiten: []Waffenfertigkeit{
+			{Name: "Einhandschlagwaffe", Beschreibung: "z.B. für Kurzschwerter", Bonus: 0,
+				Fertigkeitswert: 12, Pp: 1, Quelle: "Kod 256"},
+		},
+		Spezialisierung: []string{
+			"Bogen", "Streitaxt",
+		},
 	}
 
 	fmt.Println(character)
@@ -125,7 +132,7 @@ func TestSaveCharacterToDB(t *testing.T) {
 	// Call the function being tested
 	err := saveCharacterToDB(character)
 	assert.NoError(t, err, "Expected no error when saving character to DB")
-	fmt.Println(character)
+	//fmt.Println(character)
 
 	// Verify that the character was saved
 	var savedCharacter Character
@@ -147,6 +154,7 @@ func TestSaveCharacterToDB(t *testing.T) {
 		Preload("Ausruestung").
 		Preload("Behaeltnisse").
 		Preload("Waffen").
+		Preload("Waffenfertigkeiten").
 		First(&savedCharacter, "name = ?", "Test Character").Error
 	assert.NoError(t, err, "Expected to find the character in the database")
 	assert.Equal(t, "Test Character", savedCharacter.Name)
@@ -163,7 +171,12 @@ func TestSaveCharacterToDB(t *testing.T) {
 	assert.Equal(t, "Blau", savedCharacter.Merkmale.Augenfarbe)
 	assert.Equal(t, "Backpack", savedCharacter.Behaeltnisse[0].Name)
 	assert.Equal(t, "Schwert", savedCharacter.Waffen[0].Name)
+	assert.Equal(t, 40, savedCharacter.Ap.Value)
+	assert.Equal(t, "Einhandschlagwaffe", savedCharacter.Waffenfertigkeiten[0].Name)
+	assert.Equal(t, 2, len(savedCharacter.Spezialisierung))
+	assert.Equal(t, "Bogen", savedCharacter.Spezialisierung[0])
+	assert.Equal(t, "Streitaxt", savedCharacter.Spezialisierung[1])
+
 	/*
-		assert.Equal(t, 40, savedCharacter.Ap.Value)
-	*/
+	 */
 }

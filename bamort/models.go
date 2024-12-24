@@ -8,34 +8,34 @@ type User struct {
 }
 
 type Character struct {
-	ID               uint             `gorm:"primaryKey" json:"id"`
-	Name             string           `json:"name"`
-	Rasse            string           `json:"rasse"`
-	Typ              string           `json:"typ"`
-	Alter            int              `json:"alter"`
-	Anrede           string           `json:"anrede"`
-	Grad             int              `json:"grad"`
-	Groesse          int              `json:"groesse"`
-	Gewicht          int              `json:"gewicht"`
-	Glaube           string           `json:"glaube"`
-	Hand             string           `json:"hand"`
-	Fertigkeiten     []Fertigkeit     `gorm:"foreignKey:CharacterID" json:"fertigkeiten"`
-	Zauber           []Zauber         `gorm:"foreignKey:CharacterID" json:"zauber"`
-	Lp               Lp               `gorm:"foreignKey:CharacterID" json:"lp"`
-	Eigenschaften    []Eigenschaft    `gorm:"foreignKey:CharacterID" json:"eigenschaften"`
-	Merkmale         Merkmale         `gorm:"foreignKey:CharacterID" json:"merkmale"`
-	Bennies          Bennies          `gorm:"foreignKey:CharacterID" json:"bennies"`
-	Gestalt          Gestalt          `gorm:"foreignKey:CharacterID" json:"gestalt"`
-	Ap               Ap               `gorm:"foreignKey:CharacterID" json:"ap"`
-	B                B                `gorm:"foreignKey:CharacterID" json:"b"`
-	Erfahrungsschatz Erfahrungsschatz `gorm:"foreignKey:CharacterID" json:"erfahrungsschatz"`
-	Transportmittel  []Transportation `gorm:"foreignKey:CharacterID" json:"transportmittel"`
-	Ausruestung      []Ausruestung    `gorm:"foreignKey:CharacterID" json:"ausruestung"`
-	Behaeltnisse     []Behaeltniss    `gorm:"foreignKey:CharacterID" json:"behaeltnisse"`
-	Waffen           []Waffe          `gorm:"foreignKey:CharacterID" json:"waffen"`
+	ID                 uint               `gorm:"primaryKey" json:"id"`
+	Name               string             `json:"name"`
+	Rasse              string             `json:"rasse"`
+	Typ                string             `json:"typ"`
+	Alter              int                `json:"alter"`
+	Anrede             string             `json:"anrede"`
+	Grad               int                `json:"grad"`
+	Groesse            int                `json:"groesse"`
+	Gewicht            int                `json:"gewicht"`
+	Glaube             string             `json:"glaube"`
+	Hand               string             `json:"hand"`
+	Fertigkeiten       []Fertigkeit       `gorm:"foreignKey:CharacterID" json:"fertigkeiten"`
+	Zauber             []Zauber           `gorm:"foreignKey:CharacterID" json:"zauber"`
+	Lp                 Lp                 `gorm:"foreignKey:CharacterID" json:"lp"`
+	Eigenschaften      []Eigenschaft      `gorm:"foreignKey:CharacterID" json:"eigenschaften"`
+	Merkmale           Merkmale           `gorm:"foreignKey:CharacterID" json:"merkmale"`
+	Bennies            Bennies            `gorm:"foreignKey:CharacterID" json:"bennies"`
+	Gestalt            Gestalt            `gorm:"foreignKey:CharacterID" json:"gestalt"`
+	Ap                 Ap                 `gorm:"foreignKey:CharacterID" json:"ap"`
+	B                  B                  `gorm:"foreignKey:CharacterID" json:"b"`
+	Erfahrungsschatz   Erfahrungsschatz   `gorm:"foreignKey:CharacterID" json:"erfahrungsschatz"`
+	Transportmittel    []Transportation   `gorm:"foreignKey:CharacterID" json:"transportmittel"`
+	Ausruestung        []Ausruestung      `gorm:"foreignKey:CharacterID" json:"ausruestung"`
+	Behaeltnisse       []Behaeltniss      `gorm:"foreignKey:CharacterID" json:"behaeltnisse"`
+	Waffen             []Waffe            `gorm:"foreignKey:CharacterID" json:"waffen"`
+	Waffenfertigkeiten []Waffenfertigkeit `gorm:"foreignKey:CharacterID" json:"waffenfertigkeiten"`
+	Spezialisierung    StringArray        `gorm:"type:TEXT"  json:"spezialisierung"`
 	/*
-		Waffenfertigkeiten []Waffenfertigkeit `gorm:"foreignKey:CharacterID" json:"waffenfertigkeiten"`
-		Spezialisierung    []string           `json:"spezialisierung"`
 		Image              string             `json:"image,omitempty"`
 	*/
 }
@@ -198,6 +198,7 @@ type Transportation struct {
 	Magisch   MagischTransport `gorm:"foreignKey:TransportationID" json:"magisch"`
 	//Magisch   Magisch `gorm:"polymorphic:Item;polymorphicValue:Transportmittel" json:"magisch"`
 }
+
 type MagischAusruestung struct {
 	ID uint `gorm:"primaryKey" json:"id"`
 	//ItemType    string `gorm:"index" json:"item_type"` // Type of the referenced item (e.g., "Ausruestung")
@@ -207,6 +208,7 @@ type MagischAusruestung struct {
 	Ausgebrannt   bool `json:"ausgebrannt"`
 	IstMagisch    bool `json:"ist_magisch"`
 }
+
 type MagischWaffe struct {
 	ID uint `gorm:"primaryKey" json:"id"`
 	//ItemType    string `gorm:"index" json:"item_type"` // Type of the referenced item (e.g., "Ausruestung")
@@ -216,6 +218,7 @@ type MagischWaffe struct {
 	Ausgebrannt bool `json:"ausgebrannt"`
 	IstMagisch  bool `json:"ist_magisch"`
 }
+
 type MagischBehaelter struct {
 	ID uint `gorm:"primaryKey" json:"id"`
 	//ItemType    string `gorm:"index" json:"item_type"` // Type of the referenced item (e.g., "Ausruestung")
@@ -225,6 +228,7 @@ type MagischBehaelter struct {
 	Ausgebrannt   bool `json:"ausgebrannt"`
 	IstMagisch    bool `json:"ist_magisch"`
 }
+
 type MagischTransport struct {
 	ID uint `gorm:"primaryKey" json:"id"`
 	//ItemType    string `gorm:"index" json:"item_type"` // Type of the referenced item (e.g., "Ausruestung")

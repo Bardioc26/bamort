@@ -39,6 +39,5 @@ func TestImportJSONToDB(t *testing.T) {
 	assert.Equal(t, "Kriegshammer", character.Spezialisierung[0])
 	assert.Equal(t, "Armbrust:schwer", character.Spezialisierung[1])
 
-	/*
-	 */
+	//fmt.Println(character)
 }

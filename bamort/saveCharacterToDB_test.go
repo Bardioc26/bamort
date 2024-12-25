@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -127,7 +126,7 @@ func TestSaveCharacterToDB(t *testing.T) {
 		},
 	}
 
-	fmt.Println(character)
+	//fmt.Println(character)
 
 	// Call the function being tested
 	err := saveCharacterToDB(character)
@@ -176,7 +175,4 @@ func TestSaveCharacterToDB(t *testing.T) {
 	assert.Equal(t, 2, len(savedCharacter.Spezialisierung))
 	assert.Equal(t, "Bogen", savedCharacter.Spezialisierung[0])
 	assert.Equal(t, "Streitaxt", savedCharacter.Spezialisierung[1])
-
-	/*
-	 */
 }

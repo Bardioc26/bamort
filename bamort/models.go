@@ -280,3 +280,13 @@ type CharacterImport struct {
 		Image              string             `json:"image,omitempty"`
 	*/
 }
+
+type StammFertigkeit struct {
+	ID               uint   `gorm:"primaryKey" json:"id"`
+	System           string `gorm:"index" json:"system"`
+	Name             string `json:"name"`
+	Beschreibung     string `json:"beschreibung"`
+	Initialkeitswert int    `json:"initialwert"`
+	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
+	Quelle           string `json:"quelle"`
+}

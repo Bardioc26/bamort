@@ -32,6 +32,7 @@ func SetupTestDB() *gorm.DB {
 		&MagischWaffe{},
 		&Waffe{},
 		&Waffenfertigkeit{},
+		&StammFertigkeit{},
 	)
 	return db
 }

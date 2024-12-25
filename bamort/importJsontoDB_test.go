@@ -4,16 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
-func TestImportJSONToDB(t *testing.T) {
+func TestImportVTT(t *testing.T) {
 	// Setup test database
 	//testDB := SetupTestDB()
 	//DB = testDB // Assign test DB to global DB
 
+	// loading file to Modell
 	fileName := fmt.Sprintf("./uploads/%s", "test.json")
 	fileContent, err := os.ReadFile(fileName)
 	assert.NoError(t, err, "Expected no error when reading file "+fileName)
@@ -40,4 +43,53 @@ func TestImportJSONToDB(t *testing.T) {
 	assert.Equal(t, "Armbrust:schwer", character.Spezialisierung[1])
 
 	//fmt.Println(character)
+}
+
+func TestImportFertigkeitenStammdaten(t *testing.T) {
+	// Setup test database
+	testDB := SetupTestDB()
+	DB = testDB // Assign test DB to global DB
+	// loading file to Modell
+	fileName := fmt.Sprintf("./uploads/%s", "test.json")
+	fileContent, err := os.ReadFile(fileName)
+	assert.NoError(t, err, "Expected no error when reading file "+fileName)
+	character := CharacterImport{}
+	err = json.Unmarshal(fileContent, &character)
+	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
+
+	//fertigkeit := character.Fertigkeiten[1]
+	for _, fertigkeit := range character.Fertigkeiten {
+		//fmt.Printf("Name: %s, Beschreibung: %s, Wert: %d\n",
+		//	fertigkeit.Name, fertigkeit.Beschreibung, fertigkeit.Fertigkeitswert)
+		//fmt.Println(fertigkeit)
+		stammF := StammFertigkeit{}
+		if strings.HasPrefix(fertigkeit.ImportID, "moam") {
+			err = DB.First(&stammF, "system=? AND name = ?", "midgard", fertigkeit.Name).Error
+			assert.Error(t, err, "Expected not to find the Fertigkeit Stammdaten in the database")
+			stammF.System = "midgard"
+			stammF.Name = fertigkeit.Name
+			stammF.Beschreibung = fertigkeit.Beschreibung
+			if fertigkeit.Fertigkeitswert < 12 {
+				stammF.Initialkeitswert = 5
+			} else {
+				stammF.Initialkeitswert = 12
+			}
+			stammF.Bonuseigenschaft = "keine"
+			stammF.Quelle = fertigkeit.Quelle
+			//fmt.Println(stammF)
+			err = DB.Transaction(func(tx *gorm.DB) error {
+				// Save the main character record
+				if err := tx.Create(&stammF).Error; err != nil {
+					return fmt.Errorf("failed to save Fertigkeit Stammdaten: %w", err)
+				}
+				return nil
+			})
+			assert.NoError(t, err, "Expected no error saving Fertigkeit Stammdaten in the database")
+		}
+		err = DB.First(&stammF, "system=? AND name = ?", "midgard", fertigkeit.Name).Error
+		fmt.Println(stammF)
+		assert.NoError(t, err, "Expected to find the Fertigkeit Stammdaten in the database")
+
+	}
+
 }

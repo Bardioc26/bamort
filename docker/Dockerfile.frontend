@@ -1,0 +1,27 @@
+# =========== 1) Build stage ===========
+FROM node:18-alpine AS build
+
+WORKDIR /usr/src/app
+
+# Copy package manifests and install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy the rest of the frontend code
+COPY . .
+
+# Build the production bundle
+RUN npm run build
+
+# =========== 2) Serve stage ===========
+FROM nginx:alpine
+
+# Copy production build to Nginx html folder.
+# Adjust /usr/src/app/build -> /usr/src/app/dist if you’re using Angular/Vue
+COPY --from=build /usr/src/app/build /usr/share/nginx/html
+
+# Expose HTTP port
+EXPOSE 80
+
+# Run Nginx in foreground
+CMD ["nginx", "-g", "daemon off;"]

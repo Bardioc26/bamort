@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - "8080:8080"
+    # environment:
+    #   - YOUR_ENV=example
+    # volumes:
+    #   - ./some-local-folder:/app/some-folder
+    # You can add more configuration as needed.
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    # environment:
+    #   - API_URL=http://backend:8080
+    # In your frontend code, you'd reference process.env.API_URL or similar
+    # if using environment variables at build time.

@@ -14,7 +14,7 @@ type ImAusruestung struct {
 	BeinhaltetIn *string   `json:"beinhaltet_in"`
 	Bonus        int       `json:"bonus,omitempty"`
 	Gewicht      float64   `json:"gewicht"`
-	Magisch      ImMagisch `gorm:"foreignKey:ID" json:"magisch"`
+	Magisch      ImMagisch `json:"magisch"`
 	Wert         float64   `json:"wert"`
 }
 
@@ -105,7 +105,7 @@ type ImBehaeltniss struct {
 	Beschreibung string    `json:"beschreibung"`
 	BeinhaltetIn any       `json:"beinhaltet_in"`
 	Gewicht      float64   `json:"gewicht"`
-	Magisch      ImMagisch `gorm:"foreignKey:ID" json:"magisch"`
+	Magisch      ImMagisch `json:"magisch"`
 	Tragkraft    float64   `json:"tragkraft"`
 	Volumen      float64   `json:"volumen"`
 	Wert         float64   `json:"wert"`
@@ -129,7 +129,7 @@ type ImTransportation struct {
 	Gewicht      int       `json:"gewicht"`
 	Tragkraft    float64   `json:"tragkraft"`
 	Wert         float64   `json:"wert"`
-	Magisch      ImMagisch `gorm:"foreignKey:ID" json:"magisch"`
+	Magisch      ImMagisch `json:"magisch"`
 	//Magisch   Magisch `gorm:"polymorphic:Item;polymorphicValue:Transportmittel" json:"magisch"`
 }
 

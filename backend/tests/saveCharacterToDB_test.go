@@ -1,4 +1,4 @@
-package main
+package tests
 
 import (
 	"bamort/character"
@@ -7,17 +7,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-// SetupTestDB creates an in-memory SQLite database for testing
-func SetupTestDB() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect to the test database")
-	}
-
+func initTestDB4Char() *gorm.DB {
+	db := SetupTestDB()
 	// Auto-migrate the schemas for all related models
 	db.AutoMigrate(&models.Char{},
 		&models.Fertigkeit{}, &models.Zauber{}, &models.Lp{},
@@ -42,7 +36,7 @@ func SetupTestDB() *gorm.DB {
 
 func TestSaveCharacterToDB(t *testing.T) {
 	// Setup test database
-	testDB := SetupTestDB()
+	testDB := initTestDB4Char()
 	database.DB = testDB // Assign test DB to global DB
 
 	// Define a sample character for testing

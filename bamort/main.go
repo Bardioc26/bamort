@@ -31,6 +31,7 @@ func main() {
 	r.PUT("/ausruestung/:ausruestung_id", AuthMiddleware(), UpdateAusruestung)
 	r.DELETE("/ausruestung/:ausruestung_id", AuthMiddleware(), DeleteAusruestung)
 	r.POST("/upload", AuthMiddleware(), UploadFiles)
+	r.GET("/setupcheck", AuthMiddleware(), SetupCheck)
 
 	r.Run(":8180") // Start server on port 8080
 }

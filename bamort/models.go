@@ -49,7 +49,7 @@ type Eigenschaft struct {
 }
 
 type Ausruestung struct {
-	ID           uint               `gorm:"primaryKey"json:"dbid"`
+	ID           uint               `gorm:"primaryKey" json:"dbid"`
 	ImportID     string             `json:"id"`
 	CharacterID  uint               `gorm:"index" json:"character_id"`
 	Name         string             `json:"name"`
@@ -63,7 +63,7 @@ type Ausruestung struct {
 }
 
 type Fertigkeit struct {
-	ID              uint   `gorm:"primaryKey"json:"dbid"`
+	ID              uint   `gorm:"primaryKey" json:"dbid"`
 	ImportID        string `json:"id"`
 	CharacterID     uint   `gorm:"index" json:"character_id"`
 	Name            string `json:"name"`
@@ -84,7 +84,7 @@ type Zauber struct {
 }
 
 type Waffenfertigkeit struct {
-	ID              uint   `gorm:"primaryKey"json:"dbid"`
+	ID              uint   `gorm:"primaryKey" json:"dbid"`
 	ImportID        string `json:"id"`
 	CharacterID     uint   `gorm:"index" json:"character_id"`
 	Name            string `json:"name"`
@@ -96,7 +96,7 @@ type Waffenfertigkeit struct {
 }
 
 type Waffe struct {
-	ID                      uint         `gorm:"primaryKey"json:"dbid"`
+	ID                      uint         `gorm:"primaryKey" json:"dbid"`
 	ImportID                string       `json:"id"`
 	CharacterID             uint         `gorm:"index" json:"character_id"`
 	Name                    string       `json:"name"`
@@ -163,7 +163,7 @@ type Bennies struct {
 }
 
 type Behaeltniss struct {
-	ID           uint   `gorm:"primaryKey"json:"dbid"`
+	ID           uint   `gorm:"primaryKey" json:"dbid"`
 	ImportID     string `json:"id"`
 	CharacterID  uint   `gorm:"index" json:"character_id"`
 	Name         string `json:"name"`

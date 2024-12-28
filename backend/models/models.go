@@ -171,9 +171,9 @@ type Behaeltniss struct {
 	//BeinhaltetIn any              `json:"beinhaltet_in"`
 	Gewicht   float64          `json:"gewicht"`
 	Magisch   MagischBehaelter `gorm:"foreignKey:BehaeltnissID" json:"magisch"`
+	Wert      float64          `json:"wert"`
 	Tragkraft float64          `json:"tragkraft"`
 	Volumen   float64          `json:"volumen"`
-	Wert      float64          `json:"wert"`
 }
 
 type Ap struct {

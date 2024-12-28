@@ -31,6 +31,7 @@ type ImStammFertigkeit struct {
 	Initialkeitswert int    `json:"initialwert"`
 	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
 }
+
 type ImStammWaffenFertigkeit struct {
 	ImStammFertigkeit
 }
@@ -42,6 +43,22 @@ type ImStammZauber struct {
 	AP           int
 	Reichweite   int
 	Wirkungsziel string
+}
+
+type ImStammAusruestung struct {
+	ImStamm
+	Gewicht float64 `json:"gewicht"`
+	Wert    float64 `json:"wert"`
+}
+
+type ImStammBehaeltniss struct {
+	ImStammAusruestung
+	Tragkraft float64 `json:"tragkraft"`
+	Volumen   float64 `json:"volumen"`
+}
+
+type ImStammTransportation struct {
+	ImStammBehaeltniss
 }
 
 func (stamm *ImStamm) First(name string) error {
@@ -133,6 +150,77 @@ func (stamm *ImStammZauber) Create() error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
 			return fmt.Errorf("failed to save Zauber Stammdaten: %w", err)
+		}
+		return nil
+	})
+
+	return err
+}
+
+func (stamm *ImStammAusruestung) First(name string) error {
+	gameSystem := "midgard"
+	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
+}
+
+func (stamm *ImStammAusruestung) Create() error {
+	gameSystem := "midgard"
+	stamm.System = gameSystem
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		// Save the main character record
+		if err := tx.Create(&stamm).Error; err != nil {
+			return fmt.Errorf("failed to save Stammdaten: %w", err)
+		}
+		return nil
+	})
+
+	return err
+}
+
+func (stamm *ImStammBehaeltniss) First(name string) error {
+	gameSystem := "midgard"
+	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
+}
+
+func (stamm *ImStammBehaeltniss) Create() error {
+	gameSystem := "midgard"
+	stamm.System = gameSystem
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		// Save the main character record
+		if err := tx.Create(&stamm).Error; err != nil {
+			return fmt.Errorf("failed to save Stammdaten: %w", err)
+		}
+		return nil
+	})
+
+	return err
+}
+func (stamm *ImStammTransportation) First(name string) error {
+	gameSystem := "midgard"
+	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
+}
+
+func (stamm *ImStammTransportation) Create() error {
+	gameSystem := "midgard"
+	stamm.System = gameSystem
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		// Save the main character record
+		if err := tx.Create(&stamm).Error; err != nil {
+			return fmt.Errorf("failed to save Stammdaten: %w", err)
 		}
 		return nil
 	})

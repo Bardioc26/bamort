@@ -15,6 +15,9 @@ func initTestDB4Stammdaten() *gorm.DB {
 		&models.ImStammFertigkeit{},       //needed for stammdaten.CheckFertigkeit
 		&models.ImStammZauber{},           //needed for stammdaten.CheckZauber
 		&models.ImStammWaffenFertigkeit{}, //needed for stammdaten.CheckWaffenFertigkeit
+		&models.ImStammAusruestung{},      //needed for stammdaten.Check...
+		&models.ImStammBehaeltniss{},      //needed for stammdaten.Check...
+		&models.ImStammTransportation{},   //needed for stammdaten.Check...
 	)
 	return db
 }
@@ -120,4 +123,98 @@ func TestFindStammdatenZauber(t *testing.T) {
 	assert.Equal(t, 0, stamm.Reichweite)
 	assert.Equal(t, "Zauberer", stamm.Wirkungsziel)
 	assert.Equal(t, 0, stamm.Bonus)
+}
+
+func TestCreateStammdatenAusruestung(t *testing.T) {
+	// Setup test database
+	testDB := initTestDB4Stammdaten()
+	database.DB = testDB // Assign test DB to global DB
+	stamm := models.ImStammAusruestung{}
+	stamm.System = "Midgard"
+	stamm.Name = "Decke"
+	stamm.Beschreibung = "zum zudecken"
+	stamm.Quelle = "kod-4713"
+	stamm.Gewicht = 0.2
+	stamm.Wert = 300
+	err := stamm.Create()
+	assert.NoError(t, err, "expexted Error does not exist in Fertigkeit Stammdaten")
+	assert.GreaterOrEqual(t, 1, int(stamm.ID), "exepets an ID to be present")
+	assert.Equal(t, "midgard", stamm.System)
+}
+
+func TestFindStammdatenAusruestung(t *testing.T) {
+	// Setup test database
+	TestCreateStammdatenAusruestung(t)
+	stamm := models.ImStammAusruestung{}
+	stamm.Name = "Lesen"
+
+	err := stamm.First("Decke")
+	assert.NoError(t, err, "expexted Error does not exist in Fertigkeit Stammdaten")
+	assert.GreaterOrEqual(t, 1, int(stamm.ID), "exepets an ID to be present")
+	assert.Equal(t, "midgard", stamm.System)
+	assert.Equal(t, 0.2, stamm.Gewicht)
+}
+
+func TestCreateStammdatenBehaeltniss(t *testing.T) {
+	// Setup test database
+	testDB := initTestDB4Stammdaten()
+	database.DB = testDB // Assign test DB to global DB
+	stamm := models.ImStammBehaeltniss{}
+	stamm.System = "Midgard"
+	stamm.Name = "Topf"
+	stamm.Beschreibung = "zum kochen"
+	stamm.Quelle = "kod-4714"
+	stamm.Gewicht = 0.6
+	stamm.Wert = 300
+	stamm.Volumen = 12.2
+	err := stamm.Create()
+	assert.NoError(t, err, "expexted Error does not exist in Fertigkeit Stammdaten")
+	assert.GreaterOrEqual(t, 1, int(stamm.ID), "exepets an ID to be present")
+	assert.Equal(t, "midgard", stamm.System)
+}
+
+func TestFindStammdatenBehaeltniss(t *testing.T) {
+	// Setup test database
+	TestCreateStammdatenBehaeltniss(t)
+	stamm := models.ImStammBehaeltniss{}
+	stamm.Name = "Lesen"
+
+	err := stamm.First("Topf")
+	assert.NoError(t, err, "expexted Error does not exist in Fertigkeit Stammdaten")
+	assert.GreaterOrEqual(t, 1, int(stamm.ID), "exepets an ID to be present")
+	assert.Equal(t, "midgard", stamm.System)
+	assert.Equal(t, 0.6, stamm.Gewicht)
+	assert.Equal(t, 12.2, stamm.Volumen)
+}
+
+func TestCreateStammdatenTransportation(t *testing.T) {
+	// Setup test database
+	testDB := initTestDB4Stammdaten()
+	database.DB = testDB // Assign test DB to global DB
+	stamm := models.ImStammTransportation{}
+	stamm.System = "Midgard"
+	stamm.Name = "Topf"
+	stamm.Beschreibung = "zum kochen"
+	stamm.Quelle = "kod-4714"
+	stamm.Gewicht = 0.6
+	stamm.Wert = 300
+	stamm.Volumen = 12.5
+	err := stamm.Create()
+	assert.NoError(t, err, "expexted Error does not exist in Fertigkeit Stammdaten")
+	assert.GreaterOrEqual(t, 1, int(stamm.ID), "exepets an ID to be present")
+	assert.Equal(t, "midgard", stamm.System)
+}
+
+func TestFindStammdatenTransportation(t *testing.T) {
+	// Setup test database
+	TestCreateStammdatenTransportation(t)
+	stamm := models.ImStammTransportation{}
+	stamm.Name = "Lesen"
+
+	err := stamm.First("Topf")
+	assert.NoError(t, err, "expexted Error does not exist in Fertigkeit Stammdaten")
+	assert.GreaterOrEqual(t, 1, int(stamm.ID), "exepets an ID to be present")
+	assert.Equal(t, "midgard", stamm.System)
+	assert.Equal(t, 0.6, stamm.Gewicht)
+	assert.Equal(t, 12.5, stamm.Volumen)
 }

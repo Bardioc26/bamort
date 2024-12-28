@@ -29,7 +29,7 @@ func initTestDB4Char() *gorm.DB {
 		&models.MagischWaffe{},
 		&models.Waffe{},
 		&models.Waffenfertigkeit{},
-		&models.ImStammFertigkeit{},
+		&models.LookupSkill{},
 	)
 	return db
 }

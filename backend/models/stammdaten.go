@@ -7,18 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-/*type ImStammFertigkeit struct {
-	ID               uint   `gorm:"primaryKey" json:"id"`
-	System           string `gorm:"index" json:"system"`
-	Name             string `json:"name"`
-	Beschreibung     string `json:"beschreibung"`
-	Initialkeitswert int    `json:"initialwert"`
-	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
-	Quelle           string `json:"quelle"`
-}
-*/
-
-type ImStamm struct {
+type LookupList struct {
 	ID           uint   `gorm:"primaryKey" json:"id"`
 	System       string `gorm:"index" json:"system"`
 	Name         string `json:"name"`
@@ -26,18 +15,18 @@ type ImStamm struct {
 	Quelle       string `json:"quelle"`
 }
 
-type ImStammFertigkeit struct {
-	ImStamm
+type LookupSkill struct {
+	LookupList
 	Initialkeitswert int    `json:"initialwert"`
 	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
 }
 
-type ImStammWaffenFertigkeit struct {
-	ImStammFertigkeit
+type LookupWaeponSkill struct {
+	LookupSkill
 }
 
-type ImStammZauber struct {
-	ImStamm
+type LookupSpell struct {
+	LookupList
 	Bonus        int `json:"bonus"`
 	Stufe        int
 	AP           int
@@ -45,23 +34,23 @@ type ImStammZauber struct {
 	Wirkungsziel string
 }
 
-type ImStammAusruestung struct {
-	ImStamm
+type LookupEquipment struct {
+	LookupList
 	Gewicht float64 `json:"gewicht"`
 	Wert    float64 `json:"wert"`
 }
 
-type ImStammBehaeltniss struct {
-	ImStammAusruestung
+type LookupContainer struct {
+	LookupEquipment
 	Tragkraft float64 `json:"tragkraft"`
 	Volumen   float64 `json:"volumen"`
 }
 
-type ImStammTransportation struct {
-	ImStammBehaeltniss
+type LookupTransportation struct {
+	LookupContainer
 }
 
-func (stamm *ImStamm) First(name string) error {
+func (stamm *LookupList) First(name string) error {
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -71,13 +60,13 @@ func (stamm *ImStamm) First(name string) error {
 	return nil
 }
 
-func (stamm *ImStamm) Create() error {
+func (stamm *LookupList) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
-			return fmt.Errorf("failed to save Stammdaten: %w", err)
+			return fmt.Errorf("failed to save Lookup: %w", err)
 		}
 		return nil
 	})
@@ -85,7 +74,7 @@ func (stamm *ImStamm) Create() error {
 	return err
 }
 
-func (stamm *ImStammFertigkeit) First(name string) error {
+func (stamm *LookupSkill) First(name string) error {
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -95,13 +84,13 @@ func (stamm *ImStammFertigkeit) First(name string) error {
 	return nil
 }
 
-func (stamm *ImStammFertigkeit) Create() error {
+func (stamm *LookupSkill) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
-			return fmt.Errorf("failed to save Fertigkeit Stammdaten: %w", err)
+			return fmt.Errorf("failed to save LookupSkill: %w", err)
 		}
 		return nil
 	})
@@ -109,7 +98,7 @@ func (stamm *ImStammFertigkeit) Create() error {
 	return err
 }
 
-func (stamm *ImStammWaffenFertigkeit) First(name string) error {
+func (stamm *LookupWaeponSkill) First(name string) error {
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -119,13 +108,13 @@ func (stamm *ImStammWaffenFertigkeit) First(name string) error {
 	return nil
 }
 
-func (stamm *ImStammWaffenFertigkeit) Create() error {
+func (stamm *LookupWaeponSkill) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
-			return fmt.Errorf("failed to save Fertigkeit Stammdaten: %w", err)
+			return fmt.Errorf("failed to save LookupWaeponSkill: %w", err)
 		}
 		return nil
 	})
@@ -133,7 +122,7 @@ func (stamm *ImStammWaffenFertigkeit) Create() error {
 	return err
 }
 
-func (stamm *ImStammZauber) First(name string) error {
+func (stamm *LookupSpell) First(name string) error {
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -143,13 +132,13 @@ func (stamm *ImStammZauber) First(name string) error {
 	return nil
 }
 
-func (stamm *ImStammZauber) Create() error {
+func (stamm *LookupSpell) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
-			return fmt.Errorf("failed to save Zauber Stammdaten: %w", err)
+			return fmt.Errorf("failed to save LookupSpell: %w", err)
 		}
 		return nil
 	})
@@ -157,7 +146,7 @@ func (stamm *ImStammZauber) Create() error {
 	return err
 }
 
-func (stamm *ImStammAusruestung) First(name string) error {
+func (stamm *LookupEquipment) First(name string) error {
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -167,13 +156,13 @@ func (stamm *ImStammAusruestung) First(name string) error {
 	return nil
 }
 
-func (stamm *ImStammAusruestung) Create() error {
+func (stamm *LookupEquipment) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
-			return fmt.Errorf("failed to save Stammdaten: %w", err)
+			return fmt.Errorf("failed to save LookupEquipment: %w", err)
 		}
 		return nil
 	})
@@ -181,7 +170,7 @@ func (stamm *ImStammAusruestung) Create() error {
 	return err
 }
 
-func (stamm *ImStammBehaeltniss) First(name string) error {
+func (stamm *LookupContainer) First(name string) error {
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -191,20 +180,20 @@ func (stamm *ImStammBehaeltniss) First(name string) error {
 	return nil
 }
 
-func (stamm *ImStammBehaeltniss) Create() error {
+func (stamm *LookupContainer) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
-			return fmt.Errorf("failed to save Stammdaten: %w", err)
+			return fmt.Errorf("failed to save LookupContainer: %w", err)
 		}
 		return nil
 	})
 
 	return err
 }
-func (stamm *ImStammTransportation) First(name string) error {
+func (stamm *LookupTransportation) First(name string) error {
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -214,13 +203,13 @@ func (stamm *ImStammTransportation) First(name string) error {
 	return nil
 }
 
-func (stamm *ImStammTransportation) Create() error {
+func (stamm *LookupTransportation) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
-			return fmt.Errorf("failed to save Stammdaten: %w", err)
+			return fmt.Errorf("failed to save Lookup: %w", err)
 		}
 		return nil
 	})

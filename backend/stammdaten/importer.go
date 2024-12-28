@@ -1,16 +1,12 @@
 package stammdaten
 
 import (
-	"bamort/database"
 	"bamort/models"
 	"fmt"
-	"strings"
-
-	"gorm.io/gorm"
 )
 
-func CheckFertigkeit(fertigkeit *models.ImFertigkeit, autocreate bool) (*models.ImStammFertigkeit, error) {
-	stammF := models.ImStammFertigkeit{}
+func CheckSkill(fertigkeit *models.ImFertigkeit, autocreate bool) (*models.LookupSkill, error) {
+	stammF := models.LookupSkill{}
 	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, fertigkeit.Name).Error
 	err := stammF.First(fertigkeit.Name)
 	if err == nil {
@@ -49,13 +45,11 @@ func CheckFertigkeit(fertigkeit *models.ImFertigkeit, autocreate bool) (*models.
 	return &stammF, nil
 }
 
-func CheckZauber(zauber *models.ImZauber, autocreate bool) (*models.ImStammZauber, error) {
-	stammF := models.ImStammZauber{}
-	gameSystem := "none"
-	if strings.HasPrefix(zauber.ID, "moam") {
-		gameSystem = "midgard"
-	}
-	err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, zauber.Name).Error
+func CheckSpell(zauber *models.ImZauber, autocreate bool) (*models.LookupSpell, error) {
+	stammF := models.LookupSpell{}
+
+	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, zauber.Name).Error
+	err := stammF.First(zauber.Name)
 	if err == nil {
 		// zauber found
 		return &stammF, nil
@@ -73,21 +67,16 @@ func CheckZauber(zauber *models.ImZauber, autocreate bool) (*models.ImStammZaube
 
 	stammF.Quelle = zauber.Quelle
 	//fmt.Println(stammF)
-	err = database.DB.Transaction(func(tx *gorm.DB) error {
-		// Save the main character record
-		if err := tx.Create(&stammF).Error; err != nil {
-			return fmt.Errorf("failed to save zauber Stammdaten: %w", err)
-		}
-		return nil
-	})
+	err = stammF.Create()
 	if err != nil {
-		// zauber found
+		// spell found
 		return nil, err
 	}
 
-	err = database.DB.First(&stammF, "system=? AND name = ?", gameSystem, zauber.Name).Error
+	//err = database.DB.First(&stammF, "system=? AND name = ?", gameSystem, zauber.Name).Error
+	err = stammF.First(zauber.Name)
 	if err != nil {
-		// zauber found
+		// spell found
 		return nil, err
 	}
 	return &stammF, nil

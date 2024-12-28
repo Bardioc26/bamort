@@ -9,24 +9,24 @@ import (
 	"gorm.io/gorm"
 )
 
-func initTestDB4Stammdaten() *gorm.DB {
+func initTestDB4Lookup() *gorm.DB {
 	db := SetupTestDB()
 	db.AutoMigrate(
-		&models.ImStammFertigkeit{},       //needed for stammdaten.CheckFertigkeit
-		&models.ImStammZauber{},           //needed for stammdaten.CheckZauber
-		&models.ImStammWaffenFertigkeit{}, //needed for stammdaten.CheckWaffenFertigkeit
-		&models.ImStammAusruestung{},      //needed for stammdaten.Check...
-		&models.ImStammBehaeltniss{},      //needed for stammdaten.Check...
-		&models.ImStammTransportation{},   //needed for stammdaten.Check...
+		&models.LookupSkill{},          //needed for stammdaten.CheckFertigkeit
+		&models.LookupSpell{},          //needed for stammdaten.CheckZauber
+		&models.LookupWaeponSkill{},    //needed for stammdaten.CheckWaffenFertigkeit
+		&models.LookupEquipment{},      //needed for stammdaten.Check...
+		&models.LookupContainer{},      //needed for stammdaten.Check...
+		&models.LookupTransportation{}, //needed for stammdaten.Check...
 	)
 	return db
 }
 
-func TestCreateStammdatenFertigkeiten(t *testing.T) {
+func TestCreateLookupSkill(t *testing.T) {
 	// Setup test database
-	testDB := initTestDB4Stammdaten()
+	testDB := initTestDB4Lookup()
 	database.DB = testDB // Assign test DB to global DB
-	stamm := models.ImStammFertigkeit{}
+	stamm := models.LookupSkill{}
 	stamm.System = "Midgard"
 	stamm.Name = "Lesen"
 	stamm.Beschreibung = "Lesen und Schreiben"
@@ -39,10 +39,10 @@ func TestCreateStammdatenFertigkeiten(t *testing.T) {
 	assert.Equal(t, "midgard", stamm.System)
 }
 
-func TestFindStammdatenFertigkeiten(t *testing.T) {
+func TestFindLookupSkill(t *testing.T) {
 	// Setup test database
-	TestCreateStammdatenFertigkeiten(t)
-	stamm := models.ImStammFertigkeit{}
+	TestCreateLookupSkill(t)
+	stamm := models.LookupSkill{}
 	stamm.Name = "Lesen"
 
 	err := stamm.First("Lesen")
@@ -52,11 +52,11 @@ func TestFindStammdatenFertigkeiten(t *testing.T) {
 	assert.Equal(t, "In", stamm.Bonuseigenschaft)
 }
 
-func TestCreateStammdatenWaffenFertigkeiten(t *testing.T) {
+func TestCreateLookupWaeponSkill(t *testing.T) {
 	// Setup test database
-	testDB := initTestDB4Stammdaten()
+	testDB := initTestDB4Lookup()
 	database.DB = testDB // Assign test DB to global DB
-	stamm := models.ImStammWaffenFertigkeit{}
+	stamm := models.LookupWaeponSkill{}
 	stamm.System = "Midgard"
 	stamm.Name = "Stichwaffen"
 	stamm.Beschreibung = "Für Dolche und Ochsenzungen"
@@ -69,10 +69,10 @@ func TestCreateStammdatenWaffenFertigkeiten(t *testing.T) {
 	assert.Equal(t, "midgard", stamm.System)
 }
 
-func TestFindStammdatenWaffenFertigkeiten(t *testing.T) {
+func TestFindLookupWaeponSkill(t *testing.T) {
 	// Setup test database
-	TestCreateStammdatenWaffenFertigkeiten(t)
-	stamm := models.ImStammWaffenFertigkeit{}
+	TestCreateLookupWaeponSkill(t)
+	stamm := models.LookupWaeponSkill{}
 	stamm.Name = "Lesen"
 
 	err := stamm.First("Stichwaffen")
@@ -84,11 +84,11 @@ func TestFindStammdatenWaffenFertigkeiten(t *testing.T) {
 	assert.Equal(t, "Gs", stamm.Bonuseigenschaft)
 }
 
-func TestCreateStammdatenZauber(t *testing.T) {
+func TestCreateLookupSpell(t *testing.T) {
 	// Setup test database
-	testDB := initTestDB4Stammdaten()
+	testDB := initTestDB4Lookup()
 	database.DB = testDB // Assign test DB to global DB
-	stamm := models.ImStammZauber{}
+	stamm := models.LookupSpell{}
 	stamm.System = "Midgard"
 	stamm.Name = "Unsichtbarkeit"
 	stamm.Beschreibung = "werde unsichtbar"
@@ -107,10 +107,10 @@ func TestCreateStammdatenZauber(t *testing.T) {
 	assert.Equal(t, 1, stamm.Stufe)
 }
 
-func TestFindStammdatenZauber(t *testing.T) {
+func TestFindLookupSpell(t *testing.T) {
 	// Setup test database
-	TestCreateStammdatenZauber(t)
-	stamm := models.ImStammZauber{}
+	TestCreateLookupSpell(t)
+	stamm := models.LookupSpell{}
 	stamm.Name = "lesen"
 
 	err := stamm.First("Unsichtbarkeit")
@@ -125,11 +125,11 @@ func TestFindStammdatenZauber(t *testing.T) {
 	assert.Equal(t, 0, stamm.Bonus)
 }
 
-func TestCreateStammdatenAusruestung(t *testing.T) {
+func TestCreateLookupEquipment(t *testing.T) {
 	// Setup test database
-	testDB := initTestDB4Stammdaten()
+	testDB := initTestDB4Lookup()
 	database.DB = testDB // Assign test DB to global DB
-	stamm := models.ImStammAusruestung{}
+	stamm := models.LookupEquipment{}
 	stamm.System = "Midgard"
 	stamm.Name = "Decke"
 	stamm.Beschreibung = "zum zudecken"
@@ -142,10 +142,10 @@ func TestCreateStammdatenAusruestung(t *testing.T) {
 	assert.Equal(t, "midgard", stamm.System)
 }
 
-func TestFindStammdatenAusruestung(t *testing.T) {
+func TestFindLookupEquipment(t *testing.T) {
 	// Setup test database
-	TestCreateStammdatenAusruestung(t)
-	stamm := models.ImStammAusruestung{}
+	TestCreateLookupEquipment(t)
+	stamm := models.LookupEquipment{}
 	stamm.Name = "Lesen"
 
 	err := stamm.First("Decke")
@@ -155,11 +155,11 @@ func TestFindStammdatenAusruestung(t *testing.T) {
 	assert.Equal(t, 0.2, stamm.Gewicht)
 }
 
-func TestCreateStammdatenBehaeltniss(t *testing.T) {
+func TestCreateLookupContainer(t *testing.T) {
 	// Setup test database
-	testDB := initTestDB4Stammdaten()
+	testDB := initTestDB4Lookup()
 	database.DB = testDB // Assign test DB to global DB
-	stamm := models.ImStammBehaeltniss{}
+	stamm := models.LookupContainer{}
 	stamm.System = "Midgard"
 	stamm.Name = "Topf"
 	stamm.Beschreibung = "zum kochen"
@@ -173,10 +173,10 @@ func TestCreateStammdatenBehaeltniss(t *testing.T) {
 	assert.Equal(t, "midgard", stamm.System)
 }
 
-func TestFindStammdatenBehaeltniss(t *testing.T) {
+func TestFindLookupContainer(t *testing.T) {
 	// Setup test database
-	TestCreateStammdatenBehaeltniss(t)
-	stamm := models.ImStammBehaeltniss{}
+	TestCreateLookupContainer(t)
+	stamm := models.LookupContainer{}
 	stamm.Name = "Lesen"
 
 	err := stamm.First("Topf")
@@ -187,11 +187,11 @@ func TestFindStammdatenBehaeltniss(t *testing.T) {
 	assert.Equal(t, 12.2, stamm.Volumen)
 }
 
-func TestCreateStammdatenTransportation(t *testing.T) {
+func TestCreateLookupTransportation(t *testing.T) {
 	// Setup test database
-	testDB := initTestDB4Stammdaten()
+	testDB := initTestDB4Lookup()
 	database.DB = testDB // Assign test DB to global DB
-	stamm := models.ImStammTransportation{}
+	stamm := models.LookupTransportation{}
 	stamm.System = "Midgard"
 	stamm.Name = "Topf"
 	stamm.Beschreibung = "zum kochen"
@@ -205,10 +205,10 @@ func TestCreateStammdatenTransportation(t *testing.T) {
 	assert.Equal(t, "midgard", stamm.System)
 }
 
-func TestFindStammdatenTransportation(t *testing.T) {
+func TestFindLookupTransportation(t *testing.T) {
 	// Setup test database
-	TestCreateStammdatenTransportation(t)
-	stamm := models.ImStammTransportation{}
+	TestCreateLookupTransportation(t)
+	stamm := models.LookupTransportation{}
 	stamm.Name = "Lesen"
 
 	err := stamm.First("Topf")

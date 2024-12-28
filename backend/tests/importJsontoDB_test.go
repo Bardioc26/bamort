@@ -37,8 +37,8 @@ func initTestDB4Import() *gorm.DB {
 			&models.ImMagisch{},
 			&models.ImCharacterImport{},
 		*/
-		&models.ImStammFertigkeit{}, //needed for stammdaten.CheckFertigkeit
-		&models.ImStammZauber{},     //needed for stammdaten.CheckZauber
+		&models.LookupSkill{}, //needed for stammdaten.CheckFertigkeit
+		&models.LookupSpell{}, //needed for stammdaten.CheckZauber
 	)
 	return db
 }
@@ -93,10 +93,10 @@ func TestImportFertigkeitenStammdatenSingle(t *testing.T) {
 
 	//checke Fertigkeit auf vorhandensein in den Stammdaten
 	fertigkeit := character.Fertigkeiten[1]
-	stammF, err := stammdaten.CheckFertigkeit(&fertigkeit, false)
+	stammF, err := stammdaten.CheckSkill(&fertigkeit, false)
 	assert.Error(t, err, "expexted Error does not exist in Fertigkeit Stammdaten")
 	if stammF == nil && err != nil {
-		stammF, err = stammdaten.CheckFertigkeit(&fertigkeit, true)
+		stammF, err = stammdaten.CheckSkill(&fertigkeit, true)
 	}
 	assert.NoError(t, err, "Expected to finds the Fertigkeit Stammdaten in the database")
 	assert.Equal(t, fertigkeit.Name, stammF.Name)
@@ -110,10 +110,10 @@ func TestImportFertigkeitenStammdatenSingle(t *testing.T) {
 	// und noch mal
 	//checke Fertigkeit auf vorhandensein in den Stammdaten
 	//fertigkeit := character.Fertigkeiten[1]
-	stammF, err = stammdaten.CheckFertigkeit(&fertigkeit, false)
+	stammF, err = stammdaten.CheckSkill(&fertigkeit, false)
 	assert.NoError(t, err, "expexted no Error exist in Fertigkeit Stammdaten")
 	if stammF == nil && err != nil {
-		stammF, err = stammdaten.CheckFertigkeit(&fertigkeit, true)
+		stammF, err = stammdaten.CheckSkill(&fertigkeit, true)
 	}
 	assert.NoError(t, err, "Expected to finds the Fertigkeit Stammdaten in the database")
 	assert.Equal(t, fertigkeit.Name, stammF.Name)
@@ -142,7 +142,7 @@ func TestImportFertigkeitenStammdatenMulti(t *testing.T) {
 	//for index, fertigkeit := range character.Fertigkeiten {
 	for _, fertigkeit := range character.Fertigkeiten {
 		fmt.Println(fertigkeit.Name)
-		stammF, err := stammdaten.CheckFertigkeit(&fertigkeit, true)
+		stammF, err := stammdaten.CheckSkill(&fertigkeit, true)
 		assert.NoError(t, err, "Expected to finds the Fertigkeit Stammdaten in the database")
 		assert.Equal(t, fertigkeit.Name, stammF.Name, "Name should be equal")
 		if fertigkeit.Name != "Sprache" {
@@ -174,10 +174,10 @@ func TestImportZauberStammdatenSingle(t *testing.T) {
 
 	//checke zauber auf vorhandensein in den Stammdaten
 	zauber := character.Zauber[0]
-	stammF, err := stammdaten.CheckZauber(&zauber, false)
+	stammF, err := stammdaten.CheckSpell(&zauber, false)
 	assert.Error(t, err, "expexted Error does not exist in zauber Stammdaten")
 	if stammF == nil && err != nil {
-		stammF, err = stammdaten.CheckZauber(&zauber, true)
+		stammF, err = stammdaten.CheckSpell(&zauber, true)
 	}
 	assert.NoError(t, err, "Expected to finds the zauber Stammdaten in the database")
 	assert.Equal(t, zauber.Name, stammF.Name)
@@ -193,10 +193,10 @@ func TestImportZauberStammdatenSingle(t *testing.T) {
 	// und noch mal
 	//checke zauber auf vorhandensein in den Stammdaten
 	//zauber := character.zauberen[1]
-	stammF, err = stammdaten.CheckZauber(&zauber, false)
+	stammF, err = stammdaten.CheckSpell(&zauber, false)
 	assert.NoError(t, err, "expexted no Error exist in zauber Stammdaten")
 	if stammF == nil && err != nil {
-		stammF, err = stammdaten.CheckZauber(&zauber, true)
+		stammF, err = stammdaten.CheckSpell(&zauber, true)
 	}
 	assert.NoError(t, err, "Expected to finds the zauber Stammdaten in the database")
 	assert.Equal(t, zauber.Name, stammF.Name)

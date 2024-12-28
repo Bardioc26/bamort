@@ -1,6 +1,6 @@
 package models
 
-type ImStammFertigkeit struct {
+/*type ImStammFertigkeit struct {
 	ID               uint   `gorm:"primaryKey" json:"id"`
 	System           string `gorm:"index" json:"system"`
 	Name             string `json:"name"`
@@ -9,14 +9,25 @@ type ImStammFertigkeit struct {
 	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
 	Quelle           string `json:"quelle"`
 }
+*/
 
-type ImStammZauber struct {
+type ImStamm struct {
 	ID           uint   `gorm:"primaryKey" json:"id"`
 	System       string `gorm:"index" json:"system"`
 	Name         string `json:"name"`
 	Beschreibung string `json:"beschreibung"`
-	Bonus        int    `json:"bonus"`
 	Quelle       string `json:"quelle"`
+}
+
+type ImStammFertigkeit struct {
+	ImStamm
+	Initialkeitswert int    `json:"initialwert"`
+	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
+}
+
+type ImStammZauber struct {
+	ImStamm
+	Bonus        int `json:"bonus"`
 	Stufe        int
 	AP           int
 	Reichweite   int

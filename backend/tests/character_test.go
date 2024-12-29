@@ -3,6 +3,10 @@ package tests
 import (
 	"bamort/database"
 	"bamort/models"
+	"encoding/base64"
+	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,20 +27,48 @@ func initTestDB4Character() *gorm.DB {
 		&models.Waffenfertigkeit{},
 		&models.Bennies{},
 		&models.Erfahrungsschatz{},
-		/*
-			&models.ImAusruestung{},
-			&models.ImWaffe{},
-			&models.ImGestalt{},
-			&models.ImEigenschaften{},
-			&models.ImBehaeltniss{},
-			&models.ImTransportation{},
-			&models.ImMagisch{},
-			&models.ImCharacterImport{},
-			&models.LookupSkill{}, //needed for stammdaten.CheckFertigkeit
-			&models.LookupSpell{}, //needed for stammdaten.CheckZauber
-		*/
+		&models.Waffe{},
+		&models.Behaeltniss{},
+		&models.Transportation{},
+		&models.Ausruestung{},
 	)
 	return db
+}
+
+// ReadImageAsBase64 reads an image file and returns it as a Base64 string
+// with the prefix "data:image;base64,"
+func ReadImageAsBase64(filePath string) (string, error) {
+	// Read the image file into bytes
+	imageBytes, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read image file: %w", err)
+	}
+
+	// Detect the file extension
+	ext := filepath.Ext(filePath)
+	mimeType := "image" // Default MIME type
+	switch ext {
+	case ".jpg", ".jpeg":
+		mimeType = "image/jpeg"
+	case ".png":
+		mimeType = "image/png"
+	case ".gif":
+		mimeType = "image/gif"
+	case ".bmp":
+		mimeType = "image/bmp"
+	case ".svg":
+		mimeType = "image/svg+xml"
+	default:
+		return "", fmt.Errorf("unsupported image format: %s", ext)
+	}
+
+	// Encode the bytes to a Base64 string
+	base64String := base64.StdEncoding.EncodeToString(imageBytes)
+
+	// Prefix with the MIME type
+	fullBase64String := fmt.Sprintf("data:%s;base64,%s", mimeType, base64String)
+
+	return fullBase64String, nil
 }
 
 func createChar() *models.Char {
@@ -187,18 +219,93 @@ func createChar() *models.Char {
 			},
 		},
 	}
-	/*
-		char.Eigenschaften=""
-		char.Transportmittel=""
-		char.Ausruestung=""
-		char.Behaeltnisse=""
-		char.Waffen=""
-		char.Waffenfertigkeiten=""
-		char.Spezialisierung:=database.StringArray{"Kriegshammer", "Armbrust:schwer", "Stielhammer"}
-		char.Bennies=""
-		char.Erfahrungsschatz="325"
-		char.Image=""
-	*/
+	char.Waffen = []models.Waffe{
+		{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Armbrust:schwer", System: "Midgard",
+				},
+			},
+			Beschreibung:            "Eine Armbrust schwer zu spannen",
+			Abwb:                    0,
+			Anb:                     0,
+			Schb:                    0,
+			Anzahl:                  1,
+			Gewicht:                 5,
+			NameFuerSpezialisierung: "Armbrust:schwer",
+			Wert:                    40,
+			Magisch: models.Magisch{
+				IstMagisch:  false,
+				Abw:         0,
+				Ausgebrannt: false,
+			},
+			BeinhaltetIn: "moam-container-47363",
+		},
+	}
+	char.Behaeltnisse = []models.Behaeltniss{
+		{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Lederrucksack", System: "Midgard",
+				},
+			},
+			Beschreibung: "f\u00fcr 25 kg",
+			Wert:         4,
+			Tragkraft:    25,
+			Volumen:      25,
+			Gewicht:      0.5,
+			Magisch: models.Magisch{
+				IstMagisch:  false,
+				Abw:         0,
+				Ausgebrannt: false,
+			},
+			//BeinhaltetIn: "moam-container-47363",
+		},
+	}
+	char.Transportmittel = []models.Transportation{
+		{
+			Behaeltniss: models.Behaeltniss{
+				BamortCharTrait: models.BamortCharTrait{
+					BamortBase: models.BamortBase{
+						Name: "Karren", System: "Midgard",
+					},
+				},
+				Beschreibung: "für 500 kg",
+				Wert:         40,
+				Tragkraft:    500,
+				Volumen:      250,
+				Gewicht:      55.5,
+				Magisch: models.Magisch{
+					IstMagisch:  true,
+					Abw:         30,
+					Ausgebrannt: false,
+				},
+				//BeinhaltetIn: "moam-container-47363",
+			},
+		},
+	}
+	char.Ausruestung = []models.Ausruestung{
+		{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Lederr\u00fcstung", System: "Midgard",
+				},
+			},
+			Beschreibung: "",
+			Wert:         30,
+			Anzahl:       1,
+			Gewicht:      13.0,
+			Bonus:        0,
+			Magisch: models.Magisch{
+				IstMagisch:  false,
+				Abw:         0,
+				Ausgebrannt: false,
+			},
+			//BeinhaltetIn: "moam-container-47363",
+		},
+	}
+	fileName := fmt.Sprintf("../testdata/%s", "Krampus.png")
+	char.Image, _ = ReadImageAsBase64(fileName)
 
 	return &char
 }
@@ -326,7 +433,7 @@ func TestCreateChar(t *testing.T) {
 	assert.Equal(t, 0, char.Waffenfertigkeiten[i].Pp)
 	assert.Equal(t, "", char.Waffenfertigkeiten[i].Bemerkung)
 	assert.LessOrEqual(t, 1, int(char.Waffenfertigkeiten[i].CharacterID))
-	//--
+
 	i = 0
 	assert.LessOrEqual(t, 1, len(char.Zauber))
 	assert.LessOrEqual(t, i+1, int(char.Zauber[i].ID))
@@ -353,6 +460,69 @@ func TestCreateChar(t *testing.T) {
 	assert.Equal(t, 1, int(char.Erfahrungsschatz.ID))
 	assert.Equal(t, "Midgard", char.Erfahrungsschatz.System)
 
+	i = 0
+	assert.LessOrEqual(t, 1, len(char.Waffen))
+	assert.LessOrEqual(t, i+1, int(char.Waffen[i].ID))
+	assert.Equal(t, "Armbrust:schwer", char.Waffen[i].Name)
+	assert.Equal(t, "Midgard", char.Waffen[i].System)
+	assert.Equal(t, "Eine Armbrust schwer zu spannen", char.Waffen[i].Beschreibung)
+	assert.Equal(t, 0, char.Waffen[i].Abwb)
+	assert.Equal(t, 0, char.Waffen[i].Anb)
+	assert.Equal(t, 0, char.Waffen[i].Schb)
+	assert.Equal(t, 1, char.Waffen[i].Anzahl)
+	assert.Equal(t, 5.0, char.Waffen[i].Gewicht)
+	assert.Equal(t, "Armbrust:schwer", char.Waffen[i].NameFuerSpezialisierung)
+	assert.Equal(t, "moam-container-47363", char.Waffen[i].BeinhaltetIn)
+	assert.Equal(t, false, char.Waffen[i].IstMagisch)
+	assert.Equal(t, 0, char.Waffen[i].Abw)
+	assert.Equal(t, false, char.Waffen[i].Ausgebrannt)
+	assert.LessOrEqual(t, 0, int(char.Waffen[i].CharacterID))
+
+	i = 0
+	assert.LessOrEqual(t, 1, len(char.Behaeltnisse))
+	assert.LessOrEqual(t, i+1, int(char.Behaeltnisse[i].ID))
+	assert.LessOrEqual(t, 0, int(char.Behaeltnisse[i].CharacterID))
+	assert.Equal(t, "Midgard", char.Behaeltnisse[i].System)
+	assert.Equal(t, "Lederrucksack", char.Behaeltnisse[i].Name)
+	assert.Equal(t, "für 25 kg", char.Behaeltnisse[i].Beschreibung)
+	assert.Equal(t, 4.0, char.Behaeltnisse[i].Wert)
+	assert.Equal(t, 25.0, char.Behaeltnisse[i].Tragkraft)
+	assert.Equal(t, 25.0, char.Behaeltnisse[i].Volumen)
+	assert.Equal(t, 0.5, char.Behaeltnisse[i].Gewicht)
+	assert.Equal(t, false, char.Behaeltnisse[i].IstMagisch)
+	assert.Equal(t, 0, char.Behaeltnisse[i].Abw)
+	assert.Equal(t, false, char.Behaeltnisse[i].Ausgebrannt)
+
+	i = 0
+	assert.LessOrEqual(t, 1, len(char.Transportmittel))
+	assert.LessOrEqual(t, i+1, int(char.Transportmittel[i].ID))
+	assert.LessOrEqual(t, 0, int(char.Transportmittel[i].CharacterID))
+	assert.Equal(t, "Midgard", char.Transportmittel[i].System)
+	assert.Equal(t, "Karren", char.Transportmittel[i].Name)
+	assert.Equal(t, "für 500 kg", char.Transportmittel[i].Beschreibung)
+	assert.Equal(t, 40.0, char.Transportmittel[i].Wert)
+	assert.Equal(t, 500.0, char.Transportmittel[i].Tragkraft)
+	assert.Equal(t, 250.0, char.Transportmittel[i].Volumen)
+	assert.Equal(t, 55.5, char.Transportmittel[i].Gewicht)
+	assert.Equal(t, true, char.Transportmittel[i].IstMagisch)
+	assert.Equal(t, 30, char.Transportmittel[i].Abw)
+	assert.Equal(t, false, char.Transportmittel[i].Ausgebrannt)
+
+	i = 0
+	assert.LessOrEqual(t, 1, len(char.Ausruestung))
+	assert.LessOrEqual(t, i+1, int(char.Ausruestung[i].ID))
+	assert.LessOrEqual(t, 0, int(char.Ausruestung[i].CharacterID))
+	assert.Equal(t, "Midgard", char.Ausruestung[i].System)
+	assert.Equal(t, "Lederrüstung", char.Ausruestung[i].Name)
+	assert.Equal(t, "", char.Ausruestung[i].Beschreibung)
+	assert.Equal(t, 30.0, char.Ausruestung[i].Wert)
+	assert.Equal(t, 13.0, char.Ausruestung[i].Gewicht)
+	assert.Equal(t, 1, char.Ausruestung[i].Anzahl)
+	assert.Equal(t, false, char.Ausruestung[i].IstMagisch)
+	assert.Equal(t, 0, char.Ausruestung[i].Abw)
+	assert.Equal(t, false, char.Ausruestung[i].Ausgebrannt)
+
+	assert.Contains(t, char.Image, "data:image/png;base64,")
 	/*
 
 		// loading file to Modell

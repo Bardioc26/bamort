@@ -55,13 +55,13 @@ type Char struct {
 	Waffenfertigkeiten []Waffenfertigkeit   `gorm:"foreignKey:CharacterID" json:"waffenfertigkeiten"`
 	Zauber             []Zauber             `gorm:"foreignKey:CharacterID" json:"zauber"`
 	Spezialisierung    database.StringArray `gorm:"type:TEXT"  json:"spezialisierung"`
+	Bennies            Bennies              `gorm:"foreignKey:CharacterID" json:"bennies"`
+	Erfahrungsschatz   Erfahrungsschatz     `gorm:"foreignKey:CharacterID" json:"erfahrungsschatz"`
 	/*
 		Transportmittel    []Transportation     `gorm:"foreignKey:CharacterID" json:"transportmittel"`
 		Ausruestung        []Ausruestung        `gorm:"foreignKey:CharacterID" json:"ausruestung"`
 		Behaeltnisse       []Behaeltniss        `gorm:"foreignKey:CharacterID" json:"behaeltnisse"`
 		Waffen             []Waffe              `gorm:"foreignKey:CharacterID" json:"waffen"`
-		Bennies            Bennies              `gorm:"foreignKey:CharacterID" json:"bennies"`
-		Erfahrungsschatz   Erfahrungsschatz     `gorm:"foreignKey:CharacterID" json:"erfahrungsschatz"`
 		Image              string               `json:"image,omitempty"`
 	*/
 }

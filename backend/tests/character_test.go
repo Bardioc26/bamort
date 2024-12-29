@@ -21,13 +21,13 @@ func initTestDB4Character() *gorm.DB {
 		&models.Fertigkeit{},
 		&models.Zauber{},
 		&models.Waffenfertigkeit{},
+		&models.Bennies{},
+		&models.Erfahrungsschatz{},
 		/*
 			&models.ImAusruestung{},
 			&models.ImWaffe{},
 			&models.ImGestalt{},
-			&models.ImErfahrungsschatz{},
 			&models.ImEigenschaften{},
-			&models.ImBennies{},
 			&models.ImBehaeltniss{},
 			&models.ImTransportation{},
 			&models.ImMagisch{},
@@ -168,6 +168,24 @@ func createChar() *models.Char {
 	}
 	char.Spezialisierung = database.StringArray{
 		"Kriegshammer", "Armbrust:schwer", "Stielhammer",
+	}
+	char.Bennies = models.Bennies{
+		Sg: 1,
+		Gg: 0,
+		Gp: 0,
+		BamortCharTrait: models.BamortCharTrait{
+			BamortBase: models.BamortBase{
+				Name: "", System: "Midgard",
+			},
+		},
+	}
+	char.Erfahrungsschatz = models.Erfahrungsschatz{
+		Value: 325,
+		BamortCharTrait: models.BamortCharTrait{
+			BamortBase: models.BamortBase{
+				Name: "", System: "Midgard",
+			},
+		},
 	}
 	/*
 		char.Eigenschaften=""
@@ -322,6 +340,18 @@ func TestCreateChar(t *testing.T) {
 	assert.Equal(t, "Kriegshammer", char.Spezialisierung[0])
 	assert.Equal(t, "Armbrust:schwer", char.Spezialisierung[1])
 	assert.Equal(t, "Stielhammer", char.Spezialisierung[2])
+
+	assert.Equal(t, 1, char.Bennies.Sg)
+	assert.Equal(t, 0, char.Bennies.Gg)
+	assert.Equal(t, 0, char.Bennies.Gp)
+	assert.LessOrEqual(t, 0, int(char.Bennies.CharacterID))
+	assert.Equal(t, 1, int(char.Bennies.ID))
+	assert.Equal(t, "Midgard", char.Bennies.System)
+
+	assert.Equal(t, 325, char.Erfahrungsschatz.Value)
+	assert.LessOrEqual(t, 0, int(char.Erfahrungsschatz.CharacterID))
+	assert.Equal(t, 1, int(char.Erfahrungsschatz.ID))
+	assert.Equal(t, "Midgard", char.Erfahrungsschatz.System)
 
 	/*
 

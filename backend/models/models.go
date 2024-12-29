@@ -37,29 +37,29 @@ type BamortCharTraitMaxVal struct {
 type Char struct {
 	BamortBase
 
-	Rasse         string        `json:"rasse"`
-	Typ           string        `json:"typ"`
-	Alter         int           `json:"alter"`
-	Anrede        string        `json:"anrede"`
-	Grad          int           `json:"grad"`
-	Groesse       int           `json:"groesse"`
-	Gewicht       int           `json:"gewicht"`
-	Glaube        string        `json:"glaube"`
-	Hand          string        `json:"hand"`
-	Lp            Lp            `gorm:"foreignKey:CharacterID" json:"lp"`
-	Ap            Ap            `gorm:"foreignKey:CharacterID" json:"ap"`
-	B             B             `gorm:"foreignKey:CharacterID" json:"b"`
-	Merkmale      Merkmale      `gorm:"foreignKey:CharacterID" json:"merkmale"`
-	Eigenschaften []Eigenschaft `gorm:"foreignKey:CharacterID" json:"eigenschaften"`
-	Fertigkeiten  []Fertigkeit  `gorm:"foreignKey:CharacterID" json:"fertigkeiten"`
-	Zauber        []Zauber      `gorm:"foreignKey:CharacterID" json:"zauber"`
+	Rasse              string               `json:"rasse"`
+	Typ                string               `json:"typ"`
+	Alter              int                  `json:"alter"`
+	Anrede             string               `json:"anrede"`
+	Grad               int                  `json:"grad"`
+	Groesse            int                  `json:"groesse"`
+	Gewicht            int                  `json:"gewicht"`
+	Glaube             string               `json:"glaube"`
+	Hand               string               `json:"hand"`
+	Lp                 Lp                   `gorm:"foreignKey:CharacterID" json:"lp"`
+	Ap                 Ap                   `gorm:"foreignKey:CharacterID" json:"ap"`
+	B                  B                    `gorm:"foreignKey:CharacterID" json:"b"`
+	Merkmale           Merkmale             `gorm:"foreignKey:CharacterID" json:"merkmale"`
+	Eigenschaften      []Eigenschaft        `gorm:"foreignKey:CharacterID" json:"eigenschaften"`
+	Fertigkeiten       []Fertigkeit         `gorm:"foreignKey:CharacterID" json:"fertigkeiten"`
+	Waffenfertigkeiten []Waffenfertigkeit   `gorm:"foreignKey:CharacterID" json:"waffenfertigkeiten"`
+	Zauber             []Zauber             `gorm:"foreignKey:CharacterID" json:"zauber"`
+	Spezialisierung    database.StringArray `gorm:"type:TEXT"  json:"spezialisierung"`
 	/*
 		Transportmittel    []Transportation     `gorm:"foreignKey:CharacterID" json:"transportmittel"`
 		Ausruestung        []Ausruestung        `gorm:"foreignKey:CharacterID" json:"ausruestung"`
 		Behaeltnisse       []Behaeltniss        `gorm:"foreignKey:CharacterID" json:"behaeltnisse"`
 		Waffen             []Waffe              `gorm:"foreignKey:CharacterID" json:"waffen"`
-		Waffenfertigkeiten []Waffenfertigkeit   `gorm:"foreignKey:CharacterID" json:"waffenfertigkeiten"`
-		Spezialisierung    database.StringArray `gorm:"type:TEXT"  json:"spezialisierung"`
 		Bennies            Bennies              `gorm:"foreignKey:CharacterID" json:"bennies"`
 		Erfahrungsschatz   Erfahrungsschatz     `gorm:"foreignKey:CharacterID" json:"erfahrungsschatz"`
 		Image              string               `json:"image,omitempty"`

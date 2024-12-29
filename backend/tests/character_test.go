@@ -20,9 +20,9 @@ func initTestDB4Character() *gorm.DB {
 		&models.Eigenschaft{},
 		&models.Fertigkeit{},
 		&models.Zauber{},
+		&models.Waffenfertigkeit{},
 		/*
 			&models.ImAusruestung{},
-			&models.ImWaffenfertigkeit{},
 			&models.ImWaffe{},
 			&models.ImGestalt{},
 			&models.ImErfahrungsschatz{},
@@ -111,6 +111,50 @@ func createChar() *models.Char {
 			Bemerkung:       "",
 		},
 	}
+	char.Waffenfertigkeiten = []models.Waffenfertigkeit{
+		{
+			Fertigkeit: models.Fertigkeit{
+				BamortCharTrait: models.BamortCharTrait{
+					BamortBase: models.BamortBase{
+						Name: "Armbr\u00fcste", System: "Midgard",
+					},
+				},
+				Beschreibung:    "",
+				Fertigkeitswert: 8,
+				Bonus:           0,
+				Pp:              0,
+				Bemerkung:       "",
+			},
+		},
+		{
+			Fertigkeit: models.Fertigkeit{
+				BamortCharTrait: models.BamortCharTrait{
+					BamortBase: models.BamortBase{
+						Name: "Einhandschlagwaffen", System: "Midgard",
+					},
+				},
+				Beschreibung:    "",
+				Fertigkeitswert: 8,
+				Bonus:           0,
+				Pp:              0,
+				Bemerkung:       "",
+			},
+		},
+		{
+			Fertigkeit: models.Fertigkeit{
+				BamortCharTrait: models.BamortCharTrait{
+					BamortBase: models.BamortBase{
+						Name: "Schilde", System: "Midgard",
+					},
+				},
+				Beschreibung:    "",
+				Fertigkeitswert: 3,
+				Bonus:           0,
+				Pp:              0,
+				Bemerkung:       "",
+			},
+		},
+	}
 	char.Zauber = []models.Zauber{
 		{
 			BamortCharTrait: models.BamortCharTrait{
@@ -121,6 +165,9 @@ func createChar() *models.Char {
 			Beschreibung: "",
 			Bonus:        0,
 		},
+	}
+	char.Spezialisierung = database.StringArray{
+		"Kriegshammer", "Armbrust:schwer", "Stielhammer",
 	}
 	/*
 		char.Eigenschaften=""
@@ -137,6 +184,7 @@ func createChar() *models.Char {
 
 	return &char
 }
+
 func TestCreateChar(t *testing.T) {
 	// Setup test database
 	testDB := initTestDB4Character()
@@ -228,6 +276,39 @@ func TestCreateChar(t *testing.T) {
 	assert.Equal(t, 0, char.Fertigkeiten[i].Pp)
 	assert.Equal(t, "", char.Fertigkeiten[i].Bemerkung)
 	assert.LessOrEqual(t, 1, int(char.Fertigkeiten[i].CharacterID))
+	//--
+	i = 0
+	assert.LessOrEqual(t, 3, len(char.Waffenfertigkeiten))
+	assert.LessOrEqual(t, i+1, int(char.Waffenfertigkeiten[i].ID))
+	assert.Equal(t, "Armbrüste", char.Waffenfertigkeiten[i].Name)
+	assert.Equal(t, "Midgard", char.Waffenfertigkeiten[i].System)
+	assert.Equal(t, "", char.Waffenfertigkeiten[i].Beschreibung)
+	assert.Equal(t, 8, char.Waffenfertigkeiten[i].Fertigkeitswert)
+	assert.Equal(t, 0, char.Waffenfertigkeiten[i].Bonus)
+	assert.Equal(t, 0, char.Waffenfertigkeiten[i].Pp)
+	assert.Equal(t, "", char.Waffenfertigkeiten[i].Bemerkung)
+	assert.LessOrEqual(t, 0, int(char.Waffenfertigkeiten[i].CharacterID))
+	i++
+	assert.LessOrEqual(t, i+1, int(char.Waffenfertigkeiten[i].ID))
+	assert.Equal(t, "Einhandschlagwaffen", char.Waffenfertigkeiten[i].Name)
+	assert.Equal(t, "Midgard", char.Waffenfertigkeiten[i].System)
+	assert.Equal(t, "", char.Waffenfertigkeiten[i].Beschreibung)
+	assert.Equal(t, 8, char.Waffenfertigkeiten[i].Fertigkeitswert)
+	assert.Equal(t, 0, char.Waffenfertigkeiten[i].Bonus)
+	assert.Equal(t, 0, char.Waffenfertigkeiten[i].Pp)
+	assert.Equal(t, "", char.Waffenfertigkeiten[i].Bemerkung)
+	assert.LessOrEqual(t, 1, int(char.Waffenfertigkeiten[i].CharacterID))
+	i++
+	assert.LessOrEqual(t, i+1, int(char.Waffenfertigkeiten[i].ID))
+	assert.Equal(t, "Schilde", char.Waffenfertigkeiten[i].Name)
+	assert.Equal(t, "Midgard", char.Waffenfertigkeiten[i].System)
+	assert.Equal(t, "", char.Waffenfertigkeiten[i].Beschreibung)
+	assert.Equal(t, 3, char.Waffenfertigkeiten[i].Fertigkeitswert)
+	assert.Equal(t, 0, char.Waffenfertigkeiten[i].Bonus)
+	assert.Equal(t, 0, char.Waffenfertigkeiten[i].Pp)
+	assert.Equal(t, "", char.Waffenfertigkeiten[i].Bemerkung)
+	assert.LessOrEqual(t, 1, int(char.Waffenfertigkeiten[i].CharacterID))
+	//--
 	i = 0
 	assert.LessOrEqual(t, 1, len(char.Zauber))
 	assert.LessOrEqual(t, i+1, int(char.Zauber[i].ID))
@@ -236,6 +317,11 @@ func TestCreateChar(t *testing.T) {
 	assert.Equal(t, "", char.Zauber[i].Beschreibung)
 	assert.Equal(t, 0, char.Zauber[i].Bonus)
 	assert.LessOrEqual(t, 0, int(char.Zauber[i].CharacterID))
+
+	assert.LessOrEqual(t, 3, len(char.Spezialisierung))
+	assert.Equal(t, "Kriegshammer", char.Spezialisierung[0])
+	assert.Equal(t, "Armbrust:schwer", char.Spezialisierung[1])
+	assert.Equal(t, "Stielhammer", char.Spezialisierung[2])
 
 	/*
 

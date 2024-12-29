@@ -39,10 +39,7 @@ func initTestDB4Character() *gorm.DB {
 	return db
 }
 
-func TestCreateChar(t *testing.T) {
-	// Setup test database
-	testDB := initTestDB4Character()
-	database.DB = testDB // Assign test DB to global DB
+func createChar() *models.Char {
 
 	char := models.Char{}
 	char.System = "Midgard"
@@ -126,7 +123,6 @@ func TestCreateChar(t *testing.T) {
 		},
 	}
 	/*
-		char.Zauber=""
 		char.Eigenschaften=""
 		char.Transportmittel=""
 		char.Ausruestung=""
@@ -138,6 +134,15 @@ func TestCreateChar(t *testing.T) {
 		char.Erfahrungsschatz="325"
 		char.Image=""
 	*/
+
+	return &char
+}
+func TestCreateChar(t *testing.T) {
+	// Setup test database
+	testDB := initTestDB4Character()
+	database.DB = testDB // Assign test DB to global DB
+	char := createChar()
+
 	err := char.First(char.Name)
 	assert.Error(t, err, "expected error characvter not found")
 	if err != nil {

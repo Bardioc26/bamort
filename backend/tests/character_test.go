@@ -29,9 +29,9 @@ func initTestDB4Character() *gorm.DB {
 		&models.Zauber{},
 		&models.Bennies{},
 		&models.Erfahrungsschatz{},
-		&models.Waffe{},
-		&models.Behaeltniss{},
-		&models.Transportation{},
+		&equipment.Waffe{},
+		&equipment.Behaeltniss{},
+		&equipment.Transportation{},
 		&equipment.Ausruestung{},
 	)
 	return db
@@ -220,7 +220,7 @@ func createChar() *character.Char {
 			},
 		},
 	}
-	char.Waffen = []models.Waffe{
+	char.Waffen = []equipment.Waffe{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -243,7 +243,7 @@ func createChar() *character.Char {
 			BeinhaltetIn: "moam-container-47363",
 		},
 	}
-	char.Behaeltnisse = []models.Behaeltniss{
+	char.Behaeltnisse = []equipment.Behaeltniss{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -263,7 +263,7 @@ func createChar() *character.Char {
 			BeinhaltetIn: "moam-container-47363",
 		},
 	}
-	char.Transportmittel = []models.Transportation{
+	char.Transportmittel = []equipment.Transportation{
 		{
 
 			BamortCharTrait: models.BamortCharTrait{
@@ -428,9 +428,9 @@ func createZauber(sel int) *models.Zauber {
 	return &liste[sel]
 }
 
-func createWaffen(sel int) *models.Waffe {
+func createWaffen(sel int) *equipment.Waffe {
 
-	liste := []models.Waffe{
+	liste := []equipment.Waffe{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -458,8 +458,8 @@ func createWaffen(sel int) *models.Waffe {
 	}
 	return &liste[sel]
 }
-func createBehaeltniss(sel int) *models.Behaeltniss {
-	liste := []models.Behaeltniss{
+func createBehaeltniss(sel int) *equipment.Behaeltniss {
+	liste := []equipment.Behaeltniss{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -485,8 +485,8 @@ func createBehaeltniss(sel int) *models.Behaeltniss {
 	}
 	return &liste[sel]
 }
-func createTransportmittel(sel int) *models.Transportation {
-	liste := []models.Transportation{
+func createTransportmittel(sel int) *equipment.Transportation {
+	liste := []equipment.Transportation{
 		{
 
 			BamortCharTrait: models.BamortCharTrait{

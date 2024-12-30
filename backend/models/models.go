@@ -36,20 +36,6 @@ type Zauber struct {
 	Quelle       string `json:"quelle"`
 }
 
-type Waffe struct {
-	BamortCharTrait
-	Beschreibung string  `json:"beschreibung"`
-	Abwb         int     `json:"abwb"`
-	Anb          int     `json:"anb"`
-	Anzahl       int     `json:"anzahl"`
-	BeinhaltetIn string  `json:"beinhaltet_in"`
-	Gewicht      float64 `json:"gewicht"`
-	Magisch
-	NameFuerSpezialisierung string  `json:"nameFuerSpezialisierung"`
-	Schb                    int     `json:"schb"`
-	Wert                    float64 `json:"wert"`
-}
-
 type Merkmale struct {
 	BamortCharTrait
 	Augenfarbe string `json:"augenfarbe"`
@@ -69,28 +55,6 @@ type Bennies struct {
 	Gg int `json:"gg"`
 	Gp int `json:"gp"`
 	Sg int `json:"sg"`
-}
-
-type Behaeltniss struct {
-	BamortCharTrait
-	Beschreibung string  `json:"beschreibung"`
-	BeinhaltetIn string  `json:"beinhaltet_in"`
-	Gewicht      float64 `json:"gewicht"`
-	Wert         float64 `json:"wert"`
-	Tragkraft    float64 `json:"tragkraft"`
-	Volumen      float64 `json:"volumen"`
-	Magisch
-}
-
-type Transportation struct {
-	BamortCharTrait
-	Beschreibung string  `json:"beschreibung"`
-	BeinhaltetIn string  `json:"beinhaltet_in"`
-	Gewicht      float64 `json:"gewicht"`
-	Wert         float64 `json:"wert"`
-	Tragkraft    float64 `json:"tragkraft"`
-	Volumen      float64 `json:"volumen"`
-	Magisch
 }
 
 type Magisch struct {

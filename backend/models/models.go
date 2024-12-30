@@ -16,14 +16,6 @@ type BamortCharTraitMaxVal struct {
 	Value int `json:"value"`
 }
 
-// Au, Gs, Gw ,In, Ko, Pa, St, Wk, Zt
-type Eigenschaft struct {
-	ID          uint   `gorm:"index" json:"id"`
-	CharacterID uint   `gorm:"primaryKey" json:"character_id"`
-	Name        string `gorm:"primaryKey" json:"name"`
-	Value       int    `json:"value"`
-}
-
 type Ausruestung struct {
 	BamortCharTrait
 	Magisch

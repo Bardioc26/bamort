@@ -8,6 +8,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// Au, Gs, Gw ,In, Ko, Pa, St, Wk, Zt
+type Eigenschaft struct {
+	ID          uint   `gorm:"index" json:"id"`
+	CharacterID uint   `gorm:"primaryKey" json:"character_id"`
+	Name        string `gorm:"primaryKey" json:"name"`
+	Value       int    `json:"value"`
+}
+
 type Char struct {
 	models.BamortBase
 	Rasse              string                    `json:"rasse"`
@@ -23,7 +31,7 @@ type Char struct {
 	Ap                 models.Ap                 `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"ap"`
 	B                  models.B                  `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"b"`
 	Merkmale           models.Merkmale           `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"merkmale"`
-	Eigenschaften      []models.Eigenschaft      `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"eigenschaften"`
+	Eigenschaften      []Eigenschaft             `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"eigenschaften"`
 	Fertigkeiten       []models.Fertigkeit       `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"fertigkeiten"`
 	Waffenfertigkeiten []models.Waffenfertigkeit `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"waffenfertigkeiten"`
 	Zauber             []models.Zauber           `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"zauber"`

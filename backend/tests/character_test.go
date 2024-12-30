@@ -22,7 +22,7 @@ func initTestDB4Character() *gorm.DB {
 		&models.Ap{},
 		&models.B{},
 		&models.Merkmale{},
-		&models.Eigenschaft{},
+		&character.Eigenschaft{},
 		&models.Fertigkeit{},
 		&models.Waffenfertigkeit{},
 		&models.Zauber{},
@@ -94,7 +94,7 @@ func createChar() *character.Char {
 	char.Merkmale.Augenfarbe = "blau"
 	char.Merkmale.Haarfarbe = "sandfarben"
 	char.Merkmale.Sonstige = ""
-	char.Eigenschaften = []models.Eigenschaft{
+	char.Eigenschaften = []character.Eigenschaft{
 		{Name: "Au", Value: 74},
 		{Name: "Gs", Value: 96},
 		{Name: "Gw", Value: 70},

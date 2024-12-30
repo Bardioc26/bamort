@@ -5,6 +5,7 @@ import (
 	"bamort/database"
 	"bamort/equipment"
 	"bamort/models"
+	"bamort/skills"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -24,10 +25,10 @@ func initTestDB4Character() *gorm.DB {
 		&character.B{},
 		&character.Merkmale{},
 		&character.Eigenschaft{},
-		&models.Fertigkeit{},
-		&models.Waffenfertigkeit{},
-		&models.Zauber{},
-		&models.Bennies{},
+		&skills.Fertigkeit{},
+		&skills.Waffenfertigkeit{},
+		&skills.Zauber{},
+		&character.Bennies{},
 		&character.Erfahrungsschatz{},
 		&equipment.Waffe{},
 		&equipment.Behaeltniss{},
@@ -106,7 +107,7 @@ func createChar() *character.Char {
 		{Name: "Wk", Value: 71},
 		{Name: "Zt", Value: 35},
 	}
-	char.Fertigkeiten = []models.Fertigkeit{
+	char.Fertigkeiten = []skills.Fertigkeit{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -144,9 +145,9 @@ func createChar() *character.Char {
 			Bemerkung:       "",
 		},
 	}
-	char.Waffenfertigkeiten = []models.Waffenfertigkeit{
+	char.Waffenfertigkeiten = []skills.Waffenfertigkeit{
 		{
-			Fertigkeit: models.Fertigkeit{
+			Fertigkeit: skills.Fertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Armbr\u00fcste",
@@ -160,7 +161,7 @@ func createChar() *character.Char {
 			},
 		},
 		{
-			Fertigkeit: models.Fertigkeit{
+			Fertigkeit: skills.Fertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Einhandschlagwaffen",
@@ -174,7 +175,7 @@ func createChar() *character.Char {
 			},
 		},
 		{
-			Fertigkeit: models.Fertigkeit{
+			Fertigkeit: skills.Fertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Schilde",
@@ -188,7 +189,7 @@ func createChar() *character.Char {
 			},
 		},
 	}
-	char.Zauber = []models.Zauber{
+	char.Zauber = []skills.Zauber{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -202,7 +203,7 @@ func createChar() *character.Char {
 	char.Spezialisierung = database.StringArray{
 		"Kriegshammer", "Armbrust:schwer", "Stielhammer",
 	}
-	char.Bennies = models.Bennies{
+	char.Bennies = character.Bennies{
 		Sg: 1,
 		Gg: 0,
 		Gp: 0,
@@ -310,9 +311,9 @@ func createChar() *character.Char {
 
 	return &char
 }
-func createFertigkeit(sel int) *models.Fertigkeit {
+func createFertigkeit(sel int) *skills.Fertigkeit {
 
-	liste := []models.Fertigkeit{
+	liste := []skills.Fertigkeit{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -356,11 +357,11 @@ func createFertigkeit(sel int) *models.Fertigkeit {
 	}
 	return &liste[sel]
 }
-func createWaffenfertigkeit(sel int) *models.Waffenfertigkeit {
+func createWaffenfertigkeit(sel int) *skills.Waffenfertigkeit {
 
-	liste := []models.Waffenfertigkeit{
+	liste := []skills.Waffenfertigkeit{
 		{
-			Fertigkeit: models.Fertigkeit{
+			Fertigkeit: skills.Fertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Einhandschwerter",
@@ -374,7 +375,7 @@ func createWaffenfertigkeit(sel int) *models.Waffenfertigkeit {
 			},
 		},
 		{
-			Fertigkeit: models.Fertigkeit{
+			Fertigkeit: skills.Fertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Zweihandschlagwaffen",
@@ -388,7 +389,7 @@ func createWaffenfertigkeit(sel int) *models.Waffenfertigkeit {
 			},
 		},
 		{
-			Fertigkeit: models.Fertigkeit{
+			Fertigkeit: skills.Fertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Stichwaffen",
@@ -408,9 +409,9 @@ func createWaffenfertigkeit(sel int) *models.Waffenfertigkeit {
 	}
 	return &liste[sel]
 }
-func createZauber(sel int) *models.Zauber {
+func createZauber(sel int) *skills.Zauber {
 
-	liste := []models.Zauber{
+	liste := []skills.Zauber{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{

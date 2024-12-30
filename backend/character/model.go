@@ -4,6 +4,7 @@ import (
 	"bamort/database"
 	"bamort/equipment"
 	"bamort/models"
+	"bamort/skills"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -60,6 +61,13 @@ type Erfahrungsschatz struct {
 	Value int `json:"value"`
 }
 
+type Bennies struct {
+	models.BamortCharTrait
+	Gg int `json:"gg"`
+	Gp int `json:"gp"`
+	Sg int `json:"sg"`
+}
+
 type Char struct {
 	models.BamortBase
 	Rasse              string                     `json:"rasse"`
@@ -76,11 +84,11 @@ type Char struct {
 	B                  B                          `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"b"`
 	Merkmale           Merkmale                   `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"merkmale"`
 	Eigenschaften      []Eigenschaft              `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"eigenschaften"`
-	Fertigkeiten       []models.Fertigkeit        `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"fertigkeiten"`
-	Waffenfertigkeiten []models.Waffenfertigkeit  `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"waffenfertigkeiten"`
-	Zauber             []models.Zauber            `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"zauber"`
+	Fertigkeiten       []skills.Fertigkeit        `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"fertigkeiten"`
+	Waffenfertigkeiten []skills.Waffenfertigkeit  `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"waffenfertigkeiten"`
+	Zauber             []skills.Zauber            `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"zauber"`
 	Spezialisierung    database.StringArray       `gorm:"type:TEXT"  json:"spezialisierung"`
-	Bennies            models.Bennies             `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"bennies"`
+	Bennies            Bennies                    `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"bennies"`
 	Erfahrungsschatz   Erfahrungsschatz           `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"erfahrungsschatz"`
 	Waffen             []equipment.Waffe          `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"waffen"`
 	Behaeltnisse       []equipment.Behaeltniss    `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"behaeltnisse"`

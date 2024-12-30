@@ -16,33 +16,6 @@ type BamortCharTraitMaxVal struct {
 	Value int `json:"value"`
 }
 
-type Fertigkeit struct {
-	BamortCharTrait
-	Beschreibung    string `json:"beschreibung"`
-	Fertigkeitswert int    `json:"fertigkeitswert"`
-	Bonus           int    `json:"bonus,omitempty"`
-	Pp              int    `json:"pp,omitempty"`
-	Bemerkung       string `json:"bemerkung"`
-}
-
-type Waffenfertigkeit struct {
-	Fertigkeit
-}
-
-type Zauber struct {
-	BamortCharTrait
-	Beschreibung string `json:"beschreibung"`
-	Bonus        int    `json:"bonus"`
-	Quelle       string `json:"quelle"`
-}
-
-type Bennies struct {
-	BamortCharTrait
-	Gg int `json:"gg"`
-	Gp int `json:"gp"`
-	Sg int `json:"sg"`
-}
-
 type Magisch struct {
 	IstMagisch  bool `json:"ist_magisch"`
 	Abw         int  `json:"abw"`

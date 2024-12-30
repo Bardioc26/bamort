@@ -7,7 +7,6 @@ package user
 
 import (
 	"bamort/database"
-	"bamort/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,8 +14,7 @@ import (
 )
 
 func RegisterUser(c *gin.Context) {
-
-	var user models.User
+	var user User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -34,7 +32,7 @@ func RegisterUser(c *gin.Context) {
 }
 
 func LoginUser(c *gin.Context) {
-	var user models.User
+	var user User
 	var input struct {
 		Username string `json:"username"`
 		Password string `json:"password"`

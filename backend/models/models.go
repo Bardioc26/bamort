@@ -3,19 +3,9 @@ package models
 import (
 	"bamort/database"
 	"fmt"
-	"time"
 
 	"gorm.io/gorm"
 )
-
-type User struct {
-	UserID       uint      `gorm:"primaryKey" json:"id"`
-	Username     string    `gorm:"unique" json:"name"`
-	PasswordHash string    `json:"password"`
-	Email        string    `gorm:"unique" json:"email"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-}
 
 type BamortBase struct {
 	ID   uint   `gorm:"primaryKey" json:"id"`

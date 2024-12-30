@@ -18,9 +18,8 @@ type User struct {
 }
 
 type BamortBase struct {
-	ID     uint   `gorm:"primaryKey" json:"id"`
-	Name   string `json:"name"`
-	System string `json:"gamingsystem"`
+	ID   uint   `gorm:"primaryKey" json:"id"`
+	Name string `json:"name"`
 }
 
 type BamortCharTrait struct {
@@ -36,39 +35,48 @@ type BamortCharTraitMaxVal struct {
 
 type Char struct {
 	BamortBase
-
-	Rasse              string               `json:"rasse"`
-	Typ                string               `json:"typ"`
-	Alter              int                  `json:"alter"`
-	Anrede             string               `json:"anrede"`
-	Grad               int                  `json:"grad"`
-	Groesse            int                  `json:"groesse"`
-	Gewicht            int                  `json:"gewicht"`
-	Glaube             string               `json:"glaube"`
-	Hand               string               `json:"hand"`
-	Lp                 Lp                   `gorm:"foreignKey:CharacterID" json:"lp"`
-	Ap                 Ap                   `gorm:"foreignKey:CharacterID" json:"ap"`
-	B                  B                    `gorm:"foreignKey:CharacterID" json:"b"`
-	Merkmale           Merkmale             `gorm:"foreignKey:CharacterID" json:"merkmale"`
-	Eigenschaften      []Eigenschaft        `gorm:"foreignKey:CharacterID" json:"eigenschaften"`
-	Fertigkeiten       []Fertigkeit         `gorm:"foreignKey:CharacterID" json:"fertigkeiten"`
-	Waffenfertigkeiten []Waffenfertigkeit   `gorm:"foreignKey:CharacterID" json:"waffenfertigkeiten"`
-	Zauber             []Zauber             `gorm:"foreignKey:CharacterID" json:"zauber"`
-	Spezialisierung    database.StringArray `gorm:"type:TEXT"  json:"spezialisierung"`
-	Bennies            Bennies              `gorm:"foreignKey:CharacterID" json:"bennies"`
-	Erfahrungsschatz   Erfahrungsschatz     `gorm:"foreignKey:CharacterID" json:"erfahrungsschatz"`
-	Waffen             []Waffe              `gorm:"foreignKey:CharacterID" json:"waffen"`
-	Behaeltnisse       []Behaeltniss        `gorm:"foreignKey:CharacterID" json:"behaeltnisse"`
-	Transportmittel    []Transportation     `gorm:"foreignKey:CharacterID" json:"transportmittel"`
-	Ausruestung        []Ausruestung        `gorm:"foreignKey:CharacterID" json:"ausruestung"`
-	Image              string               `json:"image,omitempty"`
+	Rasse    string   `json:"rasse"`
+	Typ      string   `json:"typ"`
+	Alter    int      `json:"alter"`
+	Anrede   string   `json:"anrede"`
+	Grad     int      `json:"grad"`
+	Groesse  int      `json:"groesse"`
+	Gewicht  int      `json:"gewicht"`
+	Glaube   string   `json:"glaube"`
+	Hand     string   `json:"hand"`
+	Lp       Lp       `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"lp"`
+	Ap       Ap       `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"ap"`
+	B        B        `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"b"`
+	Merkmale Merkmale `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"merkmale"`
+	/*Au            int           `json:"Au"`
+	Gs            int           `json:"Gw"`
+	Gw            int           `json:"Gw"`
+	In            int           `json:"In"`
+	Ko            int           `json:"Ko"`
+	PA            int           `json:"PA"`
+	St            int           `json:"St"`
+	Wk            int           `json:"Wk"`
+	Zt            int           `json:"Zt"`*/
+	Eigenschaften      []Eigenschaft      `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"eigenschaften"`
+	Fertigkeiten       []Fertigkeit       `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"fertigkeiten"`
+	Waffenfertigkeiten []Waffenfertigkeit `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"waffenfertigkeiten"`
+	/*
+		Zauber             []Zauber             `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"zauber"`
+		Spezialisierung    database.StringArray `gorm:"type:TEXT"  json:"spezialisierung"`
+		Bennies            Bennies              `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"bennies"`
+		Erfahrungsschatz   Erfahrungsschatz     `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"erfahrungsschatz"`
+		Waffen             []Waffe              `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"waffen"`
+		Behaeltnisse       []Behaeltniss        `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"behaeltnisse"`
+		Transportmittel    []Transportation     `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"transportmittel"`
+		Ausruestung        []Ausruestung        `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"ausruestung"`
+		Image              string               `json:"image,omitempty"`
+	*/
 }
 
 // Au, Gs, Gw ,In, Ko, Pa, St, Wk, Zt
 type Eigenschaft struct {
 	BamortCharTrait
-	Name  string `json:"name"`
-	Value int    `json:"value"`
+	Value int `json:"value"`
 }
 
 type Ausruestung struct {
@@ -142,15 +150,27 @@ type Bennies struct {
 }
 
 type Lp struct {
-	BamortCharTraitMaxVal
+	ID uint `gorm:"primaryKey" json:"id"`
+
+	CharacterID uint `gorm:"index" json:"character_id"`
+	Max         int  `json:"max"`
+	Value       int  `json:"value"`
 }
 
 type Ap struct {
-	BamortCharTraitMaxVal
+	ID uint `gorm:"primaryKey" json:"id"`
+
+	CharacterID uint `gorm:"index" json:"character_id"`
+	Max         int  `json:"max"`
+	Value       int  `json:"value"`
 }
 
 type B struct {
-	BamortCharTraitMaxVal
+	ID uint `gorm:"primaryKey" json:"id"`
+
+	CharacterID uint `gorm:"index" json:"character_id"`
+	Max         int  `json:"max"`
+	Value       int  `json:"value"`
 }
 
 type Behaeltniss struct {
@@ -165,7 +185,14 @@ type Behaeltniss struct {
 }
 
 type Transportation struct {
-	Behaeltniss
+	BamortCharTrait
+	Beschreibung string  `json:"beschreibung"`
+	BeinhaltetIn string  `json:"beinhaltet_in"`
+	Gewicht      float64 `json:"gewicht"`
+	Wert         float64 `json:"wert"`
+	Tragkraft    float64 `json:"tragkraft"`
+	Volumen      float64 `json:"volumen"`
+	Magisch
 	//Magisch   Magisch `gorm:"polymorphic:Item;polymorphicValue:Transportmittel" json:"magisch"`
 }
 
@@ -176,8 +203,23 @@ type Magisch struct {
 }
 
 func (object *Char) First(name string) error {
-	gameSystem := "midgard"
-	err := database.DB.First(&object, "system=? AND name = ?", gameSystem, name).Error
+	err := database.DB.
+		Preload("Lp").
+		Preload("Ap").
+		Preload("B").
+		Preload("Merkmale").
+		Preload("Eigenschaften").
+		Preload("Fertigkeiten").
+		Preload("Waffenfertigkeiten").
+		/*
+			Preload("Zauber").
+			Preload("Bennies").
+			Preload("Erfahrungsschatz").
+			Preload("Waffe").
+			Preload("Behaeltniss").
+			Preload("Transportation").
+			Preload("Ausruestung").*/
+		First(&object, " name = ?", name).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -186,8 +228,6 @@ func (object *Char) First(name string) error {
 }
 
 func (object *Char) Create() error {
-	gameSystem := "midgard"
-	object.System = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&object).Error; err != nil {

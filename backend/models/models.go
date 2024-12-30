@@ -16,17 +16,6 @@ type BamortCharTraitMaxVal struct {
 	Value int `json:"value"`
 }
 
-type Ausruestung struct {
-	BamortCharTrait
-	Magisch
-	Beschreibung string  `json:"beschreibung"`
-	Anzahl       int     `json:"anzahl"`
-	BeinhaltetIn string  `json:"beinhaltet_in"`
-	Bonus        int     `json:"bonus,omitempty"`
-	Gewicht      float64 `json:"gewicht"`
-	Wert         float64 `json:"wert"`
-}
-
 type Fertigkeit struct {
 	BamortCharTrait
 	Beschreibung    string `json:"beschreibung"`

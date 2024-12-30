@@ -2,7 +2,6 @@ package equipment
 
 import (
 	"bamort/database"
-	"bamort/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,7 @@ Allows users to add new equipment items for a specific character.
 */
 
 func CreateAusruestung(c *gin.Context) {
-	var ausruestung models.Ausruestung
+	var ausruestung Ausruestung
 	if err := c.ShouldBindJSON(&ausruestung); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

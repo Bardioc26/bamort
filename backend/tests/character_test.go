@@ -18,9 +18,9 @@ func initTestDB4Character() *gorm.DB {
 	db := SetupTestDB()
 	db.AutoMigrate(
 		&character.Char{},
-		&models.Lp{},
-		&models.Ap{},
-		&models.B{},
+		&character.Lp{},
+		&character.Ap{},
+		&character.B{},
 		&models.Merkmale{},
 		&character.Eigenschaft{},
 		&models.Fertigkeit{},

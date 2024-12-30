@@ -70,10 +70,6 @@ type Merkmale struct {
 	Groesse    string `json:"groesse"`
 }
 
-type Gestalt struct {
-	BamortCharTrait
-}
-
 type Erfahrungsschatz struct {
 	BamortCharTrait
 	Value int `json:"value"`
@@ -84,30 +80,6 @@ type Bennies struct {
 	Gg int `json:"gg"`
 	Gp int `json:"gp"`
 	Sg int `json:"sg"`
-}
-
-type Lp struct {
-	ID uint `gorm:"primaryKey" json:"id"`
-
-	CharacterID uint `gorm:"index" json:"character_id"`
-	Max         int  `json:"max"`
-	Value       int  `json:"value"`
-}
-
-type Ap struct {
-	ID uint `gorm:"primaryKey" json:"id"`
-
-	CharacterID uint `gorm:"index" json:"character_id"`
-	Max         int  `json:"max"`
-	Value       int  `json:"value"`
-}
-
-type B struct {
-	ID uint `gorm:"primaryKey" json:"id"`
-
-	CharacterID uint `gorm:"index" json:"character_id"`
-	Max         int  `json:"max"`
-	Value       int  `json:"value"`
 }
 
 type Behaeltniss struct {

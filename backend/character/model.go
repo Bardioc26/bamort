@@ -15,7 +15,35 @@ type Eigenschaft struct {
 	Name        string `gorm:"primaryKey" json:"name"`
 	Value       int    `json:"value"`
 }
+type Lp struct {
+	ID uint `gorm:"primaryKey" json:"id"`
 
+	CharacterID uint `gorm:"index" json:"character_id"`
+	Max         int  `json:"max"`
+	Value       int  `json:"value"`
+}
+
+type Ap struct {
+	ID uint `gorm:"primaryKey" json:"id"`
+
+	CharacterID uint `gorm:"index" json:"character_id"`
+	Max         int  `json:"max"`
+	Value       int  `json:"value"`
+}
+
+type B struct {
+	ID uint `gorm:"primaryKey" json:"id"`
+
+	CharacterID uint `gorm:"index" json:"character_id"`
+	Max         int  `json:"max"`
+	Value       int  `json:"value"`
+}
+
+/*
+	type Gestalt struct {
+		models.BamortCharTrait
+	}
+*/
 type Char struct {
 	models.BamortBase
 	Rasse              string                    `json:"rasse"`
@@ -27,9 +55,9 @@ type Char struct {
 	Gewicht            int                       `json:"gewicht"`
 	Glaube             string                    `json:"glaube"`
 	Hand               string                    `json:"hand"`
-	Lp                 models.Lp                 `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"lp"`
-	Ap                 models.Ap                 `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"ap"`
-	B                  models.B                  `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"b"`
+	Lp                 Lp                        `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"lp"`
+	Ap                 Ap                        `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"ap"`
+	B                  B                         `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"b"`
 	Merkmale           models.Merkmale           `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"merkmale"`
 	Eigenschaften      []Eigenschaft             `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"eigenschaften"`
 	Fertigkeiten       []models.Fertigkeit       `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"fertigkeiten"`

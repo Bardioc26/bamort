@@ -17,7 +17,7 @@ import (
 func initTestDB4Character() *gorm.DB {
 	db := SetupTestDB()
 	db.AutoMigrate(
-		&models.Char{},
+		&character.Char{},
 		&models.Lp{},
 		&models.Ap{},
 		&models.B{},
@@ -72,9 +72,9 @@ func ReadImageAsBase64(filePath string) (string, error) {
 	return fullBase64String, nil
 }
 
-func createChar() *models.Char {
+func createChar() *character.Char {
 
-	char := models.Char{}
+	char := character.Char{}
 	char.Name = "Harsk Hammerhuter, Zen"
 	char.Rasse = "Zwerg"
 	char.Typ = "Krieger"
@@ -547,7 +547,7 @@ func setSpezialisierung(liste  *database.StringArray, pos int,name string) {
 }
 */
 
-func charTests(t *testing.T, char *models.Char) {
+func charTests(t *testing.T, char *character.Char) {
 	assert.LessOrEqual(t, 0, int(char.ID))
 	assert.Equal(t, "Harsk Hammerhuter, Zen", char.Name)
 	assert.Equal(t, "Zwerg", char.Rasse)
@@ -763,7 +763,7 @@ func TestCreateChar(t *testing.T) {
 		err = char.Create()
 		assert.NoError(t, err, "expected no error creating the char")
 	}
-	char2 := models.Char{}
+	char2 := character.Char{}
 	char2.Name = "Harsk Hammerhuter, Zen"
 	err = char2.First(char2.Name)
 	assert.NoError(t, err, "expected no error creating the char")
@@ -776,7 +776,7 @@ func TestReadChar(t *testing.T) {
 	//database.DB = testDB // Assign test DB to global DB
 
 	TestCreateChar(t)
-	char := models.Char{}
+	char := character.Char{}
 	char.Name = "Harsk Hammerhuter, Zen"
 	err := char.First(char.Name)
 	assert.NoError(t, err, "expected NO error character not found")
@@ -795,7 +795,7 @@ func TestAddAusrüstung(t *testing.T) {
 	//database.DB = testDB // Assign test DB to global DB
 
 	TestCreateChar(t)
-	char := models.Char{}
+	char := character.Char{}
 	char.Name = "Harsk Hammerhuter, Zen"
 	err := char.First(char.Name)
 	assert.NoError(t, err, "expexted no Errorselecting record from DataBase")

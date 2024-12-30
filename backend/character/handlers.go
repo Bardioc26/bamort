@@ -21,7 +21,7 @@ Add CRUD operations for characters:
 */
 
 func GetCharacters(c *gin.Context) {
-	var characters []models.Char
+	var characters []Char
 	if err := database.DB.Find(&characters).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve characters"})
 		return
@@ -30,7 +30,7 @@ func GetCharacters(c *gin.Context) {
 }
 
 func CreateCharacter(c *gin.Context) {
-	var character models.Char
+	var character Char
 	if err := c.ShouldBindJSON(&character); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -149,7 +149,7 @@ func UploadFiles(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Files uploaded successfully"})
 
 	// Open and parse JSON
-	var character models.Char
+	var character Char
 	filePath := fmt.Sprintf("./uploads/%s", file_vtt.Filename)
 	fileContent, err := os.ReadFile(filePath)
 	if err != nil {

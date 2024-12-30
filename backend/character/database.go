@@ -2,14 +2,13 @@ package character
 
 import (
 	"bamort/database"
-	"bamort/models"
 
 	"fmt"
 
 	"gorm.io/gorm"
 )
 
-func SaveCharacterToDB(character *models.Char) error {
+func SaveCharacterToDB(character *Char) error {
 	// Use GORM transaction to ensure atomicity
 	return database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record

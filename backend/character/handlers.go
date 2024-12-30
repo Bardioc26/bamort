@@ -111,7 +111,6 @@ func DeleteAusruestung(c *gin.Context) {
 }
 
 // Upload files
-
 func UploadFiles(c *gin.Context) {
 	// Get files from the request
 	file_vtt, err1 := c.FormFile("file_vtt")

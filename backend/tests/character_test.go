@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"bamort/character"
 	"bamort/database"
 	"bamort/models"
 	"encoding/base64"
@@ -308,6 +309,243 @@ func createChar() *models.Char {
 
 	return &char
 }
+func createFertigkeit(sel int) *models.Fertigkeit {
+
+	liste := []models.Fertigkeit{
+		{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Hören",
+				},
+			},
+			Beschreibung:    "xx",
+			Fertigkeitswert: 6,
+			Bonus:           0,
+			Pp:              0,
+			Bemerkung:       "",
+		},
+		{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Sprache",
+				},
+			},
+			Beschreibung:    "Albisch",
+			Fertigkeitswert: 8,
+			Bonus:           0,
+			Pp:              0,
+			Bemerkung:       "",
+		},
+		{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Sprache",
+				},
+			},
+			Beschreibung:    "Comentang",
+			Fertigkeitswert: 12,
+			Bonus:           0,
+			Pp:              0,
+			Bemerkung:       "",
+		},
+	}
+
+	if sel > len(liste)-1 {
+		sel = len(liste) - 1
+	}
+	return &liste[sel]
+}
+func createWaffenfertigkeit(sel int) *models.Waffenfertigkeit {
+
+	liste := []models.Waffenfertigkeit{
+		{
+			Fertigkeit: models.Fertigkeit{
+				BamortCharTrait: models.BamortCharTrait{
+					BamortBase: models.BamortBase{
+						Name: "Einhandschwerter",
+					},
+				},
+				Beschreibung:    "",
+				Fertigkeitswert: 5,
+				Bonus:           0,
+				Pp:              0,
+				Bemerkung:       "",
+			},
+		},
+		{
+			Fertigkeit: models.Fertigkeit{
+				BamortCharTrait: models.BamortCharTrait{
+					BamortBase: models.BamortBase{
+						Name: "Zweihandschlagwaffen",
+					},
+				},
+				Beschreibung:    "",
+				Fertigkeitswert: 5,
+				Bonus:           0,
+				Pp:              0,
+				Bemerkung:       "",
+			},
+		},
+		{
+			Fertigkeit: models.Fertigkeit{
+				BamortCharTrait: models.BamortCharTrait{
+					BamortBase: models.BamortBase{
+						Name: "Stichwaffen",
+					},
+				},
+				Beschreibung:    "",
+				Fertigkeitswert: 5,
+				Bonus:           0,
+				Pp:              0,
+				Bemerkung:       "",
+			},
+		},
+	}
+
+	if sel > len(liste)-1 {
+		sel = len(liste) - 1
+	}
+	return &liste[sel]
+}
+func createZauber(sel int) *models.Zauber {
+
+	liste := []models.Zauber{
+		{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Feuerkugel",
+				},
+			},
+			Beschreibung: "",
+			Bonus:        0,
+		},
+	}
+
+	if sel > len(liste)-1 {
+		sel = len(liste) - 1
+	}
+	return &liste[sel]
+}
+
+func createWaffen(sel int) *models.Waffe {
+
+	liste := []models.Waffe{
+		{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Armbrust:leicht",
+				},
+			},
+			Beschreibung:            "Eine Armbrust leicht zu spannen",
+			Abwb:                    0,
+			Anb:                     0,
+			Schb:                    0,
+			Anzahl:                  1,
+			Gewicht:                 5,
+			NameFuerSpezialisierung: "Armbrust:leicht",
+			Wert:                    40,
+			Magisch: models.Magisch{
+				IstMagisch:  false,
+				Abw:         0,
+				Ausgebrannt: false,
+			},
+			BeinhaltetIn: "",
+		},
+	}
+	if sel > len(liste)-1 {
+		sel = len(liste) - 1
+	}
+	return &liste[sel]
+}
+func createBehaeltniss(sel int) *models.Behaeltniss {
+	liste := []models.Behaeltniss{
+		{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Lederrucksack",
+				},
+			},
+			Beschreibung: "f\u00fcr 25 kg",
+			Wert:         4,
+			Tragkraft:    25,
+			Volumen:      25,
+			Gewicht:      0.5,
+			Magisch: models.Magisch{
+				IstMagisch:  false,
+				Abw:         0,
+				Ausgebrannt: false,
+			},
+			BeinhaltetIn: "moam-container-47363",
+		},
+	}
+
+	if sel > len(liste)-1 {
+		sel = len(liste) - 1
+	}
+	return &liste[sel]
+}
+func createTransportmittel(sel int) *models.Transportation {
+	liste := []models.Transportation{
+		{
+
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Karren",
+				},
+			},
+			Beschreibung: "für 500 kg",
+			Wert:         40,
+			Tragkraft:    500,
+			Volumen:      250,
+			Gewicht:      55.5,
+			Magisch: models.Magisch{
+				IstMagisch:  true,
+				Abw:         30,
+				Ausgebrannt: false,
+			},
+			//BeinhaltetIn: "moam-container-47363",
+
+		},
+	}
+
+	if sel > len(liste)-1 {
+		sel = len(liste) - 1
+	}
+	return &liste[sel]
+}
+func createAusruestung(sel int) *models.Ausruestung {
+	liste := []models.Ausruestung{
+		{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Lederr\u00fcstung",
+				},
+			},
+			Beschreibung: "",
+			Wert:         30,
+			Anzahl:       1,
+			Gewicht:      13.0,
+			Bonus:        0,
+			Magisch: models.Magisch{
+				IstMagisch:  false,
+				Abw:         0,
+				Ausgebrannt: false,
+			},
+			//BeinhaltetIn: "moam-container-47363",
+		},
+	}
+
+	if sel > len(liste)-1 {
+		sel = len(liste) - 1
+	}
+	return &liste[sel]
+}
+
+/*
+func setSpezialisierung(liste  *database.StringArray, pos int,name string) {
+	liste[pos] =name
+}
+*/
 
 func charTests(t *testing.T, char *models.Char) {
 	assert.LessOrEqual(t, 0, int(char.ID))
@@ -357,7 +595,7 @@ func charTests(t *testing.T, char *models.Char) {
 	for i := range char.Fertigkeiten {
 		assert.LessOrEqual(t, 0, int(char.Fertigkeiten[i].CharacterID))
 		assert.Equal(t, char.ID, char.Fertigkeiten[i].CharacterID)
-		switch char.Eigenschaften[i].Name {
+		switch char.Fertigkeiten[i].Name {
 		case "Hören":
 			assert.Equal(t, "Hören", char.Fertigkeiten[i].Name)
 			assert.Equal(t, "xx", char.Fertigkeiten[i].Beschreibung)
@@ -551,58 +789,21 @@ func TestReadChar(t *testing.T) {
 	charTests(t, &char)
 }
 
-func TestAddSkill(t *testing.T) {
+func TestAddAusrüstung(t *testing.T) {
 	// Setup test database
-	testDB := initTestDB4Character()
-	database.DB = testDB // Assign test DB to global DB
-	/*
+	//testDB := initTestDB4Character()
+	//database.DB = testDB // Assign test DB to global DB
 
-		// loading file to Modell
-		fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
-		assert.Equal(t, "../testdata/VTT_Import1.json", fileName)
-		fileContent, err := os.ReadFile(fileName)
-		assert.NoError(t, err, "Expected no error when reading file "+fileName)
-		character := models.ImCharacterImport{}
-		err = json.Unmarshal(fileContent, &character)
-		assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
+	TestCreateChar(t)
+	char := models.Char{}
+	char.Name = "Harsk Hammerhuter, Zen"
+	err := char.First(char.Name)
+	assert.NoError(t, err, "expexted no Errorselecting record from DataBase")
+	item := createAusruestung(0)
+	mcr := character.Char{}
+	err = mcr.AddAusruestung(item.Name)
+	assert.NoError(t, err, "No error expected when adding Ausrüstung to char")
 
-		//checke zauber auf vorhandensein in den Stammdaten
-		zauber := character.Zauber[0]
-		stammF, err := stammdaten.CheckSpell(&zauber, false)
-		assert.Error(t, err, "expexted Error does not exist in zauber Stammdaten")
-		if stammF == nil && err != nil {
-			stammF, err = stammdaten.CheckSpell(&zauber, true)
-		}
-		assert.NoError(t, err, "Expected to finds the zauber Stammdaten in the database")
-		assert.Equal(t, zauber.Name, stammF.Name)
-		assert.Equal(t, zauber.Beschreibung, stammF.Beschreibung)
-		assert.Equal(t, zauber.Quelle, stammF.Quelle)
-		assert.Equal(t, 1, stammF.AP)
-		assert.Equal(t, 1, stammF.Stufe)
-		assert.Equal(t, "Zauberer", stammF.Wirkungsziel)
-		assert.Equal(t, 15, stammF.Reichweite)
-		assert.Equal(t, "midgard", stammF.System)
-		assert.Equal(t, 1, int(stammF.ID))
-
-		// und noch mal
-		//checke zauber auf vorhandensein in den Stammdaten
-		//zauber := character.zauberen[1]
-		stammF, err = stammdaten.CheckSpell(&zauber, false)
-		assert.NoError(t, err, "expexted no Error exist in zauber Stammdaten")
-		if stammF == nil && err != nil {
-			stammF, err = stammdaten.CheckSpell(&zauber, true)
-		}
-		assert.NoError(t, err, "Expected to finds the zauber Stammdaten in the database")
-		assert.Equal(t, zauber.Name, stammF.Name)
-		assert.Equal(t, zauber.Beschreibung, stammF.Beschreibung)
-		assert.Equal(t, zauber.Quelle, stammF.Quelle)
-		assert.Equal(t, 1, stammF.AP)
-		assert.Equal(t, 1, stammF.Stufe)
-		assert.Equal(t, "Zauberer", stammF.Wirkungsziel)
-		assert.Equal(t, 15, stammF.Reichweite)
-		assert.Equal(t, "midgard", stammF.System)
-		assert.Equal(t, 1, int(stammF.ID))
-	*/
 }
 
 func TestImportVTT2Char(t *testing.T) {

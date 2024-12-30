@@ -24,15 +24,13 @@ func initTestDB4Character() *gorm.DB {
 		&models.Eigenschaft{},
 		&models.Fertigkeit{},
 		&models.Waffenfertigkeit{},
-		/*
-			&models.Zauber{},
-			&models.Bennies{},
-			&models.Erfahrungsschatz{},
-			&models.Waffe{},
-			&models.Behaeltniss{},
-			&models.Transportation{},
-			&models.Ausruestung{},
-		*/
+		&models.Zauber{},
+		&models.Bennies{},
+		&models.Erfahrungsschatz{},
+		&models.Waffe{},
+		&models.Behaeltniss{},
+		&models.Transportation{},
+		&models.Ausruestung{},
 	)
 	return db
 }
@@ -96,36 +94,16 @@ func createChar() *models.Char {
 	char.Merkmale.Haarfarbe = "sandfarben"
 	char.Merkmale.Sonstige = ""
 	char.Eigenschaften = []models.Eigenschaft{
-		{BamortCharTrait: models.BamortCharTrait{BamortBase: models.BamortBase{Name: "Au"}}, Value: 74},
-		/*{Name: "Au", Value: 74},*/
-		{BamortCharTrait: models.BamortCharTrait{BamortBase: models.BamortBase{Name: "Gs"}}, Value: 96},
-		/*{Name: "Gs", Value: 96},		*/
-		{BamortCharTrait: models.BamortCharTrait{BamortBase: models.BamortBase{Name: "GW"}}, Value: 70},
-		/*  {Name: "Gw", Value: 70},*/
-		{BamortCharTrait: models.BamortCharTrait{BamortBase: models.BamortBase{Name: "In"}}, Value: 65},
-		/* {Name: "In", Value: 65},*/
-		{BamortCharTrait: models.BamortCharTrait{BamortBase: models.BamortBase{Name: "Ko"}}, Value: 85},
-		/*{Name: "Ko", Value: 85},*/
-		{BamortCharTrait: models.BamortCharTrait{BamortBase: models.BamortBase{Name: "PA"}}, Value: 75},
-		/*{Name: "PA", Value: 75},*/
-		{BamortCharTrait: models.BamortCharTrait{BamortBase: models.BamortBase{Name: "St"}}, Value: 95},
-		/*  {Name: "St", Value: 95},*/
-		{BamortCharTrait: models.BamortCharTrait{BamortBase: models.BamortBase{Name: "Wk"}}, Value: 71},
-		/*{Name: "Wk", Value: 71},*/
-		{BamortCharTrait: models.BamortCharTrait{BamortBase: models.BamortBase{Name: "Zt"}}, Value: 35},
-		/*{Name: "Zt", Value: 35},*/
+		{Name: "Au", Value: 74},
+		{Name: "Gs", Value: 96},
+		{Name: "Gw", Value: 70},
+		{Name: "In", Value: 65},
+		{Name: "Ko", Value: 85},
+		{Name: "PA", Value: 75},
+		{Name: "St", Value: 95},
+		{Name: "Wk", Value: 71},
+		{Name: "Zt", Value: 35},
 	}
-	/*
-		char.Au = 74
-		char.Gs = 96
-		char.Gw = 70
-		char.In = 65
-		char.Ko = 85
-		char.PA = 75
-		char.St = 95
-		char.Wk = 71
-		char.Zt = 35*/
-
 	char.Fertigkeiten = []models.Fertigkeit{
 		{
 			BamortCharTrait: models.BamortCharTrait{
@@ -164,171 +142,169 @@ func createChar() *models.Char {
 			Bemerkung:       "",
 		},
 	}
-	/*
-		char.Waffenfertigkeiten = []models.Waffenfertigkeit{
-			{
-				Fertigkeit: models.Fertigkeit{
-					BamortCharTrait: models.BamortCharTrait{
-						BamortBase: models.BamortBase{
-							Name: "Armbr\u00fcste",
-						},
-					},
-					Beschreibung:    "",
-					Fertigkeitswert: 8,
-					Bonus:           0,
-					Pp:              0,
-					Bemerkung:       "",
-				},
-			},
-			{
-				Fertigkeit: models.Fertigkeit{
-					BamortCharTrait: models.BamortCharTrait{
-						BamortBase: models.BamortBase{
-							Name: "Einhandschlagwaffen",
-						},
-					},
-					Beschreibung:    "",
-					Fertigkeitswert: 8,
-					Bonus:           0,
-					Pp:              0,
-					Bemerkung:       "",
-				},
-			},
-			{
-				Fertigkeit: models.Fertigkeit{
-					BamortCharTrait: models.BamortCharTrait{
-						BamortBase: models.BamortBase{
-							Name: "Schilde",
-						},
-					},
-					Beschreibung:    "",
-					Fertigkeitswert: 3,
-					Bonus:           0,
-					Pp:              0,
-					Bemerkung:       "",
-				},
-			},
-		}
-		char.Zauber = []models.Zauber{
-			{
+	char.Waffenfertigkeiten = []models.Waffenfertigkeit{
+		{
+			Fertigkeit: models.Fertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
-						Name: "Angst",
+						Name: "Armbr\u00fcste",
 					},
 				},
-				Beschreibung: "",
-				Bonus:        0,
+				Beschreibung:    "",
+				Fertigkeitswert: 8,
+				Bonus:           0,
+				Pp:              0,
+				Bemerkung:       "",
 			},
-		}
-		char.Spezialisierung = database.StringArray{
-			"Kriegshammer", "Armbrust:schwer", "Stielhammer",
-		}
-		char.Bennies = models.Bennies{
-			Sg: 1,
-			Gg: 0,
-			Gp: 0,
+		},
+		{
+			Fertigkeit: models.Fertigkeit{
+				BamortCharTrait: models.BamortCharTrait{
+					BamortBase: models.BamortBase{
+						Name: "Einhandschlagwaffen",
+					},
+				},
+				Beschreibung:    "",
+				Fertigkeitswert: 8,
+				Bonus:           0,
+				Pp:              0,
+				Bemerkung:       "",
+			},
+		},
+		{
+			Fertigkeit: models.Fertigkeit{
+				BamortCharTrait: models.BamortCharTrait{
+					BamortBase: models.BamortBase{
+						Name: "Schilde",
+					},
+				},
+				Beschreibung:    "",
+				Fertigkeitswert: 3,
+				Bonus:           0,
+				Pp:              0,
+				Bemerkung:       "",
+			},
+		},
+	}
+	char.Zauber = []models.Zauber{
+		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
-					Name: "",
+					Name: "Angst",
 				},
 			},
-		}
-		char.Erfahrungsschatz = models.Erfahrungsschatz{
-			Value: 325,
+			Beschreibung: "",
+			Bonus:        0,
+		},
+	}
+	char.Spezialisierung = database.StringArray{
+		"Kriegshammer", "Armbrust:schwer", "Stielhammer",
+	}
+	char.Bennies = models.Bennies{
+		Sg: 1,
+		Gg: 0,
+		Gp: 0,
+		BamortCharTrait: models.BamortCharTrait{
+			BamortBase: models.BamortBase{
+				Name: "",
+			},
+		},
+	}
+	char.Erfahrungsschatz = models.Erfahrungsschatz{
+		Value: 325,
+		BamortCharTrait: models.BamortCharTrait{
+			BamortBase: models.BamortBase{
+				Name: "",
+			},
+		},
+	}
+	char.Waffen = []models.Waffe{
+		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
-					Name: "",
+					Name: "Armbrust:schwer",
 				},
 			},
-		}
-		char.Waffen = []models.Waffe{
-			{
-				BamortCharTrait: models.BamortCharTrait{
-					BamortBase: models.BamortBase{
-						Name: "Armbrust:schwer",
-					},
-				},
-				Beschreibung:            "Eine Armbrust schwer zu spannen",
-				Abwb:                    0,
-				Anb:                     0,
-				Schb:                    0,
-				Anzahl:                  1,
-				Gewicht:                 5,
-				NameFuerSpezialisierung: "Armbrust:schwer",
-				Wert:                    40,
-				Magisch: models.Magisch{
-					IstMagisch:  false,
-					Abw:         0,
-					Ausgebrannt: false,
-				},
-				BeinhaltetIn: "moam-container-47363",
+			Beschreibung:            "Eine Armbrust schwer zu spannen",
+			Abwb:                    0,
+			Anb:                     0,
+			Schb:                    0,
+			Anzahl:                  1,
+			Gewicht:                 5,
+			NameFuerSpezialisierung: "Armbrust:schwer",
+			Wert:                    40,
+			Magisch: models.Magisch{
+				IstMagisch:  false,
+				Abw:         0,
+				Ausgebrannt: false,
 			},
-		}
-		char.Behaeltnisse = []models.Behaeltniss{
-			{
-				BamortCharTrait: models.BamortCharTrait{
-					BamortBase: models.BamortBase{
-						Name: "Lederrucksack",
-					},
+			BeinhaltetIn: "moam-container-47363",
+		},
+	}
+	char.Behaeltnisse = []models.Behaeltniss{
+		{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Lederrucksack",
 				},
-				Beschreibung: "f\u00fcr 25 kg",
-				Wert:         4,
-				Tragkraft:    25,
-				Volumen:      25,
-				Gewicht:      0.5,
-				Magisch: models.Magisch{
-					IstMagisch:  false,
-					Abw:         0,
-					Ausgebrannt: false,
-				},
-				//BeinhaltetIn: "moam-container-47363",
 			},
-		}
-		char.Transportmittel = []models.Transportation{
-			{
+			Beschreibung: "f\u00fcr 25 kg",
+			Wert:         4,
+			Tragkraft:    25,
+			Volumen:      25,
+			Gewicht:      0.5,
+			Magisch: models.Magisch{
+				IstMagisch:  false,
+				Abw:         0,
+				Ausgebrannt: false,
+			},
+			BeinhaltetIn: "moam-container-47363",
+		},
+	}
+	char.Transportmittel = []models.Transportation{
+		{
 
-				BamortCharTrait: models.BamortCharTrait{
-					BamortBase: models.BamortBase{
-						Name: "Karren",
-					},
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Karren",
 				},
-				Beschreibung: "für 500 kg",
-				Wert:         40,
-				Tragkraft:    500,
-				Volumen:      250,
-				Gewicht:      55.5,
-				Magisch: models.Magisch{
-					IstMagisch:  true,
-					Abw:         30,
-					Ausgebrannt: false,
-				},
-				//BeinhaltetIn: "moam-container-47363",
+			},
+			Beschreibung: "für 500 kg",
+			Wert:         40,
+			Tragkraft:    500,
+			Volumen:      250,
+			Gewicht:      55.5,
+			Magisch: models.Magisch{
+				IstMagisch:  true,
+				Abw:         30,
+				Ausgebrannt: false,
+			},
+			//BeinhaltetIn: "moam-container-47363",
 
-			},
-		}
-		char.Ausruestung = []models.Ausruestung{
-			{
-				BamortCharTrait: models.BamortCharTrait{
-					BamortBase: models.BamortBase{
-						Name: "Lederr\u00fcstung",
-					},
+		},
+	}
+	char.Ausruestung = []models.Ausruestung{
+		{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: "Lederr\u00fcstung",
 				},
-				Beschreibung: "",
-				Wert:         30,
-				Anzahl:       1,
-				Gewicht:      13.0,
-				Bonus:        0,
-				Magisch: models.Magisch{
-					IstMagisch:  false,
-					Abw:         0,
-					Ausgebrannt: false,
-				},
-				//BeinhaltetIn: "moam-container-47363",
 			},
-		}
-		fileName := fmt.Sprintf("../testdata/%s", "Krampus.png")
-		char.Image, _ = ReadImageAsBase64(fileName)
-	*/
+			Beschreibung: "",
+			Wert:         30,
+			Anzahl:       1,
+			Gewicht:      13.0,
+			Bonus:        0,
+			Magisch: models.Magisch{
+				IstMagisch:  false,
+				Abw:         0,
+				Ausgebrannt: false,
+			},
+			//BeinhaltetIn: "moam-container-47363",
+		},
+	}
+	fileName := fmt.Sprintf("../testdata/%s", "Krampus.png")
+	char.Image, _ = ReadImageAsBase64(fileName)
 
 	return &char
 }
@@ -377,15 +353,6 @@ func charTests(t *testing.T, char *models.Char) {
 
 		}
 	}
-	/*assert.Equal(t, 74, char.Au)
-	assert.Equal(t, 96, char.Gs)
-	assert.Equal(t, 70, char.Gw)
-	assert.Equal(t, 65, char.In)
-	assert.Equal(t, 85, char.Ko)
-	assert.Equal(t, 75, char.PA)
-	assert.Equal(t, 95, char.St)
-	assert.Equal(t, 71, char.Wk)
-	assert.Equal(t, 35, char.Zt)*/
 	assert.LessOrEqual(t, 3, len(char.Fertigkeiten))
 	for i := range char.Fertigkeiten {
 		assert.LessOrEqual(t, 0, int(char.Fertigkeiten[i].CharacterID))
@@ -417,129 +384,133 @@ func charTests(t *testing.T, char *models.Char) {
 			}
 		}
 	}
-	/*
-		i = 0
-		assert.LessOrEqual(t, 3, len(char.Waffenfertigkeiten))
-		assert.LessOrEqual(t, i+1, int(char.Waffenfertigkeiten[i].ID))
-		assert.Equal(t, "Armbrüste", char.Waffenfertigkeiten[i].Name)
-		assert.Equal(t, "Midgard", char.Waffenfertigkeiten[i].System)
-		assert.Equal(t, "", char.Waffenfertigkeiten[i].Beschreibung)
-		assert.Equal(t, 8, char.Waffenfertigkeiten[i].Fertigkeitswert)
-		assert.Equal(t, 0, char.Waffenfertigkeiten[i].Bonus)
-		assert.Equal(t, 0, char.Waffenfertigkeiten[i].Pp)
-		assert.Equal(t, "", char.Waffenfertigkeiten[i].Bemerkung)
+	assert.LessOrEqual(t, 1, len(char.Waffenfertigkeiten))
+	for i := range char.Waffenfertigkeiten {
 		assert.LessOrEqual(t, 0, int(char.Waffenfertigkeiten[i].CharacterID))
-		i++
-		assert.LessOrEqual(t, i+1, int(char.Waffenfertigkeiten[i].ID))
-		assert.Equal(t, "Einhandschlagwaffen", char.Waffenfertigkeiten[i].Name)
-		assert.Equal(t, "Midgard", char.Waffenfertigkeiten[i].System)
-		assert.Equal(t, "", char.Waffenfertigkeiten[i].Beschreibung)
-		assert.Equal(t, 8, char.Waffenfertigkeiten[i].Fertigkeitswert)
-		assert.Equal(t, 0, char.Waffenfertigkeiten[i].Bonus)
-		assert.Equal(t, 0, char.Waffenfertigkeiten[i].Pp)
-		assert.Equal(t, "", char.Waffenfertigkeiten[i].Bemerkung)
-		assert.LessOrEqual(t, 1, int(char.Waffenfertigkeiten[i].CharacterID))
-		i++
-		assert.LessOrEqual(t, i+1, int(char.Waffenfertigkeiten[i].ID))
-		assert.Equal(t, "Schilde", char.Waffenfertigkeiten[i].Name)
-		assert.Equal(t, "Midgard", char.Waffenfertigkeiten[i].System)
-		assert.Equal(t, "", char.Waffenfertigkeiten[i].Beschreibung)
-		assert.Equal(t, 3, char.Waffenfertigkeiten[i].Fertigkeitswert)
-		assert.Equal(t, 0, char.Waffenfertigkeiten[i].Bonus)
-		assert.Equal(t, 0, char.Waffenfertigkeiten[i].Pp)
-		assert.Equal(t, "", char.Waffenfertigkeiten[i].Bemerkung)
-		assert.LessOrEqual(t, 1, int(char.Waffenfertigkeiten[i].CharacterID))
-
-		i = 0
-		assert.LessOrEqual(t, 1, len(char.Zauber))
-		assert.LessOrEqual(t, i+1, int(char.Zauber[i].ID))
-		assert.Equal(t, "Angst", char.Zauber[i].Name)
-		assert.Equal(t, "Midgard", char.Zauber[i].System)
-		assert.Equal(t, "", char.Zauber[i].Beschreibung)
-		assert.Equal(t, 0, char.Zauber[i].Bonus)
+		assert.Equal(t, char.ID, char.Waffenfertigkeiten[i].CharacterID)
+		switch char.Waffenfertigkeiten[i].Name {
+		case "Armbrüste":
+			assert.Equal(t, "Armbrüste", char.Waffenfertigkeiten[i].Name)
+			assert.Equal(t, "", char.Waffenfertigkeiten[i].Beschreibung)
+			assert.Equal(t, 8, char.Waffenfertigkeiten[i].Fertigkeitswert)
+			assert.Equal(t, 0, char.Waffenfertigkeiten[i].Bonus)
+			assert.Equal(t, 0, char.Waffenfertigkeiten[i].Pp)
+			assert.Equal(t, "", char.Waffenfertigkeiten[i].Bemerkung)
+		case "Einhandschlagwaffen":
+			assert.Equal(t, "Einhandschlagwaffen", char.Waffenfertigkeiten[i].Name)
+			assert.Equal(t, "", char.Waffenfertigkeiten[i].Beschreibung)
+			assert.Equal(t, 8, char.Waffenfertigkeiten[i].Fertigkeitswert)
+			assert.Equal(t, 0, char.Waffenfertigkeiten[i].Bonus)
+			assert.Equal(t, 0, char.Waffenfertigkeiten[i].Pp)
+			assert.Equal(t, "", char.Waffenfertigkeiten[i].Bemerkung)
+		case "Schilde":
+			assert.Equal(t, "Schilde", char.Waffenfertigkeiten[i].Name)
+			assert.Equal(t, "", char.Waffenfertigkeiten[i].Beschreibung)
+			assert.Equal(t, 3, char.Waffenfertigkeiten[i].Fertigkeitswert)
+			assert.Equal(t, 0, char.Waffenfertigkeiten[i].Bonus)
+			assert.Equal(t, 0, char.Waffenfertigkeiten[i].Pp)
+			assert.Equal(t, "", char.Waffenfertigkeiten[i].Bemerkung)
+		}
+	}
+	assert.LessOrEqual(t, 1, len(char.Zauber))
+	for i := range char.Zauber {
 		assert.LessOrEqual(t, 0, int(char.Zauber[i].CharacterID))
+		assert.Equal(t, char.ID, char.Zauber[i].CharacterID)
+		switch char.Zauber[i].Name {
+		case "Angst":
+			assert.Equal(t, "Angst", char.Zauber[i].Name)
+			assert.Equal(t, "", char.Zauber[i].Beschreibung)
+			assert.Equal(t, 0, char.Zauber[i].Bonus)
+		}
+	}
+	assert.LessOrEqual(t, 3, len(char.Spezialisierung))
+	assert.Equal(t, "Kriegshammer", char.Spezialisierung[0])
+	assert.Equal(t, "Armbrust:schwer", char.Spezialisierung[1])
+	assert.Equal(t, "Stielhammer", char.Spezialisierung[2])
 
-		assert.LessOrEqual(t, 3, len(char.Spezialisierung))
-		assert.Equal(t, "Kriegshammer", char.Spezialisierung[0])
-		assert.Equal(t, "Armbrust:schwer", char.Spezialisierung[1])
-		assert.Equal(t, "Stielhammer", char.Spezialisierung[2])
+	assert.Equal(t, 1, char.Bennies.Sg)
+	assert.Equal(t, 0, char.Bennies.Gg)
+	assert.Equal(t, 0, char.Bennies.Gp)
+	assert.LessOrEqual(t, 0, int(char.Bennies.CharacterID))
+	assert.Equal(t, 1, int(char.Bennies.ID))
+	assert.Equal(t, 325, char.Erfahrungsschatz.Value)
+	assert.LessOrEqual(t, 0, int(char.Erfahrungsschatz.CharacterID))
+	assert.Equal(t, 1, int(char.Erfahrungsschatz.ID))
 
-		assert.Equal(t, 1, char.Bennies.Sg)
-		assert.Equal(t, 0, char.Bennies.Gg)
-		assert.Equal(t, 0, char.Bennies.Gp)
-		assert.LessOrEqual(t, 0, int(char.Bennies.CharacterID))
-		assert.Equal(t, 1, int(char.Bennies.ID))
-		assert.Equal(t, "Midgard", char.Bennies.System)
-
-		assert.Equal(t, 325, char.Erfahrungsschatz.Value)
-		assert.LessOrEqual(t, 0, int(char.Erfahrungsschatz.CharacterID))
-		assert.Equal(t, 1, int(char.Erfahrungsschatz.ID))
-		assert.Equal(t, "Midgard", char.Erfahrungsschatz.System)
-
-		i = 0
-		assert.LessOrEqual(t, 1, len(char.Waffen))
-		assert.LessOrEqual(t, i+1, int(char.Waffen[i].ID))
-		assert.Equal(t, "Armbrust:schwer", char.Waffen[i].Name)
-		assert.Equal(t, "Midgard", char.Waffen[i].System)
-		assert.Equal(t, "Eine Armbrust schwer zu spannen", char.Waffen[i].Beschreibung)
-		assert.Equal(t, 0, char.Waffen[i].Abwb)
-		assert.Equal(t, 0, char.Waffen[i].Anb)
-		assert.Equal(t, 0, char.Waffen[i].Schb)
-		assert.Equal(t, 1, char.Waffen[i].Anzahl)
-		assert.Equal(t, 5.0, char.Waffen[i].Gewicht)
-		assert.Equal(t, "Armbrust:schwer", char.Waffen[i].NameFuerSpezialisierung)
-		assert.Equal(t, "moam-container-47363", char.Waffen[i].BeinhaltetIn)
-		assert.Equal(t, false, char.Waffen[i].IstMagisch)
-		assert.Equal(t, 0, char.Waffen[i].Abw)
-		assert.Equal(t, false, char.Waffen[i].Ausgebrannt)
+	assert.LessOrEqual(t, 1, len(char.Waffen))
+	for i := range char.Waffen {
 		assert.LessOrEqual(t, 0, int(char.Waffen[i].CharacterID))
-
-		i = 0
-		assert.LessOrEqual(t, 1, len(char.Behaeltnisse))
-		assert.LessOrEqual(t, i+1, int(char.Behaeltnisse[i].ID))
+		assert.Equal(t, char.ID, char.Waffen[i].CharacterID)
+		switch char.Waffen[i].Name {
+		case "Armbrust:schwer":
+			assert.Equal(t, "Armbrust:schwer", char.Waffen[i].Name)
+			assert.Equal(t, "Eine Armbrust schwer zu spannen", char.Waffen[i].Beschreibung)
+			assert.Equal(t, 0, char.Waffen[i].Abwb)
+			assert.Equal(t, 0, char.Waffen[i].Anb)
+			assert.Equal(t, 0, char.Waffen[i].Schb)
+			assert.Equal(t, 1, char.Waffen[i].Anzahl)
+			assert.Equal(t, 5.0, char.Waffen[i].Gewicht)
+			assert.Equal(t, "Armbrust:schwer", char.Waffen[i].NameFuerSpezialisierung)
+			assert.Equal(t, "moam-container-47363", char.Waffen[i].BeinhaltetIn)
+			assert.Equal(t, false, char.Waffen[i].IstMagisch)
+			assert.Equal(t, 0, char.Waffen[i].Abw)
+			assert.Equal(t, false, char.Waffen[i].Ausgebrannt)
+		}
+	}
+	assert.LessOrEqual(t, 1, len(char.Behaeltnisse))
+	for i := range char.Behaeltnisse {
 		assert.LessOrEqual(t, 0, int(char.Behaeltnisse[i].CharacterID))
-		assert.Equal(t, "Midgard", char.Behaeltnisse[i].System)
-		assert.Equal(t, "Lederrucksack", char.Behaeltnisse[i].Name)
-		assert.Equal(t, "für 25 kg", char.Behaeltnisse[i].Beschreibung)
-		assert.Equal(t, 4.0, char.Behaeltnisse[i].Wert)
-		assert.Equal(t, 25.0, char.Behaeltnisse[i].Tragkraft)
-		assert.Equal(t, 25.0, char.Behaeltnisse[i].Volumen)
-		assert.Equal(t, 0.5, char.Behaeltnisse[i].Gewicht)
-		assert.Equal(t, false, char.Behaeltnisse[i].IstMagisch)
-		assert.Equal(t, 0, char.Behaeltnisse[i].Abw)
-		assert.Equal(t, false, char.Behaeltnisse[i].Ausgebrannt)
-
-		i = 0
-		assert.LessOrEqual(t, 1, len(char.Transportmittel))
-		assert.LessOrEqual(t, i+1, int(char.Transportmittel[i].ID))
+		assert.Equal(t, char.ID, char.Behaeltnisse[i].CharacterID)
+		switch char.Behaeltnisse[i].Name {
+		case "Lederrucksack":
+			assert.Equal(t, "Lederrucksack", char.Behaeltnisse[i].Name)
+			assert.Equal(t, "für 25 kg", char.Behaeltnisse[i].Beschreibung)
+			assert.Equal(t, 4.0, char.Behaeltnisse[i].Wert)
+			assert.Equal(t, 25.0, char.Behaeltnisse[i].Tragkraft)
+			assert.Equal(t, 25.0, char.Behaeltnisse[i].Volumen)
+			assert.Equal(t, 0.5, char.Behaeltnisse[i].Gewicht)
+			assert.Equal(t, false, char.Behaeltnisse[i].IstMagisch)
+			assert.Equal(t, 0, char.Behaeltnisse[i].Abw)
+			assert.Equal(t, false, char.Behaeltnisse[i].Ausgebrannt)
+		}
+	}
+	assert.LessOrEqual(t, 1, len(char.Transportmittel))
+	for i := range char.Transportmittel {
 		assert.LessOrEqual(t, 0, int(char.Transportmittel[i].CharacterID))
-		assert.Equal(t, "Midgard", char.Transportmittel[i].System)
-		assert.Equal(t, "Karren", char.Transportmittel[i].Name)
-		assert.Equal(t, "für 500 kg", char.Transportmittel[i].Beschreibung)
-		assert.Equal(t, 40.0, char.Transportmittel[i].Wert)
-		assert.Equal(t, 500.0, char.Transportmittel[i].Tragkraft)
-		assert.Equal(t, 250.0, char.Transportmittel[i].Volumen)
-		assert.Equal(t, 55.5, char.Transportmittel[i].Gewicht)
-		assert.Equal(t, true, char.Transportmittel[i].IstMagisch)
-		assert.Equal(t, 30, char.Transportmittel[i].Abw)
-		assert.Equal(t, false, char.Transportmittel[i].Ausgebrannt)
-
-		i = 0
-		assert.LessOrEqual(t, 1, len(char.Ausruestung))
-		assert.LessOrEqual(t, i+1, int(char.Ausruestung[i].ID))
+		assert.Equal(t, char.ID, char.Transportmittel[i].CharacterID)
+		switch char.Transportmittel[i].Name {
+		case "Karren":
+			assert.LessOrEqual(t, 0, int(char.Transportmittel[i].CharacterID))
+			assert.Equal(t, "Karren", char.Transportmittel[i].Name)
+			assert.Equal(t, "für 500 kg", char.Transportmittel[i].Beschreibung)
+			assert.Equal(t, 40.0, char.Transportmittel[i].Wert)
+			assert.Equal(t, 500.0, char.Transportmittel[i].Tragkraft)
+			assert.Equal(t, 250.0, char.Transportmittel[i].Volumen)
+			assert.Equal(t, 55.5, char.Transportmittel[i].Gewicht)
+			assert.Equal(t, true, char.Transportmittel[i].IstMagisch)
+			assert.Equal(t, 30, char.Transportmittel[i].Abw)
+			assert.Equal(t, false, char.Transportmittel[i].Ausgebrannt)
+		}
+	}
+	assert.LessOrEqual(t, 1, len(char.Ausruestung))
+	for i := range char.Ausruestung {
 		assert.LessOrEqual(t, 0, int(char.Ausruestung[i].CharacterID))
-		assert.Equal(t, "Midgard", char.Ausruestung[i].System)
-		assert.Equal(t, "Lederrüstung", char.Ausruestung[i].Name)
-		assert.Equal(t, "", char.Ausruestung[i].Beschreibung)
-		assert.Equal(t, 30.0, char.Ausruestung[i].Wert)
-		assert.Equal(t, 13.0, char.Ausruestung[i].Gewicht)
-		assert.Equal(t, 1, char.Ausruestung[i].Anzahl)
-		assert.Equal(t, false, char.Ausruestung[i].IstMagisch)
-		assert.Equal(t, 0, char.Ausruestung[i].Abw)
-		assert.Equal(t, false, char.Ausruestung[i].Ausgebrannt)
+		assert.Equal(t, char.ID, char.Ausruestung[i].CharacterID)
+		switch char.Ausruestung[i].Name {
+		case "Lederrüstung":
+			assert.Equal(t, "Lederrüstung", char.Ausruestung[i].Name)
+			assert.Equal(t, "", char.Ausruestung[i].Beschreibung)
+			assert.Equal(t, 30.0, char.Ausruestung[i].Wert)
+			assert.Equal(t, 13.0, char.Ausruestung[i].Gewicht)
+			assert.Equal(t, 1, char.Ausruestung[i].Anzahl)
+			assert.Equal(t, false, char.Ausruestung[i].IstMagisch)
+			assert.Equal(t, 0, char.Ausruestung[i].Abw)
+			assert.Equal(t, false, char.Ausruestung[i].Ausgebrannt)
+		}
+	}
 
-		assert.Contains(t, char.Image, "data:image/png;base64,")
-	*/
+	assert.Contains(t, char.Image, "data:image/png;base64,")
+
 }
 
 func TestCreateChar(t *testing.T) {
@@ -547,7 +518,7 @@ func TestCreateChar(t *testing.T) {
 	testDB := initTestDB4Character()
 	database.DB = testDB // Assign test DB to global DB
 	char := createChar()
-
+	//char.Name = "Harsk Hammerhuter, Zen2"
 	err := char.First(char.Name)
 	//assert.Error(t, err, "expected error character not found")
 	if err != nil && err.Error() == "record not found" {

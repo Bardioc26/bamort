@@ -3,6 +3,7 @@ package main
 import (
 	"bamort/character"
 	"bamort/database"
+	"bamort/equipment"
 	"bamort/user"
 
 	"github.com/gin-contrib/cors"
@@ -32,10 +33,10 @@ func main() {
 	protected.Use(user.AuthMiddleware())
 	protected.GET("/characters", character.GetCharacters)
 	protected.POST("/characters", character.CreateCharacter)
-	protected.POST("/ausruestung", character.CreateAusruestung)
-	protected.GET("/ausruestung/:character_id", character.GetAusruestung)
-	protected.PUT("/ausruestung/:ausruestung_id", character.UpdateAusruestung)
-	protected.DELETE("/ausruestung/:ausruestung_id", character.DeleteAusruestung)
+	protected.POST("/ausruestung", equipment.CreateAusruestung)
+	protected.GET("/ausruestung/:character_id", equipment.GetAusruestung)
+	protected.PUT("/ausruestung/:ausruestung_id", equipment.UpdateAusruestung)
+	protected.DELETE("/ausruestung/:ausruestung_id", equipment.DeleteAusruestung)
 	protected.POST("/upload", character.UploadFiles)
 	protected.GET("/setupcheck", database.SetupCheck)
 

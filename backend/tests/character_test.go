@@ -3,6 +3,7 @@ package tests
 import (
 	"bamort/character"
 	"bamort/database"
+	"bamort/equipment"
 	"bamort/models"
 	"encoding/base64"
 	"fmt"
@@ -31,7 +32,7 @@ func initTestDB4Character() *gorm.DB {
 		&models.Waffe{},
 		&models.Behaeltniss{},
 		&models.Transportation{},
-		&models.Ausruestung{},
+		&equipment.Ausruestung{},
 	)
 	return db
 }
@@ -284,7 +285,7 @@ func createChar() *character.Char {
 
 		},
 	}
-	char.Ausruestung = []models.Ausruestung{
+	char.Ausruestung = []equipment.Ausruestung{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -513,8 +514,8 @@ func createTransportmittel(sel int) *models.Transportation {
 	}
 	return &liste[sel]
 }
-func createAusruestung(sel int) *models.Ausruestung {
-	liste := []models.Ausruestung{
+func createAusruestung(sel int) *equipment.Ausruestung {
+	liste := []equipment.Ausruestung{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{

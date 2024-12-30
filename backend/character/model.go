@@ -2,6 +2,7 @@ package character
 
 import (
 	"bamort/database"
+	"bamort/equipment"
 	"bamort/models"
 	"fmt"
 
@@ -69,7 +70,7 @@ type Char struct {
 	Waffen             []models.Waffe            `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"waffen"`
 	Behaeltnisse       []models.Behaeltniss      `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"behaeltnisse"`
 	Transportmittel    []models.Transportation   `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"transportmittel"`
-	Ausruestung        []models.Ausruestung      `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"ausruestung"`
+	Ausruestung        []equipment.Ausruestung   `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"ausruestung"`
 	Image              string                    `json:"image,omitempty"`
 }
 

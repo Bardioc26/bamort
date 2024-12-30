@@ -36,20 +36,6 @@ type Zauber struct {
 	Quelle       string `json:"quelle"`
 }
 
-type Merkmale struct {
-	BamortCharTrait
-	Augenfarbe string `json:"augenfarbe"`
-	Haarfarbe  string `json:"haarfarbe"`
-	Sonstige   string `json:"sonstige"`
-	Breite     string `json:"breite"`
-	Groesse    string `json:"groesse"`
-}
-
-type Erfahrungsschatz struct {
-	BamortCharTrait
-	Value int `json:"value"`
-}
-
 type Bennies struct {
 	BamortCharTrait
 	Gg int `json:"gg"`

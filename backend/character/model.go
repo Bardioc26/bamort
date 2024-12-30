@@ -45,6 +45,21 @@ type B struct {
 		models.BamortCharTrait
 	}
 */
+
+type Merkmale struct {
+	models.BamortCharTrait
+	Augenfarbe string `json:"augenfarbe"`
+	Haarfarbe  string `json:"haarfarbe"`
+	Sonstige   string `json:"sonstige"`
+	Breite     string `json:"breite"`
+	Groesse    string `json:"groesse"`
+}
+
+type Erfahrungsschatz struct {
+	models.BamortCharTrait
+	Value int `json:"value"`
+}
+
 type Char struct {
 	models.BamortBase
 	Rasse              string                     `json:"rasse"`
@@ -59,14 +74,14 @@ type Char struct {
 	Lp                 Lp                         `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"lp"`
 	Ap                 Ap                         `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"ap"`
 	B                  B                          `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"b"`
-	Merkmale           models.Merkmale            `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"merkmale"`
+	Merkmale           Merkmale                   `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"merkmale"`
 	Eigenschaften      []Eigenschaft              `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"eigenschaften"`
 	Fertigkeiten       []models.Fertigkeit        `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"fertigkeiten"`
 	Waffenfertigkeiten []models.Waffenfertigkeit  `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"waffenfertigkeiten"`
 	Zauber             []models.Zauber            `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"zauber"`
 	Spezialisierung    database.StringArray       `gorm:"type:TEXT"  json:"spezialisierung"`
 	Bennies            models.Bennies             `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"bennies"`
-	Erfahrungsschatz   models.Erfahrungsschatz    `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"erfahrungsschatz"`
+	Erfahrungsschatz   Erfahrungsschatz           `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"erfahrungsschatz"`
 	Waffen             []equipment.Waffe          `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"waffen"`
 	Behaeltnisse       []equipment.Behaeltniss    `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"behaeltnisse"`
 	Transportmittel    []equipment.Transportation `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"transportmittel"`

@@ -22,13 +22,13 @@ func initTestDB4Character() *gorm.DB {
 		&character.Lp{},
 		&character.Ap{},
 		&character.B{},
-		&models.Merkmale{},
+		&character.Merkmale{},
 		&character.Eigenschaft{},
 		&models.Fertigkeit{},
 		&models.Waffenfertigkeit{},
 		&models.Zauber{},
 		&models.Bennies{},
-		&models.Erfahrungsschatz{},
+		&character.Erfahrungsschatz{},
 		&equipment.Waffe{},
 		&equipment.Behaeltniss{},
 		&equipment.Transportation{},
@@ -212,7 +212,7 @@ func createChar() *character.Char {
 			},
 		},
 	}
-	char.Erfahrungsschatz = models.Erfahrungsschatz{
+	char.Erfahrungsschatz = character.Erfahrungsschatz{
 		Value: 325,
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{

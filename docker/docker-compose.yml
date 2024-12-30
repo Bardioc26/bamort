@@ -1,0 +1,49 @@
+version: "3.8"
+services:
+  mariadb:
+    image: mariadb:10.7
+    container_name: my_mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_DATABASE=rollenspiel_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+
+  backend:
+    build: 
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: backend
+    # environment:
+    #   - YOUR_ENV=example    
+    environment:
+      DB_HOST: mariadb
+      DB_USER: root
+      DB_PASS: 1234
+      DB_NAME: rollenspiel_db
+    ports:
+      - "8080:8080"
+    # volumes:
+    #   - ./some-local-folder:/app/some-folder
+    # You can add more configuration as needed.
+    depends_on:
+      - mariadb
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.frontend
+    container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    # environment:
+    #   - API_URL=http://backend:8080
+    # In your frontend code, you'd reference process.env.API_URL or similar
+    # if using environment variables at build time.
+volumes:
+  db_data:

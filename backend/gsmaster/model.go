@@ -1,4 +1,4 @@
-package models
+package gsmaster
 
 import (
 	"bamort/database"
@@ -121,7 +121,6 @@ func (stamm *LookupWaeponSkill) Create() error {
 
 	return err
 }
-
 func (stamm *LookupSpell) First(name string) error {
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
@@ -170,16 +169,6 @@ func (stamm *LookupEquipment) Create() error {
 	return err
 }
 
-func (stamm *LookupContainer) First(name string) error {
-	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
-	if err != nil {
-		// zauber found
-		return err
-	}
-	return nil
-}
-
 func (stamm *LookupContainer) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
@@ -193,7 +182,7 @@ func (stamm *LookupContainer) Create() error {
 
 	return err
 }
-func (stamm *LookupTransportation) First(name string) error {
+func (stamm *LookupContainer) First(name string) error {
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -215,4 +204,14 @@ func (stamm *LookupTransportation) Create() error {
 	})
 
 	return err
+}
+
+func (stamm *LookupTransportation) First(name string) error {
+	gameSystem := "midgard"
+	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
 }

@@ -10,12 +10,6 @@ type BamortCharTrait struct {
 	CharacterID uint `gorm:"index" json:"character_id"`
 }
 
-type BamortCharTraitMaxVal struct {
-	BamortCharTrait
-	Max   int `json:"max"`
-	Value int `json:"value"`
-}
-
 type Magisch struct {
 	IstMagisch  bool `json:"ist_magisch"`
 	Abw         int  `json:"abw"`

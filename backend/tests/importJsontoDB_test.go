@@ -4,7 +4,6 @@ import (
 	"bamort/database"
 	"bamort/gsmaster"
 	"bamort/importer"
-	"bamort/models"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -38,8 +37,8 @@ func initTestDB4Import() *gorm.DB {
 			&importer.B{},
 			&importer.CharacterImport{},
 		*/
-		&models.LookupSkill{}, //needed for gsmaster.CheckFertigkeit
-		&models.LookupSpell{}, //needed for gsmaster.CheckZauber
+		&gsmaster.LookupSkill{}, //needed for gsmaster.CheckFertigkeit
+		&gsmaster.LookupSpell{}, //needed for gsmaster.CheckZauber
 	)
 	return db
 }

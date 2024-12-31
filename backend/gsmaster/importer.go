@@ -2,12 +2,11 @@ package gsmaster
 
 import (
 	"bamort/importer"
-	"bamort/models"
 	"fmt"
 )
 
-func CheckSkill(fertigkeit *importer.Fertigkeit, autocreate bool) (*models.LookupSkill, error) {
-	stammF := models.LookupSkill{}
+func CheckSkill(fertigkeit *importer.Fertigkeit, autocreate bool) (*LookupSkill, error) {
+	stammF := LookupSkill{}
 	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, fertigkeit.Name).Error
 	err := stammF.First(fertigkeit.Name)
 	if err == nil {
@@ -46,8 +45,8 @@ func CheckSkill(fertigkeit *importer.Fertigkeit, autocreate bool) (*models.Looku
 	return &stammF, nil
 }
 
-func CheckSpell(zauber *importer.Zauber, autocreate bool) (*models.LookupSpell, error) {
-	stammF := models.LookupSpell{}
+func CheckSpell(zauber *importer.Zauber, autocreate bool) (*LookupSpell, error) {
+	stammF := LookupSpell{}
 
 	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, zauber.Name).Error
 	err := stammF.First(zauber.Name)

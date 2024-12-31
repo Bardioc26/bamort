@@ -2,8 +2,9 @@ package tests
 
 import (
 	"bamort/database"
+	"bamort/gsmaster"
+	"bamort/importer"
 	"bamort/models"
-	"bamort/stammdaten"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -17,28 +18,28 @@ func initTestDB4Import() *gorm.DB {
 	db := SetupTestDB()
 	db.AutoMigrate(
 		/*
-			&models.ImAp{},
-			&models.ImEigenschaft{},
-			&models.ImAusruestung{},
-			&models.ImFertigkeit{},
-			&models.ImZauber{},
-			&models.ImWaffenfertigkeit{},
-			&models.ImWaffe{},
-			&models.ImMerkmale{},
-			&models.ImLp{},
-			&models.ImGestalt{},
-			&models.ImErfahrungsschatz{},
-			&models.ImEigenschaften{},
-			&models.ImBennies{},
-			&models.ImBehaeltniss{},
-			&models.ImAp{},
-			&models.ImB{},
-			&models.ImTransportation{},
-			&models.ImMagisch{},
-			&models.ImCharacterImport{},
+			&importer.Ap{},
+			&importer.Eigenschaft{},
+			&importer.Fertigkeit{},
+			&importer.Zauber{},
+			&importer.Waffenfertigkeit{},
+			&importer.Waffe{},
+			&importer.Ausruestung{},
+			&importer.Behaeltniss{},
+			&importer.Transportation{},
+			&importer.Magisch{},
+			&importer.Merkmale{},
+			&importer.Lp{},
+			&importer.Gestalt{},
+			&importer.Erfahrungsschatz{},
+			&importer.Eigenschaften{},
+			&importer.Bennies{},
+			&importer.Ap{},
+			&importer.B{},
+			&importer.CharacterImport{},
 		*/
-		&models.LookupSkill{}, //needed for stammdaten.CheckFertigkeit
-		&models.LookupSpell{}, //needed for stammdaten.CheckZauber
+		&models.LookupSkill{}, //needed for gsmaster.CheckFertigkeit
+		&models.LookupSpell{}, //needed for gsmaster.CheckZauber
 	)
 	return db
 }
@@ -53,7 +54,7 @@ func TestImportVTTStructure(t *testing.T) {
 	assert.Equal(t, "../testdata/VTT_Import1.json", fileName)
 	fileContent, err := os.ReadFile(fileName)
 	assert.NoError(t, err, "Expected no error when reading file "+fileName)
-	character := models.ImCharacterImport{}
+	character := importer.CharacterImport{}
 	err = json.Unmarshal(fileContent, &character)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 
@@ -87,16 +88,16 @@ func TestImportFertigkeitenStammdatenSingle(t *testing.T) {
 	assert.Equal(t, "../testdata/VTT_Import1.json", fileName)
 	fileContent, err := os.ReadFile(fileName)
 	assert.NoError(t, err, "Expected no error when reading file "+fileName)
-	character := models.ImCharacterImport{}
+	character := importer.CharacterImport{}
 	err = json.Unmarshal(fileContent, &character)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 
 	//checke Fertigkeit auf vorhandensein in den Stammdaten
 	fertigkeit := character.Fertigkeiten[1]
-	stammF, err := stammdaten.CheckSkill(&fertigkeit, false)
+	stammF, err := gsmaster.CheckSkill(&fertigkeit, false)
 	assert.Error(t, err, "expexted Error does not exist in Fertigkeit Stammdaten")
 	if stammF == nil && err != nil {
-		stammF, err = stammdaten.CheckSkill(&fertigkeit, true)
+		stammF, err = gsmaster.CheckSkill(&fertigkeit, true)
 	}
 	assert.NoError(t, err, "Expected to finds the Fertigkeit Stammdaten in the database")
 	assert.Equal(t, fertigkeit.Name, stammF.Name)
@@ -110,10 +111,10 @@ func TestImportFertigkeitenStammdatenSingle(t *testing.T) {
 	// und noch mal
 	//checke Fertigkeit auf vorhandensein in den Stammdaten
 	//fertigkeit := character.Fertigkeiten[1]
-	stammF, err = stammdaten.CheckSkill(&fertigkeit, false)
+	stammF, err = gsmaster.CheckSkill(&fertigkeit, false)
 	assert.NoError(t, err, "expexted no Error exist in Fertigkeit Stammdaten")
 	if stammF == nil && err != nil {
-		stammF, err = stammdaten.CheckSkill(&fertigkeit, true)
+		stammF, err = gsmaster.CheckSkill(&fertigkeit, true)
 	}
 	assert.NoError(t, err, "Expected to finds the Fertigkeit Stammdaten in the database")
 	assert.Equal(t, fertigkeit.Name, stammF.Name)
@@ -135,14 +136,14 @@ func TestImportFertigkeitenStammdatenMulti(t *testing.T) {
 	assert.Equal(t, "../testdata/VTT_Import1.json", fileName)
 	fileContent, err := os.ReadFile(fileName)
 	assert.NoError(t, err, "Expected no error when reading file "+fileName)
-	character := models.ImCharacterImport{}
+	character := importer.CharacterImport{}
 	err = json.Unmarshal(fileContent, &character)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 
 	//for index, fertigkeit := range character.Fertigkeiten {
 	for _, fertigkeit := range character.Fertigkeiten {
 		fmt.Println(fertigkeit.Name)
-		stammF, err := stammdaten.CheckSkill(&fertigkeit, true)
+		stammF, err := gsmaster.CheckSkill(&fertigkeit, true)
 		assert.NoError(t, err, "Expected to finds the Fertigkeit Stammdaten in the database")
 		assert.Equal(t, fertigkeit.Name, stammF.Name, "Name should be equal")
 		if fertigkeit.Name != "Sprache" {
@@ -168,16 +169,16 @@ func TestImportZauberStammdatenSingle(t *testing.T) {
 	assert.Equal(t, "../testdata/VTT_Import1.json", fileName)
 	fileContent, err := os.ReadFile(fileName)
 	assert.NoError(t, err, "Expected no error when reading file "+fileName)
-	character := models.ImCharacterImport{}
+	character := importer.CharacterImport{}
 	err = json.Unmarshal(fileContent, &character)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 
 	//checke zauber auf vorhandensein in den Stammdaten
 	zauber := character.Zauber[0]
-	stammF, err := stammdaten.CheckSpell(&zauber, false)
+	stammF, err := gsmaster.CheckSpell(&zauber, false)
 	assert.Error(t, err, "expexted Error does not exist in zauber Stammdaten")
 	if stammF == nil && err != nil {
-		stammF, err = stammdaten.CheckSpell(&zauber, true)
+		stammF, err = gsmaster.CheckSpell(&zauber, true)
 	}
 	assert.NoError(t, err, "Expected to finds the zauber Stammdaten in the database")
 	assert.Equal(t, zauber.Name, stammF.Name)
@@ -193,10 +194,10 @@ func TestImportZauberStammdatenSingle(t *testing.T) {
 	// und noch mal
 	//checke zauber auf vorhandensein in den Stammdaten
 	//zauber := character.zauberen[1]
-	stammF, err = stammdaten.CheckSpell(&zauber, false)
+	stammF, err = gsmaster.CheckSpell(&zauber, false)
 	assert.NoError(t, err, "expexted no Error exist in zauber Stammdaten")
 	if stammF == nil && err != nil {
-		stammF, err = stammdaten.CheckSpell(&zauber, true)
+		stammF, err = gsmaster.CheckSpell(&zauber, true)
 	}
 	assert.NoError(t, err, "Expected to finds the zauber Stammdaten in the database")
 	assert.Equal(t, zauber.Name, stammF.Name)

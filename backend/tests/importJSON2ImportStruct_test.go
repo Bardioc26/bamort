@@ -105,7 +105,7 @@ func testSkill(t *testing.T, objects []importer.Fertigkeit) {
 
 }
 
-func testWaeponSkill(t *testing.T, objects []importer.Waffenfertigkeit) {
+func testWeaponSkill(t *testing.T, objects []importer.Waffenfertigkeit) {
 	assert.Equal(t, 8, len(objects))
 	i := 0
 	assert.Equal(t, "moam-ability-759916", objects[i].ID)
@@ -136,7 +136,7 @@ func testSpell(t *testing.T, objects []importer.Zauber) {
 	assert.Equal(t, "ARK5 63", objects[i].Quelle)
 }
 
-func testWaepon(t *testing.T, objects []importer.Waffe) {
+func testWeapon(t *testing.T, objects []importer.Waffe) {
 	assert.Equal(t, 1, len(objects))
 	i := 0
 	assert.Equal(t, "moam-weapon-126819", objects[i].ID)
@@ -212,16 +212,55 @@ func TestImportVTTStructure(t *testing.T) {
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 	testChar(t, character)
 	testSkill(t, character.Fertigkeiten)
-	testWaeponSkill(t, character.Waffenfertigkeiten)
+	testWeaponSkill(t, character.Waffenfertigkeiten)
 	testSpell(t, character.Zauber)
 	testEquipment(t, character.Ausruestung)
-	testWaepon(t, character.Waffen)
+	testWeapon(t, character.Waffen)
 	testContainer(t, character.Behaeltnisse)
 	testTransportation(t, character.Transportmittel)
 	//fmt.Println(character)
 }
 
 func TestImportSkill2GSMaster(t *testing.T) {
+	testDB := initTestDB4Import()
+	database.DB = testDB // Assign test DB to global DB
+	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
+	character, err := readImportChar(fileName)
+	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
+	//for i := range character.Fertigkeiten {
+	skill, erro := importer.TransformImportFertigkeit2GSDMaster(&character.Fertigkeiten[0])
+
+	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
+	assert.GreaterOrEqual(t, int(skill.ID), 1)
+	assert.Equal(t, "Hören", skill.Name)
+	assert.Equal(t, "", skill.Beschreibung)
+	assert.Equal(t, 6, skill.Initialkeitswert)
+	assert.Equal(t, "check", skill.Bonuseigenschaft)
+	assert.Equal(t, "KOD5 99", skill.Quelle)
+	assert.Equal(t, false, skill.Improvable)
+	assert.Equal(t, "midgard", skill.System)
+	//}
+	skill2 := gsmaster.Skill{}
+	erro = skill2.First("Hören")
+	assert.NoError(t, erro, "Expected no error when finding Record by name")
+	assert.Equal(t, 1, int(skill.ID))
+
+	skill3 := gsmaster.Skill{}
+	erro = skill3.FirstId(1)
+	assert.NoError(t, erro, "Expected no error when finding Record by ID")
+	assert.Equal(t, "Hören", skill3.Name)
+
+	assert.Equal(t, skill2.ID, skill3.ID)
+	assert.Equal(t, skill2.Name, skill3.Name)
+	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
+	assert.Equal(t, skill2.Initialkeitswert, skill3.Initialkeitswert)
+	assert.Equal(t, skill2.Bonuseigenschaft, skill3.Bonuseigenschaft)
+	assert.Equal(t, skill2.Quelle, skill3.Quelle)
+	assert.Equal(t, skill2.Improvable, skill3.Improvable)
+	assert.Equal(t, skill2.System, skill3.System)
+}
+
+func TestImportWeaponSkill2GSMaster(t *testing.T) {
 	testDB := initTestDB4Import()
 	database.DB = testDB // Assign test DB to global DB
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")

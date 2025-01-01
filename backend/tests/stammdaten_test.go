@@ -14,7 +14,7 @@ func initTestDB4Lookup() *gorm.DB {
 	db.AutoMigrate(
 		&gsmaster.Skill{},          //needed for stammdaten.CheckFertigkeit
 		&gsmaster.Spell{},          //needed for stammdaten.CheckZauber
-		&gsmaster.WaeponSkill{},    //needed for stammdaten.CheckWaffenFertigkeit
+		&gsmaster.WeaponSkill{},    //needed for stammdaten.CheckWaffenFertigkeit
 		&gsmaster.Equipment{},      //needed for stammdaten.Check...
 		&gsmaster.Container{},      //needed for stammdaten.Check...
 		&gsmaster.Transportation{}, //needed for stammdaten.Check...
@@ -52,11 +52,11 @@ func TestFindLookupSkill(t *testing.T) {
 	assert.Equal(t, "In", stamm.Bonuseigenschaft)
 }
 
-func TestCreateLookupWaeponSkill(t *testing.T) {
+func TestCreateLookupWeaponSkill(t *testing.T) {
 	// Setup test database
 	testDB := initTestDB4Lookup()
 	database.DB = testDB // Assign test DB to global DB
-	stamm := gsmaster.WaeponSkill{}
+	stamm := gsmaster.WeaponSkill{}
 	stamm.System = "Midgard"
 	stamm.Name = "Stichwaffen"
 	stamm.Beschreibung = "Für Dolche und Ochsenzungen"
@@ -69,10 +69,10 @@ func TestCreateLookupWaeponSkill(t *testing.T) {
 	assert.Equal(t, "midgard", stamm.System)
 }
 
-func TestFindLookupWaeponSkill(t *testing.T) {
+func TestFindLookupWeaponSkill(t *testing.T) {
 	// Setup test database
-	TestCreateLookupWaeponSkill(t)
-	stamm := gsmaster.WaeponSkill{}
+	TestCreateLookupWeaponSkill(t)
+	stamm := gsmaster.WeaponSkill{}
 	stamm.Name = "Lesen"
 
 	err := stamm.First("Stichwaffen")

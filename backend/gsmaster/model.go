@@ -22,7 +22,7 @@ type Skill struct {
 	Improvable       bool   `json:"improvable"`
 }
 
-type WaeponSkill struct {
+type WeaponSkill struct {
 	Skill
 }
 
@@ -41,7 +41,7 @@ type Equipment struct {
 	Wert    float64 `json:"wert"`
 }
 
-type Waepon struct {
+type Weapon struct {
 	Equipment
 	SkillRequired string `json:"skill_required"`
 	Damage        string `json:"damage"`
@@ -147,13 +147,13 @@ func (object *Skill) Save() error {
 	return nil
 }
 
-func (stamm *WaeponSkill) Create() error {
+func (stamm *WeaponSkill) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
-			return fmt.Errorf("failed to save LookupWaeponSkill: %w", err)
+			return fmt.Errorf("failed to save LookupWeaponSkill: %w", err)
 		}
 		return nil
 	})
@@ -161,7 +161,7 @@ func (stamm *WaeponSkill) Create() error {
 	return err
 }
 
-func (stamm *WaeponSkill) First(name string) error {
+func (stamm *WeaponSkill) First(name string) error {
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -171,7 +171,7 @@ func (stamm *WaeponSkill) First(name string) error {
 	return nil
 }
 
-func (object *WaeponSkill) FirstId(value uint) error {
+func (object *WeaponSkill) FirstId(value uint) error {
 	gameSystem := "midgard"
 	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, value).Error
 	if err != nil {
@@ -181,7 +181,7 @@ func (object *WaeponSkill) FirstId(value uint) error {
 	return nil
 }
 
-func (object *WaeponSkill) Save() error {
+func (object *WeaponSkill) Save() error {
 	err := database.DB.Save(&object).Error
 	if err != nil {
 		// zauber found
@@ -276,7 +276,7 @@ func (object *Equipment) Save() error {
 	return nil
 }
 
-func (stamm *Waepon) Create() error {
+func (stamm *Weapon) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
@@ -290,7 +290,7 @@ func (stamm *Waepon) Create() error {
 	return err
 }
 
-func (stamm *Waepon) First(name string) error {
+func (stamm *Weapon) First(name string) error {
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -300,7 +300,7 @@ func (stamm *Waepon) First(name string) error {
 	return nil
 }
 
-func (object *Waepon) FirstId(value uint) error {
+func (object *Weapon) FirstId(value uint) error {
 	gameSystem := "midgard"
 	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, value).Error
 	if err != nil {
@@ -310,7 +310,7 @@ func (object *Waepon) FirstId(value uint) error {
 	return nil
 }
 
-func (object *Waepon) Save() error {
+func (object *Weapon) Save() error {
 	err := database.DB.Save(&object).Error
 	if err != nil {
 		// zauber found

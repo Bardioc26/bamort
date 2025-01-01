@@ -22,53 +22,145 @@ func readImportChat(fileName string) (*importer.CharacterImport, error) {
 }
 
 func testChar(t *testing.T, object *importer.CharacterImport) {
+	assert.Equal(t, "moam-character-41421", object.ID)
 	assert.Equal(t, "Harsk Hammerhuter, Zen", object.Name)
 	assert.Equal(t, "Zwerg", object.Rasse)
+	assert.Equal(t, "Krieger", object.Typ)
+	assert.Equal(t, 39, object.Alter)
+	assert.Equal(t, "er", object.Anrede)
+	assert.Equal(t, 3, object.Grad)
+	assert.Equal(t, 140, object.Groesse)
+	assert.Equal(t, 82, object.Gewicht)
+	assert.Equal(t, "Torkin", object.Glaube)
+	assert.Equal(t, "rechts", object.Hand)
+	assert.Equal(t, 17, object.Lp.Max)
 	assert.Equal(t, 17, object.Lp.Value)
-	assert.Equal(t, 96, object.Eigenschaften.Gs)
-	assert.Equal(t, 74, object.Eigenschaften.Au)
-	assert.Equal(t, "blau", object.Merkmale.Augenfarbe)
+	assert.Equal(t, 31, object.Ap.Max)
 	assert.Equal(t, 31, object.Ap.Value)
+	assert.Equal(t, 18, object.B.Max)
+	assert.Equal(t, 0, object.B.Value)
+	assert.Equal(t, 74, object.Eigenschaften.Au)
+	assert.Equal(t, 96, object.Eigenschaften.Gs)
+	assert.Equal(t, 70, object.Eigenschaften.Gw)
+	assert.Equal(t, 65, object.Eigenschaften.In)
+	assert.Equal(t, 85, object.Eigenschaften.Ko)
+	assert.Equal(t, 75, object.Eigenschaften.Pa)
+	assert.Equal(t, 95, object.Eigenschaften.St)
+	assert.Equal(t, 71, object.Eigenschaften.Wk)
+	assert.Equal(t, 35, object.Eigenschaften.Zt)
+	assert.Equal(t, "blau", object.Merkmale.Augenfarbe)
+	assert.Equal(t, "sandfarben", object.Merkmale.Haarfarbe)
+	assert.Equal(t, "", object.Merkmale.Sonstige)
+	assert.Equal(t, 0, object.Bennies.Gg)
+	assert.Equal(t, 1, object.Bennies.Sg)
+	assert.Equal(t, 0, object.Bennies.Gp)
+	assert.Equal(t, "breit", object.Gestalt.Breite)
+	assert.Equal(t, "klein", object.Gestalt.Groesse)
+	assert.Equal(t, 325, object.Erfahrungsschatz.Value)
 	assert.Equal(t, 3, len(object.Spezialisierung))
 	assert.Equal(t, "Kriegshammer", object.Spezialisierung[0])
 	assert.Equal(t, "Armbrust:schwer", object.Spezialisierung[1])
+	assert.Equal(t, "Stielhammer", object.Spezialisierung[2])
+	assert.Contains(t, object.Image, "data:image;base64,")
 
 }
 
 func testSkill(t *testing.T, objects []importer.Fertigkeit) {
 	assert.Equal(t, 19, len(objects))
-	assert.Equal(t, "Hören", objects[0].Name)
+	i := 0
+	assert.Equal(t, "moam-ability-horen", objects[i].ID)
+	assert.Equal(t, "Hören", objects[i].Name)
+	assert.Equal(t, "", objects[i].Beschreibung)
+	assert.Equal(t, 6, objects[i].Fertigkeitswert)
+	assert.Equal(t, 0, objects[i].Bonus)
+	assert.Equal(t, 0, objects[i].Pp)
+	assert.Equal(t, "KOD5 99", objects[i].Quelle)
+	i = 6
+	assert.Equal(t, "moam-ability-759918", objects[i].ID)
+	assert.Equal(t, "Athletik", objects[i].Name)
+	assert.Equal(t, "", objects[i].Beschreibung)
+	assert.Equal(t, 9, objects[i].Fertigkeitswert)
+	assert.Equal(t, 0, objects[i].Bonus)
+	assert.Equal(t, 0, objects[i].Pp)
+	assert.Equal(t, "KOD5 104", objects[i].Quelle)
+	i = 16
+	assert.Equal(t, "moam-ability-759920", objects[i].ID)
+	assert.Equal(t, "Sprache", objects[i].Name)
+	assert.Equal(t, "Albisch", objects[i].Beschreibung)
+	assert.Equal(t, 8, objects[i].Fertigkeitswert)
+	assert.Equal(t, 0, objects[i].Bonus)
+	assert.Equal(t, 0, objects[i].Pp)
+	assert.Equal(t, "KOD5 127", objects[i].Quelle)
 
 }
+
 func testWaeponSkill(t *testing.T, objects []importer.Waffenfertigkeit) {
 	assert.Equal(t, 8, len(objects))
-	assert.Equal(t, "Armbrüste", objects[0].Name)
+	i := 0
+	assert.Equal(t, "moam-ability-759916", objects[i].ID)
+	assert.Equal(t, "Armbrüste", objects[i].Name)
+	assert.Equal(t, "", objects[i].Beschreibung)
+	assert.Equal(t, 8, objects[i].Fertigkeitswert)
+	assert.Equal(t, 0, objects[i].Bonus)
+	assert.Equal(t, 0, objects[i].Pp)
+	assert.Equal(t, "KOD5 144", objects[i].Quelle)
+	i = 2
+	assert.Equal(t, "moam-ability-759912", objects[i].ID)
+	assert.Equal(t, "Schilde", objects[i].Name)
+	assert.Equal(t, "", objects[i].Beschreibung)
+	assert.Equal(t, 3, objects[i].Fertigkeitswert)
+	assert.Equal(t, 0, objects[i].Bonus)
+	assert.Equal(t, 0, objects[i].Pp)
+	assert.Equal(t, "KOD5 145", objects[i].Quelle)
 
 }
 
 func testSpell(t *testing.T, objects []importer.Zauber) {
 	assert.Equal(t, 1, len(objects))
+	i := 0
+	assert.Equal(t, "moam-spell-134630", objects[i].ID)
+	assert.Equal(t, "Angst", objects[i].Name)
+	assert.Equal(t, "", objects[i].Beschreibung)
+	assert.Equal(t, 0, objects[i].Bonus)
+	assert.Equal(t, "ARK5 63", objects[i].Quelle)
 }
 
 func testEquipment(t *testing.T, objects []importer.Ausruestung) {
 	assert.Equal(t, 1, len(objects))
-	assert.Equal(t, "Lederrüstung", objects[0].Name)
+	i := 0
+	assert.Equal(t, "Lederrüstung", objects[i].Name)
 }
 
 func testWaepon(t *testing.T, objects []importer.Waffe) {
 	assert.Equal(t, 1, len(objects))
-	assert.Equal(t, "Armbrust:schwer", objects[0].Name)
+	i := 0
+	assert.Equal(t, "moam-weapon-126819", objects[i].ID)
+	assert.Equal(t, "Armbrust:schwer", objects[i].Name)
+	assert.Equal(t, "", objects[i].Beschreibung)
+	assert.Equal(t, 0, objects[i].Abwb)
+	assert.Equal(t, 0, objects[i].Anb)
+	assert.Equal(t, 1, objects[i].Anzahl)
+	assert.Equal(t, "moam-container-47363", objects[i].BeinhaltetIn)
+	assert.Equal(t, 5.0, objects[i].Gewicht)
+	assert.Equal(t, false, objects[i].Magisch.IstMagisch)
+	assert.Equal(t, 0, objects[i].Magisch.Abw)
+	assert.Equal(t, false, objects[i].Magisch.Ausgebrannt)
+	assert.Equal(t, "Armbrust:schwer", objects[i].NameFuerSpezialisierung)
+	assert.Equal(t, 0, objects[i].Schb)
+	assert.Equal(t, 40.0, objects[i].Wert)
 
 }
 
 func testContainer(t *testing.T, objects []importer.Behaeltniss) {
 	assert.Equal(t, 1, len(objects))
-	assert.Equal(t, "Lederrucksack", objects[0].Name)
+	i := 0
+	assert.Equal(t, "Lederrucksack", objects[i].Name)
 
 }
 
 func testTransportation(t *testing.T, objects []importer.Transportation) {
 	assert.Equal(t, 1, len(objects))
+	//i := 0
 }
 
 func TestImportVTTStructure(t *testing.T) {

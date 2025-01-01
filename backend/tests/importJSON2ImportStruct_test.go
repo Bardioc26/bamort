@@ -10,18 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-/*
-func initTestDB4Import() *gorm.DB {
-	db := SetupTestDB()
-	db.AutoMigrate(
-			&gsmaster.Skill{}, //needed for gsmaster.CheckFertigkeit
-			&gsmaster.Spell{}, //needed for gsmaster.CheckZauber
-
-	)
-	return db
-}
-*/
-
 func readImportChat(fileName string) (*importer.CharacterImport, error) {
 	// loading file to Modell
 	fileContent, err := os.ReadFile(fileName)
@@ -33,28 +21,69 @@ func readImportChat(fileName string) (*importer.CharacterImport, error) {
 	return &character, err
 }
 
+func testChar(t *testing.T, object *importer.CharacterImport) {
+	assert.Equal(t, "Harsk Hammerhuter, Zen", object.Name)
+	assert.Equal(t, "Zwerg", object.Rasse)
+	assert.Equal(t, 17, object.Lp.Value)
+	assert.Equal(t, 96, object.Eigenschaften.Gs)
+	assert.Equal(t, 74, object.Eigenschaften.Au)
+	assert.Equal(t, "blau", object.Merkmale.Augenfarbe)
+	assert.Equal(t, 31, object.Ap.Value)
+	assert.Equal(t, 3, len(object.Spezialisierung))
+	assert.Equal(t, "Kriegshammer", object.Spezialisierung[0])
+	assert.Equal(t, "Armbrust:schwer", object.Spezialisierung[1])
+
+}
+
+func testSkill(t *testing.T, objects []importer.Fertigkeit) {
+	assert.Equal(t, 19, len(objects))
+	assert.Equal(t, "Hören", objects[0].Name)
+
+}
+func testWaeponSkill(t *testing.T, objects []importer.Waffenfertigkeit) {
+	assert.Equal(t, 8, len(objects))
+	assert.Equal(t, "Armbrüste", objects[0].Name)
+
+}
+
+func testSpell(t *testing.T, objects []importer.Zauber) {
+	assert.Equal(t, 1, len(objects))
+}
+
+func testEquipment(t *testing.T, objects []importer.Ausruestung) {
+	assert.Equal(t, 1, len(objects))
+	assert.Equal(t, "Lederrüstung", objects[0].Name)
+}
+
+func testWaepon(t *testing.T, objects []importer.Waffe) {
+	assert.Equal(t, 1, len(objects))
+	assert.Equal(t, "Armbrust:schwer", objects[0].Name)
+
+}
+
+func testContainer(t *testing.T, objects []importer.Behaeltniss) {
+	assert.Equal(t, 1, len(objects))
+	assert.Equal(t, "Lederrucksack", objects[0].Name)
+
+}
+
+func testTransportation(t *testing.T, objects []importer.Transportation) {
+	assert.Equal(t, 1, len(objects))
+}
+
 func TestImportVTTStructure(t *testing.T) {
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChat(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
+	testChar(t, character)
+	testSkill(t, character.Fertigkeiten)
+	testWaeponSkill(t, character.Waffenfertigkeiten)
+	testSpell(t, character.Zauber)
+	testEquipment(t, character.Ausruestung)
+	testWaepon(t, character.Waffen)
+	testContainer(t, character.Behaeltnisse)
+	testTransportation(t, character.Transportmittel)
 
-	assert.Equal(t, "Harsk Hammerhuter, Zen", character.Name)
-	assert.Equal(t, "Zwerg", character.Rasse)
-	assert.Equal(t, "Hören", character.Fertigkeiten[0].Name)
-	assert.Equal(t, 1, len(character.Zauber))
-	assert.Equal(t, 17, character.Lp.Value)
-	assert.Equal(t, 96, character.Eigenschaften.Gs)
-	assert.Equal(t, 74, character.Eigenschaften.Au)
-	assert.Equal(t, 1, len(character.Ausruestung))
-	assert.Equal(t, "Lederrüstung", character.Ausruestung[0].Name)
-	assert.Equal(t, "blau", character.Merkmale.Augenfarbe)
-	assert.Equal(t, "Lederrucksack", character.Behaeltnisse[0].Name)
-	assert.Equal(t, "Armbrust:schwer", character.Waffen[0].Name)
-	assert.Equal(t, 31, character.Ap.Value)
-	assert.Equal(t, "Armbrüste", character.Waffenfertigkeiten[0].Name)
-	assert.Equal(t, 3, len(character.Spezialisierung))
-	assert.Equal(t, "Kriegshammer", character.Spezialisierung[0])
-	assert.Equal(t, "Armbrust:schwer", character.Spezialisierung[1])
 	//fmt.Println(character)
 }
 

@@ -37,8 +37,8 @@ func initTestDB4Import() *gorm.DB {
 			&importer.B{},
 			&importer.CharacterImport{},
 		*/
-		&gsmaster.LookupSkill{}, //needed for gsmaster.CheckFertigkeit
-		&gsmaster.LookupSpell{}, //needed for gsmaster.CheckZauber
+		&gsmaster.Skill{}, //needed for gsmaster.CheckFertigkeit
+		&gsmaster.Spell{}, //needed for gsmaster.CheckZauber
 	)
 	return db
 }

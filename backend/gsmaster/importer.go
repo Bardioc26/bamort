@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-func CheckSkill(fertigkeit *importer.Fertigkeit, autocreate bool) (*LookupSkill, error) {
-	stammF := LookupSkill{}
+func CheckSkill(fertigkeit *importer.Fertigkeit, autocreate bool) (*Skill, error) {
+	stammF := Skill{}
 	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, fertigkeit.Name).Error
 	err := stammF.First(fertigkeit.Name)
 	if err == nil {
@@ -45,8 +45,8 @@ func CheckSkill(fertigkeit *importer.Fertigkeit, autocreate bool) (*LookupSkill,
 	return &stammF, nil
 }
 
-func CheckSpell(zauber *importer.Zauber, autocreate bool) (*LookupSpell, error) {
-	stammF := LookupSpell{}
+func CheckSpell(zauber *importer.Zauber, autocreate bool) (*Spell, error) {
+	stammF := Spell{}
 
 	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, zauber.Name).Error
 	err := stammF.First(zauber.Name)

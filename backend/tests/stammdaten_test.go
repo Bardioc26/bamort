@@ -12,12 +12,12 @@ import (
 func initTestDB4Lookup() *gorm.DB {
 	db := SetupTestDB()
 	db.AutoMigrate(
-		&gsmaster.LookupSkill{},          //needed for stammdaten.CheckFertigkeit
-		&gsmaster.LookupSpell{},          //needed for stammdaten.CheckZauber
-		&gsmaster.LookupWaeponSkill{},    //needed for stammdaten.CheckWaffenFertigkeit
-		&gsmaster.LookupEquipment{},      //needed for stammdaten.Check...
-		&gsmaster.LookupContainer{},      //needed for stammdaten.Check...
-		&gsmaster.LookupTransportation{}, //needed for stammdaten.Check...
+		&gsmaster.Skill{},          //needed for stammdaten.CheckFertigkeit
+		&gsmaster.Spell{},          //needed for stammdaten.CheckZauber
+		&gsmaster.WaeponSkill{},    //needed for stammdaten.CheckWaffenFertigkeit
+		&gsmaster.Equipment{},      //needed for stammdaten.Check...
+		&gsmaster.Container{},      //needed for stammdaten.Check...
+		&gsmaster.Transportation{}, //needed for stammdaten.Check...
 	)
 	return db
 }
@@ -26,7 +26,7 @@ func TestCreateLookupSkill(t *testing.T) {
 	// Setup test database
 	testDB := initTestDB4Lookup()
 	database.DB = testDB // Assign test DB to global DB
-	stamm := gsmaster.LookupSkill{}
+	stamm := gsmaster.Skill{}
 	stamm.System = "Midgard"
 	stamm.Name = "Lesen"
 	stamm.Beschreibung = "Lesen und Schreiben"
@@ -42,7 +42,7 @@ func TestCreateLookupSkill(t *testing.T) {
 func TestFindLookupSkill(t *testing.T) {
 	// Setup test database
 	TestCreateLookupSkill(t)
-	stamm := gsmaster.LookupSkill{}
+	stamm := gsmaster.Skill{}
 	stamm.Name = "Lesen"
 
 	err := stamm.First("Lesen")
@@ -56,7 +56,7 @@ func TestCreateLookupWaeponSkill(t *testing.T) {
 	// Setup test database
 	testDB := initTestDB4Lookup()
 	database.DB = testDB // Assign test DB to global DB
-	stamm := gsmaster.LookupWaeponSkill{}
+	stamm := gsmaster.WaeponSkill{}
 	stamm.System = "Midgard"
 	stamm.Name = "Stichwaffen"
 	stamm.Beschreibung = "Für Dolche und Ochsenzungen"
@@ -72,7 +72,7 @@ func TestCreateLookupWaeponSkill(t *testing.T) {
 func TestFindLookupWaeponSkill(t *testing.T) {
 	// Setup test database
 	TestCreateLookupWaeponSkill(t)
-	stamm := gsmaster.LookupWaeponSkill{}
+	stamm := gsmaster.WaeponSkill{}
 	stamm.Name = "Lesen"
 
 	err := stamm.First("Stichwaffen")
@@ -88,7 +88,7 @@ func TestCreateLookupSpell(t *testing.T) {
 	// Setup test database
 	testDB := initTestDB4Lookup()
 	database.DB = testDB // Assign test DB to global DB
-	stamm := gsmaster.LookupSpell{}
+	stamm := gsmaster.Spell{}
 	stamm.System = "Midgard"
 	stamm.Name = "Unsichtbarkeit"
 	stamm.Beschreibung = "werde unsichtbar"
@@ -110,7 +110,7 @@ func TestCreateLookupSpell(t *testing.T) {
 func TestFindLookupSpell(t *testing.T) {
 	// Setup test database
 	TestCreateLookupSpell(t)
-	stamm := gsmaster.LookupSpell{}
+	stamm := gsmaster.Spell{}
 	stamm.Name = "lesen"
 
 	err := stamm.First("Unsichtbarkeit")
@@ -129,7 +129,7 @@ func TestCreateLookupEquipment(t *testing.T) {
 	// Setup test database
 	testDB := initTestDB4Lookup()
 	database.DB = testDB // Assign test DB to global DB
-	stamm := gsmaster.LookupEquipment{}
+	stamm := gsmaster.Equipment{}
 	stamm.System = "Midgard"
 	stamm.Name = "Decke"
 	stamm.Beschreibung = "zum zudecken"
@@ -145,7 +145,7 @@ func TestCreateLookupEquipment(t *testing.T) {
 func TestFindLookupEquipment(t *testing.T) {
 	// Setup test database
 	TestCreateLookupEquipment(t)
-	stamm := gsmaster.LookupEquipment{}
+	stamm := gsmaster.Equipment{}
 	stamm.Name = "Lesen"
 
 	err := stamm.First("Decke")
@@ -159,7 +159,7 @@ func TestCreateLookupContainer(t *testing.T) {
 	// Setup test database
 	testDB := initTestDB4Lookup()
 	database.DB = testDB // Assign test DB to global DB
-	stamm := gsmaster.LookupContainer{}
+	stamm := gsmaster.Container{}
 	stamm.System = "Midgard"
 	stamm.Name = "Topf"
 	stamm.Beschreibung = "zum kochen"
@@ -176,7 +176,7 @@ func TestCreateLookupContainer(t *testing.T) {
 func TestFindLookupContainer(t *testing.T) {
 	// Setup test database
 	TestCreateLookupContainer(t)
-	stamm := gsmaster.LookupContainer{}
+	stamm := gsmaster.Container{}
 	stamm.Name = "Lesen"
 
 	err := stamm.First("Topf")
@@ -191,7 +191,7 @@ func TestCreateLookupTransportation(t *testing.T) {
 	// Setup test database
 	testDB := initTestDB4Lookup()
 	database.DB = testDB // Assign test DB to global DB
-	stamm := gsmaster.LookupTransportation{}
+	stamm := gsmaster.Transportation{}
 	stamm.System = "Midgard"
 	stamm.Name = "Topf"
 	stamm.Beschreibung = "zum kochen"
@@ -208,7 +208,7 @@ func TestCreateLookupTransportation(t *testing.T) {
 func TestFindLookupTransportation(t *testing.T) {
 	// Setup test database
 	TestCreateLookupTransportation(t)
-	stamm := gsmaster.LookupTransportation{}
+	stamm := gsmaster.Transportation{}
 	stamm.Name = "Lesen"
 
 	err := stamm.First("Topf")

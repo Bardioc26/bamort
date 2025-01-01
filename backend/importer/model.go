@@ -1,5 +1,11 @@
 package importer
 
+import (
+	"bamort/gsmaster"
+	"fmt"
+	"regexp"
+)
+
 type ImportBase struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
@@ -172,4 +178,40 @@ type CharacterImport struct {
 	Waffenfertigkeiten []Waffenfertigkeit `json:"waffenfertigkeiten"`
 	Spezialisierung    []string           `json:"spezialisierung"`
 	Image              string             `json:"image,omitempty"`
+}
+
+func TransformImportFertigkeit2GSDMaster(object *Fertigkeit) (*gsmaster.Skill, error) {
+	gsmobj := gsmaster.Skill{}
+
+	err := gsmobj.First(object.Name)
+	// if found check if we need to adjust masterdata
+	if err == nil {
+		return &gsmobj, nil
+	}
+	// if not found insert to masterdata
+	gsmobj.Name = object.Name
+	gsmobj.Beschreibung = object.Beschreibung
+	gsmobj.Initialkeitswert = object.Fertigkeitswert
+	gsmobj.Quelle = object.Quelle
+	gsmobj.Bonuseigenschaft = "check"
+	re := regexp.MustCompile(`moam-ability-\\d+`)
+	if re.MatchString(object.ID) {
+		gsmobj.Improvable = true
+	}
+	gsmobj.System = "midgard"
+	err = gsmobj.Create()
+	if err != nil {
+		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
+	}
+	return &gsmobj, nil
+}
+
+func CheckFertigkeiten2GSMaster(objects []*Fertigkeit) error {
+	for i := range objects {
+		gsmobj, err := TransformImportFertigkeit2GSDMaster(objects[i])
+		if err != nil {
+			return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
+		}
+	}
+	return nil
 }

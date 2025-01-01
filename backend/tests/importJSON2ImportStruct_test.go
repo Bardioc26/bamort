@@ -17,6 +17,10 @@ func initTestDB4Import() *gorm.DB {
 	db := SetupTestDB()
 	db.AutoMigrate(
 		&gsmaster.Skill{},
+		&gsmaster.WeaponSkill{},
+		&gsmaster.Spell{},
+		&gsmaster.Weapon{},
+		&gsmaster.Container{},
 	)
 	return db
 }
@@ -267,27 +271,27 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 	//for i := range character.Fertigkeiten {
-	skill, erro := importer.TransformImportFertigkeit2GSDMaster(&character.Fertigkeiten[0])
+	skill, erro := importer.TransformImportWaffenFertigkeit2GSDMaster(&character.Waffenfertigkeiten[0])
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
-	assert.Equal(t, "Hören", skill.Name)
+	assert.Equal(t, "Armbrüste", skill.Name)
 	assert.Equal(t, "", skill.Beschreibung)
-	assert.Equal(t, 6, skill.Initialkeitswert)
+	assert.Equal(t, 8, skill.Initialkeitswert)
 	assert.Equal(t, "check", skill.Bonuseigenschaft)
-	assert.Equal(t, "KOD5 99", skill.Quelle)
-	assert.Equal(t, false, skill.Improvable)
+	assert.Equal(t, "KOD5 144", skill.Quelle)
+	assert.Equal(t, true, skill.Improvable)
 	assert.Equal(t, "midgard", skill.System)
 	//}
-	skill2 := gsmaster.Skill{}
-	erro = skill2.First("Hören")
+	skill2 := gsmaster.WeaponSkill{}
+	erro = skill2.First("Armbrüste")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
-	skill3 := gsmaster.Skill{}
+	skill3 := gsmaster.WeaponSkill{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
-	assert.Equal(t, "Hören", skill3.Name)
+	assert.Equal(t, "Armbrüste", skill3.Name)
 
 	assert.Equal(t, skill2.ID, skill3.ID)
 	assert.Equal(t, skill2.Name, skill3.Name)
@@ -297,6 +301,129 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
 	assert.Equal(t, skill2.Improvable, skill3.Improvable)
 	assert.Equal(t, skill2.System, skill3.System)
+}
+
+func TestImportSpell2GSMaster(t *testing.T) {
+	testDB := initTestDB4Import()
+	database.DB = testDB // Assign test DB to global DB
+	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
+	character, err := readImportChar(fileName)
+	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
+	//for i := range character.Fertigkeiten {
+	skill, erro := importer.TransformImportSpell2GSDMaster(&character.Zauber[0])
+
+	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
+	assert.GreaterOrEqual(t, int(skill.ID), 1)
+	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "Angst", skill.Name)
+	assert.Equal(t, "", skill.Beschreibung)
+	assert.Equal(t, "ARK5 63", skill.Quelle)
+	assert.Equal(t, 0, skill.Stufe)
+	assert.Equal(t, 0, skill.AP)
+	assert.Equal(t, "", skill.Wirkungsziel)
+	assert.Equal(t, 0, skill.Reichweite)
+	//}
+	skill2 := gsmaster.Spell{}
+	erro = skill2.First("Angst")
+	assert.NoError(t, erro, "Expected no error when finding Record by name")
+	assert.Equal(t, 1, int(skill.ID))
+
+	skill3 := gsmaster.Spell{}
+	erro = skill3.FirstId(1)
+	assert.NoError(t, erro, "Expected no error when finding Record by ID")
+	assert.Equal(t, "Angst", skill3.Name)
+
+	assert.Equal(t, skill2.ID, skill3.ID)
+	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.Name, skill3.Name)
+	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
+	assert.Equal(t, skill2.Quelle, skill3.Quelle)
+	assert.Equal(t, skill2.Stufe, skill3.Stufe)
+	assert.Equal(t, skill2.AP, skill3.AP)
+	assert.Equal(t, skill2.Reichweite, skill3.Reichweite)
+	assert.Equal(t, skill2.Wirkungsziel, skill3.Wirkungsziel)
+}
+
+func TestImportWeapon2GSMaster(t *testing.T) {
+	testDB := initTestDB4Import()
+	database.DB = testDB // Assign test DB to global DB
+	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
+	character, err := readImportChar(fileName)
+	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
+	//for i := range character.Fertigkeiten {
+	skill, erro := importer.TransformImportWeapon2GSDMaster(&character.Waffen[0])
+
+	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
+	assert.GreaterOrEqual(t, int(skill.ID), 1)
+	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "Armbrust:schwer", skill.Name)
+	assert.Equal(t, "", skill.Beschreibung)
+	assert.Equal(t, "", skill.Quelle)
+	assert.Equal(t, 5.0, skill.Gewicht)
+	assert.Equal(t, 40.0, skill.Wert)
+	assert.Equal(t, "check", skill.SkillRequired)
+	assert.Equal(t, "check", skill.Damage)
+	//}
+	skill2 := gsmaster.Weapon{}
+	erro = skill2.First("Armbrust:schwer")
+	assert.NoError(t, erro, "Expected no error when finding Record by name")
+	assert.Equal(t, 1, int(skill.ID))
+
+	skill3 := gsmaster.Weapon{}
+	erro = skill3.FirstId(1)
+	assert.NoError(t, erro, "Expected no error when finding Record by ID")
+	assert.Equal(t, "Armbrust:schwer", skill3.Name)
+
+	assert.Equal(t, skill2.ID, skill3.ID)
+	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.Name, skill3.Name)
+	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
+	assert.Equal(t, skill2.Quelle, skill3.Quelle)
+	assert.Equal(t, skill2.Gewicht, skill3.Gewicht)
+	assert.Equal(t, skill2.Wert, skill3.Wert)
+	assert.Equal(t, skill2.SkillRequired, skill3.SkillRequired)
+	assert.Equal(t, skill2.Damage, skill3.Damage)
+}
+
+func TestImportContainer2GSMaster(t *testing.T) {
+	testDB := initTestDB4Import()
+	database.DB = testDB // Assign test DB to global DB
+	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
+	character, err := readImportChar(fileName)
+	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
+	//for i := range character.Fertigkeiten {
+	skill, erro := importer.TransformImportContainer2GSDMaster(&character.Behaeltnisse[0])
+
+	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
+	assert.GreaterOrEqual(t, int(skill.ID), 1)
+	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "Lederrucksack", skill.Name)
+	assert.Equal(t, "für 25 kg", skill.Beschreibung)
+	assert.Equal(t, "", skill.Quelle)
+	assert.Equal(t, 0.5, skill.Gewicht)
+	assert.Equal(t, 4.0, skill.Wert)
+	assert.Equal(t, 25.0, skill.Volumen)
+	assert.Equal(t, 25.0, skill.Tragkraft)
+	//}
+	skill2 := gsmaster.Container{}
+	erro = skill2.First("Lederrucksack")
+	assert.NoError(t, erro, "Expected no error when finding Record by name")
+	assert.Equal(t, 1, int(skill.ID))
+
+	skill3 := gsmaster.Container{}
+	erro = skill3.FirstId(1)
+	assert.NoError(t, erro, "Expected no error when finding Record by ID")
+	assert.Equal(t, "Lederrucksack", skill3.Name)
+
+	assert.Equal(t, skill2.ID, skill3.ID)
+	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.Name, skill3.Name)
+	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
+	assert.Equal(t, skill2.Quelle, skill3.Quelle)
+	assert.Equal(t, skill2.Gewicht, skill3.Gewicht)
+	assert.Equal(t, skill2.Wert, skill3.Wert)
+	assert.Equal(t, skill2.Volumen, skill3.Volumen)
+	assert.Equal(t, skill2.Tragkraft, skill3.Tragkraft)
 }
 
 /*

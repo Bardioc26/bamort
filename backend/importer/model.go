@@ -206,6 +206,101 @@ func TransformImportFertigkeit2GSDMaster(object *Fertigkeit) (*gsmaster.Skill, e
 	return &gsmobj, nil
 }
 
+func TransformImportWaffenFertigkeit2GSDMaster(object *Waffenfertigkeit) (*gsmaster.WeaponSkill, error) {
+	gsmobj := gsmaster.WeaponSkill{}
+
+	err := gsmobj.First(object.Name)
+	// if found check if we need to adjust masterdata
+	if err == nil {
+		return &gsmobj, nil
+	}
+	// if not found insert to masterdata
+	gsmobj.Name = object.Name
+	gsmobj.Beschreibung = object.Beschreibung
+	gsmobj.Initialkeitswert = object.Fertigkeitswert
+	gsmobj.Quelle = object.Quelle
+	gsmobj.Bonuseigenschaft = "check"
+	gsmobj.Improvable = true
+	gsmobj.System = "midgard"
+	err = gsmobj.Create()
+	if err != nil {
+		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
+	}
+	return &gsmobj, nil
+}
+
+func TransformImportSpell2GSDMaster(object *Zauber) (*gsmaster.Spell, error) {
+	gsmobj := gsmaster.Spell{}
+
+	err := gsmobj.First(object.Name)
+	// if found check if we need to adjust masterdata
+	if err == nil {
+		return &gsmobj, nil
+	}
+	// if not found insert to masterdata
+	gsmobj.Name = object.Name
+	gsmobj.Beschreibung = object.Beschreibung
+	gsmobj.AP = 0
+	gsmobj.Stufe = 0
+	gsmobj.Reichweite = 0
+	gsmobj.Wirkungsziel = ""
+	gsmobj.Quelle = object.Quelle
+	gsmobj.System = "midgard"
+	err = gsmobj.Create()
+	if err != nil {
+		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
+	}
+	return &gsmobj, nil
+}
+
+func TransformImportWeapon2GSDMaster(object *Waffe) (*gsmaster.Weapon, error) {
+	gsmobj := gsmaster.Weapon{}
+
+	err := gsmobj.First(object.Name)
+	// if found check if we need to adjust masterdata
+	if err == nil {
+		return &gsmobj, nil
+	}
+	// if not found insert to masterdata
+	gsmobj.System = "midgard"
+	gsmobj.Name = object.Name
+	gsmobj.Beschreibung = object.Beschreibung
+	//gsmobj.Quelle = object.Quelle
+	gsmobj.Gewicht = object.Gewicht
+	gsmobj.Wert = object.Wert
+	gsmobj.SkillRequired = "check"
+	gsmobj.Damage = "check"
+	err = gsmobj.Create()
+	if err != nil {
+		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
+	}
+	return &gsmobj, nil
+}
+
+func TransformImportContainer2GSDMaster(object *Behaeltniss) (*gsmaster.Container, error) {
+	gsmobj := gsmaster.Container{}
+
+	err := gsmobj.First(object.Name)
+	// if found check if we need to adjust masterdata
+	if err == nil {
+		return &gsmobj, nil
+	}
+	// if not found insert to masterdata
+	gsmobj.System = "midgard"
+	gsmobj.Name = object.Name
+	gsmobj.Beschreibung = object.Beschreibung
+	//gsmobj.Quelle = object.Quelle
+	gsmobj.Gewicht = object.Gewicht
+	gsmobj.Wert = object.Wert
+	gsmobj.Volumen = object.Volumen
+	gsmobj.Tragkraft = object.Tragkraft
+	err = gsmobj.Create()
+	if err != nil {
+		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
+	}
+	return &gsmobj, nil
+}
+
 func CheckFertigkeiten2GSMaster(objects []*Fertigkeit) error {
 	for i := range objects {
 		gsmobj, err := TransformImportFertigkeit2GSDMaster(objects[i])

@@ -57,6 +57,10 @@ type Transportation struct {
 	Container
 }
 
+type Believe struct {
+	LookupList
+}
+
 func (object *LookupList) Create() error {
 	gameSystem := "midgard"
 	object.System = gameSystem

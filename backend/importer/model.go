@@ -1,6 +1,6 @@
 package importer
 
-type BamortBase struct {
+type ImportBase struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
@@ -14,7 +14,7 @@ type Magisch struct {
 }
 
 type Ausruestung struct {
-	BamortBase
+	ImportBase
 	Beschreibung string  `json:"beschreibung"`
 	Anzahl       int     `json:"anzahl"`
 	BeinhaltetIn *string `json:"beinhaltet_in"`
@@ -25,12 +25,12 @@ type Ausruestung struct {
 }
 
 type Waffe struct {
-	BamortBase
+	ImportBase
 	Beschreibung            string  `json:"beschreibung"`
 	Abwb                    int     `json:"abwb"`
 	Anb                     int     `json:"anb"`
 	Anzahl                  int     `json:"anzahl"`
-	BeinhaltetIn            *string `json:"beinhaltet_in"`
+	BeinhaltetIn            string  `json:"beinhaltet_in"`
 	Gewicht                 float64 `json:"gewicht"`
 	Magisch                 Magisch `json:"magisch"`
 	NameFuerSpezialisierung string  `json:"nameFuerSpezialisierung"`
@@ -39,7 +39,7 @@ type Waffe struct {
 }
 
 type Behaeltniss struct {
-	BamortBase
+	ImportBase
 	Beschreibung string  `json:"beschreibung"`
 	BeinhaltetIn any     `json:"beinhaltet_in"`
 	Gewicht      float64 `json:"gewicht"`
@@ -50,7 +50,7 @@ type Behaeltniss struct {
 }
 
 type Transportation struct {
-	BamortBase
+	ImportBase
 	Beschreibung string  `json:"beschreibung"`
 	BeinhaltetIn any     `json:"beinhaltet_in"`
 	Gewicht      int     `json:"gewicht"`
@@ -61,7 +61,7 @@ type Transportation struct {
 }
 
 type Fertigkeit struct {
-	BamortBase
+	ImportBase
 	Beschreibung    string `json:"beschreibung"`
 	Fertigkeitswert int    `json:"fertigkeitswert"`
 	Bonus           int    `json:"bonus,omitempty"`
@@ -69,14 +69,14 @@ type Fertigkeit struct {
 	Quelle          string `json:"quelle"`
 }
 type Zauber struct {
-	BamortBase
+	ImportBase
 	Beschreibung string `json:"beschreibung"`
 	Bonus        int    `json:"bonus"`
 	Quelle       string `json:"quelle"`
 }
 
 type Waffenfertigkeit struct {
-	BamortBase
+	ImportBase
 	Beschreibung    string `json:"beschreibung"`
 	Bonus           int    `json:"bonus"`
 	Fertigkeitswert int    `json:"fertigkeitswert"`

@@ -311,6 +311,7 @@ func createChar() *character.Char {
 
 	return &char
 }
+
 func createFertigkeit(sel int) *skills.Fertigkeit {
 
 	liste := []skills.Fertigkeit{

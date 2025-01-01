@@ -125,12 +125,6 @@ func testSpell(t *testing.T, objects []importer.Zauber) {
 	assert.Equal(t, "ARK5 63", objects[i].Quelle)
 }
 
-func testEquipment(t *testing.T, objects []importer.Ausruestung) {
-	assert.Equal(t, 1, len(objects))
-	i := 0
-	assert.Equal(t, "Lederrüstung", objects[i].Name)
-}
-
 func testWaepon(t *testing.T, objects []importer.Waffe) {
 	assert.Equal(t, 1, len(objects))
 	i := 0
@@ -151,16 +145,54 @@ func testWaepon(t *testing.T, objects []importer.Waffe) {
 
 }
 
+func testEquipment(t *testing.T, objects []importer.Ausruestung) {
+	assert.Equal(t, 1, len(objects))
+	i := 0
+	assert.Equal(t, "moam-armor-48616", objects[i].ID)
+	assert.Equal(t, "Lederrüstung", objects[i].Name)
+	assert.Equal(t, "", objects[i].Beschreibung)
+	assert.Equal(t, 1, objects[i].Anzahl)
+	assert.Equal(t, "", objects[i].BeinhaltetIn)
+	assert.Equal(t, 13.0, objects[i].Gewicht)
+	assert.Equal(t, "", objects[i].BeinhaltetIn)
+	assert.Equal(t, false, objects[i].Magisch.IstMagisch)
+	assert.Equal(t, 0, objects[i].Magisch.Abw)
+	assert.Equal(t, false, objects[i].Magisch.Ausgebrannt)
+	assert.Equal(t, 30.0, objects[i].Wert)
+	assert.Equal(t, 0, objects[i].Bonus)
+}
+
 func testContainer(t *testing.T, objects []importer.Behaeltniss) {
 	assert.Equal(t, 1, len(objects))
 	i := 0
+	assert.Equal(t, "moam-container-47363", objects[i].ID)
 	assert.Equal(t, "Lederrucksack", objects[i].Name)
+	assert.Equal(t, "für 25 kg", objects[i].Beschreibung)
+	assert.Equal(t, 4.0, objects[i].Wert)
+	assert.Equal(t, 0.50, objects[i].Gewicht)
+	assert.Equal(t, 25.0, objects[i].Volumen)
+	assert.Equal(t, 25.0, objects[i].Tragkraft)
+	assert.Empty(t, "", objects[i].BeinhaltetIn) //Value in json is null
+	assert.Equal(t, false, objects[i].Magisch.IstMagisch)
+	assert.Equal(t, 0, objects[i].Magisch.Abw)
+	assert.Equal(t, false, objects[i].Magisch.Ausgebrannt)
 
 }
 
 func testTransportation(t *testing.T, objects []importer.Transportation) {
 	assert.Equal(t, 1, len(objects))
-	//i := 0
+	i := 0
+	assert.Equal(t, "moam-container-47000", objects[i].ID)
+	assert.Equal(t, "Karren", objects[i].Name)
+	assert.Equal(t, "für 250 kg", objects[i].Beschreibung)
+	assert.Equal(t, 14.0, objects[i].Wert)
+	assert.Equal(t, 40, objects[i].Gewicht)
+	assert.Equal(t, 250.0, objects[i].Tragkraft)
+	assert.Empty(t, "", objects[i].BeinhaltetIn) //Value in json is null
+	assert.Equal(t, false, objects[i].Magisch.IstMagisch)
+	assert.Equal(t, 0, objects[i].Magisch.Abw)
+	assert.Equal(t, false, objects[i].Magisch.Ausgebrannt)
+
 }
 
 func TestImportVTTStructure(t *testing.T) {

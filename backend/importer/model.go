@@ -17,7 +17,7 @@ type Ausruestung struct {
 	ImportBase
 	Beschreibung string  `json:"beschreibung"`
 	Anzahl       int     `json:"anzahl"`
-	BeinhaltetIn *string `json:"beinhaltet_in"`
+	BeinhaltetIn string  `json:"beinhaltet_in"`
 	Bonus        int     `json:"bonus,omitempty"`
 	Gewicht      float64 `json:"gewicht"`
 	Magisch      Magisch `json:"magisch"`

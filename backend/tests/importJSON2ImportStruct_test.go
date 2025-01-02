@@ -264,6 +264,9 @@ func TestImportSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
 	assert.Equal(t, skill2.Improvable, skill3.Improvable)
 	assert.Equal(t, skill2.System, skill3.System)
+
+	err = importer.CheckFertigkeiten2GSMaster(character.Fertigkeiten)
+	assert.NoError(t, err, "Expected no error when checkimg Skills against gsmaster")
 }
 
 func TestImportWeaponSkill2GSMaster(t *testing.T) {
@@ -303,6 +306,9 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
 	assert.Equal(t, skill2.Improvable, skill3.Improvable)
 	assert.Equal(t, skill2.System, skill3.System)
+
+	err = importer.CheckWaffenFertigkeiten2GSMaster(character.Waffenfertigkeiten)
+	assert.NoError(t, err, "Expected no error when checkimg WeaponSkills against gsmaster")
 }
 
 func TestImportSpell2GSMaster(t *testing.T) {
@@ -344,6 +350,9 @@ func TestImportSpell2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.AP, skill3.AP)
 	assert.Equal(t, skill2.Reichweite, skill3.Reichweite)
 	assert.Equal(t, skill2.Wirkungsziel, skill3.Wirkungsziel)
+
+	err = importer.CheckSpells2GSMaster(character.Zauber)
+	assert.NoError(t, err, "Expected no error when checkimg Spells against gsmaster")
 }
 
 func TestImportWeapon2GSMaster(t *testing.T) {
@@ -385,6 +394,9 @@ func TestImportWeapon2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Wert, skill3.Wert)
 	assert.Equal(t, skill2.SkillRequired, skill3.SkillRequired)
 	assert.Equal(t, skill2.Damage, skill3.Damage)
+
+	err = importer.CheckWeapons2GSMaster(character.Waffen)
+	assert.NoError(t, err, "Expected no error when checkimg Weapons against gsmaster")
 }
 
 func TestImportContainer2GSMaster(t *testing.T) {
@@ -426,6 +438,9 @@ func TestImportContainer2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Wert, skill3.Wert)
 	assert.Equal(t, skill2.Volumen, skill3.Volumen)
 	assert.Equal(t, skill2.Tragkraft, skill3.Tragkraft)
+
+	err = importer.CheckContainers2GSMaster(character.Behaeltnisse)
+	assert.NoError(t, err, "Expected no error when checkimg Containers against gsmaster")
 }
 
 func TestImportTransportation2GSMaster(t *testing.T) {
@@ -435,28 +450,28 @@ func TestImportTransportation2GSMaster(t *testing.T) {
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 	//for i := range character.Fertigkeiten {
-	skill, erro := importer.TransformImportTransportation2GSDMaster(&character.Behaeltnisse[0])
+	skill, erro := importer.TransformImportTransportation2GSDMaster(&character.Transportmittel[0])
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
 	assert.Equal(t, "midgard", skill.System)
-	assert.Equal(t, "Lederrucksack", skill.Name)
-	assert.Equal(t, "für 25 kg", skill.Beschreibung)
+	assert.Equal(t, "Karren", skill.Name)
+	assert.Equal(t, "für 250 kg", skill.Beschreibung)
 	assert.Equal(t, "", skill.Quelle)
-	assert.Equal(t, 0.5, skill.Gewicht)
-	assert.Equal(t, 4.0, skill.Wert)
+	assert.Equal(t, 40.0, skill.Gewicht)
+	assert.Equal(t, 14.0, skill.Wert)
 	assert.Equal(t, 0.0, skill.Volumen)
-	assert.Equal(t, 25.0, skill.Tragkraft)
+	assert.Equal(t, 250.0, skill.Tragkraft)
 	//}
 	skill2 := gsmaster.Transportation{}
-	erro = skill2.First("Lederrucksack")
+	erro = skill2.First("Karren")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
 	skill3 := gsmaster.Transportation{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
-	assert.Equal(t, "Lederrucksack", skill3.Name)
+	assert.Equal(t, "Karren", skill3.Name)
 
 	assert.Equal(t, skill2.ID, skill3.ID)
 	assert.Equal(t, skill2.System, skill3.System)
@@ -467,6 +482,9 @@ func TestImportTransportation2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Wert, skill3.Wert)
 	assert.Equal(t, skill2.Volumen, skill3.Volumen)
 	assert.Equal(t, skill2.Tragkraft, skill3.Tragkraft)
+
+	err = importer.CheckTransportationss2GSMaster(character.Transportmittel)
+	assert.NoError(t, err, "Expected no error when checkimg Transüportations against gsmaster")
 }
 
 func TestImportEquipment2GSMaster(t *testing.T) {
@@ -504,6 +522,9 @@ func TestImportEquipment2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
 	assert.Equal(t, skill2.Gewicht, skill3.Gewicht)
 	assert.Equal(t, skill2.Wert, skill3.Wert)
+
+	err = importer.CheckEquipments2GSMaster(character.Ausruestung)
+	assert.NoError(t, err, "Expected no error when checkimg Transüportations against gsmaster")
 }
 
 /*

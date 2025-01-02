@@ -301,7 +301,7 @@ func TransformImportContainer2GSDMaster(object *Behaeltniss) (*gsmaster.Containe
 	return &gsmobj, nil
 }
 
-func TransformImportTransportation2GSDMaster(object *Behaeltniss) (*gsmaster.Transportation, error) {
+func TransformImportTransportation2GSDMaster(object *Transportation) (*gsmaster.Transportation, error) {
 	gsmobj := gsmaster.Transportation{}
 
 	err := gsmobj.First(object.Name)
@@ -347,9 +347,63 @@ func TransformImportEquipment2GSDMaster(object *Ausruestung) (*gsmaster.Equipmen
 	return &gsmobj, nil
 }
 
-func CheckFertigkeiten2GSMaster(objects []*Fertigkeit) error {
+func CheckFertigkeiten2GSMaster(objects []Fertigkeit) error {
 	for i := range objects {
-		gsmobj, err := TransformImportFertigkeit2GSDMaster(objects[i])
+		gsmobj, err := TransformImportFertigkeit2GSDMaster(&objects[i])
+		if err != nil {
+			return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
+		}
+	}
+	return nil
+}
+func CheckWaffenFertigkeiten2GSMaster(objects []Waffenfertigkeit) error {
+	for i := range objects {
+		gsmobj, err := TransformImportWaffenFertigkeit2GSDMaster(&objects[i])
+		if err != nil {
+			return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
+		}
+	}
+	return nil
+}
+func CheckSpells2GSMaster(objects []Zauber) error {
+	for i := range objects {
+		gsmobj, err := TransformImportSpell2GSDMaster(&objects[i])
+		if err != nil {
+			return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
+		}
+	}
+	return nil
+}
+func CheckWeapons2GSMaster(objects []Waffe) error {
+	for i := range objects {
+		gsmobj, err := TransformImportWeapon2GSDMaster(&objects[i])
+		if err != nil {
+			return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
+		}
+	}
+	return nil
+}
+func CheckContainers2GSMaster(objects []Behaeltniss) error {
+	for i := range objects {
+		gsmobj, err := TransformImportContainer2GSDMaster(&objects[i])
+		if err != nil {
+			return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
+		}
+	}
+	return nil
+}
+func CheckTransportationss2GSMaster(objects []Transportation) error {
+	for i := range objects {
+		gsmobj, err := TransformImportTransportation2GSDMaster(&objects[i])
+		if err != nil {
+			return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
+		}
+	}
+	return nil
+}
+func CheckEquipments2GSMaster(objects []Ausruestung) error {
+	for i := range objects {
+		gsmobj, err := TransformImportEquipment2GSDMaster(&objects[i])
 		if err != nil {
 			return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
 		}

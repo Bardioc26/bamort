@@ -347,6 +347,26 @@ func TransformImportEquipment2GSDMaster(object *Ausruestung) (*gsmaster.Equipmen
 	return &gsmobj, nil
 }
 
+func TransformImportBelieve2GSDMaster(object string) (*gsmaster.Believe, error) {
+	gsmobj := gsmaster.Believe{}
+
+	err := gsmobj.First(object)
+	// if found check if we need to adjust masterdata
+	if err == nil {
+		return &gsmobj, nil
+	}
+	// if not found insert to masterdata
+	gsmobj.System = "midgard"
+	gsmobj.Name = object
+	gsmobj.Beschreibung = ""
+	//gsmobj.Quelle = object.Quelle
+	err = gsmobj.Create()
+	if err != nil {
+		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
+	}
+	return &gsmobj, nil
+}
+
 func CheckFertigkeiten2GSMaster(objects []Fertigkeit) error {
 	for i := range objects {
 		gsmobj, err := TransformImportFertigkeit2GSDMaster(&objects[i])
@@ -407,6 +427,13 @@ func CheckEquipments2GSMaster(objects []Ausruestung) error {
 		if err != nil {
 			return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
 		}
+	}
+	return nil
+}
+func CheckBelieve2GSMaster(objects *CharacterImport) error {
+	gsmobj, err := TransformImportBelieve2GSDMaster(objects.Glaube)
+	if err != nil {
+		return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
 	}
 	return nil
 }

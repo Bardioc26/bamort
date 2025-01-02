@@ -23,6 +23,7 @@ func initTestDB4Import() *gorm.DB {
 		&gsmaster.Container{},
 		&gsmaster.Transportation{},
 		&gsmaster.Equipment{},
+		&gsmaster.Believe{},
 	)
 	return db
 }
@@ -228,8 +229,10 @@ func TestImportVTTStructure(t *testing.T) {
 }
 
 func TestImportSkill2GSMaster(t *testing.T) {
-	testDB := initTestDB4Import()
-	database.DB = testDB // Assign test DB to global DB
+	if database.DB == nil {
+		testDB := initTestDB4Import()
+		database.DB = testDB // Assign test DB to global DB
+	}
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -270,8 +273,10 @@ func TestImportSkill2GSMaster(t *testing.T) {
 }
 
 func TestImportWeaponSkill2GSMaster(t *testing.T) {
-	testDB := initTestDB4Import()
-	database.DB = testDB // Assign test DB to global DB
+	if database.DB == nil {
+		testDB := initTestDB4Import()
+		database.DB = testDB // Assign test DB to global DB
+	}
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -312,8 +317,10 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 }
 
 func TestImportSpell2GSMaster(t *testing.T) {
-	testDB := initTestDB4Import()
-	database.DB = testDB // Assign test DB to global DB
+	if database.DB == nil {
+		testDB := initTestDB4Import()
+		database.DB = testDB // Assign test DB to global DB
+	}
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -356,8 +363,10 @@ func TestImportSpell2GSMaster(t *testing.T) {
 }
 
 func TestImportWeapon2GSMaster(t *testing.T) {
-	testDB := initTestDB4Import()
-	database.DB = testDB // Assign test DB to global DB
+	if database.DB == nil {
+		testDB := initTestDB4Import()
+		database.DB = testDB // Assign test DB to global DB
+	}
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -400,8 +409,10 @@ func TestImportWeapon2GSMaster(t *testing.T) {
 }
 
 func TestImportContainer2GSMaster(t *testing.T) {
-	testDB := initTestDB4Import()
-	database.DB = testDB // Assign test DB to global DB
+	if database.DB == nil {
+		testDB := initTestDB4Import()
+		database.DB = testDB // Assign test DB to global DB
+	}
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -444,8 +455,10 @@ func TestImportContainer2GSMaster(t *testing.T) {
 }
 
 func TestImportTransportation2GSMaster(t *testing.T) {
-	testDB := initTestDB4Import()
-	database.DB = testDB // Assign test DB to global DB
+	if database.DB == nil {
+		testDB := initTestDB4Import()
+		database.DB = testDB // Assign test DB to global DB
+	}
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -488,8 +501,10 @@ func TestImportTransportation2GSMaster(t *testing.T) {
 }
 
 func TestImportEquipment2GSMaster(t *testing.T) {
-	testDB := initTestDB4Import()
-	database.DB = testDB // Assign test DB to global DB
+	if database.DB == nil {
+		testDB := initTestDB4Import()
+		database.DB = testDB // Assign test DB to global DB
+	}
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -524,6 +539,42 @@ func TestImportEquipment2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Wert, skill3.Wert)
 
 	err = importer.CheckEquipments2GSMaster(character.Ausruestung)
+	assert.NoError(t, err, "Expected no error when checkimg Transüportations against gsmaster")
+}
+func TestImportBelieve2GSMaster(t *testing.T) {
+	if database.DB == nil {
+		testDB := initTestDB4Import()
+		database.DB = testDB // Assign test DB to global DB
+	}
+	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
+	character, err := readImportChar(fileName)
+	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
+	//for i := range character.Fertigkeiten {
+	skill, erro := importer.TransformImportBelieve2GSDMaster(character.Glaube)
+
+	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
+	assert.GreaterOrEqual(t, int(skill.ID), 1)
+	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "Torkin", skill.Name)
+	assert.Equal(t, "", skill.Beschreibung)
+	assert.Equal(t, "", skill.Quelle)
+	//}
+	skill2 := gsmaster.Believe{}
+	erro = skill2.First("Torkin")
+	assert.NoError(t, erro, "Expected no error when finding Record by name")
+	assert.Equal(t, 1, int(skill.ID))
+
+	skill3 := gsmaster.Believe{}
+	erro = skill3.FirstId(1)
+	assert.NoError(t, erro, "Expected no error when finding Record by ID")
+	assert.Equal(t, "Torkin", skill3.Name)
+
+	assert.Equal(t, skill2.ID, skill3.ID)
+	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.Name, skill3.Name)
+	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
+	assert.Equal(t, skill2.Quelle, skill3.Quelle)
+	err = importer.CheckBelieve2GSMaster(character)
 	assert.NoError(t, err, "Expected no error when checkimg Transüportations against gsmaster")
 }
 

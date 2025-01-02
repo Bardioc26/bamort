@@ -16,11 +16,14 @@ import (
 var migrationDone bool
 
 // SetupTestDB creates an in-memory SQLite database for testing
-func SetupTestDB() *gorm.DB {
-	//*
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect to the test database")
+func SetupTestDB() {
+	if database.DB == nil {
+		//*
+		db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		if err != nil {
+			panic("failed to connect to the test database")
+		}
+		database.DB = db
 	}
 	//*/
 	/* //testin with persitant MariaDB
@@ -31,8 +34,12 @@ func SetupTestDB() *gorm.DB {
 		panic("failed to connect to the test database")
 	}
 	//*/
-
-	return db
+	if !migrationDone {
+		err := MigrateStructure()
+		if err != nil {
+			panic("failed to MigrateStructure")
+		}
+	}
 }
 
 func MigrateStructure() error {

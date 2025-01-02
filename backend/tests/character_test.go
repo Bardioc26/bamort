@@ -15,19 +15,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func initTestDB4Character() {
-	if database.DB == nil {
-		db := SetupTestDB()
-		database.DB = db
-	}
-	if !migrationDone {
-		err := MigrateStructure()
-		if err != nil {
-			os.Exit(1)
-		}
-	}
-}
-
 // ReadImageAsBase64 reads an image file and returns it as a Base64 string
 // with the prefix "data:mimeType;base64,"
 func ReadImageAsBase64(filePath string) (string, error) {
@@ -745,7 +732,7 @@ func charTests(t *testing.T, char *character.Char) {
 }
 
 func TestCreateChar(t *testing.T) {
-	initTestDB4Character()
+	SetupTestDB()
 	char := createChar()
 	//char.Name = "Harsk Hammerhuter, Zen2"
 	err := char.First(char.Name)
@@ -762,7 +749,7 @@ func TestCreateChar(t *testing.T) {
 }
 
 func TestReadChar(t *testing.T) {
-	initTestDB4Character()
+	SetupTestDB()
 	TestCreateChar(t)
 	char := character.Char{}
 	char.Name = "Harsk Hammerhuter, Zen"
@@ -778,7 +765,7 @@ func TestReadChar(t *testing.T) {
 }
 
 func TestAddAusrüstung(t *testing.T) {
-	initTestDB4Character()
+	SetupTestDB()
 	/*
 		TestCreateChar(t)
 		char := character.Char{}
@@ -794,7 +781,7 @@ func TestAddAusrüstung(t *testing.T) {
 }
 
 func TestImportVTT2Char(t *testing.T) {
-	initTestDB4Character()
+	SetupTestDB()
 	/*
 		// loading file to Modell
 		fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")

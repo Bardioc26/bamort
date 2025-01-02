@@ -1,28 +1,13 @@
 package tests
 
 import (
-	"bamort/database"
 	"bamort/gsmaster"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
-
-func initTestDB4Lookup() {
-	if database.DB == nil {
-		db := SetupTestDB()
-		database.DB = db
-	}
-	if !migrationDone {
-		err := MigrateStructure()
-		if err != nil {
-			os.Exit(1)
-		}
-	}
-}
 
 // GenerateFilename generates a filename based on the prefix and the current date/time
 func generateFilename(prefix string, extension string) string {
@@ -39,7 +24,7 @@ func generateFilename(prefix string, extension string) string {
 
 /*
 func TestCreateLookupSkill(t *testing.T) {
-	initTestDB4Lookup()
+	SetupTestDB()
 	stamm := gsmaster.Skill{}
 	stamm.System = "Midgard"
 	stamm.Name = "Lesen"
@@ -68,8 +53,7 @@ func TestFindLookupSkill(t *testing.T) {
 
 func TestCreateLookupWeaponSkill(t *testing.T) {
 	// Setup test database
-	testDB := initTestDB4Lookup()
-	database.DB = testDB // Assign test DB to global DB
+	SetupTestDB()
 	stamm := gsmaster.WeaponSkill{}
 	stamm.System = "Midgard"
 	stamm.Name = "Stichwaffen"
@@ -100,8 +84,7 @@ func TestFindLookupWeaponSkill(t *testing.T) {
 
 func TestCreateLookupSpell(t *testing.T) {
 	// Setup test database
-	testDB := initTestDB4Lookup()
-	database.DB = testDB // Assign test DB to global DB
+	SetupTestDB()
 	stamm := gsmaster.Spell{}
 	stamm.System = "Midgard"
 	stamm.Name = "Unsichtbarkeit"
@@ -141,8 +124,7 @@ func TestFindLookupSpell(t *testing.T) {
 
 func TestCreateLookupEquipment(t *testing.T) {
 	// Setup test database
-	testDB := initTestDB4Lookup()
-	database.DB = testDB // Assign test DB to global DB
+	SetupTestDB()
 	stamm := gsmaster.Equipment{}
 	stamm.System = "Midgard"
 	stamm.Name = "Decke"
@@ -171,8 +153,7 @@ func TestFindLookupEquipment(t *testing.T) {
 
 func TestCreateLookupContainer(t *testing.T) {
 	// Setup test database
-	testDB := initTestDB4Lookup()
-	database.DB = testDB // Assign test DB to global DB
+	SetupTestDB()
 	stamm := gsmaster.Container{}
 	stamm.System = "Midgard"
 	stamm.Name = "Topf"
@@ -203,8 +184,7 @@ func TestFindLookupContainer(t *testing.T) {
 
 func TestCreateLookupTransportation(t *testing.T) {
 	// Setup test database
-	testDB := initTestDB4Lookup()
-	database.DB = testDB // Assign test DB to global DB
+	SetupTestDB()
 	stamm := gsmaster.Transportation{}
 	stamm.System = "Midgard"
 	stamm.Name = "Topf"
@@ -235,9 +215,7 @@ func TestFindLookupTransportation(t *testing.T) {
 */
 
 func TestExportGSMasterdata(t *testing.T) {
-	initTestDB4Lookup()
-	//testDB := initTestDB4Lookup()
-	//database.DB = testDB // Assign test DB to global DB
+	SetupTestDB()
 	TestImportSkill2GSMaster(t)
 	TestImportWeaponSkill2GSMaster(t)
 	TestImportSpell2GSMaster(t)
@@ -251,9 +229,7 @@ func TestExportGSMasterdata(t *testing.T) {
 }
 
 func TestImportGSMasterdata(t *testing.T) {
-	initTestDB4Lookup()
-	//testDB := initTestDB4Lookup()
-	//database.DB = testDB // Assign test DB to global DB
+	SetupTestDB()
 	err := gsmaster.Import("../testdata/gsmaster_exported_gsdata.json")
 	assert.NoError(t, err, "expexted no Error during Export if gsmaster data")
 }

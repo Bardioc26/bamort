@@ -4,26 +4,24 @@ import (
 	"bamort/database"
 	"bamort/gsmaster"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
 
-func initTestDB4Lookup() *gorm.DB {
-	db := SetupTestDB()
-	db.AutoMigrate(
-		&gsmaster.Skill{},          //needed for stammdaten.CheckFertigkeit
-		&gsmaster.Spell{},          //needed for stammdaten.CheckZauber
-		&gsmaster.WeaponSkill{},    //needed for stammdaten.CheckWaffenFertigkeit
-		&gsmaster.Equipment{},      //needed for stammdaten.Check...
-		&gsmaster.Container{},      //needed for stammdaten.Check...
-		&gsmaster.Transportation{}, //needed for stammdaten.Check...
-		&gsmaster.Weapon{},
-		&gsmaster.Believe{},
-	)
-	return db
+func initTestDB4Lookup() {
+	if database.DB == nil {
+		db := SetupTestDB()
+		database.DB = db
+	}
+	if !migrationDone {
+		err := MigrateStructure()
+		if err != nil {
+			os.Exit(1)
+		}
+	}
 }
 
 // GenerateFilename generates a filename based on the prefix and the current date/time
@@ -39,11 +37,9 @@ func generateFilename(prefix string, extension string) string {
 	return fmt.Sprintf("%s_%s.%s", prefix, timestamp, extension)
 }
 
-/*s
+/*
 func TestCreateLookupSkill(t *testing.T) {
-	// Setup test database
-	testDB := initTestDB4Lookup()
-	database.DB = testDB // Assign test DB to global DB
+	initTestDB4Lookup()
 	stamm := gsmaster.Skill{}
 	stamm.System = "Midgard"
 	stamm.Name = "Lesen"
@@ -239,11 +235,7 @@ func TestFindLookupTransportation(t *testing.T) {
 */
 
 func TestExportGSMasterdata(t *testing.T) {
-	// Setup test database
-	if database.DB == nil {
-		testDB := initTestDB4Import()
-		database.DB = testDB // Assign test DB to global DB
-	}
+	initTestDB4Lookup()
 	//testDB := initTestDB4Lookup()
 	//database.DB = testDB // Assign test DB to global DB
 	TestImportSkill2GSMaster(t)
@@ -259,11 +251,7 @@ func TestExportGSMasterdata(t *testing.T) {
 }
 
 func TestImportGSMasterdata(t *testing.T) {
-	// Setup test database
-	if database.DB == nil {
-		testDB := initTestDB4Import()
-		database.DB = testDB // Assign test DB to global DB
-	}
+	initTestDB4Lookup()
 	//testDB := initTestDB4Lookup()
 	//database.DB = testDB // Assign test DB to global DB
 	err := gsmaster.Import("../testdata/gsmaster_exported_gsdata.json")

@@ -10,22 +10,19 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
 
-func initTestDB4Import() *gorm.DB {
-	db := SetupTestDB()
-	db.AutoMigrate(
-		&gsmaster.Skill{},
-		&gsmaster.WeaponSkill{},
-		&gsmaster.Spell{},
-		&gsmaster.Weapon{},
-		&gsmaster.Container{},
-		&gsmaster.Transportation{},
-		&gsmaster.Equipment{},
-		&gsmaster.Believe{},
-	)
-	return db
+func initTestDB4Import() {
+	if database.DB == nil {
+		db := SetupTestDB()
+		database.DB = db
+	}
+	if !migrationDone {
+		err := MigrateStructure()
+		if err != nil {
+			os.Exit(1)
+		}
+	}
 }
 
 func readImportChar(fileName string) (*importer.CharacterImport, error) {
@@ -229,10 +226,9 @@ func TestImportVTTStructure(t *testing.T) {
 }
 
 func TestImportSkill2GSMaster(t *testing.T) {
-	if database.DB == nil {
-		testDB := initTestDB4Import()
-		database.DB = testDB // Assign test DB to global DB
-	}
+
+	initTestDB4Import()
+
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -273,10 +269,7 @@ func TestImportSkill2GSMaster(t *testing.T) {
 }
 
 func TestImportWeaponSkill2GSMaster(t *testing.T) {
-	if database.DB == nil {
-		testDB := initTestDB4Import()
-		database.DB = testDB // Assign test DB to global DB
-	}
+	initTestDB4Import()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -317,10 +310,7 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 }
 
 func TestImportSpell2GSMaster(t *testing.T) {
-	if database.DB == nil {
-		testDB := initTestDB4Import()
-		database.DB = testDB // Assign test DB to global DB
-	}
+	initTestDB4Import()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -363,10 +353,7 @@ func TestImportSpell2GSMaster(t *testing.T) {
 }
 
 func TestImportWeapon2GSMaster(t *testing.T) {
-	if database.DB == nil {
-		testDB := initTestDB4Import()
-		database.DB = testDB // Assign test DB to global DB
-	}
+	initTestDB4Import()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -409,10 +396,7 @@ func TestImportWeapon2GSMaster(t *testing.T) {
 }
 
 func TestImportContainer2GSMaster(t *testing.T) {
-	if database.DB == nil {
-		testDB := initTestDB4Import()
-		database.DB = testDB // Assign test DB to global DB
-	}
+	initTestDB4Import()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -455,10 +439,7 @@ func TestImportContainer2GSMaster(t *testing.T) {
 }
 
 func TestImportTransportation2GSMaster(t *testing.T) {
-	if database.DB == nil {
-		testDB := initTestDB4Import()
-		database.DB = testDB // Assign test DB to global DB
-	}
+	initTestDB4Import()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -501,10 +482,7 @@ func TestImportTransportation2GSMaster(t *testing.T) {
 }
 
 func TestImportEquipment2GSMaster(t *testing.T) {
-	if database.DB == nil {
-		testDB := initTestDB4Import()
-		database.DB = testDB // Assign test DB to global DB
-	}
+	initTestDB4Import()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -542,10 +520,7 @@ func TestImportEquipment2GSMaster(t *testing.T) {
 	assert.NoError(t, err, "Expected no error when checkimg Transüportations against gsmaster")
 }
 func TestImportBelieve2GSMaster(t *testing.T) {
-	if database.DB == nil {
-		testDB := initTestDB4Import()
-		database.DB = testDB // Assign test DB to global DB
-	}
+	initTestDB4Import()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")

@@ -1,9 +1,19 @@
 package tests
 
 import (
+	"bamort/character"
+	"bamort/database"
+	"bamort/equipment"
+	"bamort/gsmaster"
+	"bamort/importer"
+	"bamort/skills"
+	"bamort/user"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
+
+var migrationDone bool
 
 // SetupTestDB creates an in-memory SQLite database for testing
 func SetupTestDB() *gorm.DB {
@@ -23,4 +33,38 @@ func SetupTestDB() *gorm.DB {
 	//*/
 
 	return db
+}
+
+func MigrateStructure() error {
+	err := database.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	err = character.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	err = equipment.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	err = gsmaster.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	err = importer.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	err = skills.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	err = user.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	migrationDone = true
+
+	return nil
 }

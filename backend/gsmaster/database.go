@@ -6,6 +6,7 @@ func MigrateStructure() error {
 	err := database.DB.AutoMigrate(
 		&Skill{},
 		&WeaponSkill{},
+		&Spell{},
 		&Equipment{},
 		&Weapon{},
 		&Container{},

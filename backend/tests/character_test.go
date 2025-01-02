@@ -13,29 +13,19 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
 
-func initTestDB4Character() *gorm.DB {
-	db := SetupTestDB()
-	db.AutoMigrate(
-		&character.Char{},
-		&character.Lp{},
-		&character.Ap{},
-		&character.B{},
-		&character.Merkmale{},
-		&character.Eigenschaft{},
-		&character.Bennies{},
-		&character.Erfahrungsschatz{},
-		&skills.Fertigkeit{},
-		&skills.Waffenfertigkeit{},
-		&skills.Zauber{},
-		&equipment.Waffe{},
-		&equipment.Behaeltniss{},
-		&equipment.Transportation{},
-		&equipment.Ausruestung{},
-	)
-	return db
+func initTestDB4Character() {
+	if database.DB == nil {
+		db := SetupTestDB()
+		database.DB = db
+	}
+	if !migrationDone {
+		err := MigrateStructure()
+		if err != nil {
+			os.Exit(1)
+		}
+	}
 }
 
 // ReadImageAsBase64 reads an image file and returns it as a Base64 string
@@ -755,9 +745,7 @@ func charTests(t *testing.T, char *character.Char) {
 }
 
 func TestCreateChar(t *testing.T) {
-	// Setup test database
-	testDB := initTestDB4Character()
-	database.DB = testDB // Assign test DB to global DB
+	initTestDB4Character()
 	char := createChar()
 	//char.Name = "Harsk Hammerhuter, Zen2"
 	err := char.First(char.Name)
@@ -774,10 +762,7 @@ func TestCreateChar(t *testing.T) {
 }
 
 func TestReadChar(t *testing.T) {
-	// Setup test database
-	//testDB := initTestDB4Character()
-	//database.DB = testDB // Assign test DB to global DB
-
+	initTestDB4Character()
 	TestCreateChar(t)
 	char := character.Char{}
 	char.Name = "Harsk Hammerhuter, Zen"
@@ -793,9 +778,7 @@ func TestReadChar(t *testing.T) {
 }
 
 func TestAddAusrüstung(t *testing.T) {
-	// Setup test database
-	//testDB := initTestDB4Character()
-	//database.DB = testDB // Assign test DB to global DB
+	initTestDB4Character()
 	/*
 		TestCreateChar(t)
 		char := character.Char{}
@@ -811,9 +794,7 @@ func TestAddAusrüstung(t *testing.T) {
 }
 
 func TestImportVTT2Char(t *testing.T) {
-	// Setup test database
-	//testDB := SetupTestDB()
-	//DB = testDB // Assign test DB to global DB
+	initTestDB4Character()
 	/*
 		// loading file to Modell
 		fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")

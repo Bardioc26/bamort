@@ -29,7 +29,7 @@ func CreateAusruestung(c *gin.Context) {
 	c.JSON(http.StatusCreated, ausruestung)
 }
 
-func GetAusruestung(c *gin.Context) {
+func ListAusruestung(c *gin.Context) {
 	characterID := c.Param("character_id")
 
 	var ausruestung []Ausruestung

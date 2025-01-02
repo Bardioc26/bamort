@@ -20,7 +20,7 @@ Character Handlers
 Add CRUD operations for characters:
 */
 
-func GetCharacters(c *gin.Context) {
+func ListCharacters(c *gin.Context) {
 	var characters []Char
 	if err := database.DB.Find(&characters).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve characters"})
@@ -41,6 +41,57 @@ func CreateCharacter(c *gin.Context) {
 		return
 	}
 
+	c.JSON(http.StatusCreated, character)
+}
+func GetCharacter(c *gin.Context) {
+	id := c.Param("id")
+	var character Char
+	err := character.FirstID(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+	c.JSON(http.StatusOK, character)
+}
+func UpdateCharacter(c *gin.Context) {
+	var character Char
+	/*
+		if err := c.ShouldBindJSON(&character.ID); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := database.DB.Create(&character).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create character"})
+			return
+		}
+	*/
+	c.JSON(http.StatusCreated, character)
+}
+func DeleteCharacter(c *gin.Context) {
+	id := c.Param("id")
+	var character Char
+	err := character.FirstID(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+	err = character.Delete()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete character"})
+		return
+	}
+	/*
+		if err := c.ShouldBindJSON(&character.ID); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := database.DB.Create(&character).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create character"})
+			return
+		}
+	*/
 	c.JSON(http.StatusCreated, character)
 }
 

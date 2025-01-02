@@ -124,7 +124,29 @@ func (object *Char) First(name string) error {
 	}
 	return nil
 }
-
+func (object *Char) FirstID(name string) error {
+	err := database.DB.
+		Preload("Lp").
+		Preload("Ap").
+		Preload("B").
+		Preload("Merkmale").
+		Preload("Eigenschaften").
+		Preload("Fertigkeiten").
+		Preload("Waffenfertigkeiten").
+		Preload("Zauber").
+		Preload("Bennies").
+		Preload("Erfahrungsschatz").
+		Preload("Waffen").
+		Preload("Behaeltnisse").
+		Preload("Transportmittel").
+		Preload("Ausruestung").
+		First(&object, " id = ?", name).Error
+	if err != nil {
+		// Char not found
+		return err
+	}
+	return nil
+}
 func (object *Char) Create() error {
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
@@ -136,7 +158,18 @@ func (object *Char) Create() error {
 
 	return err
 }
+func (object *Char) Delete() error {
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		// delete the main character record
+		//should cascade for all elements
+		if err := tx.Delete(&object).Error; err != nil {
+			return fmt.Errorf("failed to delete char: %w", err)
+		}
+		return nil
+	})
 
+	return err
+}
 func (object *Eigenschaft) TableName() string {
 	return dbPrefix + "_" + "eigenschaften"
 }

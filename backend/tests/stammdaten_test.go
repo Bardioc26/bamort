@@ -266,6 +266,6 @@ func TestImportGSMasterdata(t *testing.T) {
 	}
 	//testDB := initTestDB4Lookup()
 	//database.DB = testDB // Assign test DB to global DB
-	err := gsmaster.Import(generateFilename("../testdata/gsmaster_", "json"))
+	err := gsmaster.Import("../testdata/gsmaster_exported_gsdata.json")
 	assert.NoError(t, err, "expexted no Error during Export if gsmaster data")
 }

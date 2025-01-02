@@ -121,7 +121,9 @@ func Import(filePath string) error {
 		}
 	}
 	if len(data.Spells) > 0 {
-		if err := database.DB.Create(&data.Spells).Error; err != nil {
+		if err := database.DB.Clauses(clause.OnConflict{
+			UpdateAll: true, // Update all fields if there's a conflict
+		}).Create(&data.Spells).Error; err != nil {
 			return fmt.Errorf("failed to reimport Spells: %w", err)
 		}
 	}

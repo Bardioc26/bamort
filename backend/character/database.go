@@ -18,3 +18,19 @@ func SaveCharacterToDB(character *Char) error {
 		return nil
 	})
 }
+func MigrateStructure() error {
+	err := database.DB.AutoMigrate(
+		&Eigenschaft{},
+		&Lp{},
+		&Ap{},
+		&B{},
+		&Merkmale{},
+		&Erfahrungsschatz{},
+		&Bennies{},
+		&Char{},
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}

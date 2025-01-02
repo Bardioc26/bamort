@@ -301,6 +301,52 @@ func TransformImportContainer2GSDMaster(object *Behaeltniss) (*gsmaster.Containe
 	return &gsmobj, nil
 }
 
+func TransformImportTransportation2GSDMaster(object *Behaeltniss) (*gsmaster.Transportation, error) {
+	gsmobj := gsmaster.Transportation{}
+
+	err := gsmobj.First(object.Name)
+	// if found check if we need to adjust masterdata
+	if err == nil {
+		return &gsmobj, nil
+	}
+	// if not found insert to masterdata
+	gsmobj.System = "midgard"
+	gsmobj.Name = object.Name
+	gsmobj.Beschreibung = object.Beschreibung
+	//gsmobj.Quelle = object.Quelle
+	gsmobj.Gewicht = float64(object.Gewicht)
+	gsmobj.Wert = object.Wert
+	gsmobj.Tragkraft = object.Tragkraft
+	err = gsmobj.Create()
+	if err != nil {
+		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
+	}
+	return &gsmobj, nil
+}
+
+func TransformImportEquipment2GSDMaster(object *Ausruestung) (*gsmaster.Equipment, error) {
+	gsmobj := gsmaster.Equipment{}
+
+	err := gsmobj.First(object.Name)
+	// if found check if we need to adjust masterdata
+	if err == nil {
+		return &gsmobj, nil
+	}
+	// if not found insert to masterdata
+	gsmobj.System = "midgard"
+	gsmobj.Name = object.Name
+	gsmobj.Beschreibung = object.Beschreibung
+	//gsmobj.Quelle = object.Quelle
+	gsmobj.Gewicht = float64(object.Gewicht)
+	gsmobj.Wert = object.Wert
+	//gsmobj.Tragkraft = object.Tragkraft
+	err = gsmobj.Create()
+	if err != nil {
+		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
+	}
+	return &gsmobj, nil
+}
+
 func CheckFertigkeiten2GSMaster(objects []*Fertigkeit) error {
 	for i := range objects {
 		gsmobj, err := TransformImportFertigkeit2GSDMaster(objects[i])

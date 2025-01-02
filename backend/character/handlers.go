@@ -2,6 +2,7 @@ package character
 
 import (
 	"bamort/database"
+	"bamort/skills"
 
 	"encoding/json"
 	"fmt"
@@ -116,3 +117,18 @@ func isValidFileType(filename string) bool {
 	}
 	return false
 }
+
+// Add Fertigkeit by putting it directly to the DB
+func AddFertigkeit(charID uint, fertigkeit *skills.Fertigkeit) error {
+	// Set the foreign key for the new Eigenschaft
+	fertigkeit.CharacterID = charID
+
+	// Save the new Eigenschaft to the database
+	if err := database.DB.Create(&fertigkeit).Error; err != nil {
+		return fmt.Errorf("failed to add Eigenschaft: %w", err)
+	}
+	return nil
+}
+
+// Append the new Fertigkeit to the slice of the characters property
+//character.Fertigkeiten = append(character.Fertigkeiten, fertigkeit)

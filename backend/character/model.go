@@ -10,6 +10,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var dbPrefix = "char"
+
 // Au, Gs, Gw ,In, Ko, Pa, St, Wk, Zt
 type Eigenschaft struct {
 	ID          uint   `gorm:"index" json:"id"`
@@ -18,8 +20,7 @@ type Eigenschaft struct {
 	Value       int    `json:"value"`
 }
 type Lp struct {
-	ID uint `gorm:"primaryKey" json:"id"`
-
+	ID          uint `gorm:"primaryKey" json:"id"`
 	CharacterID uint `gorm:"index" json:"character_id"`
 	Max         int  `json:"max"`
 	Value       int  `json:"value"`
@@ -97,6 +98,9 @@ type Char struct {
 	Image              string                     `json:"image,omitempty"`
 }
 
+func (object *Char) TableName() string {
+	return dbPrefix + "_" + "chars"
+}
 func (object *Char) First(name string) error {
 	err := database.DB.
 		Preload("Lp").
@@ -131,4 +135,26 @@ func (object *Char) Create() error {
 	})
 
 	return err
+}
+
+func (object *Eigenschaft) TableName() string {
+	return dbPrefix + "_" + "eigenschaften"
+}
+func (object *Lp) TableName() string {
+	return dbPrefix + "_" + "health"
+}
+func (object *Ap) TableName() string {
+	return dbPrefix + "_" + "endurances"
+}
+func (object *B) TableName() string {
+	return dbPrefix + "_" + "motionranges"
+}
+func (object *Merkmale) TableName() string {
+	return dbPrefix + "_" + "characteristics"
+}
+func (object *Erfahrungsschatz) TableName() string {
+	return dbPrefix + "_" + "experiances"
+}
+func (object *Bennies) TableName() string {
+	return dbPrefix + "_" + "bennies"
 }

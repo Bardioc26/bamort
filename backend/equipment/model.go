@@ -2,6 +2,8 @@ package equipment
 
 import "bamort/models"
 
+var dbPrefix = "equi"
+
 type Ausruestung struct {
 	models.BamortCharTrait
 	models.Magisch
@@ -47,4 +49,17 @@ type Transportation struct {
 	Wert         float64 `json:"wert"`
 	Tragkraft    float64 `json:"tragkraft"`
 	Volumen      float64 `json:"volumen"`
+}
+
+func (object *Ausruestung) TableName() string {
+	return dbPrefix + "_" + "equipments"
+}
+func (object *Waffe) TableName() string {
+	return dbPrefix + "_" + "weapons"
+}
+func (object *Behaeltniss) TableName() string {
+	return dbPrefix + "_" + "containers"
+}
+func (object *Transportation) TableName() string {
+	return dbPrefix + "_" + "transportationss"
 }

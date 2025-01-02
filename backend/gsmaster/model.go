@@ -7,6 +7,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var dbPrefix = "gsm"
+
 type LookupList struct {
 	ID           uint   `gorm:"primaryKey" json:"id"`
 	System       string `gorm:"index" json:"system"`
@@ -103,7 +105,9 @@ func (object *LookupList) Save() error {
 	}
 	return nil
 }
-
+func (object *Skill) TableName() string {
+	return dbPrefix + "_" + "skills"
+}
 func (stamm *Skill) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
@@ -146,7 +150,9 @@ func (object *Skill) Save() error {
 	}
 	return nil
 }
-
+func (object *WeaponSkill) TableName() string {
+	return dbPrefix + "_" + "weaponskills"
+}
 func (stamm *WeaponSkill) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
@@ -189,7 +195,9 @@ func (object *WeaponSkill) Save() error {
 	}
 	return nil
 }
-
+func (object *Spell) TableName() string {
+	return dbPrefix + "_" + "spells"
+}
 func (stamm *Spell) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
@@ -232,7 +240,9 @@ func (object *Spell) Save() error {
 	}
 	return nil
 }
-
+func (object *Equipment) TableName() string {
+	return dbPrefix + "_" + "equipments"
+}
 func (stamm *Equipment) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
@@ -275,7 +285,9 @@ func (object *Equipment) Save() error {
 	}
 	return nil
 }
-
+func (object *Weapon) TableName() string {
+	return dbPrefix + "_" + "weapons"
+}
 func (stamm *Weapon) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
@@ -318,7 +330,9 @@ func (object *Weapon) Save() error {
 	}
 	return nil
 }
-
+func (object *Container) TableName() string {
+	return dbPrefix + "_" + "containers"
+}
 func (stamm *Container) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
@@ -361,7 +375,9 @@ func (object *Container) Save() error {
 	}
 	return nil
 }
-
+func (object *Transportation) TableName() string {
+	return dbPrefix + "_" + "transportations"
+}
 func (stamm *Transportation) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem
@@ -404,7 +420,9 @@ func (object *Transportation) Save() error {
 	}
 	return nil
 }
-
+func (object *Believe) TableName() string {
+	return dbPrefix + "_" + "believes"
+}
 func (stamm *Believe) Create() error {
 	gameSystem := "midgard"
 	stamm.System = gameSystem

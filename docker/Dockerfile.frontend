@@ -18,7 +18,8 @@ FROM nginx:alpine
 
 # Copy production build to Nginx html folder.
 # Adjust /usr/src/app/build -> /usr/src/app/dist if you’re using Angular/Vue
-COPY --from=build /usr/src/app/build /usr/share/nginx/html
+#COPY --from=build /usr/src/app/build /usr/share/nginx/html
+COPY --from=build /usr/src/app /usr/share/nginx/html
 
 # Expose HTTP port
 EXPOSE 80

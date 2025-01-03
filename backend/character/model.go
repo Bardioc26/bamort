@@ -97,6 +97,14 @@ type Char struct {
 	Ausruestung        []equipment.Ausruestung    `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"ausruestung"`
 	Image              string                     `json:"image,omitempty"`
 }
+type CharList struct {
+	models.BamortBase
+	Rasse  string `json:"rasse"`
+	Typ    string `json:"typ"`
+	Grad   int    `json:"grad"`
+	Owner  string `json:"owner"`
+	Public bool   `json:"public"`
+}
 
 func (object *Char) TableName() string {
 	return dbPrefix + "_" + "chars"

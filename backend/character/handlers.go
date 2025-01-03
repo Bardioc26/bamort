@@ -2,6 +2,7 @@ package character
 
 import (
 	"bamort/database"
+	"bamort/models"
 	"bamort/skills"
 
 	"encoding/json"
@@ -22,11 +23,24 @@ Add CRUD operations for characters:
 
 func ListCharacters(c *gin.Context) {
 	var characters []Char
+	var listOfChars []CharList
 	if err := database.DB.Find(&characters).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve characters"})
 		return
 	}
-	c.JSON(http.StatusOK, characters)
+	for i := range characters {
+		listOfChars = append(listOfChars, CharList{
+			BamortBase: models.BamortBase{
+				ID:   characters[i].ID,
+				Name: characters[i].Name,
+			},
+			Rasse: characters[i].Rasse,
+			Typ:   characters[i].Typ,
+			Grad:  characters[i].Grad,
+			Owner: "test",
+		})
+	}
+	c.JSON(http.StatusOK, listOfChars)
 }
 
 func CreateCharacter(c *gin.Context) {

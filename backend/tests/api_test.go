@@ -64,12 +64,16 @@ func TestListCharacters(t *testing.T) {
 	assert.Equal(t, http.StatusOK, respRecorder.Code)
 
 	// Assert the response body
-	var listOfCharacter []*character.Char
+	var listOfCharacter []*character.CharList
 	err := json.Unmarshal(respRecorder.Body.Bytes(), &listOfCharacter)
 	assert.NoError(t, err)
 	assert.Equal(t, "Harsk Hammerhuter, Zen", listOfCharacter[0].Name)
 	assert.Equal(t, "Zwerg", listOfCharacter[0].Rasse)
 	assert.Equal(t, 1, int(listOfCharacter[0].ID)) // Check the simulated ID
+	assert.Equal(t, "Krieger", listOfCharacter[0].Typ)
+	assert.Equal(t, 3, listOfCharacter[0].Grad)
+	assert.Equal(t, "test", listOfCharacter[0].Owner)
+	assert.Equal(t, false, listOfCharacter[0].Public)
 
 }
 

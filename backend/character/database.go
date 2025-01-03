@@ -20,6 +20,7 @@ func SaveCharacterToDB(character *Char) error {
 }
 func MigrateStructure() error {
 	err := database.DB.AutoMigrate(
+		&Char{},
 		&Eigenschaft{},
 		&Lp{},
 		&Ap{},
@@ -27,7 +28,6 @@ func MigrateStructure() error {
 		&Merkmale{},
 		&Erfahrungsschatz{},
 		&Bennies{},
-		&Char{},
 	)
 	if err != nil {
 		return err

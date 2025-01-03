@@ -1,4 +1,4 @@
-package main
+package maintenance
 
 import (
 	"bamort/character"
@@ -16,7 +16,7 @@ import (
 func SetupCheck(c *gin.Context) {
 	db := database.ConnectDatabase()
 
-	if db != nil {
+	if db == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to DataBase"})
 		return
 	}
@@ -29,6 +29,37 @@ func SetupCheck(c *gin.Context) {
 }
 
 func migrateStructure() error {
+	/*
+		err := database.DB.AutoMigrate(
+			&user.User{},
+			&character.Char{},
+			&character.Eigenschaft{},
+			&character.Lp{},
+			&character.Ap{},
+			&character.B{},
+			&character.Merkmale{},
+			&character.Erfahrungsschatz{},
+			&character.Bennies{},
+			&gsmaster.Skill{},
+			&gsmaster.WeaponSkill{},
+			&gsmaster.Spell{},
+			&gsmaster.Equipment{},
+			&gsmaster.Weapon{},
+			&gsmaster.Container{},
+			&gsmaster.Transportation{},
+			&gsmaster.Believe{},
+			&equipment.Ausruestung{},
+			&equipment.Waffe{},
+			&equipment.Behaeltniss{},
+			&equipment.Transportation{},
+			&skills.Fertigkeit{},
+			&skills.Waffenfertigkeit{},
+			&skills.Zauber{},
+		)
+		if err != nil {
+			return err
+		}
+	*/
 	err := database.MigrateStructure()
 	if err != nil {
 		return err
@@ -37,7 +68,7 @@ func migrateStructure() error {
 	if err != nil {
 		return err
 	}
-	err = equipment.MigrateStructure()
+	err = user.MigrateStructure()
 	if err != nil {
 		return err
 	}
@@ -45,7 +76,7 @@ func migrateStructure() error {
 	if err != nil {
 		return err
 	}
-	err = importer.MigrateStructure()
+	err = equipment.MigrateStructure()
 	if err != nil {
 		return err
 	}
@@ -53,7 +84,7 @@ func migrateStructure() error {
 	if err != nil {
 		return err
 	}
-	err = user.MigrateStructure()
+	err = importer.MigrateStructure()
 	if err != nil {
 		return err
 	}

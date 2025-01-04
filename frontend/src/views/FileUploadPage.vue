@@ -7,7 +7,7 @@
         <input type="file" id="file_vtt" @change="onFileChange($event, 1)" />
       </div>
       <div>
-        <label for="file_csv">Char CSS (optional):</label>
+        <label for="file_csv">Char CSV (optional):</label>
         <input type="file" id="file_csv" @change="onFileChange($event, 2)" />
       </div>
       <button type="submit" :disabled="!file_vtt">Upload</button>
@@ -59,7 +59,7 @@ export default {
         if (this.file_csv) formData.append("file_csv", this.file_csv);
 
         const token = localStorage.getItem("token"); // Get token from storage
-        const response = await API.post("/upload", formData, {
+        const response = await API.post("/api/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
             "Authorization": `Bearer ${token}`, // Include token in the header

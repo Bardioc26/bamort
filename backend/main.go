@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bamort/character"
 	"bamort/database"
+	"bamort/importer"
 	"bamort/maintenance"
 	"bamort/router"
 
@@ -39,7 +39,7 @@ func main() {
 		protected.PUT("/ausruestung/:ausruestung_id", equipment.UpdateAusruestung)
 		protected.DELETE("/ausruestung/:ausruestung_id", equipment.DeleteAusruestung)
 	*/
-	protected.POST("/upload", character.UploadFiles)
+	protected.POST("/upload", importer.UploadFiles)
 	protected.GET("/setupcheck", maintenance.SetupCheck)
 
 	r.Run(":8180") // Start server on port 8080

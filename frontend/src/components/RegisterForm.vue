@@ -29,7 +29,7 @@ export default {
         const response = await API.post("/register", {
           username: this.username,
           email: this.email,
-          passwordhash: this.password,
+          password: this.password,
         });
         this.success = "Registration successful! You can now log in.";
         this.error = "";

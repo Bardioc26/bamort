@@ -4,6 +4,7 @@ import (
 	"bamort/character"
 	"bamort/database"
 	"bamort/equipment"
+	"bamort/importer"
 	"bamort/models"
 	"bamort/skills"
 	"encoding/base64"
@@ -782,6 +783,12 @@ func TestAddAusrüstung(t *testing.T) {
 
 func TestImportVTT2Char(t *testing.T) {
 	SetupTestDB()
+	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
+	char, err := importer.ImportVTTJSON(fileName)
+	assert.NoError(t, err, "expected no error when saving imported Char")
+	var chr2 character.Char
+	chr2.First(char.Name)
+	assert.Equal(t, char.ID, chr2.ID)
 	/*
 		// loading file to Modell
 		fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")

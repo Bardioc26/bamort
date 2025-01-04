@@ -47,7 +47,7 @@ type Waffe struct {
 type Behaeltniss struct {
 	ImportBase
 	Beschreibung string  `json:"beschreibung"`
-	BeinhaltetIn any     `json:"beinhaltet_in"`
+	BeinhaltetIn string  `json:"beinhaltet_in"`
 	Gewicht      float64 `json:"gewicht"`
 	Magisch      Magisch `json:"magisch"`
 	Tragkraft    float64 `json:"tragkraft"`
@@ -58,7 +58,7 @@ type Behaeltniss struct {
 type Transportation struct {
 	ImportBase
 	Beschreibung string  `json:"beschreibung"`
-	BeinhaltetIn any     `json:"beinhaltet_in"`
+	BeinhaltetIn string  `json:"beinhaltet_in"`
 	Gewicht      int     `json:"gewicht"`
 	Tragkraft    float64 `json:"tragkraft"`
 	Wert         float64 `json:"wert"`

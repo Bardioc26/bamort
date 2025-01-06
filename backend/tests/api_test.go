@@ -126,6 +126,52 @@ func TestListCharacters(t *testing.T) {
 
 }
 
+func TestGetCharacters(t *testing.T) {
+	SetupTestDB()
+	TestCreateChar(t)
+	TestRegisterUser(t)
+	// Initialize a Gin router
+	r := gin.Default()
+	router.SetupGin(r)
+
+	// Routes
+	protected := router.BaseRouterGrp(r)
+	// Character routes
+	rCharGrp := router.CharRouterGrp(protected)
+	rCharGrp.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
+	})
+
+	// Create a test HTTP request
+	req, _ := http.NewRequest("GET", "/api/characters/1", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+	//req.Header.Set("Authorization", "Bearer ${token}")
+	req.Header.Set("Authorization", "Bearer dc7a780.1:bba7f4daabda117f2a2c14263")
+
+	// Create a response recorder to capture the handler's response
+	respRecorder := httptest.NewRecorder()
+
+	// Perform the test request
+	r.ServeHTTP(respRecorder, req)
+
+	// Assert the response status code
+	assert.Equal(t, http.StatusOK, respRecorder.Code)
+
+	// Assert the response body
+	var listOfCharacter *character.Char
+	err := json.Unmarshal(respRecorder.Body.Bytes(), &listOfCharacter)
+	assert.NoError(t, err)
+	assert.Equal(t, "Harsk Hammerhuter, Zen", listOfCharacter.Name)
+	assert.Equal(t, "Zwerg", listOfCharacter.Rasse)
+	assert.Equal(t, 1, int(listOfCharacter.ID)) // Check the simulated ID
+	assert.Equal(t, "Krieger", listOfCharacter.Typ)
+	assert.Equal(t, 3, listOfCharacter.Grad)
+	//assert.Equal(t, "test", listOfCharacter.Owner)
+	//assert.Equal(t, false, listOfCharacter.Public)
+
+}
+
 // TestCreateCharacter tests the POST /characters endpoint
 func TestCreateCharacter(t *testing.T) {
 	// Initialize a Gin router

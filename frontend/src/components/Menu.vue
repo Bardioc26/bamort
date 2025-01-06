@@ -1,5 +1,5 @@
 <template>
-  <nav class="menu">
+  <nav class="top-nav"><!---<nav class="menu"> --->
     <ul>
       <li>
         <router-link to="/dashboard" active-class="active">Dashboard</router-link>

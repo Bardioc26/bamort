@@ -2,7 +2,9 @@
   <div>
     <h2>Your Characters</h2>
     <ul>
-      <li v-for="character in characters" :key="character.character_id">
+      <li v-for="character in characters" :key="character.character_id" style="white-space: nowrap; /* Prevent line breaks inside list items */;">
+        <!-- Link to Character Details -->
+        <router-link :to="`/character/${character.id}`">View Details</router-link>
         {{ character.name }} ({{ character.rasse }}, {{ character.typ }}, {{ character.grad }}, {{ character.owner }}, {{ character.public }} )
         <button @click="goToAusruestung(character.character_id)">Manage Equipment</button>
       </li>

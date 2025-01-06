@@ -33,3 +33,60 @@ a,
     padding: 0 2rem;
   }
 }
+
+/* Top Navigation Bar */
+.top-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: var(--vt-c-black-soft); /* Use your palette from base.css */
+  color: var(--vt-c-white);
+  height: 60px;
+  width: 100%; /* Full width */
+  position: fixed; /* Fix it to the top */
+  top: 0;
+  z-index: 1000;
+  padding: 0 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.top-nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+  padding: 0;
+  margin: 0;
+}
+
+.top-nav li a {
+  text-decoration: none;
+  color: var(--vt-c-white);
+  font-size: 1rem;
+  transition: color 0.3s;
+}
+
+.top-nav li a:hover {
+  color: var(--vt-c-indigo); /* Highlight on hover */
+}
+
+/* Main Content Area */
+.main-content {
+  margin-top: 60px; /* Prevent content from overlapping the nav */
+  padding: 20px;
+  width: 100%; /* Full width */
+  box-sizing: border-box;
+  background-color: var(--color-background); /* Use palette from base.css */
+  min-height: calc(100vh - 60px); /* Fill the remaining height */
+}
+
+@media (max-width: 768px) {
+  .top-nav {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .top-nav ul {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

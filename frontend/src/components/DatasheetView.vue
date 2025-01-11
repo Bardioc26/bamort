@@ -7,7 +7,7 @@
         </div>
         <div class="character-stats">
           <div class="stat">
-            <span>St</span>
+            <span>{{ $t('stats.strength') }}</span>
             <strong>{{ character.eigenschaften[6].value }}</strong>
           </div>
           <div class="stat">

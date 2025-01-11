@@ -1,7 +1,7 @@
 # Install Dependencies
 ## Install the necessary packages:
-npm init vue@latest bamort
 
+cd backend
 go get -u github.com/gin-gonic/gin
 go get -u gorm.io/gorm
 go get -u gorm.io/driver/mysql
@@ -11,6 +11,9 @@ go get -u github.com/stretchr/testify/assert
 go get -u gorm.io/driver/sqlite
 
 
-cd bamort
+cd /frontend
+npm init vue@latest bamort
 npm install
 npm install axios vue-router@4
+npm install vue-i18n@9
+npm install pinia

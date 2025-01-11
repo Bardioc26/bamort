@@ -1,0 +1,25 @@
+export default {
+  stats: {
+    strength: 'Str',
+    dexterity: 'Dex',
+    agility: 'Agi', 
+    constitution: 'Con',
+    intelligence: 'Int',
+    toughness: 'Tou',
+    charisma: 'Cha',
+    attackValue: 'AV',
+    willpower: 'Will',
+    movement: 'Mov',
+    lifepoints: 'HP',
+    astralpoints: 'AP',
+    Datasheet:'Datasheet',
+    Skill:'Skills',
+    Weapon:'Weapons',
+    Spell:'Spells',
+    Equipment:'Equipment',
+    Experiance:'Experiance',
+    History:'History',
+    Notes:'Notes',
+    Campagne:'Campagne',
+  }
+}

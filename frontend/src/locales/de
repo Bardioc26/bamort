@@ -1,0 +1,25 @@
+export default {
+  stats: {
+    strength: 'Stärke',
+    dexterity: 'Gs', 
+    agility: 'Gw',
+    constitution: 'Ko',
+    intelligence: 'In',
+    toughness: 'Zt',
+    charisma: 'Au',
+    attackValue: 'pA',
+    willpower: 'Wk',
+    movement: 'B',
+    lifepoints: 'LP',
+    astralpoints: 'AP',
+    Datasheet:'Datenblatt',
+    Skill:'Fertigkeiten',
+    Weapon:'Waffen',
+    Spell:'Zauber',
+    Equipment:'Ausrüstung',
+    Experiance:'Erfahrung',
+    History:'Logbuch',
+    Notes:'Notizen',
+    Campagne:'Kampagne',
+  }
+}

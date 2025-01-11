@@ -6,6 +6,8 @@ import DashboardView from "../views/DashboardView.vue";
 import AusruestungView from "../views/AusruestungView.vue";
 import FileUploadPage from "../views/FileUploadPage.vue";
 
+import CharacterDetails from "@/components/CharacterDetails.vue";
+
 
 
 
@@ -15,6 +17,8 @@ const routes = [
   { path: "/dashboard", name: "Dashboard", component: DashboardView, meta: { requiresAuth: true } },
   { path: "/ausruestung/:characterId", name: "Ausruestung", component: AusruestungView, meta: { requiresAuth: true } },
   { path: "/upload", name: "FileUpload", component: FileUploadPage },
+  // Route for character details  // Pass route params as props to the component
+  {    path: "/character/:id",     name: "CharacterDetails",    component: CharacterDetails,    props: true, meta: { requiresAuth: true }   },
 ];
 
 const router = createRouter({

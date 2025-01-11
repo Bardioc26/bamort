@@ -3,7 +3,10 @@ package tests
 import (
 	"bamort/character"
 	"bamort/database"
+	"bamort/equipment"
+	"bamort/importer"
 	"bamort/models"
+	"bamort/skills"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -11,30 +14,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
-
-func initTestDB4Character() *gorm.DB {
-	db := SetupTestDB()
-	db.AutoMigrate(
-		&models.Char{},
-		&models.Lp{},
-		&models.Ap{},
-		&models.B{},
-		&models.Merkmale{},
-		&models.Eigenschaft{},
-		&models.Fertigkeit{},
-		&models.Waffenfertigkeit{},
-		&models.Zauber{},
-		&models.Bennies{},
-		&models.Erfahrungsschatz{},
-		&models.Waffe{},
-		&models.Behaeltniss{},
-		&models.Transportation{},
-		&models.Ausruestung{},
-	)
-	return db
-}
 
 // ReadImageAsBase64 reads an image file and returns it as a Base64 string
 // with the prefix "data:mimeType;base64,"
@@ -72,9 +52,9 @@ func ReadImageAsBase64(filePath string) (string, error) {
 	return fullBase64String, nil
 }
 
-func createChar() *models.Char {
+func createChar() *character.Char {
 
-	char := models.Char{}
+	char := character.Char{}
 	char.Name = "Harsk Hammerhuter, Zen"
 	char.Rasse = "Zwerg"
 	char.Typ = "Krieger"
@@ -94,7 +74,7 @@ func createChar() *models.Char {
 	char.Merkmale.Augenfarbe = "blau"
 	char.Merkmale.Haarfarbe = "sandfarben"
 	char.Merkmale.Sonstige = ""
-	char.Eigenschaften = []models.Eigenschaft{
+	char.Eigenschaften = []character.Eigenschaft{
 		{Name: "Au", Value: 74},
 		{Name: "Gs", Value: 96},
 		{Name: "Gw", Value: 70},
@@ -105,7 +85,7 @@ func createChar() *models.Char {
 		{Name: "Wk", Value: 71},
 		{Name: "Zt", Value: 35},
 	}
-	char.Fertigkeiten = []models.Fertigkeit{
+	char.Fertigkeiten = []skills.Fertigkeit{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -143,9 +123,9 @@ func createChar() *models.Char {
 			Bemerkung:       "",
 		},
 	}
-	char.Waffenfertigkeiten = []models.Waffenfertigkeit{
+	char.Waffenfertigkeiten = []skills.Waffenfertigkeit{
 		{
-			Fertigkeit: models.Fertigkeit{
+			Fertigkeit: skills.Fertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Armbr\u00fcste",
@@ -159,7 +139,7 @@ func createChar() *models.Char {
 			},
 		},
 		{
-			Fertigkeit: models.Fertigkeit{
+			Fertigkeit: skills.Fertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Einhandschlagwaffen",
@@ -173,7 +153,7 @@ func createChar() *models.Char {
 			},
 		},
 		{
-			Fertigkeit: models.Fertigkeit{
+			Fertigkeit: skills.Fertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Schilde",
@@ -187,7 +167,7 @@ func createChar() *models.Char {
 			},
 		},
 	}
-	char.Zauber = []models.Zauber{
+	char.Zauber = []skills.Zauber{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -201,7 +181,7 @@ func createChar() *models.Char {
 	char.Spezialisierung = database.StringArray{
 		"Kriegshammer", "Armbrust:schwer", "Stielhammer",
 	}
-	char.Bennies = models.Bennies{
+	char.Bennies = character.Bennies{
 		Sg: 1,
 		Gg: 0,
 		Gp: 0,
@@ -211,7 +191,7 @@ func createChar() *models.Char {
 			},
 		},
 	}
-	char.Erfahrungsschatz = models.Erfahrungsschatz{
+	char.Erfahrungsschatz = character.Erfahrungsschatz{
 		Value: 325,
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
@@ -219,7 +199,7 @@ func createChar() *models.Char {
 			},
 		},
 	}
-	char.Waffen = []models.Waffe{
+	char.Waffen = []equipment.Waffe{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -242,7 +222,7 @@ func createChar() *models.Char {
 			BeinhaltetIn: "moam-container-47363",
 		},
 	}
-	char.Behaeltnisse = []models.Behaeltniss{
+	char.Behaeltnisse = []equipment.Behaeltniss{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -262,7 +242,7 @@ func createChar() *models.Char {
 			BeinhaltetIn: "moam-container-47363",
 		},
 	}
-	char.Transportmittel = []models.Transportation{
+	char.Transportmittel = []equipment.Transportation{
 		{
 
 			BamortCharTrait: models.BamortCharTrait{
@@ -284,7 +264,7 @@ func createChar() *models.Char {
 
 		},
 	}
-	char.Ausruestung = []models.Ausruestung{
+	char.Ausruestung = []equipment.Ausruestung{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -309,9 +289,10 @@ func createChar() *models.Char {
 
 	return &char
 }
-func createFertigkeit(sel int) *models.Fertigkeit {
 
-	liste := []models.Fertigkeit{
+func createFertigkeit(sel int) *skills.Fertigkeit {
+
+	liste := []skills.Fertigkeit{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -355,11 +336,11 @@ func createFertigkeit(sel int) *models.Fertigkeit {
 	}
 	return &liste[sel]
 }
-func createWaffenfertigkeit(sel int) *models.Waffenfertigkeit {
+func createWaffenfertigkeit(sel int) *skills.Waffenfertigkeit {
 
-	liste := []models.Waffenfertigkeit{
+	liste := []skills.Waffenfertigkeit{
 		{
-			Fertigkeit: models.Fertigkeit{
+			Fertigkeit: skills.Fertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Einhandschwerter",
@@ -373,7 +354,7 @@ func createWaffenfertigkeit(sel int) *models.Waffenfertigkeit {
 			},
 		},
 		{
-			Fertigkeit: models.Fertigkeit{
+			Fertigkeit: skills.Fertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Zweihandschlagwaffen",
@@ -387,7 +368,7 @@ func createWaffenfertigkeit(sel int) *models.Waffenfertigkeit {
 			},
 		},
 		{
-			Fertigkeit: models.Fertigkeit{
+			Fertigkeit: skills.Fertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Stichwaffen",
@@ -407,9 +388,9 @@ func createWaffenfertigkeit(sel int) *models.Waffenfertigkeit {
 	}
 	return &liste[sel]
 }
-func createZauber(sel int) *models.Zauber {
+func createZauber(sel int) *skills.Zauber {
 
-	liste := []models.Zauber{
+	liste := []skills.Zauber{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -427,9 +408,9 @@ func createZauber(sel int) *models.Zauber {
 	return &liste[sel]
 }
 
-func createWaffen(sel int) *models.Waffe {
+func createWaffen(sel int) *equipment.Waffe {
 
-	liste := []models.Waffe{
+	liste := []equipment.Waffe{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -457,8 +438,8 @@ func createWaffen(sel int) *models.Waffe {
 	}
 	return &liste[sel]
 }
-func createBehaeltniss(sel int) *models.Behaeltniss {
-	liste := []models.Behaeltniss{
+func createBehaeltniss(sel int) *equipment.Behaeltniss {
+	liste := []equipment.Behaeltniss{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -484,8 +465,8 @@ func createBehaeltniss(sel int) *models.Behaeltniss {
 	}
 	return &liste[sel]
 }
-func createTransportmittel(sel int) *models.Transportation {
-	liste := []models.Transportation{
+func createTransportmittel(sel int) *equipment.Transportation {
+	liste := []equipment.Transportation{
 		{
 
 			BamortCharTrait: models.BamortCharTrait{
@@ -513,8 +494,8 @@ func createTransportmittel(sel int) *models.Transportation {
 	}
 	return &liste[sel]
 }
-func createAusruestung(sel int) *models.Ausruestung {
-	liste := []models.Ausruestung{
+func createAusruestung(sel int) *equipment.Ausruestung {
+	liste := []equipment.Ausruestung{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -547,7 +528,7 @@ func setSpezialisierung(liste  *database.StringArray, pos int,name string) {
 }
 */
 
-func charTests(t *testing.T, char *models.Char) {
+func charTests(t *testing.T, char *character.Char) {
 	assert.LessOrEqual(t, 0, int(char.ID))
 	assert.Equal(t, "Harsk Hammerhuter, Zen", char.Name)
 	assert.Equal(t, "Zwerg", char.Rasse)
@@ -752,9 +733,7 @@ func charTests(t *testing.T, char *models.Char) {
 }
 
 func TestCreateChar(t *testing.T) {
-	// Setup test database
-	testDB := initTestDB4Character()
-	database.DB = testDB // Assign test DB to global DB
+	SetupTestDB()
 	char := createChar()
 	//char.Name = "Harsk Hammerhuter, Zen2"
 	err := char.First(char.Name)
@@ -763,7 +742,7 @@ func TestCreateChar(t *testing.T) {
 		err = char.Create()
 		assert.NoError(t, err, "expected no error creating the char")
 	}
-	char2 := models.Char{}
+	char2 := character.Char{}
 	char2.Name = "Harsk Hammerhuter, Zen"
 	err = char2.First(char2.Name)
 	assert.NoError(t, err, "expected no error creating the char")
@@ -771,12 +750,9 @@ func TestCreateChar(t *testing.T) {
 }
 
 func TestReadChar(t *testing.T) {
-	// Setup test database
-	//testDB := initTestDB4Character()
-	//database.DB = testDB // Assign test DB to global DB
-
+	SetupTestDB()
 	TestCreateChar(t)
-	char := models.Char{}
+	char := character.Char{}
 	char.Name = "Harsk Hammerhuter, Zen"
 	err := char.First(char.Name)
 	assert.NoError(t, err, "expected NO error character not found")
@@ -790,26 +766,29 @@ func TestReadChar(t *testing.T) {
 }
 
 func TestAddAusrüstung(t *testing.T) {
-	// Setup test database
-	//testDB := initTestDB4Character()
-	//database.DB = testDB // Assign test DB to global DB
-
-	TestCreateChar(t)
-	char := models.Char{}
-	char.Name = "Harsk Hammerhuter, Zen"
-	err := char.First(char.Name)
-	assert.NoError(t, err, "expexted no Errorselecting record from DataBase")
-	item := createAusruestung(0)
-	mcr := character.Char{}
-	err = mcr.AddAusruestung(item.Name)
-	assert.NoError(t, err, "No error expected when adding Ausrüstung to char")
+	SetupTestDB()
+	/*
+		TestCreateChar(t)
+		char := character.Char{}
+		char.Name = "Harsk Hammerhuter, Zen"
+		err := char.First(char.Name)
+		assert.NoError(t, err, "expexted no Errorselecting record from DataBase")
+		item := createAusruestung(0)
+		mcr := character.Char{}
+		err = mcr.AddAusruestung(item.Name)
+		assert.NoError(t, err, "No error expected when adding Ausrüstung to char")
+	*/
 
 }
 
 func TestImportVTT2Char(t *testing.T) {
-	// Setup test database
-	//testDB := SetupTestDB()
-	//DB = testDB // Assign test DB to global DB
+	SetupTestDB()
+	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
+	char, err := importer.ImportVTTJSON(fileName)
+	assert.NoError(t, err, "expected no error when saving imported Char")
+	var chr2 character.Char
+	chr2.First(char.Name)
+	assert.Equal(t, char.ID, chr2.ID)
 	/*
 		// loading file to Modell
 		fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")

@@ -1,12 +1,17 @@
-package stammdaten
+package importer
 
 import (
-	"bamort/models"
+	"bamort/character"
+	"bamort/gsmaster"
 	"fmt"
 )
 
-func CheckSkill(fertigkeit *models.ImFertigkeit, autocreate bool) (*models.LookupSkill, error) {
-	stammF := models.LookupSkill{}
+func ImportChar(char CharacterImport) (*character.Char, error) {
+	return nil, fmt.Errorf("char could not be imported %s", "Weil Wegen Kommt noch")
+}
+
+func CheckSkill(fertigkeit *Fertigkeit, autocreate bool) (*gsmaster.Skill, error) {
+	stammF := gsmaster.Skill{}
 	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, fertigkeit.Name).Error
 	err := stammF.First(fertigkeit.Name)
 	if err == nil {
@@ -14,7 +19,7 @@ func CheckSkill(fertigkeit *models.ImFertigkeit, autocreate bool) (*models.Looku
 		return &stammF, nil
 	}
 	if !autocreate {
-		return nil, fmt.Errorf("does not exist in Fertigkeit Stammdaten")
+		return nil, fmt.Errorf("does not exist in Fertigkeit importer")
 	}
 	stammF.System = "midgard"
 	stammF.Name = fertigkeit.Name
@@ -45,8 +50,8 @@ func CheckSkill(fertigkeit *models.ImFertigkeit, autocreate bool) (*models.Looku
 	return &stammF, nil
 }
 
-func CheckSpell(zauber *models.ImZauber, autocreate bool) (*models.LookupSpell, error) {
-	stammF := models.LookupSpell{}
+func CheckSpell(zauber *Zauber, autocreate bool) (*gsmaster.Spell, error) {
+	stammF := gsmaster.Spell{}
 
 	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, zauber.Name).Error
 	err := stammF.First(zauber.Name)
@@ -55,7 +60,7 @@ func CheckSpell(zauber *models.ImZauber, autocreate bool) (*models.LookupSpell, 
 		return &stammF, nil
 	}
 	if !autocreate {
-		return nil, fmt.Errorf("does not exist in zauber Stammdaten")
+		return nil, fmt.Errorf("does not exist in zauber importer")
 	}
 	stammF.System = "midgard"
 	stammF.Name = zauber.Name

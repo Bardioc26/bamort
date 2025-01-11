@@ -1,7 +1,10 @@
 <template>
   <div id="app">
     <Menu />
-    <router-view />
+     <!-- Main Content Area -->
+     <main class="main-content">
+      <router-view />
+    </main>
   </div>
 </template>
 
@@ -15,6 +18,7 @@ export default {
 };
 </script>
 
+<style src="./assets/main.css"></style>
 <style>
 /* Global styles can go here */
 </style>

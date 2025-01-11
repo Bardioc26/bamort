@@ -1,5 +1,5 @@
 <template>
-  <nav class="menu">
+  <nav class="top-nav"><!---<nav class="menu"> --->
     <ul>
       <li>
         <router-link to="/dashboard" active-class="active">Dashboard</router-link>
@@ -14,13 +14,20 @@
         <router-link to="/register" active-class="active">Register</router-link>
       </li>
     </ul>
+    <LanguageSwitcher />
   </nav>
 </template>
 
 <script>
 import { isLoggedIn, logout } from "../utils/auth";
+import LanguageSwitcher from "./LanguageSwitcher.vue";
+
 
 export default {
+  name: "Menu",
+  components: {
+    LanguageSwitcher,
+  },
   computed: {
     isLoggedIn() {
       return isLoggedIn();

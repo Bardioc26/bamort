@@ -2,8 +2,10 @@
   <div>
     <h2>Your Characters</h2>
     <ul>
-      <li v-for="character in characters" :key="character.character_id">
-        {{ character.name }} ({{ character.rasse }})
+      <li v-for="character in characters" :key="character.character_id" style="white-space: nowrap; /* Prevent line breaks inside list items */;">
+        <!-- Link to Character Details -->
+        <router-link :to="`/character/${character.id}`">View Details</router-link>
+        {{ character.name }} ({{ character.rasse }}, {{ character.typ }}, {{ character.grad }}, {{ character.owner }}, {{ character.public }} )
         <button @click="goToAusruestung(character.character_id)">Manage Equipment</button>
       </li>
     </ul>
@@ -21,14 +23,14 @@ export default {
   },
   async created() {
     const token = localStorage.getItem('token')
-    const response = await API.get('/characters', {
+    const response = await API.get('/api/characters', {
       headers: { Authorization: `Bearer ${token}` },
     })
     this.characters = response.data
   },
   methods: {
     goToAusruestung(characterId) {
-      this.$router.push(`/ausruestung/${characterId}`)
+      this.$router.push(`/api/ausruestung/${characterId}`)
     },
   },
 }

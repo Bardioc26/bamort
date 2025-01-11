@@ -1,16 +1,29 @@
 package tests
 
 import (
+	"bamort/character"
+	"bamort/database"
+	"bamort/equipment"
+	"bamort/gsmaster"
+	"bamort/importer"
+	"bamort/skills"
+	"bamort/user"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
+var migrationDone bool
+
 // SetupTestDB creates an in-memory SQLite database for testing
-func SetupTestDB() *gorm.DB {
-	//*
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect to the test database")
+func SetupTestDB() {
+	if database.DB == nil {
+		//*
+		db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		if err != nil {
+			panic("failed to connect to the test database")
+		}
+		database.DB = db
 	}
 	//*/
 	/* //testin with persitant MariaDB
@@ -21,6 +34,44 @@ func SetupTestDB() *gorm.DB {
 		panic("failed to connect to the test database")
 	}
 	//*/
+	if !migrationDone {
+		err := MigrateStructure()
+		if err != nil {
+			panic("failed to MigrateStructure")
+		}
+	}
+}
 
-	return db
+func MigrateStructure() error {
+	err := database.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	err = character.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	err = equipment.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	err = gsmaster.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	err = importer.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	err = skills.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	err = user.MigrateStructure()
+	if err != nil {
+		return err
+	}
+	migrationDone = true
+
+	return nil
 }

@@ -4,103 +4,21 @@
     <div class="character-header">
       <h2>Figur: {{ character.name }}</h2>
     </div>
+    <!-- Submenu Content -->
+    <!-- <div class="character-aspect"> -->
+      <component :is="currentView"  :character="character"/>
+    <!-- </div> -->
 
-    <!-- Character Overview -->
-    <div class="character-overview">
-      <div class="character-image">
-        <img :src="imageSrc" alt="Character Image" v-if="this.character.image"/>
-      </div>
-      <div class="character-stats">
-        <div class="stat">
-          <span>St</span>
-          <strong>{{ character.eigenschaften[6].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>Gs</span>
-          <strong>{{ character.eigenschaften[1].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>Gw</span>
-          <strong>{{ character.eigenschaften[2].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>Ko</span>
-          <strong>{{ character.eigenschaften[4].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>In</span>
-          <strong>{{ character.eigenschaften[3].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>Zt</span>
-          <strong>{{ character.eigenschaften[8].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>Au</span>
-          <strong>{{ character.eigenschaften[0].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>pA</span>
-          <strong>{{ character.eigenschaften[5].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>Wk</span>
-          <strong>{{ character.eigenschaften[7].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>GiT</span>
-          <strong>64</strong>
-        </div>
-        <div class="stat">
-          <span>B</span>
-          <strong>{{ character.b.max }}</strong>
-        </div>
-        <div class="stat">
-          <span>LP</span>
-          <strong>{{ character.lp.max }}</strong>
-        </div>
-        <div class="stat">
-          <span>AP</span>
-          <strong>{{ character.ap.max }}</strong>
-        </div>
-        <div class="stat">
-          <span>GG</span>
-          <strong>{{ character.bennies.gg }}</strong>
-        </div>
-        <div class="stat">
-          <span>SG</span>
-          <strong>{{ character.bennies.sg }}</strong>
-        </div>
-      </div>
-    </div>
-
-    <!-- Character Information -->
-    <div class="character-info">
-      <p>
-        <strong>Aktive Figur?</strong> ✔
-        <strong>Aktuelle Kampagne:</strong> Melzindar
-      </p>
-      <p>
-        {{ character.typ }} (xmännlich), Grad:  {{ character.grad }}, Rasse:  {{ character.rasse }}, Heimat: xAlba, Stand:
-        xMittelschicht.
-      </p>
-      <p>
-        Hort für Grad 3: 125 GS, für nächsten Grad: 250 GS.
-      </p>
-      <p>
-        <strong>Spezialisierung:</strong> {{ character.spezialisierung }}.
-      </p>
-      <p>
-        Alter: {{ character.alter }},<strong v-if="character.hand='rechts'"> Rechtshänder</strong><strong v-else-if="character.hand='links'"> Linkshänder</strong><strong   v-else> Beidhändig</strong  >, Größe: {{ character.groesse }}cm, Gewicht: {{ character.gewicht }}kg, Gestalt: {{ character.merkmale.groesse }},
-        und {{ character.merkmale.breite }}, Augen: {{ character.merkmale.augenfarbe }}, Haare: {{ character.merkmale.haarfarbe }}, Glaube: {{ character.glaube }}.
-      </p>
-      <p>
-        <strong>Merkmale:</strong> {{ character.merkmale.sonstige }}
-      </p>
-      <p>
-        <em>Persönlicher Bonus für</em> Ausdauer 12, Schaden 5, Angriff 2,
-        Abwehr 0, Zauber 0, Resistenz 3 / 4.
-      </p>
+    <!-- Submenu -->
+    <div class="submenu">
+      <button
+        v-for="menu in menus"
+        :key="menu.id"
+        :class="{ active: currentView === menu.component }"
+        @click="changeView(menu.component)"
+      >
+        {{ menu.name }}
+      </button>
     </div>
   </div>
 </template>
@@ -179,18 +97,103 @@
   font-style: italic;
   color: #ccc;
 }
+
+.character-details {
+  position: relative;
+  background-color: #444;
+  color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  min-height: 400px; /* Ensure there's space for content */
+}
+
+.character-main {
+  margin-bottom: 20px;
+}
+
+.character-aspect {
+  padding: 20px;
+  background-color: #333;
+  border-radius: 8px;
+  min-height: 200px; /* Space for content */
+}
+
+.submenu {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #222;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  border-top: 1px solid #555;
+}
+
+.submenu button {
+  background-color: #555;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  margin: 0 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submenu button:hover {
+  background-color: #777;
+}
+
+.submenu button.active {
+  background-color: #007BFF;
+  color: #fff;
+  font-weight: bold;
+}
+
 </style>
 
 
 <script>
 import API from '../utils/api'
+import DatasheetView from "./DatasheetView.vue"; // Component for character stats
+import SkillView from "./SkillView.vue"; // Component for character history
+import WeaponView from "./WeaponView.vue"; // Component for character history
+import SpellView from "./SpellView.vue"; // Component for character history
+import EquipmentView from "./EquipmentView.vue"; // Component for character equipment
+import ExperianceView from "./ExperianceView.vue"; // Component for character history
+
 
 export default {
   name: "CharacterDetails",
   props: ["id"], // Receive the route parameter as a prop
+  components: {
+    DatasheetView,
+    SkillView,
+    WeaponView,
+    SpellView,
+    EquipmentView,
+    ExperianceView,
+  },
   data() {
     return {
       character: {},
+      currentView: "DatasheetView", // Default view
+      menus: [
+        { id: 1, name: "Datasheet", component: "DatasheetView" },
+        { id: 2, name: "Skill", component: "SkillView" },
+        { id: 2, name: "Weapon", component: "WeaponView" },
+        { id: 2, name: "Spell", component: "SpellView" },
+        { id: 2, name: "Equipment", component: "EquipmentView" },
+        { id: 2, name: "Experiance", component: "ExperianceView" },
+        //{ id: 3, name: "History", component: "HistoryView" },
+        //{ id: 2, name: "Notes", component: "NotesView" },
+        //{ id: 2, name: "Campagne", component: "CampagneView" },
+      ],
     };
   },
   async created() {
@@ -205,6 +208,11 @@ export default {
       return this.character.image
         ? `${this.character.image}`
         : "";
+    },
+  },
+  methods: {
+    changeView(view) {
+      this.currentView = view;
     },
   },
 };

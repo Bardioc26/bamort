@@ -1,116 +1,101 @@
 <template>
   <div class="weapon-view">
-    <!-- Character Overview -->
-    <div class="character-overview">
-      <div class="character-image">
-        <img :src="imageSrc" alt="Character Image" v-if="this.character.image"/>
-      </div>
-      <div class="character-stats">
-        <div class="stat">
-          <span>St</span>
-          <strong>{{ character.eigenschaften[6].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>Gs</span>
-          <strong>{{ character.eigenschaften[1].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>Gw</span>
-          <strong>{{ character.eigenschaften[2].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>Ko</span>
-          <strong>{{ character.eigenschaften[4].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>In</span>
-          <strong>{{ character.eigenschaften[3].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>Zt</span>
-          <strong>{{ character.eigenschaften[8].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>Au</span>
-          <strong>{{ character.eigenschaften[0].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>pA</span>
-          <strong>{{ character.eigenschaften[5].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>Wk</span>
-          <strong>{{ character.eigenschaften[7].value }}</strong>
-        </div>
-        <div class="stat">
-          <span>GiT</span>
-          <strong>64</strong>
-        </div>
-        <div class="stat">
-          <span>B</span>
-          <strong>{{ character.b.max }}</strong>
-        </div>
-        <div class="stat">
-          <span>LP</span>
-          <strong>{{ character.lp.max }}</strong>
-        </div>
-        <div class="stat">
-          <span>AP</span>
-          <strong>{{ character.ap.max }}</strong>
-        </div>
-        <div class="stat">
-          <span>GG</span>
-          <strong>{{ character.bennies.gg }}</strong>
-        </div>
-        <div class="stat">
-          <span>SG</span>
-          <strong>{{ character.bennies.sg }}</strong>
-        </div>
-      </div>
-    </div>
-
-    <!-- Character Information -->
-    <div class="character-info">
-      <p>
-        <strong>Aktive Figur?</strong> ✔
-        <strong>Aktuelle Kampagne:</strong> Melzindar
-      </p>
-      <p>
-        {{ character.typ }} (xmännlich), Grad:  {{ character.grad }}, Rasse:  {{ character.rasse }}, Heimat: xAlba, Stand:
-        xMittelschicht.
-      </p>
-      <p>
-        Hort für Grad 3: 125 GS, für nächsten Grad: 250 GS.
-      </p>
-      <p>
-        <strong>Spezialisierung:</strong> {{ character.spezialisierung }}.
-      </p>
-      <p>
-        Alter: {{ character.alter }},<strong v-if="character.hand='rechts'"> Rechtshänder</strong><strong v-else-if="character.hand='links'"> Linkshänder</strong><strong   v-else> Beidhändig</strong  >, Größe: {{ character.groesse }}cm, Gewicht: {{ character.gewicht }}kg, Gestalt: {{ character.merkmale.groesse }},
-        und {{ character.merkmale.breite }}, Augen: {{ character.merkmale.augenfarbe }}, Haare: {{ character.merkmale.haarfarbe }}, Glaube: {{ character.glaube }}.
-      </p>
-      <p>
-        <strong>Merkmale:</strong> {{ character.merkmale.sonstige }}
-      </p>
-      <p>
-        <em>Persönlicher Bonus für</em> Ausdauer 12, Schaden 5, Angriff 2,
-        Abwehr 0, Zauber 0, Resistenz 3 / 4.
-      </p>
-    </div>
+    <h2>{{ character.name }}'s Ausrüstung</h2>
+    <div class="weapon-list">
+      <table class="weapon-table">
+      <thead>
+        <tr>
+          <th>{{ $t('weapon.name') }}</th>
+          <th>{{ $t('weapon.description') }}</th>
+          <th>{{ $t('weapon.weight') }}</th>
+          <th>{{ $t('weapon.value') }}</th>
+          <th>{{ $t('weapon.amount') }}</th>
+          <th>{{ $t('weapon.contained_in') }}</th>
+          <th>{{ $t('weapon.bonus') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+      <template v-for="weapon in character.waffen">
+        <tr>
+          <td>{{ weapon.name || '-' }}</td>
+          <td>{{ weapon.beschreibung || '-' }}</td>
+          <td>{{ weapon.gewicht || '-' }}</td>
+          <td>{{ weapon.wert || '-' }}</td>
+          <td>{{ weapon.anzahl || '-' }}</td>
+          <td>{{ weapon.beinhaltet_in || '-' }}</td>
+          <td>{{ weapon.Anb || '-' }}/{{ weapon.Abwb || '-' }}</td>
+        </tr>
+      </template>
+      </tbody>
+      </table>
+    </div> <!--- end weapon-list-->
   </div> <!--- end character -datasheet-->
 
 </template>
 
-<style>
-.weapon-view {
-color: #aaa;
-}
+<style>.weapon-view {
+  color: #fff;
+  }
+  .weapon-table {
+    width: 100%;
+    border-collapse: collapse;
+    position: relative;
+    margin-top: 1rem;
+  }
+
+  .weapon-table thead {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+  }
+  .weapon-table th,
+  .weapon-table td {
+    padding: 0.5rem;
+    text-align: left;
+    border: 1px solid #ddd;
+  }
+
+  .weapon-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+  }
+
+  .weapon-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+    color: #000000;
+  }
+
+
+  .weapon-list {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Custom scrollbar styling */
+  .weapon-list::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .weapon-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .weapon-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+
+  .weapon-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 </style>
 
 
 <script>
 export default {
-name: "WeaponView",
+name: "EquipmentView",
   props: {
     character: {
       type: Object,

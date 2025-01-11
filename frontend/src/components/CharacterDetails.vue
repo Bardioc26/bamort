@@ -2,7 +2,7 @@
   <div class="character-details">
     <!-- Character Header -->
     <div class="character-header">
-      <h2>Figur: {{ character.name }}</h2>
+      <h2>{{ $t('char') }}: {{ character.name }}</h2>
     </div>
     <!-- Submenu Content -->
     <!-- <div class="character-aspect"> -->
@@ -17,7 +17,7 @@
         :class="{ active: currentView === menu.component }"
         @click="changeView(menu.component)"
       >
-        {{ menu.name }}
+      {{ $t( 'menu.'+ menu.name ) }}
       </button>
     </div>
   </div>
@@ -202,13 +202,6 @@ export default {
       headers: { Authorization: `Bearer ${token}` },
     })
     this.character = response.data
-  },
-  computed: {
-    imageSrc() {
-      return this.character.image
-        ? `${this.character.image}`
-        : "";
-    },
   },
   methods: {
     changeView(view) {

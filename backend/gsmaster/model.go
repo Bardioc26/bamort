@@ -152,6 +152,21 @@ func (object *Skill) Save() error {
 	}
 	return nil
 }
+func (object *Skill) GetSkillCategories() ([]string, error) {
+	var categories []string
+	gameSystem := "midgard"
+
+	result := database.DB.Model(&Skill{}).
+		Where("system = ? and category is not null", gameSystem).
+		Distinct().
+		Pluck("category", &categories)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return categories, nil
+}
 func (object *WeaponSkill) TableName() string {
 	return dbPrefix + "_" + "weaponskills"
 }

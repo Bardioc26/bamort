@@ -39,6 +39,7 @@ func main() {
 		protected.PUT("/ausruestung/:ausruestung_id", equipment.UpdateAusruestung)
 		protected.DELETE("/ausruestung/:ausruestung_id", equipment.DeleteAusruestung)
 	*/
+	router.MaintenanceRouterGrp(protected)
 	protected.POST("/upload", importer.UploadFiles)
 	protected.GET("/setupcheck", maintenance.SetupCheck)
 

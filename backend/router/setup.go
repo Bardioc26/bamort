@@ -2,6 +2,7 @@ package router
 
 import (
 	"bamort/character"
+	"bamort/gsmaster"
 	"bamort/user"
 
 	"github.com/gin-contrib/cors"
@@ -40,5 +41,16 @@ func CharRouterGrp(rt *gin.RouterGroup) *gin.RouterGroup {
 	//rCharGrp.PUT("/{id}/skills/{id}", character.UpdateSkill)                      //	Update skill for a character
 	//rCharGrp.POST("/{id}/skills", character.AddSkill)                       //Add a skill to a character
 	//rCharGrp.DELETE("/{id}/skills/{id}", character.DeleteSkill)                       //ADEletedd a skill to a character
+	return rCharGrp
+}
+
+func MaintenanceRouterGrp(rt *gin.RouterGroup) *gin.RouterGroup {
+	rCharGrp := rt.Group("/maintenance")
+	rCharGrp.GET("", gsmaster.GetMasterData)
+	rCharGrp.GET("/skills", gsmaster.GetMDSkills)
+	rCharGrp.GET("/skills/:id", gsmaster.GetMDSkill)
+	rCharGrp.PUT("/skills/:id", gsmaster.UpdateMDSkill)
+	rCharGrp.POST("/skills", gsmaster.AddSkill)
+	rCharGrp.DELETE("/skills/:id", gsmaster.DeleteMDSkill)
 	return rCharGrp
 }

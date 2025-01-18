@@ -232,7 +232,7 @@ func TransformImportFertigkeit2GSDMaster(object *Fertigkeit) (*gsmaster.Skill, e
 	if !gsmobj.Improvable {
 		gsmobj.Improvable = isImprovableSkill(gsmobj.Name)
 	}
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	err = gsmobj.Create()
 	if err != nil {
 		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
@@ -255,7 +255,7 @@ func TransformImportWaffenFertigkeit2GSDMaster(object *Waffenfertigkeit) (*gsmas
 	gsmobj.Quelle = object.Quelle
 	gsmobj.Bonuseigenschaft = "check"
 	gsmobj.Improvable = true
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	err = gsmobj.Create()
 	if err != nil {
 		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
@@ -279,7 +279,7 @@ func TransformImportSpell2GSDMaster(object *Zauber) (*gsmaster.Spell, error) {
 	gsmobj.Reichweite = "0m"
 	gsmobj.Wirkungsziel = ""
 	gsmobj.Quelle = object.Quelle
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	err = gsmobj.Create()
 	if err != nil {
 		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
@@ -296,7 +296,7 @@ func TransformImportWeapon2GSDMaster(object *Waffe) (*gsmaster.Weapon, error) {
 		return &gsmobj, nil
 	}
 	// if not found insert to masterdata
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	gsmobj.Name = object.Name
 	gsmobj.Beschreibung = object.Beschreibung
 	//gsmobj.Quelle = object.Quelle
@@ -320,7 +320,7 @@ func TransformImportContainer2GSDMaster(object *Behaeltniss) (*gsmaster.Containe
 		return &gsmobj, nil
 	}
 	// if not found insert to masterdata
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	gsmobj.Name = object.Name
 	gsmobj.Beschreibung = object.Beschreibung
 	//gsmobj.Quelle = object.Quelle
@@ -344,7 +344,7 @@ func TransformImportTransportation2GSDMaster(object *Transportation) (*gsmaster.
 		return &gsmobj, nil
 	}
 	// if not found insert to masterdata
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	gsmobj.Name = object.Name
 	gsmobj.Beschreibung = object.Beschreibung
 	//gsmobj.Quelle = object.Quelle
@@ -367,7 +367,7 @@ func TransformImportEquipment2GSDMaster(object *Ausruestung) (*gsmaster.Equipmen
 		return &gsmobj, nil
 	}
 	// if not found insert to masterdata
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	gsmobj.Name = object.Name
 	gsmobj.Beschreibung = object.Beschreibung
 	//gsmobj.Quelle = object.Quelle
@@ -390,7 +390,7 @@ func TransformImportBelieve2GSDMaster(object string) (*gsmaster.Believe, error) 
 		return &gsmobj, nil
 	}
 	// if not found insert to masterdata
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	gsmobj.Name = object
 	gsmobj.Beschreibung = ""
 	//gsmobj.Quelle = object.Quelle

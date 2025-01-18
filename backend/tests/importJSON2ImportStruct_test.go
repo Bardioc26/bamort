@@ -234,7 +234,7 @@ func TestImportSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, "check", skill.Bonuseigenschaft)
 	assert.Equal(t, "KOD5 99", skill.Quelle)
 	assert.Equal(t, false, skill.Improvable)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	//}
 	skill2 := gsmaster.Skill{}
 	erro = skill2.First("Hören")
@@ -253,7 +253,7 @@ func TestImportSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Bonuseigenschaft, skill3.Bonuseigenschaft)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
 	assert.Equal(t, skill2.Improvable, skill3.Improvable)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 
 	err = importer.CheckFertigkeiten2GSMaster(character.Fertigkeiten)
 	assert.NoError(t, err, "Expected no error when checkimg Skills against gsmaster")
@@ -275,7 +275,7 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, "check", skill.Bonuseigenschaft)
 	assert.Equal(t, "KOD5 144", skill.Quelle)
 	assert.Equal(t, true, skill.Improvable)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	//}
 	skill2 := gsmaster.WeaponSkill{}
 	erro = skill2.First("Armbrüste")
@@ -294,7 +294,7 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Bonuseigenschaft, skill3.Bonuseigenschaft)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
 	assert.Equal(t, skill2.Improvable, skill3.Improvable)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 
 	err = importer.CheckWaffenFertigkeiten2GSMaster(character.Waffenfertigkeiten)
 	assert.NoError(t, err, "Expected no error when checkimg WeaponSkills against gsmaster")
@@ -310,7 +310,7 @@ func TestImportSpell2GSMaster(t *testing.T) {
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	assert.Equal(t, "Angst", skill.Name)
 	assert.Equal(t, "", skill.Beschreibung)
 	assert.Equal(t, "ARK5 63", skill.Quelle)
@@ -330,7 +330,7 @@ func TestImportSpell2GSMaster(t *testing.T) {
 	assert.Equal(t, "Angst", skill3.Name)
 
 	assert.Equal(t, skill2.ID, skill3.ID)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 	assert.Equal(t, skill2.Name, skill3.Name)
 	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
@@ -353,7 +353,7 @@ func TestImportWeapon2GSMaster(t *testing.T) {
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	assert.Equal(t, "Armbrust:schwer", skill.Name)
 	assert.Equal(t, "", skill.Beschreibung)
 	assert.Equal(t, "", skill.Quelle)
@@ -373,7 +373,7 @@ func TestImportWeapon2GSMaster(t *testing.T) {
 	assert.Equal(t, "Armbrust:schwer", skill3.Name)
 
 	assert.Equal(t, skill2.ID, skill3.ID)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 	assert.Equal(t, skill2.Name, skill3.Name)
 	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
@@ -396,7 +396,7 @@ func TestImportContainer2GSMaster(t *testing.T) {
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(container.ID), 1)
-	assert.Equal(t, "midgard", container.System)
+	assert.Equal(t, "midgard", container.GameSystem)
 	assert.Equal(t, "Lederrucksack", container.Name)
 	assert.Equal(t, "für 25 kg", container.Beschreibung)
 	assert.Equal(t, "", container.Quelle)
@@ -416,7 +416,7 @@ func TestImportContainer2GSMaster(t *testing.T) {
 	assert.Equal(t, "Lederrucksack", container3.Name)
 
 	assert.Equal(t, container2.ID, container3.ID)
-	assert.Equal(t, container2.System, container3.System)
+	assert.Equal(t, container2.GameSystem, container3.GameSystem)
 	assert.Equal(t, container2.Name, container3.Name)
 	assert.Equal(t, container2.Beschreibung, container3.Beschreibung)
 	assert.Equal(t, container2.Quelle, container3.Quelle)
@@ -439,7 +439,7 @@ func TestImportTransportation2GSMaster(t *testing.T) {
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	assert.Equal(t, "Karren", skill.Name)
 	assert.Equal(t, "für 250 kg", skill.Beschreibung)
 	assert.Equal(t, "", skill.Quelle)
@@ -459,7 +459,7 @@ func TestImportTransportation2GSMaster(t *testing.T) {
 	assert.Equal(t, "Karren", skill3.Name)
 
 	assert.Equal(t, skill2.ID, skill3.ID)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 	assert.Equal(t, skill2.Name, skill3.Name)
 	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
@@ -482,7 +482,7 @@ func TestImportEquipment2GSMaster(t *testing.T) {
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	assert.Equal(t, "Lederrüstung", skill.Name)
 	assert.Equal(t, "", skill.Beschreibung)
 	assert.Equal(t, "", skill.Quelle)
@@ -500,7 +500,7 @@ func TestImportEquipment2GSMaster(t *testing.T) {
 	assert.Equal(t, "Lederrüstung", skill3.Name)
 
 	assert.Equal(t, skill2.ID, skill3.ID)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 	assert.Equal(t, skill2.Name, skill3.Name)
 	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
@@ -520,7 +520,7 @@ func TestImportBelieve2GSMaster(t *testing.T) {
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	assert.Equal(t, "Torkin", skill.Name)
 	assert.Equal(t, "", skill.Beschreibung)
 	assert.Equal(t, "", skill.Quelle)
@@ -536,7 +536,7 @@ func TestImportBelieve2GSMaster(t *testing.T) {
 	assert.Equal(t, "Torkin", skill3.Name)
 
 	assert.Equal(t, skill2.ID, skill3.ID)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 	assert.Equal(t, skill2.Name, skill3.Name)
 	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)

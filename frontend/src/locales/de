@@ -73,6 +73,7 @@ export default {
     ursprung:'Ursprung',
     quelle:'Quelle',
     system:'System',
+    bonus:'Bonus',
 
   },
   Spell:'Zauber',

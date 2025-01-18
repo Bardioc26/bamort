@@ -21,7 +21,7 @@ func CheckSkill(fertigkeit *Fertigkeit, autocreate bool) (*gsmaster.Skill, error
 	if !autocreate {
 		return nil, fmt.Errorf("does not exist in Fertigkeit importer")
 	}
-	stammF.System = "midgard"
+	stammF.GameSystem = "midgard"
 	stammF.Name = fertigkeit.Name
 	if stammF.Name != "Sprache" {
 		stammF.Beschreibung = fertigkeit.Beschreibung
@@ -62,7 +62,7 @@ func CheckSpell(zauber *Zauber, autocreate bool) (*gsmaster.Spell, error) {
 	if !autocreate {
 		return nil, fmt.Errorf("does not exist in zauber importer")
 	}
-	stammF.System = "midgard"
+	stammF.GameSystem = "midgard"
 	stammF.Name = zauber.Name
 	stammF.Beschreibung = zauber.Beschreibung
 	stammF.AP = "1"

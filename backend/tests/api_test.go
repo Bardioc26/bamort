@@ -2,8 +2,13 @@ package tests
 
 import (
 	"bamort/character"
-	"bamort/maintenance"
+	"bamort/database"
+	"bamort/equipment"
+	"bamort/gsmaster"
+	"bamort/importer"
 	"bamort/router"
+	"bamort/skills"
+	"bamort/user"
 	"bytes"
 	"encoding/json"
 	"net/http"
@@ -35,52 +40,28 @@ type Character struct {
 }
 
 func TestSetupCheck(t *testing.T) {
-	//r := gin.Default()
-	c := gin.Context{}
-	maintenance.SetupCheck(&c)
-	assert.Empty(t, nil, "expected NIL to be empty")
-	/*
-		SetupTestDB()
-		TestCreateChar(t)
-		// Initialize a Gin router
-		r := gin.Default()
-		router.SetupGin(r)
+	// must be in sync with maintenance.SetupCheck(&c)
+	//maintenance.SetupCheck(&c)
+	db := database.ConnectDatabase()
+	assert.NotEqual(t, nil, db, "expected NIL to be empty")
+	if db == nil {
+		return
+	}
+	err := database.MigrateStructure()
+	assert.NoError(t, nil, err, "No error expected when migrating database tables ", err)
+	err = character.MigrateStructure()
+	assert.NoError(t, nil, err, "No error expected when migrating character tables ", err)
+	err = user.MigrateStructure()
+	assert.NoError(t, nil, err, "No error expected when migrating user tables ", err)
+	err = gsmaster.MigrateStructure()
+	assert.NoError(t, nil, err, "No error expected when migrating gsmaster tables ", err)
+	err = equipment.MigrateStructure()
+	assert.NoError(t, nil, err, "No error expected when migrating equipment tables ", err)
+	err = skills.MigrateStructure()
+	assert.NoError(t, nil, err, "No error expected when migrating skill tables  ", err)
+	err = importer.MigrateStructure()
+	assert.NoError(t, nil, err, "No error expected when migrating importer tables ", err)
 
-		// Routes
-		protected := router.BaseRouterGrp(r)
-		// Character routes
-		rCharGrp := router.CharRouterGrp(protected)
-		rCharGrp.GET("/test", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
-		})
-
-		// Create a test HTTP request
-		req, _ := http.NewRequest("GET", "/api/characters", nil)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer ${token}")
-
-		// Create a response recorder to capture the handler's response
-		respRecorder := httptest.NewRecorder()
-
-		// Perform the test request
-		r.ServeHTTP(respRecorder, req)
-
-		// Assert the response status code
-		assert.Equal(t, http.StatusOK, respRecorder.Code)
-
-		// Assert the response body
-		var listOfCharacter []*character.CharList
-		err := json.Unmarshal(respRecorder.Body.Bytes(), &listOfCharacter)
-		assert.NoError(t, err)
-		assert.Equal(t, "Harsk Hammerhuter, Zen", listOfCharacter[0].Name)
-		assert.Equal(t, "Zwerg", listOfCharacter[0].Rasse)
-		assert.Equal(t, 1, int(listOfCharacter[0].ID)) // Check the simulated ID
-		assert.Equal(t, "Krieger", listOfCharacter[0].Typ)
-		assert.Equal(t, 3, listOfCharacter[0].Grad)
-		assert.Equal(t, "test", listOfCharacter[0].Owner)
-		assert.Equal(t, false, listOfCharacter[0].Public)
-	*/
 }
 func TestListCharacters(t *testing.T) {
 	SetupTestDB()

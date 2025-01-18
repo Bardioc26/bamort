@@ -9,6 +9,7 @@ import (
 	"bamort/skills"
 	"bamort/user"
 
+	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -16,24 +17,33 @@ import (
 var migrationDone bool
 
 // SetupTestDB creates an in-memory SQLite database for testing
-func SetupTestDB() {
+func SetupTestDB(opts ...bool) {
+	useTestDB := true
+	if len(opts) > 0 {
+		useTestDB = opts[0]
+	}
 	if database.DB == nil {
-		//*
-		db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		if err != nil {
-			panic("failed to connect to the test database")
+		var db *gorm.DB
+		var err error
+		if useTestDB {
+			//*
+			db, err = gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+			if err != nil {
+				panic("failed to connect to the test database")
+			}
+			//*/
+		} else {
+			//* //testin with persitant MariaDB
+			dsn := "bamort:bG4)efozrc@tcp(192.168.0.5:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
+			//dsn := "root:26Osiris-Mar@tcp(192.168.0.5:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
+			db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+			if err != nil {
+				panic("failed to connect to the test database")
+			}
+			//*/
 		}
 		database.DB = db
 	}
-	//*/
-	/* //testin with persitant MariaDB
-	dsn := "bamort:bG4)efozrc@tcp(192.168.0.5:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
-	//dsn := "root:26Osiris-Mar@tcp(192.168.0.5:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect to the test database")
-	}
-	//*/
 	if !migrationDone {
 		err := MigrateStructure()
 		if err != nil {

@@ -61,7 +61,8 @@ func GetCharacter(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
 		return
 	}
-	c.JSON(http.StatusOK, character)
+	feChar := ToFeChar(&character)
+	c.JSON(http.StatusOK, feChar)
 }
 func UpdateCharacter(c *gin.Context) {
 	var character Char
@@ -119,3 +120,38 @@ func AddFertigkeit(charID uint, fertigkeit *skills.Fertigkeit) error {
 
 // Append the new Fertigkeit to the slice of the characters property
 //character.Fertigkeiten = append(character.Fertigkeiten, fertigkeit)
+
+func ToFeChar(object *Char) *FeChar {
+	feC := &FeChar{
+		Char: *object,
+	}
+	skills, innateSkills, categories := splitSkills(object.Fertigkeiten)
+	feC.Fertigkeiten = skills
+	feC.InnateSkills = innateSkills
+	feC.CategorizedSkills = categories
+	return feC
+}
+func splitSkills(object []skills.Fertigkeit) ([]skills.Fertigkeit, []skills.Fertigkeit, map[string][]skills.Fertigkeit) {
+	var normSkills []skills.Fertigkeit
+	var innateSkills []skills.Fertigkeit
+	//var categories map[string][]skills.Fertigkeit
+	categories := make(map[string][]skills.Fertigkeit)
+	for _, skill := range object {
+		gsmsk := skill.GetGsm()
+		if gsmsk.Improvable {
+			category := "Unkategorisiert"
+			if gsmsk.ID != 0 && gsmsk.Category != "" {
+				category = gsmsk.Category
+			}
+			normSkills = append(normSkills, skill)
+			if _, exists := categories[category]; !exists {
+				categories[category] = make([]skills.Fertigkeit, 0)
+			}
+			categories[category] = append(categories[category], skill)
+		} else {
+			innateSkills = append(innateSkills, skill)
+		}
+	}
+
+	return normSkills, innateSkills, categories
+}

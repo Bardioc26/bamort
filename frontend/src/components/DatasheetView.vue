@@ -1,5 +1,5 @@
 <template>
-    <div class="datasheet-view" v-if="character">
+    <div class="cd-view" v-if="character">
       <!-- Character Overview -->
       <div class="character-overview">
         <div class="character-image">
@@ -25,16 +25,16 @@
           Heimat: {{ character.heimat || 'x' }}Alba,
           Stand:  {{ character.heimat || 'x' }}Mittelschicht.
         </p>
-        <p>
-          Hort für Grad 3: 125 GS, für nächsten Grad: 250 GS.
+        <p v-if="character.rasse==='Zwerg'">
+          Hort für Grad {{ character.grad || 'x' }}: 125 GS, für nächsten Grad: 250 GS.
         </p>
         <p>
           <strong>Spezialisierung:</strong> {{ character.spezialisierung || '-'}}.
         </p>
         <p>
           Alter: {{ character.alter || 'xx' }},
-          <strong v-if="character.hand='rechts'"> Rechtshänder</strong>
-          <strong v-else-if="character.hand='links'"> Linkshänder</strong>
+          <strong v-if="character.hand=='rechts'"> Rechtshänder</strong>
+          <strong v-else-if="character.hand=='links'"> Linkshänder</strong>
           <strong   v-else> Beidhändig</strong>,
           Größe: {{ character.groesse }}cm,
           Gewicht: {{ character.gewicht }}kg,
@@ -57,9 +57,7 @@
 </template>
 
 <style>
-.datasheet-view {
-  color: #fff;
-}
+
 </style>
 
 

@@ -21,15 +21,15 @@ func CheckSkill(fertigkeit *Fertigkeit, autocreate bool) (*gsmaster.Skill, error
 	if !autocreate {
 		return nil, fmt.Errorf("does not exist in Fertigkeit importer")
 	}
-	stammF.System = "midgard"
+	stammF.GameSystem = "midgard"
 	stammF.Name = fertigkeit.Name
 	if stammF.Name != "Sprache" {
 		stammF.Beschreibung = fertigkeit.Beschreibung
 	}
 	if fertigkeit.Fertigkeitswert < 12 {
-		stammF.Initialkeitswert = 5
+		stammF.Initialwert = 5
 	} else {
-		stammF.Initialkeitswert = 12
+		stammF.Initialwert = 12
 	}
 	stammF.Bonuseigenschaft = "keine"
 	stammF.Quelle = fertigkeit.Quelle
@@ -62,13 +62,13 @@ func CheckSpell(zauber *Zauber, autocreate bool) (*gsmaster.Spell, error) {
 	if !autocreate {
 		return nil, fmt.Errorf("does not exist in zauber importer")
 	}
-	stammF.System = "midgard"
+	stammF.GameSystem = "midgard"
 	stammF.Name = zauber.Name
 	stammF.Beschreibung = zauber.Beschreibung
-	stammF.AP = 1
+	stammF.AP = "1"
 	stammF.Stufe = 1
 	stammF.Wirkungsziel = "Zauberer"
-	stammF.Reichweite = 15
+	stammF.Reichweite = "15 m"
 
 	stammF.Quelle = zauber.Quelle
 	//fmt.Println(stammF)

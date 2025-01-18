@@ -2,6 +2,7 @@ package router
 
 import (
 	"bamort/character"
+	"bamort/gsmaster"
 	"bamort/user"
 
 	"github.com/gin-contrib/cors"
@@ -40,5 +41,37 @@ func CharRouterGrp(rt *gin.RouterGroup) *gin.RouterGroup {
 	//rCharGrp.PUT("/{id}/skills/{id}", character.UpdateSkill)                      //	Update skill for a character
 	//rCharGrp.POST("/{id}/skills", character.AddSkill)                       //Add a skill to a character
 	//rCharGrp.DELETE("/{id}/skills/{id}", character.DeleteSkill)                       //ADEletedd a skill to a character
+	return rCharGrp
+}
+
+func MaintenanceRouterGrp(rt *gin.RouterGroup) *gin.RouterGroup {
+	rCharGrp := rt.Group("/maintenance")
+	rCharGrp.GET("", gsmaster.GetMasterData)
+	rCharGrp.GET("/skills", gsmaster.GetMDSkills)
+	rCharGrp.GET("/skills/:id", gsmaster.GetMDSkill)
+	rCharGrp.PUT("/skills/:id", gsmaster.UpdateMDSkill)
+	rCharGrp.POST("/skills", gsmaster.AddSkill)
+	rCharGrp.DELETE("/skills/:id", gsmaster.DeleteMDSkill)
+	rCharGrp.GET("/weaponskills", gsmaster.GetMDWeaponSkills)
+	rCharGrp.GET("/weaponskills/:id", gsmaster.GetMDWeaponSkill)
+	rCharGrp.PUT("/weaponskills/:id", gsmaster.UpdateMDWeaponSkill)
+	rCharGrp.POST("/weaponskills", gsmaster.AddWeaponSkill)
+	rCharGrp.DELETE("/weaponskills/:id", gsmaster.DeleteMDWeaponSkill)
+	rCharGrp.GET("/spells", gsmaster.GetMDSpells)
+	rCharGrp.GET("/spells/:id", gsmaster.GetMDSpell)
+	rCharGrp.PUT("/spells/:id", gsmaster.UpdateMDSpell)
+	rCharGrp.POST("/spells", gsmaster.AddSpell)
+	rCharGrp.DELETE("/spells/:id", gsmaster.DeleteMDSpell)
+	rCharGrp.GET("/equipment", gsmaster.GetMDEquipments)
+	rCharGrp.GET("/equipment/:id", gsmaster.GetMDEquipment)
+	rCharGrp.PUT("/equipment/:id", gsmaster.UpdateMDEquipment)
+	rCharGrp.POST("/equipment", gsmaster.AddEquipment)
+	rCharGrp.DELETE("/equipment/:id", gsmaster.DeleteMDEquipment)
+	rCharGrp.GET("/weapons", gsmaster.GetMDWeapons)
+	rCharGrp.GET("/weapons/:id", gsmaster.GetMDWeapon)
+	rCharGrp.PUT("/weapons/:id", gsmaster.UpdateMDWeapon)
+	rCharGrp.POST("/weapons", gsmaster.AddWeapon)
+	rCharGrp.DELETE("/weapons/:id", gsmaster.DeleteMDWeapon)
+
 	return rCharGrp
 }

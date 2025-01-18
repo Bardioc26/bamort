@@ -1,6 +1,9 @@
 package skills
 
-import "bamort/models"
+import (
+	"bamort/gsmaster"
+	"bamort/models"
+)
 
 var dbPrefix = "skill"
 
@@ -11,9 +14,15 @@ type Fertigkeit struct {
 	Bonus           int    `json:"bonus,omitempty"`
 	Pp              int    `json:"pp,omitempty"`
 	Bemerkung       string `json:"bemerkung"`
+	Improvable      bool   `json:"improvable"`
+	Category        string `json:"category"`
 }
 
 type Waffenfertigkeit struct {
+	Fertigkeit
+}
+
+type AngeboreneFertigkeit struct {
 	Fertigkeit
 }
 
@@ -32,4 +41,26 @@ func (object *Waffenfertigkeit) TableName() string {
 }
 func (object *Zauber) TableName() string {
 	return dbPrefix + "_" + "spells"
+}
+
+func (object *Fertigkeit) GetGsm() *gsmaster.Skill {
+	var gsmsk gsmaster.Skill
+	gsmsk.First(object.Name)
+	if gsmsk.ID == 0 {
+		return nil
+	}
+	return &gsmsk
+}
+
+func (object *Fertigkeit) GetCategory() string {
+	if object.Category != "" {
+		return object.Category
+	}
+	var gsmsk gsmaster.Skill
+	gsmsk.First(object.Name)
+	if gsmsk.ID == 0 {
+		return "Unkategorisiert"
+	}
+	object.Category = gsmsk.Category
+	return object.Category
 }

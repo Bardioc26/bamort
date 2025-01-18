@@ -19,6 +19,11 @@ func readImportChar(fileName string) (*importer.CharacterImport, error) {
 	}
 	character := importer.CharacterImport{}
 	err = json.Unmarshal(fileContent, &character)
+	/*
+		for i := range character.Behaeltnisse {
+			character.Behaeltnisse[i].ExtID = character.Behaeltnisse[i].ID
+		}
+	*/
 	return &character, err
 }
 
@@ -225,11 +230,11 @@ func TestImportSkill2GSMaster(t *testing.T) {
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
 	assert.Equal(t, "Hören", skill.Name)
 	assert.Equal(t, "", skill.Beschreibung)
-	assert.Equal(t, 6, skill.Initialkeitswert)
+	assert.Equal(t, 6, skill.Initialwert)
 	assert.Equal(t, "check", skill.Bonuseigenschaft)
 	assert.Equal(t, "KOD5 99", skill.Quelle)
 	assert.Equal(t, false, skill.Improvable)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	//}
 	skill2 := gsmaster.Skill{}
 	erro = skill2.First("Hören")
@@ -244,11 +249,11 @@ func TestImportSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.ID, skill3.ID)
 	assert.Equal(t, skill2.Name, skill3.Name)
 	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
-	assert.Equal(t, skill2.Initialkeitswert, skill3.Initialkeitswert)
+	assert.Equal(t, skill2.Initialwert, skill3.Initialwert)
 	assert.Equal(t, skill2.Bonuseigenschaft, skill3.Bonuseigenschaft)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
 	assert.Equal(t, skill2.Improvable, skill3.Improvable)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 
 	err = importer.CheckFertigkeiten2GSMaster(character.Fertigkeiten)
 	assert.NoError(t, err, "Expected no error when checkimg Skills against gsmaster")
@@ -266,11 +271,11 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
 	assert.Equal(t, "Armbrüste", skill.Name)
 	assert.Equal(t, "", skill.Beschreibung)
-	assert.Equal(t, 8, skill.Initialkeitswert)
+	assert.Equal(t, 8, skill.Initialwert)
 	assert.Equal(t, "check", skill.Bonuseigenschaft)
 	assert.Equal(t, "KOD5 144", skill.Quelle)
 	assert.Equal(t, true, skill.Improvable)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	//}
 	skill2 := gsmaster.WeaponSkill{}
 	erro = skill2.First("Armbrüste")
@@ -285,11 +290,11 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.ID, skill3.ID)
 	assert.Equal(t, skill2.Name, skill3.Name)
 	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
-	assert.Equal(t, skill2.Initialkeitswert, skill3.Initialkeitswert)
+	assert.Equal(t, skill2.Initialwert, skill3.Initialwert)
 	assert.Equal(t, skill2.Bonuseigenschaft, skill3.Bonuseigenschaft)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
 	assert.Equal(t, skill2.Improvable, skill3.Improvable)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 
 	err = importer.CheckWaffenFertigkeiten2GSMaster(character.Waffenfertigkeiten)
 	assert.NoError(t, err, "Expected no error when checkimg WeaponSkills against gsmaster")
@@ -305,7 +310,7 @@ func TestImportSpell2GSMaster(t *testing.T) {
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	assert.Equal(t, "Angst", skill.Name)
 	assert.Equal(t, "", skill.Beschreibung)
 	assert.Equal(t, "ARK5 63", skill.Quelle)
@@ -325,7 +330,7 @@ func TestImportSpell2GSMaster(t *testing.T) {
 	assert.Equal(t, "Angst", skill3.Name)
 
 	assert.Equal(t, skill2.ID, skill3.ID)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 	assert.Equal(t, skill2.Name, skill3.Name)
 	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
@@ -348,7 +353,7 @@ func TestImportWeapon2GSMaster(t *testing.T) {
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	assert.Equal(t, "Armbrust:schwer", skill.Name)
 	assert.Equal(t, "", skill.Beschreibung)
 	assert.Equal(t, "", skill.Quelle)
@@ -368,7 +373,7 @@ func TestImportWeapon2GSMaster(t *testing.T) {
 	assert.Equal(t, "Armbrust:schwer", skill3.Name)
 
 	assert.Equal(t, skill2.ID, skill3.ID)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 	assert.Equal(t, skill2.Name, skill3.Name)
 	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
@@ -387,38 +392,38 @@ func TestImportContainer2GSMaster(t *testing.T) {
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 	//for i := range character.Fertigkeiten {
-	skill, erro := importer.TransformImportContainer2GSDMaster(&character.Behaeltnisse[0])
+	container, erro := importer.TransformImportContainer2GSDMaster(&character.Behaeltnisse[0])
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
-	assert.GreaterOrEqual(t, int(skill.ID), 1)
-	assert.Equal(t, "midgard", skill.System)
-	assert.Equal(t, "Lederrucksack", skill.Name)
-	assert.Equal(t, "für 25 kg", skill.Beschreibung)
-	assert.Equal(t, "", skill.Quelle)
-	assert.Equal(t, 0.5, skill.Gewicht)
-	assert.Equal(t, 4.0, skill.Wert)
-	assert.Equal(t, 25.0, skill.Volumen)
-	assert.Equal(t, 25.0, skill.Tragkraft)
+	assert.GreaterOrEqual(t, int(container.ID), 1)
+	assert.Equal(t, "midgard", container.GameSystem)
+	assert.Equal(t, "Lederrucksack", container.Name)
+	assert.Equal(t, "für 25 kg", container.Beschreibung)
+	assert.Equal(t, "", container.Quelle)
+	assert.Equal(t, 0.5, container.Gewicht)
+	assert.Equal(t, 4.0, container.Wert)
+	assert.Equal(t, 25.0, container.Volumen)
+	assert.Equal(t, 25.0, container.Tragkraft)
 	//}
-	skill2 := gsmaster.Container{}
-	erro = skill2.First("Lederrucksack")
+	container2 := gsmaster.Container{}
+	erro = container2.First("Lederrucksack")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
-	assert.Equal(t, 1, int(skill.ID))
+	assert.Equal(t, 1, int(container.ID))
 
-	skill3 := gsmaster.Container{}
-	erro = skill3.FirstId(1)
+	container3 := gsmaster.Container{}
+	erro = container3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
-	assert.Equal(t, "Lederrucksack", skill3.Name)
+	assert.Equal(t, "Lederrucksack", container3.Name)
 
-	assert.Equal(t, skill2.ID, skill3.ID)
-	assert.Equal(t, skill2.System, skill3.System)
-	assert.Equal(t, skill2.Name, skill3.Name)
-	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
-	assert.Equal(t, skill2.Quelle, skill3.Quelle)
-	assert.Equal(t, skill2.Gewicht, skill3.Gewicht)
-	assert.Equal(t, skill2.Wert, skill3.Wert)
-	assert.Equal(t, skill2.Volumen, skill3.Volumen)
-	assert.Equal(t, skill2.Tragkraft, skill3.Tragkraft)
+	assert.Equal(t, container2.ID, container3.ID)
+	assert.Equal(t, container2.GameSystem, container3.GameSystem)
+	assert.Equal(t, container2.Name, container3.Name)
+	assert.Equal(t, container2.Beschreibung, container3.Beschreibung)
+	assert.Equal(t, container2.Quelle, container3.Quelle)
+	assert.Equal(t, container2.Gewicht, container3.Gewicht)
+	assert.Equal(t, container2.Wert, container3.Wert)
+	assert.Equal(t, container2.Volumen, container3.Volumen)
+	assert.Equal(t, container2.Tragkraft, container3.Tragkraft)
 
 	err = importer.CheckContainers2GSMaster(character.Behaeltnisse)
 	assert.NoError(t, err, "Expected no error when checkimg Containers against gsmaster")
@@ -434,7 +439,7 @@ func TestImportTransportation2GSMaster(t *testing.T) {
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	assert.Equal(t, "Karren", skill.Name)
 	assert.Equal(t, "für 250 kg", skill.Beschreibung)
 	assert.Equal(t, "", skill.Quelle)
@@ -454,7 +459,7 @@ func TestImportTransportation2GSMaster(t *testing.T) {
 	assert.Equal(t, "Karren", skill3.Name)
 
 	assert.Equal(t, skill2.ID, skill3.ID)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 	assert.Equal(t, skill2.Name, skill3.Name)
 	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
@@ -477,7 +482,7 @@ func TestImportEquipment2GSMaster(t *testing.T) {
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	assert.Equal(t, "Lederrüstung", skill.Name)
 	assert.Equal(t, "", skill.Beschreibung)
 	assert.Equal(t, "", skill.Quelle)
@@ -495,7 +500,7 @@ func TestImportEquipment2GSMaster(t *testing.T) {
 	assert.Equal(t, "Lederrüstung", skill3.Name)
 
 	assert.Equal(t, skill2.ID, skill3.ID)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 	assert.Equal(t, skill2.Name, skill3.Name)
 	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
@@ -515,7 +520,7 @@ func TestImportBelieve2GSMaster(t *testing.T) {
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
-	assert.Equal(t, "midgard", skill.System)
+	assert.Equal(t, "midgard", skill.GameSystem)
 	assert.Equal(t, "Torkin", skill.Name)
 	assert.Equal(t, "", skill.Beschreibung)
 	assert.Equal(t, "", skill.Quelle)
@@ -531,143 +536,10 @@ func TestImportBelieve2GSMaster(t *testing.T) {
 	assert.Equal(t, "Torkin", skill3.Name)
 
 	assert.Equal(t, skill2.ID, skill3.ID)
-	assert.Equal(t, skill2.System, skill3.System)
+	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 	assert.Equal(t, skill2.Name, skill3.Name)
 	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
 	err = importer.CheckBelieve2GSMaster(character)
 	assert.NoError(t, err, "Expected no error when checkimg Transüportations against gsmaster")
 }
-
-/*
-func TestImportFertigkeitenStammdatenSingle(t *testing.T) {
-	// Setup test database
-	SetupTestDB()
-
-	// loading file to Modell
-	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
-	assert.Equal(t, "../testdata/VTT_Import1.json", fileName)
-	fileContent, err := os.ReadFile(fileName)
-	assert.NoError(t, err, "Expected no error when reading file "+fileName)
-	character := importer.CharacterImport{}
-	err = json.Unmarshal(fileContent, &character)
-	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
-
-	//checke Fertigkeit auf vorhandensein in den Stammdaten
-	fertigkeit := character.Fertigkeiten[1]
-	stammF, err := importer.CheckSkill(&fertigkeit, false)
-	assert.Error(t, err, "expexted Error does not exist in Fertigkeit Stammdaten")
-	if stammF == nil && err != nil {
-		stammF, err = importer.CheckSkill(&fertigkeit, true)
-	}
-	assert.NoError(t, err, "Expected to finds the Fertigkeit Stammdaten in the database")
-	assert.Equal(t, fertigkeit.Name, stammF.Name)
-	assert.Equal(t, fertigkeit.Beschreibung, stammF.Beschreibung)
-	assert.Equal(t, fertigkeit.Quelle, stammF.Quelle)
-	assert.Equal(t, 5, stammF.Initialkeitswert)
-	assert.Equal(t, "keine", stammF.Bonuseigenschaft)
-	assert.Equal(t, "midgard", stammF.System)
-	assert.Equal(t, 1, int(stammF.ID))
-
-	// und noch mal
-	//checke Fertigkeit auf vorhandensein in den Stammdaten
-	//fertigkeit := character.Fertigkeiten[1]
-
-	stammF, err = importer.CheckSkill(&fertigkeit, false)
-	assert.NoError(t, err, "expexted no Error exist in Fertigkeit Stammdaten")
-	if stammF == nil && err != nil {
-		stammF, err = importer.CheckSkill(&fertigkeit, true)
-	}
-	assert.NoError(t, err, "Expected to finds the Fertigkeit Stammdaten in the database")
-	assert.Equal(t, fertigkeit.Name, stammF.Name)
-	assert.Equal(t, fertigkeit.Beschreibung, stammF.Beschreibung)
-	assert.Equal(t, fertigkeit.Quelle, stammF.Quelle)
-	assert.Equal(t, 5, stammF.Initialkeitswert)
-	assert.Equal(t, "keine", stammF.Bonuseigenschaft)
-	assert.Equal(t, "midgard", stammF.System)
-	assert.Equal(t, 1, int(stammF.ID))
-}
-
-func TestImportFertigkeitenStammdatenMulti(t *testing.T) {
-	// Setup test database
-	SetupTestDB()
-
-	// loading file to Modell
-	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
-	assert.Equal(t, "../testdata/VTT_Import1.json", fileName)
-	fileContent, err := os.ReadFile(fileName)
-	assert.NoError(t, err, "Expected no error when reading file "+fileName)
-	character := importer.CharacterImport{}
-	err = json.Unmarshal(fileContent, &character)
-	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
-
-	//for index, fertigkeit := range character.Fertigkeiten {
-	for _, fertigkeit := range character.Fertigkeiten {
-		fmt.Println(fertigkeit.Name)
-		stammF, err := importer.CheckSkill(&fertigkeit, true)
-		assert.NoError(t, err, "Expected to finds the Fertigkeit Stammdaten in the database")
-		assert.Equal(t, fertigkeit.Name, stammF.Name, "Name should be equal")
-		if fertigkeit.Name != "Sprache" {
-			assert.Equal(t, fertigkeit.Beschreibung, stammF.Beschreibung, "Beschreibung should be equal")
-		} else {
-			assert.Equal(t, "", stammF.Beschreibung, "Beschreibung should be equal")
-		}
-		assert.Equal(t, fertigkeit.Quelle, stammF.Quelle, "Quelle should be equal")
-		//assert.Equal(t, 5, stammF.Initialkeitswert, "Initialkeitswert should be equal")
-		assert.Equal(t, "keine", stammF.Bonuseigenschaft, "Bonuseigenschaft should be equal")
-		assert.Equal(t, "midgard", stammF.System, "System should be equal")
-		//assert.NotEmpty(t, index+1, int(stammF.ID), "ID should be equal")
-	}
-}
-
-func TestImportZauberStammdatenSingle(t *testing.T) {
-	// Setup test database
-	SetupTestDB()
-
-	// loading file to Modell
-	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
-	assert.Equal(t, "../testdata/VTT_Import1.json", fileName)
-	fileContent, err := os.ReadFile(fileName)
-	assert.NoError(t, err, "Expected no error when reading file "+fileName)
-	character := importer.CharacterImport{}
-	err = json.Unmarshal(fileContent, &character)
-	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
-
-	//checke zauber auf vorhandensein in den Stammdaten
-	zauber := character.Zauber[0]
-	stammF, err := importer.CheckSpell(&zauber, false)
-	assert.Error(t, err, "expexted Error does not exist in zauber Stammdaten")
-	if stammF == nil && err != nil {
-		stammF, err = importer.CheckSpell(&zauber, true)
-	}
-	assert.NoError(t, err, "Expected to finds the zauber Stammdaten in the database")
-	assert.Equal(t, zauber.Name, stammF.Name)
-	assert.Equal(t, zauber.Beschreibung, stammF.Beschreibung)
-	assert.Equal(t, zauber.Quelle, stammF.Quelle)
-	assert.Equal(t, 1, stammF.AP)
-	assert.Equal(t, 1, stammF.Stufe)
-	assert.Equal(t, "Zauberer", stammF.Wirkungsziel)
-	assert.Equal(t, 15, stammF.Reichweite)
-	assert.Equal(t, "midgard", stammF.System)
-	assert.Equal(t, 1, int(stammF.ID))
-
-	// und noch mal
-	//checke zauber auf vorhandensein in den Stammdaten
-	//zauber := character.zauberen[1]
-	stammF, err = importer.CheckSpell(&zauber, false)
-	assert.NoError(t, err, "expexted no Error exist in zauber Stammdaten")
-	if stammF == nil && err != nil {
-		stammF, err = importer.CheckSpell(&zauber, true)
-	}
-	assert.NoError(t, err, "Expected to finds the zauber Stammdaten in the database")
-	assert.Equal(t, zauber.Name, stammF.Name)
-	assert.Equal(t, zauber.Beschreibung, stammF.Beschreibung)
-	assert.Equal(t, zauber.Quelle, stammF.Quelle)
-	assert.Equal(t, 1, stammF.AP)
-	assert.Equal(t, 1, stammF.Stufe)
-	assert.Equal(t, "Zauberer", stammF.Wirkungsziel)
-	assert.Equal(t, 15, stammF.Reichweite)
-	assert.Equal(t, "midgard", stammF.System)
-	assert.Equal(t, 1, int(stammF.ID))
-}
-*/

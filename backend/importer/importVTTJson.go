@@ -149,20 +149,22 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 	char.B.Value = imp.B.Value
 	char.Erfahrungsschatz.Value = imp.Erfahrungsschatz.Value
 	for i := range imp.Transportmittel {
-		char.Transportmittel = append(char.Transportmittel, equipment.Transportation{
+		char.Transportmittel = append(char.Transportmittel, equipment.Container{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{Name: imp.Transportmittel[i].Name},
 			},
-			Beschreibung: imp.Transportmittel[i].Beschreibung,
-			BeinhaltetIn: imp.Transportmittel[i].BeinhaltetIn,
-			Gewicht:      float64(imp.Transportmittel[i].Gewicht),
-			Tragkraft:    imp.Transportmittel[i].Tragkraft,
-			Wert:         imp.Transportmittel[i].Wert,
+			IsTransportation: true,
+			Beschreibung:     imp.Transportmittel[i].Beschreibung,
+			BeinhaltetIn:     imp.Transportmittel[i].BeinhaltetIn,
+			Gewicht:          float64(imp.Transportmittel[i].Gewicht),
+			Tragkraft:        imp.Transportmittel[i].Tragkraft,
+			Wert:             imp.Transportmittel[i].Wert,
 			Magisch: models.Magisch{
 				IstMagisch:  imp.Transportmittel[i].Magisch.IstMagisch,
 				Abw:         imp.Transportmittel[i].Magisch.Abw,
 				Ausgebrannt: imp.Transportmittel[i].Magisch.Ausgebrannt,
 			},
+			ExtID: imp.Transportmittel[i].ID,
 		})
 	}
 	for i := range imp.Ausruestung {
@@ -185,22 +187,24 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 		})
 	}
 	for i := range imp.Behaeltnisse {
-		char.Behaeltnisse = append(char.Behaeltnisse, equipment.Behaeltniss{
+		char.Behaeltnisse = append(char.Behaeltnisse, equipment.Container{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
 					Name: imp.Behaeltnisse[i].Name},
 			},
-			Beschreibung: imp.Behaeltnisse[i].Beschreibung,
-			BeinhaltetIn: imp.Behaeltnisse[i].BeinhaltetIn,
-			Tragkraft:    imp.Behaeltnisse[i].Tragkraft,
-			Volumen:      imp.Behaeltnisse[i].Volumen,
-			Gewicht:      float64(imp.Behaeltnisse[i].Gewicht),
-			Wert:         imp.Behaeltnisse[i].Wert,
+			IsTransportation: false,
+			Beschreibung:     imp.Behaeltnisse[i].Beschreibung,
+			BeinhaltetIn:     imp.Behaeltnisse[i].BeinhaltetIn,
+			Tragkraft:        imp.Behaeltnisse[i].Tragkraft,
+			Volumen:          imp.Behaeltnisse[i].Volumen,
+			Gewicht:          float64(imp.Behaeltnisse[i].Gewicht),
+			Wert:             imp.Behaeltnisse[i].Wert,
 			Magisch: models.Magisch{
 				IstMagisch:  imp.Behaeltnisse[i].Magisch.IstMagisch,
 				Abw:         imp.Behaeltnisse[i].Magisch.Abw,
 				Ausgebrannt: imp.Behaeltnisse[i].Magisch.Ausgebrannt,
 			},
+			ExtID: imp.Behaeltnisse[i].ID,
 		})
 	}
 	for i := range imp.Waffen {
@@ -245,6 +249,31 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 	err = char.Create()
 	if err != nil {
 		return nil, err
+	}
+	// Fix contained in links
+	for i := range char.Ausruestung {
+		err := char.Ausruestung[i].LinkContainer()
+		if err != nil {
+			return &char, err
+		}
+	}
+	for i := range char.Waffen {
+		err := char.Waffen[i].LinkContainer()
+		if err != nil {
+			return &char, err
+		}
+	}
+	for i := range char.Behaeltnisse {
+		err := char.Behaeltnisse[i].LinkContainer()
+		if err != nil {
+			return &char, err
+		}
+	}
+	for i := range char.Transportmittel {
+		err := char.Transportmittel[i].LinkContainer()
+		if err != nil {
+			return &char, err
+		}
 	}
 	return &char, nil
 }

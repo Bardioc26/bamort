@@ -13,6 +13,9 @@
       <li v-if="!isLoggedIn">
         <router-link to="/register" active-class="active">Register</router-link>
       </li>
+      <li v-if="isLoggedIn">
+        <router-link to="/maintenance" active-class="active">Maintenance</router-link>
+      </li>
     </ul>
     <LanguageSwitcher />
   </nav>

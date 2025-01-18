@@ -10,8 +10,8 @@ import (
 var dbPrefix = "gsm"
 
 type LookupList struct {
-	ID           uint   `gorm:"primaryKey" json:"id"`
-	System       string `gorm:"index" json:"system"`
+	ID           uint   `gorm:"primaryKey" json:"id"` //`gorm:"default:uuid_generate_v3()"` // db func
+	GameSystem   string `gorm:"index;default:midgard" json:"system"`
 	Name         string `json:"name"`
 	Beschreibung string `json:"beschreibung"`
 	Quelle       string `json:"quelle"`
@@ -19,9 +19,11 @@ type LookupList struct {
 
 type Skill struct {
 	LookupList
-	Initialkeitswert int    `json:"initialwert"`
+	Initialwert      int    `gorm:"default:5" json:"initialwert"`
 	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
-	Improvable       bool   `json:"improvable"`
+	Improvable       bool   `gorm:"default:true" json:"improvable"`
+	InnateSkill      bool   `gorm:"default:false" json:"innateskill"`
+	Category         string `json:"category"`
 }
 
 type WeaponSkill struct {
@@ -30,17 +32,24 @@ type WeaponSkill struct {
 
 type Spell struct {
 	LookupList
-	Bonus        int `json:"bonus"`
-	Stufe        int
-	AP           int
-	Reichweite   int
-	Wirkungsziel string
+	Bonus           int    `json:"bonus"`
+	Stufe           int    `json:"level"`
+	AP              string `gorm:"default:1"  json:"ap"`
+	Art             string `gorm:"default:Gestenzauber" json:"art"`
+	Zauberdauer     string `gorm:"default:10 sec" json:"zauberdauer"`
+	Reichweite      string `json:"reichweite"` // in m
+	Wirkungsziel    string `json:"wirkungsziel"`
+	Wirkungsbereich string `json:"wirkungsbereich"`
+	Wirkungsdauer   string `json:"wirkungsdauer"`
+	Ursprung        string `json:"ursprung"`
+	Category        string `gorm:"default:normal" json:"category"`
 }
 
 type Equipment struct {
 	LookupList
-	Gewicht float64 `json:"gewicht"`
-	Wert    float64 `json:"wert"`
+	Gewicht      float64 `json:"gewicht"` // in kg
+	Wert         float64 `json:"wert"`    // in Gold
+	PersonalItem bool    `gorm:"default:false" json:"personal_item"`
 }
 
 type Weapon struct {
@@ -51,8 +60,8 @@ type Weapon struct {
 
 type Container struct {
 	Equipment
-	Tragkraft float64 `json:"tragkraft"`
-	Volumen   float64 `json:"volumen"`
+	Tragkraft float64 `json:"tragkraft"` // in kg
+	Volumen   float64 `json:"volumen"`   // in Liter
 }
 
 type Transportation struct {
@@ -65,7 +74,7 @@ type Believe struct {
 
 func (object *LookupList) Create() error {
 	gameSystem := "midgard"
-	object.System = gameSystem
+	object.GameSystem = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&object).Error; err != nil {
@@ -110,7 +119,7 @@ func (object *Skill) TableName() string {
 }
 func (stamm *Skill) Create() error {
 	gameSystem := "midgard"
-	stamm.System = gameSystem
+	stamm.GameSystem = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
@@ -150,12 +159,40 @@ func (object *Skill) Save() error {
 	}
 	return nil
 }
+
+func (object *Skill) Delete() error {
+	result := database.DB.Delete(&object, object.ID)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("no record found with ID %v", object.ID)
+	}
+	return nil
+}
+
+func (object *Skill) GetSkillCategories() ([]string, error) {
+	var categories []string
+	gameSystem := "midgard"
+
+	result := database.DB.Model(&Skill{}).
+		Where("system = ? and category is not null", gameSystem).
+		Distinct().
+		Pluck("category", &categories)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return categories, nil
+}
+
 func (object *WeaponSkill) TableName() string {
 	return dbPrefix + "_" + "weaponskills"
 }
 func (stamm *WeaponSkill) Create() error {
 	gameSystem := "midgard"
-	stamm.System = gameSystem
+	stamm.GameSystem = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
@@ -200,7 +237,7 @@ func (object *Spell) TableName() string {
 }
 func (stamm *Spell) Create() error {
 	gameSystem := "midgard"
-	stamm.System = gameSystem
+	stamm.GameSystem = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
@@ -240,12 +277,29 @@ func (object *Spell) Save() error {
 	}
 	return nil
 }
+
+func (object *Spell) GetSpellCategories() ([]string, error) {
+	var categories []string
+	gameSystem := "midgard"
+
+	result := database.DB.Model(&Spell{}).
+		Where("system = ? and category is not null", gameSystem).
+		Distinct().
+		Pluck("category", &categories)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return categories, nil
+}
+
 func (object *Equipment) TableName() string {
 	return dbPrefix + "_" + "equipments"
 }
 func (stamm *Equipment) Create() error {
 	gameSystem := "midgard"
-	stamm.System = gameSystem
+	stamm.GameSystem = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
@@ -290,7 +344,7 @@ func (object *Weapon) TableName() string {
 }
 func (stamm *Weapon) Create() error {
 	gameSystem := "midgard"
-	stamm.System = gameSystem
+	stamm.GameSystem = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
@@ -312,11 +366,10 @@ func (stamm *Weapon) First(name string) error {
 	return nil
 }
 
-func (object *Weapon) FirstId(value uint) error {
+func (object *Weapon) FirstId(id uint) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, id).Error
 	if err != nil {
-		// zauber found
 		return err
 	}
 	return nil
@@ -335,7 +388,7 @@ func (object *Container) TableName() string {
 }
 func (stamm *Container) Create() error {
 	gameSystem := "midgard"
-	stamm.System = gameSystem
+	stamm.GameSystem = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
@@ -380,7 +433,7 @@ func (object *Transportation) TableName() string {
 }
 func (stamm *Transportation) Create() error {
 	gameSystem := "midgard"
-	stamm.System = gameSystem
+	stamm.GameSystem = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
@@ -425,7 +478,7 @@ func (object *Believe) TableName() string {
 }
 func (stamm *Believe) Create() error {
 	gameSystem := "midgard"
-	stamm.System = gameSystem
+	stamm.GameSystem = gameSystem
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {

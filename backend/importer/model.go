@@ -24,6 +24,7 @@ type Ausruestung struct {
 	Beschreibung string  `json:"beschreibung"`
 	Anzahl       int     `json:"anzahl"`
 	BeinhaltetIn string  `json:"beinhaltet_in"`
+	ContainedIn  uint    `json:"contained_in"`
 	Bonus        int     `json:"bonus,omitempty"`
 	Gewicht      float64 `json:"gewicht"`
 	Magisch      Magisch `json:"magisch"`
@@ -37,6 +38,7 @@ type Waffe struct {
 	Anb                     int     `json:"anb"`
 	Anzahl                  int     `json:"anzahl"`
 	BeinhaltetIn            string  `json:"beinhaltet_in"`
+	ContainedIn             uint    `json:"contained_in"`
 	Gewicht                 float64 `json:"gewicht"`
 	Magisch                 Magisch `json:"magisch"`
 	NameFuerSpezialisierung string  `json:"nameFuerSpezialisierung"`
@@ -48,6 +50,7 @@ type Behaeltniss struct {
 	ImportBase
 	Beschreibung string  `json:"beschreibung"`
 	BeinhaltetIn string  `json:"beinhaltet_in"`
+	ContainedIn  uint    `json:"contained_in"`
 	Gewicht      float64 `json:"gewicht"`
 	Magisch      Magisch `json:"magisch"`
 	Tragkraft    float64 `json:"tragkraft"`
@@ -59,6 +62,7 @@ type Transportation struct {
 	ImportBase
 	Beschreibung string  `json:"beschreibung"`
 	BeinhaltetIn string  `json:"beinhaltet_in"`
+	ContainedIn  uint    `json:"contained_in"`
 	Gewicht      int     `json:"gewicht"`
 	Tragkraft    float64 `json:"tragkraft"`
 	Wert         float64 `json:"wert"`
@@ -180,6 +184,32 @@ type CharacterImport struct {
 	Image              string             `json:"image,omitempty"`
 }
 
+const (
+	SKILL_HOEREN       = "Hören"
+	SKILL_NACHTSICHT   = "Nachtsicht"
+	SKILL_RIECHEN      = "Riechen"
+	SKILL_SECHSTERSINN = "Sechster Sinn"
+	SKILL_SEHEN        = "Sehen"
+	SKILL_WAHRNEHMUNG  = "Wahrnehmung"
+)
+
+var nonImprovableSkills = []string{
+	SKILL_HOEREN,
+	SKILL_NACHTSICHT,
+	SKILL_RIECHEN,
+	SKILL_SECHSTERSINN,
+	SKILL_SEHEN,
+	SKILL_WAHRNEHMUNG,
+}
+
+func isImprovableSkill(name string) bool {
+	for _, skill := range nonImprovableSkills {
+		if skill == name {
+			return false
+		}
+	}
+	return true
+}
 func TransformImportFertigkeit2GSDMaster(object *Fertigkeit) (*gsmaster.Skill, error) {
 	gsmobj := gsmaster.Skill{}
 
@@ -191,14 +221,18 @@ func TransformImportFertigkeit2GSDMaster(object *Fertigkeit) (*gsmaster.Skill, e
 	// if not found insert to masterdata
 	gsmobj.Name = object.Name
 	gsmobj.Beschreibung = object.Beschreibung
-	gsmobj.Initialkeitswert = object.Fertigkeitswert
+	gsmobj.Initialwert = object.Fertigkeitswert
 	gsmobj.Quelle = object.Quelle
 	gsmobj.Bonuseigenschaft = "check"
+	gsmobj.Improvable = false
 	re := regexp.MustCompile(`moam-ability-\\d+`)
 	if re.MatchString(object.ID) {
 		gsmobj.Improvable = true
 	}
-	gsmobj.System = "midgard"
+	if !gsmobj.Improvable {
+		gsmobj.Improvable = isImprovableSkill(gsmobj.Name)
+	}
+	gsmobj.GameSystem = "midgard"
 	err = gsmobj.Create()
 	if err != nil {
 		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
@@ -217,11 +251,11 @@ func TransformImportWaffenFertigkeit2GSDMaster(object *Waffenfertigkeit) (*gsmas
 	// if not found insert to masterdata
 	gsmobj.Name = object.Name
 	gsmobj.Beschreibung = object.Beschreibung
-	gsmobj.Initialkeitswert = object.Fertigkeitswert
+	gsmobj.Initialwert = object.Fertigkeitswert
 	gsmobj.Quelle = object.Quelle
 	gsmobj.Bonuseigenschaft = "check"
 	gsmobj.Improvable = true
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	err = gsmobj.Create()
 	if err != nil {
 		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
@@ -240,12 +274,12 @@ func TransformImportSpell2GSDMaster(object *Zauber) (*gsmaster.Spell, error) {
 	// if not found insert to masterdata
 	gsmobj.Name = object.Name
 	gsmobj.Beschreibung = object.Beschreibung
-	gsmobj.AP = 0
+	gsmobj.AP = "0"
 	gsmobj.Stufe = 0
-	gsmobj.Reichweite = 0
+	gsmobj.Reichweite = "0m"
 	gsmobj.Wirkungsziel = ""
 	gsmobj.Quelle = object.Quelle
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	err = gsmobj.Create()
 	if err != nil {
 		return nil, fmt.Errorf("creating gsmaster record failed: %s", err)
@@ -262,7 +296,7 @@ func TransformImportWeapon2GSDMaster(object *Waffe) (*gsmaster.Weapon, error) {
 		return &gsmobj, nil
 	}
 	// if not found insert to masterdata
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	gsmobj.Name = object.Name
 	gsmobj.Beschreibung = object.Beschreibung
 	//gsmobj.Quelle = object.Quelle
@@ -286,7 +320,7 @@ func TransformImportContainer2GSDMaster(object *Behaeltniss) (*gsmaster.Containe
 		return &gsmobj, nil
 	}
 	// if not found insert to masterdata
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	gsmobj.Name = object.Name
 	gsmobj.Beschreibung = object.Beschreibung
 	//gsmobj.Quelle = object.Quelle
@@ -310,7 +344,7 @@ func TransformImportTransportation2GSDMaster(object *Transportation) (*gsmaster.
 		return &gsmobj, nil
 	}
 	// if not found insert to masterdata
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	gsmobj.Name = object.Name
 	gsmobj.Beschreibung = object.Beschreibung
 	//gsmobj.Quelle = object.Quelle
@@ -333,7 +367,7 @@ func TransformImportEquipment2GSDMaster(object *Ausruestung) (*gsmaster.Equipmen
 		return &gsmobj, nil
 	}
 	// if not found insert to masterdata
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	gsmobj.Name = object.Name
 	gsmobj.Beschreibung = object.Beschreibung
 	//gsmobj.Quelle = object.Quelle
@@ -356,7 +390,7 @@ func TransformImportBelieve2GSDMaster(object string) (*gsmaster.Believe, error) 
 		return &gsmobj, nil
 	}
 	// if not found insert to masterdata
-	gsmobj.System = "midgard"
+	gsmobj.GameSystem = "midgard"
 	gsmobj.Name = object
 	gsmobj.Beschreibung = ""
 	//gsmobj.Quelle = object.Quelle

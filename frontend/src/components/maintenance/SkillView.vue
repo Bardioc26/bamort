@@ -126,7 +126,7 @@ export default {
   methods: {
     startEdit(index) {
       this.editingIndex = index;
-      this.editedItem = { ...this.mdata['skills'][index] };
+      this.editedItem = { ...this.sortedSkills[index] };
     },
     saveEdit(index) {
       this.$emit('update-skill', { index, skill: this.editedItem });

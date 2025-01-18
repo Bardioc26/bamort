@@ -104,7 +104,6 @@ export default {
       this.currentView = view;
     },
     async handleSkillUpdate({ index, skill }) {
-
       try {
           const response = await API.put(
             `/api/maintenance/skills/${skill.id}`, skill,
@@ -115,16 +114,12 @@ export default {
               }
             }
           )
-          /*
-          const response = await fetch(`skills/${skill.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(skill)
-          });
-          */
-          if (!response.ok) throw new Error('Update failed');
-          const updatedSkill = await response.json();
-          this.skills[index] = updatedSkill;
+          if (!response.statusText== "OK") throw new Error('Update failed');
+          const updatedSkill = response.data;
+          // Update the skill in mdata
+          this.mdata.skills = this.mdata.skills.map(s =>
+            s.id === updatedSkill.id ? updatedSkill : s
+          );
         } catch (error) {
           console.error('Failed to update skill:', error);
         }

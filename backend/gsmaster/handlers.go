@@ -53,17 +53,25 @@ func GetMDSkills(c *gin.Context) {
 	type dtaStruct struct {
 		Skills          []Skill       `json:"skills"`
 		Weaponskills    []WeaponSkill `json:"weaponskills"`
-		Spell           []Spell       `json:"spells"`
-		Equipment       []Equipment   `json:"equipment"`
-		Weapons         []Weapon      `json:"weapons"`
 		SkillCategories []string      `json:"skillcategories"`
 	}
 	var dta dtaStruct
+	var err error
+	var ski Skill
 	if err := database.DB.Find(&dta.Skills).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve characters"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Skills"})
 		return
 	}
-	c.JSON(http.StatusOK, dta.Skills)
+	if err := database.DB.Find(&dta.Weaponskills).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Weaponskills"})
+		return
+	}
+	dta.SkillCategories, err = ski.GetSkillCategories()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve SkillCategories" + err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, dta)
 }
 
 func GetMDSkill(c *gin.Context) {
@@ -125,4 +133,89 @@ func DeleteMDSkill(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, sk)
+}
+
+func GetMDSkillCategories(c *gin.Context) {
+	var ski Skill
+	skillCategories, err := ski.GetSkillCategories()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve SkillCategories" + err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, skillCategories)
+}
+
+func GetMDSpells(c *gin.Context) {
+	var dta []Spell
+	if err := database.DB.Find(&dta).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Skills"})
+		return
+	}
+	c.JSON(http.StatusOK, dta)
+}
+
+func GetMDSpell(c *gin.Context) {
+	id := c.Param("id")
+	intId, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+	sp := Spell{}
+	err = sp.FirstId(uint(intId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+	c.JSON(http.StatusOK, sp)
+}
+
+func GetMDEquipments(c *gin.Context) {
+	var dta []Equipment
+	if err := database.DB.Find(&dta).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Skills"})
+		return
+	}
+	c.JSON(http.StatusOK, dta)
+}
+
+func GetMDEquipment(c *gin.Context) {
+	id := c.Param("id")
+	intId, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+	eq := Equipment{}
+	err = eq.FirstId(uint(intId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+	c.JSON(http.StatusOK, eq)
+}
+
+func GetMDWeapons(c *gin.Context) {
+	var dta []Weapon
+	if err := database.DB.Find(&dta).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Skills"})
+		return
+	}
+	c.JSON(http.StatusOK, dta)
+}
+
+func GetMDWeapon(c *gin.Context) {
+	id := c.Param("id")
+	intId, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+	wp := Weapon{}
+	err = wp.FirstId(uint(intId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+	c.JSON(http.StatusOK, wp)
 }

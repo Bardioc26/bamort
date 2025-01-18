@@ -24,6 +24,7 @@ type Ausruestung struct {
 	Beschreibung string  `json:"beschreibung"`
 	Anzahl       int     `json:"anzahl"`
 	BeinhaltetIn string  `json:"beinhaltet_in"`
+	ContainedIn  uint    `json:"contained_in"`
 	Bonus        int     `json:"bonus,omitempty"`
 	Gewicht      float64 `json:"gewicht"`
 	Magisch      Magisch `json:"magisch"`
@@ -37,6 +38,7 @@ type Waffe struct {
 	Anb                     int     `json:"anb"`
 	Anzahl                  int     `json:"anzahl"`
 	BeinhaltetIn            string  `json:"beinhaltet_in"`
+	ContainedIn             uint    `json:"contained_in"`
 	Gewicht                 float64 `json:"gewicht"`
 	Magisch                 Magisch `json:"magisch"`
 	NameFuerSpezialisierung string  `json:"nameFuerSpezialisierung"`
@@ -48,6 +50,7 @@ type Behaeltniss struct {
 	ImportBase
 	Beschreibung string  `json:"beschreibung"`
 	BeinhaltetIn string  `json:"beinhaltet_in"`
+	ContainedIn  uint    `json:"contained_in"`
 	Gewicht      float64 `json:"gewicht"`
 	Magisch      Magisch `json:"magisch"`
 	Tragkraft    float64 `json:"tragkraft"`
@@ -59,6 +62,7 @@ type Transportation struct {
 	ImportBase
 	Beschreibung string  `json:"beschreibung"`
 	BeinhaltetIn string  `json:"beinhaltet_in"`
+	ContainedIn  uint    `json:"contained_in"`
 	Gewicht      int     `json:"gewicht"`
 	Tragkraft    float64 `json:"tragkraft"`
 	Wert         float64 `json:"wert"`

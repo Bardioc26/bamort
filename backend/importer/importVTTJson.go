@@ -163,6 +163,7 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 				Abw:         imp.Transportmittel[i].Magisch.Abw,
 				Ausgebrannt: imp.Transportmittel[i].Magisch.Ausgebrannt,
 			},
+			ExtID: imp.Transportmittel[i].ID,
 		})
 	}
 	for i := range imp.Ausruestung {
@@ -201,6 +202,7 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 				Abw:         imp.Behaeltnisse[i].Magisch.Abw,
 				Ausgebrannt: imp.Behaeltnisse[i].Magisch.Ausgebrannt,
 			},
+			ExtID: imp.Behaeltnisse[i].ID,
 		})
 	}
 	for i := range imp.Waffen {
@@ -245,6 +247,31 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 	err = char.Create()
 	if err != nil {
 		return nil, err
+	}
+	// Fix contained in links
+	for i := range char.Ausruestung {
+		err := char.Ausruestung[i].LinkContainer()
+		if err != nil {
+			return &char, err
+		}
+	}
+	for i := range char.Waffen {
+		err := char.Waffen[i].LinkContainer()
+		if err != nil {
+			return &char, err
+		}
+	}
+	for i := range char.Behaeltnisse {
+		err := char.Behaeltnisse[i].LinkContainer()
+		if err != nil {
+			return &char, err
+		}
+	}
+	for i := range char.Transportmittel {
+		err := char.Transportmittel[i].LinkContainer()
+		if err != nil {
+			return &char, err
+		}
 	}
 	return &char, nil
 }

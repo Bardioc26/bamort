@@ -1,8 +1,8 @@
 <template>
-  <div class="equipment-view">
+  <div class="cd-view">
     <h2>{{ character.name }}'s Ausrüstung</h2>
-    <div class="equipment-list">
-      <table class="equipment-table">
+    <div class="cd-list">
+      <table class="cd-table">
       <thead>
         <tr>
           <th>{{ $t('equipment.name') }}</th>
@@ -28,67 +28,12 @@
       </template>
       </tbody>
       </table>
-    </div> <!--- end equipment-list-->
+    </div> <!--- end cd-list-->
   </div> <!--- end character -datasheet-->
 
 </template>
 
-<style>.equipment-view {
-  color: #fff;
-  }
-  .equipment-table {
-    width: 100%;
-    border-collapse: collapse;
-    position: relative;
-    margin-top: 1rem;
-  }
-
-  .equipment-table thead {
-    position: sticky;
-    top: 0;
-    background: #fff;
-    z-index: 1;
-  }
-  .equipment-table th,
-  .equipment-table td {
-    padding: 0.5rem;
-    text-align: left;
-    border: 1px solid #ddd;
-  }
-
-  .equipment-table th {
-    background-color: #f5f5f5;
-    font-weight: bold;
-  }
-
-  .equipment-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-    color: #000000;
-  }
-
-  .equipment-list {
-    max-height: 400px;
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-
-  /* Custom scrollbar styling */
-  .equipment-list::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .equipment-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
-
-  .equipment-list::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-  }
-
-  .equipment-list::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
+<style>
 </style>
 
 

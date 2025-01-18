@@ -1,5 +1,5 @@
 <template>
-    <div class="datasheet-view" v-if="character">
+    <div class="cd-view" v-if="character">
       <!-- Character Overview -->
       <div class="character-overview">
         <div class="character-image">
@@ -57,9 +57,7 @@
 </template>
 
 <style>
-.datasheet-view {
-  color: #fff;
-}
+
 </style>
 
 

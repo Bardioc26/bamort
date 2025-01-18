@@ -1,14 +1,12 @@
 <template>
-  <div class="experiance-view">
+  <div class="cd-view">
 
   </div> <!--- end character -datasheet-->
 
 </template>
 
 <style>
-.experiance-view {
-color: #800;
-}
+
 </style>
 
 

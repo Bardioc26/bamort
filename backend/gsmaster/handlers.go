@@ -228,6 +228,38 @@ func DeleteMDSkill(c *gin.Context) {
 	deleteMDItem[Skill](c)
 }
 
+//
+
+func GetMDWeaponSkills(c *gin.Context) {
+	type dtaStruct struct {
+		Weaponskills []WeaponSkill `json:"weaponskills"`
+	}
+	var dta dtaStruct
+	if err := database.DB.Find(&dta.Weaponskills).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Weaponskills"})
+		return
+	}
+	c.JSON(http.StatusOK, dta)
+}
+
+func GetMDWeaponSkill(c *gin.Context) {
+	getMDItem[WeaponSkill](c)
+}
+
+func UpdateMDWeaponSkill(c *gin.Context) {
+	updateMDItem[WeaponSkill](c)
+}
+
+func AddWeaponSkill(c *gin.Context) {
+	addMDItem[WeaponSkill](c)
+}
+
+func DeleteMDWeaponSkill(c *gin.Context) {
+	deleteMDItem[WeaponSkill](c)
+}
+
+//
+
 func GetMDSkillCategories(c *gin.Context) {
 	var ski Skill
 	skillCategories, err := ski.GetSkillCategories()

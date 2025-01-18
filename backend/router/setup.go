@@ -52,6 +52,11 @@ func MaintenanceRouterGrp(rt *gin.RouterGroup) *gin.RouterGroup {
 	rCharGrp.PUT("/skills/:id", gsmaster.UpdateMDSkill)
 	rCharGrp.POST("/skills", gsmaster.AddSkill)
 	rCharGrp.DELETE("/skills/:id", gsmaster.DeleteMDSkill)
+	rCharGrp.GET("/weaponskills", gsmaster.GetMDWeaponSkills)
+	rCharGrp.GET("/weaponskills/:id", gsmaster.GetMDWeaponSkill)
+	rCharGrp.PUT("/weaponskills/:id", gsmaster.UpdateMDWeaponSkill)
+	rCharGrp.POST("/weaponskills", gsmaster.AddWeaponSkill)
+	rCharGrp.DELETE("/weaponskills/:id", gsmaster.DeleteMDWeaponSkill)
 	rCharGrp.GET("/spells", gsmaster.GetMDSpells)
 	rCharGrp.GET("/spells/:id", gsmaster.GetMDSpell)
 	rCharGrp.PUT("/spells/:id", gsmaster.UpdateMDSpell)
@@ -62,11 +67,11 @@ func MaintenanceRouterGrp(rt *gin.RouterGroup) *gin.RouterGroup {
 	rCharGrp.PUT("/equipment/:id", gsmaster.UpdateMDEquipment)
 	rCharGrp.POST("/equipment", gsmaster.AddEquipment)
 	rCharGrp.DELETE("/equipment/:id", gsmaster.DeleteMDEquipment)
-	rCharGrp.GET("/weapon", gsmaster.GetMDWeapons)
-	rCharGrp.GET("/weapon/:id", gsmaster.GetMDWeapon)
-	rCharGrp.PUT("/weapon/:id", gsmaster.UpdateMDWeapon)
-	rCharGrp.POST("/weapon", gsmaster.AddWeapon)
-	rCharGrp.DELETE("/weapon/:id", gsmaster.DeleteMDWeapon)
+	rCharGrp.GET("/weapons", gsmaster.GetMDWeapons)
+	rCharGrp.GET("/weapons/:id", gsmaster.GetMDWeapon)
+	rCharGrp.PUT("/weapons/:id", gsmaster.UpdateMDWeapon)
+	rCharGrp.POST("/weapons", gsmaster.AddWeapon)
+	rCharGrp.DELETE("/weapons/:id", gsmaster.DeleteMDWeapon)
 
 	return rCharGrp
 }

@@ -1,43 +1,73 @@
 <template>
+  <div class="header-section">
+    <h2>{{ $t('maintenance') }}</h2>
+      <!-- Add search input -->
+      <div class="search-box">
+        <input
+          type="text"
+          v-model="searchTerm"
+          :placeholder="`${$t('search')} ${$t('WaeponSkill')}...`"
+        />
+      </div>
+    </div>
+
   <div class="cd-view">
     <div class="cd-list">
       <div class="tables-container">
-          <h2 style="line-height: 1.5; margin-top: 5px;"><!-- {{ character.name }}'s -->Fertigkeiten</h2>
           <table class="cd-table">
             <thead>
               <tr>
-                <th class="cd-table-header" width="60%">{{ $t('skill.name') }}</th>
-                <th class="cd-table-header" width="35">{{ $t('skill.value') }}</th>
-                <th class="cd-table-header" width="35">{{ $t('skill.bonus') }}</th>
-                <th class="cd-table-header" width="35">{{ $t('skill.pp') }}</th>
-                <!-- <th class="cd-table-header">{{ $t('skill.description') }}</th>-->
-                <th class="cd-table-header" width="30%">{{ $t('skill.note') }}</th>
+                <th class="cd-table-header">{{ $t('weaponskill.id') }}</th>
+                <th class="cd-table-header">{{ $t('weaponskill.category') }}<button @click="sortBy('category')">-{{ sortField === 'category' ? (sortAsc ? '↑' : '↓') : '' }}</button></th>
+                <th class="cd-table-header">{{ $t('weaponskill.name') }} <button @click="sortBy('name')">-{{ sortField === 'name' ? (sortAsc ? '↑' : '↓') : '' }}</button></th>
+                <th class="cd-table-header">{{ $t('weaponskill.initialwert') }}</th>
+                <th class="cd-table-header">{{ $t('weaponskill.improvable') }}</th>
+                <th class="cd-table-header">{{ $t('weaponskill.innateskill') }}</th>
+                <th class="cd-table-header">{{ $t('weaponskill.description') }}</th>
+                <th class="cd-table-header">{{ $t('weaponskill.bonusskill') }}</th>
+                <th class="cd-table-header">{{ $t('weaponskill.quelle') }}</th>
+                <th class="cd-table-header">{{ $t('weaponskill.system') }}</th>
+                <th class="cd-table-header"> </th>
               </tr>
             </thead>
             <tbody>
-              <template v-for="skills,categorie in character.categorizedskills">
-              <tr>
-                <td colspan="6">{{ categorie || '-' }}</td>
-              </tr>
-              <template v-for="skill in skills">
-                <tr>
-                  <td>{{ skill.name || '-' }}</td>
-                  <td>{{ skill.fertigkeitswert || '-' }}</td>
-                  <td>{{ skill.bonus || '0' }}</td>
-                  <td>{{ skill.pp || '0' }}</td>
-                  <!-- <td>{{ skill.beschreibung || '-' }}</td>-->
-                  <td>{{ skill.bemerkung || '-' }}</td>
+              <template v-for="(dtaItem, index) in filteredAndSortedWaeponSkills" :key="dtaItem.id">
+                <tr v-if="editingIndex !== index">
+                  <td>{{ dtaItem.id || '' }}</td>
+                  <td>{{ dtaItem.category|| '-' }}</td>
+                  <td>{{ dtaItem.name || '-' }}</td>
+                  <td>{{ dtaItem.initialwert || '0' }}</td>
+                  <td>{{ dtaItem.improvable || '0' }}</td>
+                  <td>{{ dtaItem.innateskill || '0' }}</td>
+                  <td>{{ dtaItem.beschreibung || '-' }}</td>
+                  <td>{{ dtaItem.bonuseigenschaft || '-' }}</td>
+                  <td>{{ dtaItem.quelle || '-' }}</td>
+                  <td>{{ dtaItem.system || 'midgard' }}</td>
+                  <td>
+                    <button @click="startEdit(index)">Edit</button>
+                  </td>
                 </tr>
-              </template>
-              </template>
-              <template v-for="skill in character.waffenfertigkeiten">
-                <tr>
-                  <td>{{ skill.name || '-' }}</td>
-                  <td>{{ skill.fertigkeitswert || '-' }}</td>
-                  <td>{{ skill.bonus || '0' }}</td>
-                  <td>{{ skill.pp || '0' }}</td>
-                  <!-- <td>{{ skill.beschreibung || '-' }}</td> -->
-                  <td>{{ skill.bemerkung || '-' }}</td>
+                <tr v-else>
+                  <td><input v-model="editedItem.id" style="width:20px;"/></td>
+                  <td><select v-model="editedItem.category" style="width:80px;">
+                    <option v-for="category in mdata['skillcategories']"
+                            :key="category"
+                            :value="category">
+                      {{ category }}
+                    </option>
+                  </select></td>
+                  <td><input v-model="editedItem.name"/></td>
+                  <td><input v-model.number="editedItem.initialwert" type="number" style="width:40px;"/></td>
+                  <td><input type="checkbox" :checked="true" v-model="editedItem.improvable" style="width:50px;"/></td>
+                  <td><input type="checkbox" :checked="true" v-model="editedItem.innateskill" style="width:50px;"/></td>
+                  <td><input v-model="editedItem.beschreibung" /></td>
+                  <td><input v-model="editedItem.bonuseigenschaft" style="width:80px;" ></td>
+                  <td><input v-model="editedItem.quelle"  style="width:80px;"/></td>
+                  <td><input v-model="editedItem.system"  style="width:80px;"/></td>
+                  <td>
+                    <button @click="saveEdit(index)">Save</button>
+                    <button @click="cancelEdit">Cancel</button>
+                  </td>
                 </tr>
               </template>
             </tbody>
@@ -47,7 +77,25 @@
   </div> <!--- end character -datasheet-->
 </template>
 
+<!-- <style scoped> -->
 <style>
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.3rem;
+  height: fit-content;
+  padding: 0.5rem;
+}
+.search-box {
+  margin-bottom: 1rem;
+}
+.search-box input {
+  padding: 0.2rem;
+  width: 200px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
 .tables-container {
   display: flex;
   gap: 1rem;
@@ -74,12 +122,100 @@
 
 
 <script>
+import API from '../../utils/api'
 export default {
-  name: "WeaponSkillView",
+  name: "WaeponSkillView",
   props: {
-    character: {
+    mdata: {
       type: Object,
-      required: true
+      required: true,
+      default: () => ({
+        skills: [],
+        skillcategories: []
+      })
+    }
+  },
+  data() {
+    return {
+      searchTerm: '',
+      sortField: 'name',
+      sortAsc: true,
+      editingIndex: -1,
+      editedItem: null
+    }
+  },
+  computed: {
+    filteredAndSortedWaeponSkills() {
+      if (!this.mdata?.weaponskills) return [];
+
+      return [...this.mdata.weaponskills]
+        .filter(skill => {
+          const searchLower = this.searchTerm.toLowerCase();
+          return !this.searchTerm ||
+            skill.name?.toLowerCase().includes(searchLower) ||
+            skill.category?.toLowerCase().includes(searchLower);
+        })
+        .sort((a, b) => {
+          const aValue = (a[this.sortField] || '').toLowerCase();
+          const bValue = (b[this.sortField] || '').toLowerCase();
+          return this.sortAsc
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+        });
+    },
+    sortedWaeponSkills() {
+      return [...this.mdata.weaponskills].sort((a, b) => {
+        const aValue = (a[this.sortField] || '').toLowerCase();
+        const bValue = (b[this.sortField] || '').toLowerCase();
+        return this.sortAsc
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      });
+    }
+  },
+  methods: {
+    startEdit(index) {
+      this.editingIndex = index;
+      this.editedItem = { ...this.filteredAndSortedWaeponSkills[index] };
+    },
+    saveEdit(index) {
+      //this.$emit('update-skill', { index, skill: this.editedItem });
+      this.handleWaeponSkillUpdate({ index, skill: this.editedItem });
+      this.editingIndex = -1;
+      this.editedItem = null;
+    },
+    cancelEdit() {
+      this.editingIndex = -1;
+      this.editedItem = null;
+    },
+    sortBy(field) {
+      if (this.sortField === field) {
+        this.sortAsc = !this.sortAsc;
+      } else {
+        this.sortField = field;
+        this.sortAsc = true;
+      }
+    },
+    async handleWaeponSkillUpdate({ index, skill }) {
+      try {
+        const response = await API.put(
+          `/api/maintenance/skills/${skill.id}`, skill,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}` ,
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+        if (!response.statusText== "OK") throw new Error('Update failed');
+        const updatedWaeponSkill = response.data;
+        // Update the skill in mdata
+        this.mdata.weaponskills = this.mdata.weaponskills.map(s =>
+          s.id === updatedWaeponSkill.id ? updatedWaeponSkill : s
+        );
+      } catch (error) {
+        console.error('Failed to update skill:', error);
+      }
     }
   }
 };

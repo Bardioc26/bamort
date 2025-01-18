@@ -31,10 +31,9 @@
 import API from '../utils/api'
 import SkillView from "./maintenance/SkillView.vue"; // Component for character history
 import SpellView from "./maintenance/SpellView.vue"; // Component for character history
-/*import WeaponSkillView from "./maintenance/WeaponSkillView.vue"; // Component for character equipment
 import EquipmentView from "./maintenance/EquipmentView.vue"; // Component for character equipment
 import WeaponView from "./maintenance/WeaponView.vue"; // Component for character history
-*/
+import WeaponSkillView from "./maintenance/WeaponSkillView.vue"; // Component for character equipment
 
 
 export default {
@@ -43,9 +42,9 @@ export default {
   components: {
     SkillView,
     SpellView,
-    /*WeaponSkillView,
+    EquipmentView,
     WeaponView,
-    EquipmentView,*/
+    WeaponSkillView,
   },
   data() {
     return {
@@ -55,23 +54,20 @@ export default {
         weaponskills: [],
         spells: [],
         spellcategories: [],
+        equipment:[],
+        weapons: [],
+        weaponskills: [],
       },
       loading: true,
-      /*
-      skills: {},
-      weaponskills: {},
-      spells: {},
-      equipment: {},
-      weapons: {},*/
       currentView: "SkillView", // Default view
       lastView: "SkillView",
       menus: [
         { id: 0, name: "skill", component: "SkillView" },
         { id: 2, name: "spell", component: "SpellView" },
-        /*{ id: 1, name: "weaponskill", component: "WeaponSkillView" },
         { id: 3, name: "equipment", component: "EquipmentView" },
         { id: 1, name: "weapon", component: "WeaponView" },
-         */
+        { id: 1, name: "weaponskill", component: "WeaponSkillView" },
+
       ],
     };
   },

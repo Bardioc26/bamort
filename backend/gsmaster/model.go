@@ -37,7 +37,7 @@ type Spell struct {
 	AP              string `gorm:"default:1"  json:"ap"`
 	Art             string `gorm:"default:Gestenzauber" json:"art"`
 	Zauberdauer     string `gorm:"default:10 sec" json:"zauberdauer"`
-	Reichweite      string `json:"reichweite"`
+	Reichweite      string `json:"reichweite"` // in m
 	Wirkungsziel    string `json:"wirkungsziel"`
 	Wirkungsbereich string `json:"wirkungsbereich"`
 	Wirkungsdauer   string `json:"wirkungsdauer"`
@@ -47,8 +47,9 @@ type Spell struct {
 
 type Equipment struct {
 	LookupList
-	Gewicht float64 `json:"gewicht"`
-	Wert    float64 `json:"wert"`
+	Gewicht      float64 `json:"gewicht"` // in kg
+	Wert         float64 `json:"wert"`    // in Gold
+	PersonalItem bool    `gorm:"default:false" json:"personal_item"`
 }
 
 type Weapon struct {
@@ -59,8 +60,8 @@ type Weapon struct {
 
 type Container struct {
 	Equipment
-	Tragkraft float64 `json:"tragkraft"`
-	Volumen   float64 `json:"volumen"`
+	Tragkraft float64 `json:"tragkraft"` // in kg
+	Volumen   float64 `json:"volumen"`   // in Liter
 }
 
 type Transportation struct {

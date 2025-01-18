@@ -6,8 +6,8 @@
             <thead>
               <tr>
                 <th class="cd-table-header">{{ $t('skill.id') }}</th>
-                <th class="cd-table-header">{{ $t('skill.category') }}</th>
-                <th class="cd-table-header">{{ $t('skill.name') }}</th>
+                <th class="cd-table-header">{{ $t('skill.category') }}<button @click="sortBy('category')">-{{ sortField === 'category' ? (sortAsc ? '↑' : '↓') : '' }}</button></th>
+                <th class="cd-table-header">{{ $t('skill.name') }} <button @click="sortBy('name')">-{{ sortField === 'name' ? (sortAsc ? '↑' : '↓') : '' }}</button></th>
                 <th class="cd-table-header">{{ $t('skill.initialwert') }}</th>
                 <th class="cd-table-header">{{ $t('skill.improvable') }}</th>
                 <th class="cd-table-header">{{ $t('skill.innateskill') }}</th>
@@ -19,7 +19,7 @@
               </tr>
             </thead>
             <tbody>
-              <template v-for="(dtaItem, index) in mdata['skills']" :key="index">
+              <template v-for="(dtaItem, index) in sortedSkills" :key="dtaItem.id">
                 <tr v-if="editingIndex !== index">
                   <td>{{ dtaItem.id || '' }}</td>
                   <td>{{ dtaItem.category|| '-' }}</td>
@@ -46,8 +46,8 @@
                   </select></td>
                   <td><input v-model="editedItem.name"/></td>
                   <td><input v-model.number="editedItem.initialwert" type="number" style="width:40px;"/></td>
-                  <td><input v-model.boolean="editedItem.improvable" style="width:50px;"/></td>
-                  <td><input v-model.boolean="editedItem.innateskill" style="width:50px;"/></td>
+                  <td><input type="checkbox" :checked="true" v-model="editedItem.improvable" style="width:50px;"/></td>
+                  <td><input type="checkbox" :checked="true" v-model="editedItem.innateskill" style="width:50px;"/></td>
                   <td><input v-model="editedItem.beschreibung" /></td>
                   <td><input v-model="editedItem.bonuseigenschaft" style="width:80px;" ></td>
                   <td><input v-model="editedItem.quelle"  style="width:80px;"/></td>
@@ -97,13 +97,30 @@ export default {
   props: {
     mdata: {
       type: Object,
-      required: true
+      required: true,
+      default: () => ({
+        skills: [],
+        skillcategories: []
+      })
     }
   },
   data() {
     return {
+      sortField: 'name',
+      sortAsc: true,
       editingIndex: -1,
       editedItem: null
+    }
+  },
+  computed: {
+    sortedSkills() {
+      return [...this.mdata.skills].sort((a, b) => {
+        const aValue = (a[this.sortField] || '').toLowerCase();
+        const bValue = (b[this.sortField] || '').toLowerCase();
+        return this.sortAsc
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      });
     }
   },
   methods: {
@@ -119,6 +136,14 @@ export default {
     cancelEdit() {
       this.editingIndex = -1;
       this.editedItem = null;
+    },
+    sortBy(field) {
+      if (this.sortField === field) {
+        this.sortAsc = !this.sortAsc;
+      } else {
+        this.sortField = field;
+        this.sortAsc = true;
+      }
     }
   }
 };

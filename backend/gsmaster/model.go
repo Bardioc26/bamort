@@ -11,7 +11,7 @@ var dbPrefix = "gsm"
 
 type LookupList struct {
 	ID           uint   `gorm:"primaryKey" json:"id"`
-	System       string `gorm:"index" json:"system"`
+	System       string `gorm:"index" gorm:"default:midgard" json:"system"`
 	Name         string `json:"name"`
 	Beschreibung string `json:"beschreibung"`
 	Quelle       string `json:"quelle"`
@@ -19,10 +19,10 @@ type LookupList struct {
 
 type Skill struct {
 	LookupList
-	Initialwert      int    `json:"initialwert"`
+	Initialwert      int    `gorm:"default:5" json:"initialwert"`
 	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
-	Improvable       bool   `json:"improvable"`
-	InnateSkill      bool   `json:"innateskill"`
+	Improvable       bool   `gorm:"default:true" json:"improvable"`
+	InnateSkill      bool   `gorm:"default:false" json:"innateskill"`
 	Category         string `json:"category"`
 }
 
@@ -32,11 +32,17 @@ type WeaponSkill struct {
 
 type Spell struct {
 	LookupList
-	Bonus        int `json:"bonus"`
-	Stufe        int
-	AP           int
-	Reichweite   int
-	Wirkungsziel string
+	Bonus           int    `json:"bonus"`
+	Stufe           int    `json:"level"`
+	AP              string `gorm:"default:1"  json:"ap"`
+	Art             string `gorm:"default:Gestenzauber" json:"art"`
+	Zauberdauer     string `gorm:"default:10 sec" json:"zauberdauer"`
+	Reichweite      string `json:"reichweite"`
+	Wirkungsziel    string `json:"wirkungsziel"`
+	Wirkungsbereich string `json:"wirkungsbereich"`
+	Wirkungsdauer   string `json:"wirkungsdauer"`
+	Ursprung        string `json:"ursprung"`
+	Category        string `gorm:"default:normal"json:"category"`
 }
 
 type Equipment struct {
@@ -179,6 +185,7 @@ func (object *Skill) GetSkillCategories() ([]string, error) {
 
 	return categories, nil
 }
+
 func (object *WeaponSkill) TableName() string {
 	return dbPrefix + "_" + "weaponskills"
 }
@@ -269,6 +276,23 @@ func (object *Spell) Save() error {
 	}
 	return nil
 }
+
+func (object *Spell) GetSpellCategories() ([]string, error) {
+	var categories []string
+	gameSystem := "midgard"
+
+	result := database.DB.Model(&Spell{}).
+		Where("system = ? and category is not null", gameSystem).
+		Distinct().
+		Pluck("category", &categories)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return categories, nil
+}
+
 func (object *Equipment) TableName() string {
 	return dbPrefix + "_" + "equipments"
 }
@@ -341,11 +365,10 @@ func (stamm *Weapon) First(name string) error {
 	return nil
 }
 
-func (object *Weapon) FirstId(value uint) error {
+func (object *Weapon) FirstId(id uint) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, id).Error
 	if err != nil {
-		// zauber found
 		return err
 	}
 	return nil

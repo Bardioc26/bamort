@@ -52,5 +52,21 @@ func MaintenanceRouterGrp(rt *gin.RouterGroup) *gin.RouterGroup {
 	rCharGrp.PUT("/skills/:id", gsmaster.UpdateMDSkill)
 	rCharGrp.POST("/skills", gsmaster.AddSkill)
 	rCharGrp.DELETE("/skills/:id", gsmaster.DeleteMDSkill)
+	rCharGrp.GET("/spells", gsmaster.GetMDSpells)
+	rCharGrp.GET("/spells/:id", gsmaster.GetMDSpell)
+	rCharGrp.PUT("/spells/:id", gsmaster.UpdateMDSpell)
+	rCharGrp.POST("/spells", gsmaster.AddSpell)
+	rCharGrp.DELETE("/spells/:id", gsmaster.DeleteMDSpell)
+	rCharGrp.GET("/equipment", gsmaster.GetMDEquipments)
+	rCharGrp.GET("/equipment/:id", gsmaster.GetMDEquipment)
+	rCharGrp.PUT("/equipment/:id", gsmaster.UpdateMDEquipment)
+	rCharGrp.POST("/equipment", gsmaster.AddEquipment)
+	rCharGrp.DELETE("/equipment/:id", gsmaster.DeleteMDEquipment)
+	rCharGrp.GET("/weapon", gsmaster.GetMDWeapons)
+	rCharGrp.GET("/weapon/:id", gsmaster.GetMDWeapon)
+	rCharGrp.PUT("/weapon/:id", gsmaster.UpdateMDWeapon)
+	rCharGrp.POST("/weapon", gsmaster.AddWeapon)
+	rCharGrp.DELETE("/weapon/:id", gsmaster.DeleteMDWeapon)
+
 	return rCharGrp
 }

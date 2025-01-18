@@ -65,10 +65,10 @@ func CheckSpell(zauber *Zauber, autocreate bool) (*gsmaster.Spell, error) {
 	stammF.System = "midgard"
 	stammF.Name = zauber.Name
 	stammF.Beschreibung = zauber.Beschreibung
-	stammF.AP = 1
+	stammF.AP = "1"
 	stammF.Stufe = 1
 	stammF.Wirkungsziel = "Zauberer"
-	stammF.Reichweite = 15
+	stammF.Reichweite = "15 m"
 
 	stammF.Quelle = zauber.Quelle
 	//fmt.Println(stammF)

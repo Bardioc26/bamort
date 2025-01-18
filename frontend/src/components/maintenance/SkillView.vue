@@ -122,6 +122,7 @@
 
 
 <script>
+import API from '../../utils/api'
 export default {
   name: "SkillView",
   props: {
@@ -178,7 +179,8 @@ export default {
       this.editedItem = { ...this.filteredAndSortedSkills[index] };
     },
     saveEdit(index) {
-      this.$emit('update-skill', { index, skill: this.editedItem });
+      //this.$emit('update-skill', { index, skill: this.editedItem });
+      this.handleSkillUpdate({ index, skill: this.editedItem });
       this.editingIndex = -1;
       this.editedItem = null;
     },
@@ -192,6 +194,27 @@ export default {
       } else {
         this.sortField = field;
         this.sortAsc = true;
+      }
+    },
+    async handleSkillUpdate({ index, skill }) {
+      try {
+        const response = await API.put(
+          `/api/maintenance/skills/${skill.id}`, skill,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}` ,
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+        if (!response.statusText== "OK") throw new Error('Update failed');
+        const updatedSkill = response.data;
+        // Update the skill in mdata
+        this.mdata.skills = this.mdata.skills.map(s =>
+          s.id === updatedSkill.id ? updatedSkill : s
+        );
+      } catch (error) {
+        console.error('Failed to update skill:', error);
       }
     }
   }

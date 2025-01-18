@@ -2,12 +2,143 @@ package gsmaster
 
 import (
 	"bamort/database"
-	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
+
+// Helper functions
+func handleError(c *gin.Context, status int, message string) {
+	c.JSON(status, gin.H{"error": message})
+}
+
+func parseID(c *gin.Context) (uint, error) {
+	id := c.Param("id")
+	intID, err := strconv.Atoi(id)
+	if err != nil {
+		return 0, err
+	}
+	return uint(intID), nil
+}
+
+type Creator interface {
+	Create() error
+}
+
+type Saver interface {
+	Save() error
+}
+
+type FirstIdGetter interface {
+	FirstId(uint) error
+}
+
+// Add interface
+type Deleter interface {
+	Delete() error
+}
+
+// Generic get single item handler
+func getMDItem[T any](c *gin.Context) {
+	id, err := parseID(c)
+	if err != nil {
+		handleError(c, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+	item := new(T)
+	if getter, ok := (interface{})(item).(FirstIdGetter); ok {
+		if err := getter.FirstId(id); err != nil {
+			handleError(c, http.StatusInternalServerError, "Failed to retrieve item")
+			return
+		}
+		c.JSON(http.StatusOK, item)
+	}
+
+}
+
+// Generic get all items handler
+func getMDItems[T any](c *gin.Context) {
+	var items []T
+	if err := database.DB.Find(&items).Error; err != nil {
+		handleError(c, http.StatusInternalServerError, "Failed to retrieve items")
+		return
+	}
+	c.JSON(http.StatusOK, items)
+}
+
+// Generic add handler
+func addMDItem[T any](c *gin.Context) {
+	item := new(T)
+
+	if err := c.ShouldBindJSON(item); err != nil {
+		handleError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if creator, ok := (interface{})(item).(Creator); ok {
+		if err := creator.Create(); err != nil {
+			handleError(c, http.StatusInternalServerError, "Failed to create item")
+			return
+		}
+		c.JSON(http.StatusCreated, item)
+	}
+}
+
+// Generic update handler
+func updateMDItem[T any](c *gin.Context) {
+	id, err := parseID(c)
+	if err != nil {
+		handleError(c, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+
+	item := new(T)
+	if getter, ok := (interface{})(item).(FirstIdGetter); ok {
+		if err := getter.FirstId(id); err != nil {
+			handleError(c, http.StatusNotFound, "Item not found")
+			return
+		}
+
+		if err := c.ShouldBindJSON(item); err != nil {
+			handleError(c, http.StatusBadRequest, "Invalid input data")
+			return
+		}
+
+		if saver, ok := (interface{})(item).(Saver); ok {
+			if err := saver.Save(); err != nil {
+				handleError(c, http.StatusInternalServerError, "Failed to update item")
+				return
+			}
+			c.JSON(http.StatusOK, item)
+		}
+	}
+}
+
+// Generic delete handler
+func deleteMDItem[T any](c *gin.Context) {
+	id, err := parseID(c)
+	if err != nil {
+		handleError(c, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+
+	item := new(T)
+	if getter, ok := (interface{})(item).(FirstIdGetter); ok {
+		if err := getter.FirstId(id); err != nil {
+			handleError(c, http.StatusNotFound, "Item not found")
+			return
+		}
+
+		if deleter, ok := (interface{})(item).(Deleter); ok {
+			if err := deleter.Delete(); err != nil {
+				handleError(c, http.StatusInternalServerError, "Failed to delete item")
+				return
+			}
+			c.JSON(http.StatusNoContent, nil)
+		}
+	}
+}
 
 func GetMasterData(c *gin.Context) {
 	type dtaStruct struct {
@@ -17,10 +148,12 @@ func GetMasterData(c *gin.Context) {
 		Equipment       []Equipment   `json:"equipment"`
 		Weapons         []Weapon      `json:"weapons"`
 		SkillCategories []string      `json:"skillcategories"`
+		SpellCategories []string      `json:"spellcategories"`
 	}
 	var dta dtaStruct
 	var err error
 	var ski Skill
+	var spe Spell
 	if err := database.DB.Find(&dta.Skills).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Skills"})
 		return
@@ -44,6 +177,11 @@ func GetMasterData(c *gin.Context) {
 	dta.SkillCategories, err = ski.GetSkillCategories()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve SkillCategories" + err.Error()})
+		return
+	}
+	dta.SpellCategories, err = spe.GetSpellCategories()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve SpellCategories" + err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, dta)
@@ -75,64 +213,19 @@ func GetMDSkills(c *gin.Context) {
 }
 
 func GetMDSkill(c *gin.Context) {
-	id := c.Param("id")
-	intId, err := strconv.Atoi(id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
-		return
-	}
-	sk := Skill{}
-	err = sk.FirstId(uint(intId))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
-		return
-	}
-	c.JSON(http.StatusOK, sk)
-
+	getMDItem[Skill](c)
 }
 
 func UpdateMDSkill(c *gin.Context) {
-	var sk Skill
-	if err := c.ShouldBindJSON(&sk); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if sk.System == "" {
-		sk.System = "midgard"
-	}
-	fmt.Printf("UpdateMDSkill: %v\n", sk)
-	if err := sk.Save(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save skill" + err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, sk)
+	updateMDItem[Skill](c)
 }
 
 func AddSkill(c *gin.Context) {
-	var sk Skill
-	if err := c.ShouldBindJSON(&sk); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := sk.Save(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save skill" + err.Error()})
-		return
-	}
-	c.JSON(http.StatusCreated, sk)
+	addMDItem[Skill](c)
 }
 
 func DeleteMDSkill(c *gin.Context) {
-	var sk Skill
-	if err := c.ShouldBindJSON(&sk); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := sk.Delete(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save skill" + err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, sk)
+	deleteMDItem[Skill](c)
 }
 
 func GetMDSkillCategories(c *gin.Context) {
@@ -146,76 +239,62 @@ func GetMDSkillCategories(c *gin.Context) {
 }
 
 func GetMDSpells(c *gin.Context) {
-	var dta []Spell
-	if err := database.DB.Find(&dta).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Skills"})
-		return
-	}
-	c.JSON(http.StatusOK, dta)
+	getMDItems[Spell](c)
 }
 
 func GetMDSpell(c *gin.Context) {
-	id := c.Param("id")
-	intId, err := strconv.Atoi(id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
-		return
-	}
-	sp := Spell{}
-	err = sp.FirstId(uint(intId))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
-		return
-	}
-	c.JSON(http.StatusOK, sp)
+	getMDItem[Spell](c)
+}
+
+func UpdateMDSpell(c *gin.Context) {
+	updateMDItem[Spell](c)
+}
+
+func AddSpell(c *gin.Context) {
+	addMDItem[Spell](c)
+}
+
+func DeleteMDSpell(c *gin.Context) {
+	deleteMDItem[Spell](c)
 }
 
 func GetMDEquipments(c *gin.Context) {
-	var dta []Equipment
-	if err := database.DB.Find(&dta).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Skills"})
-		return
-	}
-	c.JSON(http.StatusOK, dta)
+	getMDItems[Equipment](c)
 }
 
 func GetMDEquipment(c *gin.Context) {
-	id := c.Param("id")
-	intId, err := strconv.Atoi(id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
-		return
-	}
-	eq := Equipment{}
-	err = eq.FirstId(uint(intId))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
-		return
-	}
-	c.JSON(http.StatusOK, eq)
+	getMDItem[Equipment](c)
 }
 
+func UpdateMDEquipment(c *gin.Context) {
+	updateMDItem[Equipment](c)
+}
+
+func AddEquipment(c *gin.Context) {
+	addMDItem[Equipment](c)
+}
+
+func DeleteMDEquipment(c *gin.Context) {
+	deleteMDItem[Equipment](c)
+}
+
+// Refactored handler functions
 func GetMDWeapons(c *gin.Context) {
-	var dta []Weapon
-	if err := database.DB.Find(&dta).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Skills"})
-		return
-	}
-	c.JSON(http.StatusOK, dta)
+	getMDItems[Weapon](c)
 }
 
 func GetMDWeapon(c *gin.Context) {
-	id := c.Param("id")
-	intId, err := strconv.Atoi(id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
-		return
-	}
-	wp := Weapon{}
-	err = wp.FirstId(uint(intId))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
-		return
-	}
-	c.JSON(http.StatusOK, wp)
+	getMDItem[Weapon](c)
+}
+
+func UpdateMDWeapon(c *gin.Context) {
+	updateMDItem[Weapon](c)
+}
+
+func AddWeapon(c *gin.Context) {
+	addMDItem[Weapon](c)
+}
+
+func DeleteMDWeapon(c *gin.Context) {
+	deleteMDItem[Weapon](c)
 }

@@ -274,9 +274,9 @@ func TransformImportSpell2GSDMaster(object *Zauber) (*gsmaster.Spell, error) {
 	// if not found insert to masterdata
 	gsmobj.Name = object.Name
 	gsmobj.Beschreibung = object.Beschreibung
-	gsmobj.AP = 0
+	gsmobj.AP = "0"
 	gsmobj.Stufe = 0
-	gsmobj.Reichweite = 0
+	gsmobj.Reichweite = "0m"
 	gsmobj.Wirkungsziel = ""
 	gsmobj.Quelle = object.Quelle
 	gsmobj.System = "midgard"

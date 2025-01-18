@@ -58,12 +58,24 @@ export default {
     initialwert:'Startwert',
   },
   spell:{
+    id:'ID',
+    category:'Kategorie',
     name:'Name',
     description:'Beschreibung',
-    bonus:'Bonus',
-    pp:'AP',
+    level:'Stufe',
+    art:'Art',  //GestenZauber, GedankenZauber, WortZauber
+    apverbrauch:'AP',
+    zauberdauer:'Zauberdauer',
+    reichweite:'Reichweite',
+    wirkungsziel:'Wirkungsziel',
+    wirkungsbereich:'Wirkungsbereich',
+    wirkungsdauer:'Wirkungsdauer',
+    ursprung:'Ursprung',
     quelle:'Quelle',
+    system:'System',
+
   },
+  Spell:'Zauber',
   weapon:{
     name:'Name',
     description:'Beschreibung',

@@ -106,9 +106,16 @@ type CharList struct {
 	Public bool   `json:"public"`
 }
 
+type FeChar struct {
+	Char
+	CategorizedSkills map[string][]skills.Fertigkeit `json:"categorizedskills"`
+	InnateSkills      []skills.Fertigkeit            `json:"innateskills`
+}
+
 func (object *Char) TableName() string {
 	return dbPrefix + "_" + "chars"
 }
+
 func (object *Char) First(name string) error {
 	err := database.DB.
 		Preload("Lp").
@@ -132,6 +139,7 @@ func (object *Char) First(name string) error {
 	}
 	return nil
 }
+
 func (object *Char) FirstID(name string) error {
 	err := database.DB.
 		Preload("Lp").
@@ -155,6 +163,7 @@ func (object *Char) FirstID(name string) error {
 	}
 	return nil
 }
+
 func (object *Char) Create() error {
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
@@ -166,6 +175,7 @@ func (object *Char) Create() error {
 
 	return err
 }
+
 func (object *Char) Delete() error {
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// delete the main character record

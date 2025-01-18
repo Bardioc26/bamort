@@ -35,6 +35,7 @@ import WeaponView from "./WeaponView.vue"; // Component for character history
 import SpellView from "./SpellView.vue"; // Component for character history
 import EquipmentView from "./EquipmentView.vue"; // Component for character equipment
 import ExperianceView from "./ExperianceView.vue"; // Component for character history
+import DeleteCharView from "./DeleteCharView.vue"; // Component for character history
 
 
 export default {
@@ -47,18 +48,22 @@ export default {
     SpellView,
     EquipmentView,
     ExperianceView,
+    DeleteCharView,
   },
   data() {
     return {
       character: {},
       currentView: "DatasheetView", // Default view
+      lastView: "DatasheetView",
       menus: [
         { id: 1, name: "Datasheet", component: "DatasheetView" },
         { id: 2, name: "Skill", component: "SkillView" },
-        { id: 2, name: "Weapon", component: "WeaponView" },
-        { id: 2, name: "Spell", component: "SpellView" },
-        { id: 2, name: "Equipment", component: "EquipmentView" },
-        { id: 2, name: "Experiance", component: "ExperianceView" },
+        { id: 3, name: "Weapon", component: "WeaponView" },
+        { id: 4, name: "Spell", component: "SpellView" },
+        { id: 5, name: "Equipment", component: "EquipmentView" },
+        { id: 6, name: "Experiance", component: "ExperianceView" },
+        { id: 6, name: "DeleteChar", component: "DeleteCharView" },
+
         //{ id: 3, name: "History", component: "HistoryView" },
         //{ id: 2, name: "Notes", component: "NotesView" },
         //{ id: 2, name: "Campagne", component: "CampagneView" },
@@ -74,6 +79,7 @@ export default {
   },
   methods: {
     changeView(view) {
+      this.lastView = this.currentView;
       this.currentView = view;
     },
   },

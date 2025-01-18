@@ -180,6 +180,32 @@ type CharacterImport struct {
 	Image              string             `json:"image,omitempty"`
 }
 
+const (
+	SKILL_HOEREN       = "Hören"
+	SKILL_NACHTSICHT   = "Nachtsicht"
+	SKILL_RIECHEN      = "Riechen"
+	SKILL_SECHSTERSINN = "Sechster Sinn"
+	SKILL_SEHEN        = "Sehen"
+	SKILL_WAHRNEHMUNG  = "Wahrnehmung"
+)
+
+var nonImprovableSkills = []string{
+	SKILL_HOEREN,
+	SKILL_NACHTSICHT,
+	SKILL_RIECHEN,
+	SKILL_SECHSTERSINN,
+	SKILL_SEHEN,
+	SKILL_WAHRNEHMUNG,
+}
+
+func isImprovableSkill(name string) bool {
+	for _, skill := range nonImprovableSkills {
+		if skill == name {
+			return false
+		}
+	}
+	return true
+}
 func TransformImportFertigkeit2GSDMaster(object *Fertigkeit) (*gsmaster.Skill, error) {
 	gsmobj := gsmaster.Skill{}
 
@@ -194,9 +220,13 @@ func TransformImportFertigkeit2GSDMaster(object *Fertigkeit) (*gsmaster.Skill, e
 	gsmobj.Initialkeitswert = object.Fertigkeitswert
 	gsmobj.Quelle = object.Quelle
 	gsmobj.Bonuseigenschaft = "check"
+	gsmobj.Improvable = false
 	re := regexp.MustCompile(`moam-ability-\\d+`)
 	if re.MatchString(object.ID) {
 		gsmobj.Improvable = true
+	}
+	if !gsmobj.Improvable {
+		gsmobj.Improvable = isImprovableSkill(gsmobj.Name)
 	}
 	gsmobj.System = "midgard"
 	err = gsmobj.Create()

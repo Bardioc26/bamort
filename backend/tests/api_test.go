@@ -128,8 +128,8 @@ func TestListCharacters(t *testing.T) {
 
 func TestGetCharacters(t *testing.T) {
 	SetupTestDB()
-	TestCreateChar(t)
-	TestRegisterUser(t)
+	//TestCreateChar(t)
+	//TestRegisterUser(t)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -143,8 +143,8 @@ func TestGetCharacters(t *testing.T) {
 	})
 
 	// Create a test HTTP request
-	req, _ := http.NewRequest("GET", "/api/characters/1", nil)
-	req.Header.Set("Content-Type", "application/json")
+	req, _ := http.NewRequest("GET", "/api/characters/9", nil)
+	//req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 	//req.Header.Set("Authorization", "Bearer ${token}")
 	req.Header.Set("Authorization", "Bearer dc7a780.1:bba7f4daabda117f2a2c14263")

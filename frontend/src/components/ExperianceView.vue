@@ -1,6 +1,6 @@
 <template>
   <div class="cd-view">
-
+    Experiance and Level information
   </div> <!--- end character -datasheet-->
 
 </template>

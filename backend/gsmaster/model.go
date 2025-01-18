@@ -22,6 +22,8 @@ type Skill struct {
 	Initialkeitswert int    `json:"initialwert"`
 	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
 	Improvable       bool   `json:"improvable"`
+	InnateSkill      bool   `json:"innateskill"`
+	Category         string `json:"category"`
 }
 
 type WeaponSkill struct {

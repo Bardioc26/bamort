@@ -28,6 +28,7 @@ export default {
     History:'Logbuch',
     Notes:'Notizen',
     Campagne:'Kampagne',
+    DeleteChar:'Figur löschen',
     //Character:'Charakter',
   },
   equipment:{
@@ -43,7 +44,7 @@ export default {
   skill:{
     name:'Name',
     description:'Beschreibung',
-    value:'Fertigkeitswert',
+    value:'EW',
     note:'Bemerkung',
     bonus:'Bonus',
     pp:'PP',

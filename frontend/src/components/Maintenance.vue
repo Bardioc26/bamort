@@ -4,8 +4,15 @@
     <div class="character-header">
       <h2>{{ $t('maintenance') }}</h2>
     </div>
+    <div v-if="loading">Loading...</div>
+    <div v-else>
     <!-- Submenu Content -->
-      <component :is="currentView"  :mdata="mdata"/>
+      <component
+        :is="currentView"
+        :mdata="mdata"
+        @update-skill="handleSkillUpdate"
+      />
+    </div>
     <!-- Submenu -->
     <div class="submenu">
       <button
@@ -46,7 +53,13 @@ export default {
   },
   data() {
     return {
-      mdata: {},
+      mdata: {
+        skills: [],
+        skillcategories: [],
+        weaponskills: [],
+        spells: []
+      },
+      loading: true,
       /*
       skills: {},
       weaponskills: {},
@@ -66,11 +79,17 @@ export default {
     };
   },
   async created() {
-    const token = localStorage.getItem('token')
-    const response = await API.get(`/api/maintenance`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    this.mdata= response.data
+    try {
+      const token = localStorage.getItem('token')
+      const response = await API.get(`/api/maintenance`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      this.mdata= response.data
+    } catch (error) {
+      console.error('Failed to load data:', error)
+    } finally {
+      this.loading = false
+    }
     /*
     this.skills = response.data['skills']
     this.weaponskills = response.data["weaponskills"]
@@ -84,6 +103,32 @@ export default {
       this.lastView = this.currentView;
       this.currentView = view;
     },
+    async handleSkillUpdate({ index, skill }) {
+
+      try {
+          const response = await API.put(
+            `/api/maintenance/skills/${skill.id}`, skill,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}` ,
+                'Content-Type': 'application/json'
+              }
+            }
+          )
+          /*
+          const response = await fetch(`skills/${skill.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(skill)
+          });
+          */
+          if (!response.ok) throw new Error('Update failed');
+          const updatedSkill = await response.json();
+          this.skills[index] = updatedSkill;
+        } catch (error) {
+          console.error('Failed to update skill:', error);
+        }
+      }
   },
 };
 </script>

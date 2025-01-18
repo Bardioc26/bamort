@@ -88,7 +88,7 @@ func (object *LookupList) Create() error {
 
 func (object *LookupList) First(value string) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "system=? AND name = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "game_system=? AND name = ?", gameSystem, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -98,7 +98,7 @@ func (object *LookupList) First(value string) error {
 
 func (object *LookupList) FirstId(value uint) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -114,9 +114,11 @@ func (object *LookupList) Save() error {
 	}
 	return nil
 }
+
 func (object *Skill) TableName() string {
 	return dbPrefix + "_" + "skills"
 }
+
 func (stamm *Skill) Create() error {
 	gameSystem := "midgard"
 	stamm.GameSystem = gameSystem
@@ -133,7 +135,7 @@ func (stamm *Skill) Create() error {
 
 func (stamm *Skill) First(name string) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
+	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
 		// Fertigkeit found
 		return err
@@ -143,7 +145,7 @@ func (stamm *Skill) First(name string) error {
 
 func (object *Skill) FirstId(value uint) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -176,7 +178,7 @@ func (object *Skill) GetSkillCategories() ([]string, error) {
 	gameSystem := "midgard"
 
 	result := database.DB.Model(&Skill{}).
-		Where("system = ? and category is not null", gameSystem).
+		Where("game_system = ? and category is not null", gameSystem).
 		Distinct().
 		Pluck("category", &categories)
 
@@ -190,6 +192,7 @@ func (object *Skill) GetSkillCategories() ([]string, error) {
 func (object *WeaponSkill) TableName() string {
 	return dbPrefix + "_" + "weaponskills"
 }
+
 func (stamm *WeaponSkill) Create() error {
 	gameSystem := "midgard"
 	stamm.GameSystem = gameSystem
@@ -206,7 +209,7 @@ func (stamm *WeaponSkill) Create() error {
 
 func (stamm *WeaponSkill) First(name string) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
+	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
 		// Fertigkeit found
 		return err
@@ -216,7 +219,7 @@ func (stamm *WeaponSkill) First(name string) error {
 
 func (object *WeaponSkill) FirstId(value uint) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -232,9 +235,11 @@ func (object *WeaponSkill) Save() error {
 	}
 	return nil
 }
+
 func (object *Spell) TableName() string {
 	return dbPrefix + "_" + "spells"
 }
+
 func (stamm *Spell) Create() error {
 	gameSystem := "midgard"
 	stamm.GameSystem = gameSystem
@@ -251,7 +256,7 @@ func (stamm *Spell) Create() error {
 
 func (stamm *Spell) First(name string) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
+	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -261,7 +266,7 @@ func (stamm *Spell) First(name string) error {
 
 func (object *Spell) FirstId(value uint) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -283,7 +288,7 @@ func (object *Spell) GetSpellCategories() ([]string, error) {
 	gameSystem := "midgard"
 
 	result := database.DB.Model(&Spell{}).
-		Where("system = ? and category is not null", gameSystem).
+		Where("game_system=? and category is not null", gameSystem).
 		Distinct().
 		Pluck("category", &categories)
 
@@ -297,6 +302,7 @@ func (object *Spell) GetSpellCategories() ([]string, error) {
 func (object *Equipment) TableName() string {
 	return dbPrefix + "_" + "equipments"
 }
+
 func (stamm *Equipment) Create() error {
 	gameSystem := "midgard"
 	stamm.GameSystem = gameSystem
@@ -313,7 +319,7 @@ func (stamm *Equipment) Create() error {
 
 func (stamm *Equipment) First(name string) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
+	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -323,7 +329,7 @@ func (stamm *Equipment) First(name string) error {
 
 func (object *Equipment) FirstId(value uint) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -339,9 +345,11 @@ func (object *Equipment) Save() error {
 	}
 	return nil
 }
+
 func (object *Weapon) TableName() string {
 	return dbPrefix + "_" + "weapons"
 }
+
 func (stamm *Weapon) Create() error {
 	gameSystem := "midgard"
 	stamm.GameSystem = gameSystem
@@ -358,7 +366,7 @@ func (stamm *Weapon) Create() error {
 
 func (stamm *Weapon) First(name string) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
+	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -368,7 +376,7 @@ func (stamm *Weapon) First(name string) error {
 
 func (object *Weapon) FirstId(id uint) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, id).Error
+	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, id).Error
 	if err != nil {
 		return err
 	}
@@ -383,9 +391,11 @@ func (object *Weapon) Save() error {
 	}
 	return nil
 }
+
 func (object *Container) TableName() string {
 	return dbPrefix + "_" + "containers"
 }
+
 func (stamm *Container) Create() error {
 	gameSystem := "midgard"
 	stamm.GameSystem = gameSystem
@@ -402,7 +412,7 @@ func (stamm *Container) Create() error {
 
 func (stamm *Container) First(name string) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
+	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -412,7 +422,7 @@ func (stamm *Container) First(name string) error {
 
 func (object *Container) FirstId(value uint) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -428,9 +438,11 @@ func (object *Container) Save() error {
 	}
 	return nil
 }
+
 func (object *Transportation) TableName() string {
 	return dbPrefix + "_" + "transportations"
 }
+
 func (stamm *Transportation) Create() error {
 	gameSystem := "midgard"
 	stamm.GameSystem = gameSystem
@@ -447,7 +459,7 @@ func (stamm *Transportation) Create() error {
 
 func (object *Transportation) FirstId(value uint) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -457,7 +469,7 @@ func (object *Transportation) FirstId(value uint) error {
 
 func (stamm *Transportation) First(name string) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
+	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -473,9 +485,11 @@ func (object *Transportation) Save() error {
 	}
 	return nil
 }
+
 func (object *Believe) TableName() string {
 	return dbPrefix + "_" + "believes"
 }
+
 func (stamm *Believe) Create() error {
 	gameSystem := "midgard"
 	stamm.GameSystem = gameSystem
@@ -492,7 +506,7 @@ func (stamm *Believe) Create() error {
 
 func (object *Believe) FirstId(value uint) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "system=? AND id = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -502,7 +516,7 @@ func (object *Believe) FirstId(value uint) error {
 
 func (stamm *Believe) First(name string) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "system=? AND name = ?", gameSystem, name).Error
+	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
 		// zauber found
 		return err

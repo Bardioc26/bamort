@@ -15,17 +15,18 @@ import (
 )
 
 var migrationDone bool
+var isTestDb bool
 
 // SetupTestDB creates an in-memory SQLite database for testing
 func SetupTestDB(opts ...bool) {
-	useTestDB := true
+	isTestDb = true
 	if len(opts) > 0 {
-		useTestDB = opts[0]
+		isTestDb = opts[0]
 	}
 	if database.DB == nil {
 		var db *gorm.DB
 		var err error
-		if useTestDB {
+		if isTestDb {
 			//*
 			db, err = gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 			if err != nil {
@@ -48,6 +49,18 @@ func SetupTestDB(opts ...bool) {
 		err := MigrateStructure()
 		if err != nil {
 			panic("failed to MigrateStructure")
+		}
+		migrationDone = true
+	}
+}
+
+func resetDB() {
+	if isTestDb {
+		sqlDB, err := database.DB.DB()
+		if err == nil {
+			sqlDB.Close()
+			database.DB = nil
+			migrationDone = false
 		}
 	}
 }

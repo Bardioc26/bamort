@@ -2,7 +2,9 @@ package gsmaster
 
 import (
 	"bamort/database"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -65,69 +67,62 @@ func GetMDSkills(c *gin.Context) {
 }
 
 func GetMDSkill(c *gin.Context) {
-	type dtaStruct struct {
-		Skills          []Skill       `json:"skills"`
-		Weaponskills    []WeaponSkill `json:"weaponskills"`
-		Spell           []Spell       `json:"spells"`
-		Equipment       []Equipment   `json:"equipment"`
-		Weapons         []Weapon      `json:"weapons"`
-		SkillCategories []string      `json:"skillcategories"`
-	}
-	var dta dtaStruct
-	if err := database.DB.Find(&dta.Skills).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve characters"})
+	id := c.Param("id")
+	intId, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
 		return
 	}
-	c.JSON(http.StatusOK, dta)
+	sk := Skill{}
+	err = sk.FirstId(uint(intId))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+	c.JSON(http.StatusOK, sk)
+
 }
 
 func UpdateMDSkill(c *gin.Context) {
-	type dtaStruct struct {
-		Skills          []Skill       `json:"skills"`
-		Weaponskills    []WeaponSkill `json:"weaponskills"`
-		Spell           []Spell       `json:"spells"`
-		Equipment       []Equipment   `json:"equipment"`
-		Weapons         []Weapon      `json:"weapons"`
-		SkillCategories []string      `json:"skillcategories"`
-	}
-	var dta dtaStruct
-	if err := database.DB.Find(&dta.Skills).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve characters"})
+	var sk Skill
+	if err := c.ShouldBindJSON(&sk); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, dta)
+	if sk.System == "" {
+		sk.System = "midgard"
+	}
+	fmt.Printf("UpdateMDSkill: %v\n", sk)
+	if err := sk.Save(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save skill" + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, sk)
 }
 
 func AddSkill(c *gin.Context) {
-	type dtaStruct struct {
-		Skills          []Skill       `json:"skills"`
-		Weaponskills    []WeaponSkill `json:"weaponskills"`
-		Spell           []Spell       `json:"spells"`
-		Equipment       []Equipment   `json:"equipment"`
-		Weapons         []Weapon      `json:"weapons"`
-		SkillCategories []string      `json:"skillcategories"`
-	}
-	var dta dtaStruct
-	if err := database.DB.Find(&dta.Skills).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve characters"})
+	var sk Skill
+	if err := c.ShouldBindJSON(&sk); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, dta)
+	if err := sk.Save(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save skill" + err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, sk)
 }
 
 func DeleteMDSkill(c *gin.Context) {
-	type dtaStruct struct {
-		Skills          []Skill       `json:"skills"`
-		Weaponskills    []WeaponSkill `json:"weaponskills"`
-		Spell           []Spell       `json:"spells"`
-		Equipment       []Equipment   `json:"equipment"`
-		Weapons         []Weapon      `json:"weapons"`
-		SkillCategories []string      `json:"skillcategories"`
-	}
-	var dta dtaStruct
-	if err := database.DB.Find(&dta.Skills).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve characters"})
+	var sk Skill
+	if err := c.ShouldBindJSON(&sk); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, dta)
+	if err := sk.Delete(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save skill" + err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, sk)
 }

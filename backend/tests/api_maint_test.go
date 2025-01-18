@@ -118,9 +118,7 @@ func TestGetMDSkillCategories(t *testing.T) {
 	assert.Equal(t, "Allgemein", categories[0])
 }
 func TestGetMDSkills(t *testing.T) {
-	SetupTestDB()
-	//TestCreateChar(t)
-	//TestRegisterUser(t)
+	SetupTestDB(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -128,10 +126,12 @@ func TestGetMDSkills(t *testing.T) {
 	// Routes
 	protected := router.BaseRouterGrp(r)
 	// Character routes
-	rCharGrp := router.CharRouterGrp(protected)
+	rCharGrp := router.MaintenanceRouterGrp(protected)
 	rCharGrp.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
 	})
+	u := user.User{}
+	u.FirstId(1)
 
 	// Create a test HTTP request
 	req, _ := http.NewRequest("GET", "/api/characters/9", nil)
@@ -164,7 +164,8 @@ func TestGetMDSkills(t *testing.T) {
 }
 
 // TestCreateCharacter tests the POST /characters endpoint
-func TestGetMDSkill(t *testing.T) {
+func TestUpdateMDSkill(t *testing.T) {
+	SetupTestDB(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -172,20 +173,27 @@ func TestGetMDSkill(t *testing.T) {
 	// Routes
 	protected := router.BaseRouterGrp(r)
 	// Character routes
-	rCharGrp := router.CharRouterGrp(protected)
+	rCharGrp := router.MaintenanceRouterGrp(protected)
 	rCharGrp.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
 	})
+	u := user.User{}
+	u.FirstId(1)
+
 	// Define the test case input
-	testCharacter := Character{
-		Name: "Aragorn",
-		Race: "Human",
+	sk := gsmaster.Skill{}
+	sk.Name = "Geländekunde"
+	sk.ID = 64
+	jsonData, err := json.Marshal(sk)
+	if err != nil {
+		t.Fatalf("Failed to marshal skill: %v", err)
 	}
-	jsonData, _ := json.Marshal(testCharacter)
 
 	// Create a test HTTP request
-	req, _ := http.NewRequest("POST", "/characters", bytes.NewBuffer(jsonData))
+	req, _ := http.NewRequest("PUT", "/api/maintenance/skills/64", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
+	token := user.GenerateToken(&u)
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	// Create a response recorder to capture the handler's response
 	respRecorder := httptest.NewRecorder()
@@ -198,7 +206,7 @@ func TestGetMDSkill(t *testing.T) {
 
 	// Assert the response body
 	var createdCharacter Character
-	err := json.Unmarshal(respRecorder.Body.Bytes(), &createdCharacter)
+	err = json.Unmarshal(respRecorder.Body.Bytes(), &createdCharacter)
 	assert.NoError(t, err)
 	assert.Equal(t, "Aragorn", createdCharacter.Name)
 	assert.Equal(t, "Human", createdCharacter.Race)

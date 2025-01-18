@@ -27,9 +27,9 @@ func CheckSkill(fertigkeit *Fertigkeit, autocreate bool) (*gsmaster.Skill, error
 		stammF.Beschreibung = fertigkeit.Beschreibung
 	}
 	if fertigkeit.Fertigkeitswert < 12 {
-		stammF.Initialkeitswert = 5
+		stammF.Initialwert = 5
 	} else {
-		stammF.Initialkeitswert = 12
+		stammF.Initialwert = 12
 	}
 	stammF.Bonuseigenschaft = "keine"
 	stammF.Quelle = fertigkeit.Quelle

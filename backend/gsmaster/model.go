@@ -19,7 +19,7 @@ type LookupList struct {
 
 type Skill struct {
 	LookupList
-	Initialkeitswert int    `json:"initialwert"`
+	Initialwert      int    `json:"initialwert"`
 	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
 	Improvable       bool   `json:"improvable"`
 	InnateSkill      bool   `json:"innateskill"`
@@ -152,6 +152,18 @@ func (object *Skill) Save() error {
 	}
 	return nil
 }
+
+func (object *Skill) Delete() error {
+	result := database.DB.Delete(&object, object.ID)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("no record found with ID %v", object.ID)
+	}
+	return nil
+}
+
 func (object *Skill) GetSkillCategories() ([]string, error) {
 	var categories []string
 	gameSystem := "midgard"

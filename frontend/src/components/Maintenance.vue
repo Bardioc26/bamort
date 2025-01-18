@@ -1,11 +1,8 @@
 <template>
   <div class="character-details">
-    Maintenance
-    <div class="character-header">
-      <h2>{{ $t('maintenance') }}</h2>
-    </div>
     <div v-if="loading">Loading...</div>
     <div v-else>
+
     <!-- Submenu Content -->
       <component
         :is="currentView"

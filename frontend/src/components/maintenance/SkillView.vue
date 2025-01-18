@@ -1,13 +1,17 @@
 <template>
-  <div class="cd-view">
-    <!-- Add search input -->
-    <div class="search-box">
-      <input
-        type="text"
-        v-model="searchTerm"
-        :placeholder="`${$t('search')} ${$t('Skill')}...`"
-      />
+  <div class="header-section">
+    <h2>{{ $t('maintenance') }}</h2>
+      <!-- Add search input -->
+      <div class="search-box">
+        <input
+          type="text"
+          v-model="searchTerm"
+          :placeholder="`${$t('search')} ${$t('Skill')}...`"
+        />
+      </div>
     </div>
+
+  <div class="cd-view">
     <div class="cd-list">
       <div class="tables-container">
           <table class="cd-table">
@@ -75,11 +79,19 @@
 
 <!-- <style scoped> -->
 <style>
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.3rem;
+  height: fit-content;
+  padding: 0.5rem;
+}
 .search-box {
   margin-bottom: 1rem;
 }
 .search-box input {
-  padding: 0.5rem;
+  padding: 0.2rem;
   width: 200px;
   border: 1px solid #ddd;
   border-radius: 4px;

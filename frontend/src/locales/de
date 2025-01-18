@@ -81,4 +81,6 @@ export default {
     equipment:'Ausrüstung',
     weapon:'Waffen',
   },
+  search:'Suche',
+  Skill:'Fertigkeit',
 }

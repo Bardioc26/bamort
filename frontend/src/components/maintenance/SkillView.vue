@@ -1,5 +1,13 @@
 <template>
   <div class="cd-view">
+    <!-- Add search input -->
+    <div class="search-box">
+      <input
+        type="text"
+        v-model="searchTerm"
+        :placeholder="`${$t('search')} ${$t('Skill')}...`"
+      />
+    </div>
     <div class="cd-list">
       <div class="tables-container">
           <table class="cd-table">
@@ -19,7 +27,7 @@
               </tr>
             </thead>
             <tbody>
-              <template v-for="(dtaItem, index) in sortedSkills" :key="dtaItem.id">
+              <template v-for="(dtaItem, index) in filteredAndSortedSkills" :key="dtaItem.id">
                 <tr v-if="editingIndex !== index">
                   <td>{{ dtaItem.id || '' }}</td>
                   <td>{{ dtaItem.category|| '-' }}</td>
@@ -65,7 +73,17 @@
   </div> <!--- end character -datasheet-->
 </template>
 
+<!-- <style scoped> -->
 <style>
+.search-box {
+  margin-bottom: 1rem;
+}
+.search-box input {
+  padding: 0.5rem;
+  width: 200px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
 .tables-container {
   display: flex;
   gap: 1rem;
@@ -106,6 +124,7 @@ export default {
   },
   data() {
     return {
+      searchTerm: '',
       sortField: 'name',
       sortAsc: true,
       editingIndex: -1,
@@ -113,6 +132,24 @@ export default {
     }
   },
   computed: {
+    filteredAndSortedSkills() {
+      if (!this.mdata?.skills) return [];
+
+      return [...this.mdata.skills]
+        .filter(skill => {
+          const searchLower = this.searchTerm.toLowerCase();
+          return !this.searchTerm ||
+            skill.name?.toLowerCase().includes(searchLower) ||
+            skill.category?.toLowerCase().includes(searchLower);
+        })
+        .sort((a, b) => {
+          const aValue = (a[this.sortField] || '').toLowerCase();
+          const bValue = (b[this.sortField] || '').toLowerCase();
+          return this.sortAsc
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+        });
+    },
     sortedSkills() {
       return [...this.mdata.skills].sort((a, b) => {
         const aValue = (a[this.sortField] || '').toLowerCase();
@@ -126,7 +163,7 @@ export default {
   methods: {
     startEdit(index) {
       this.editingIndex = index;
-      this.editedItem = { ...this.sortedSkills[index] };
+      this.editedItem = { ...this.filteredAndSortedSkills[index] };
     },
     saveEdit(index) {
       this.$emit('update-skill', { index, skill: this.editedItem });

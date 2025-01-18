@@ -52,7 +52,7 @@ a,
   top: 0;
   left: 0;
   z-index: 1000;
-  padding: 0 20px;
+  padding: 0 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -88,7 +88,7 @@ a,
   top: 0;
   margin-top: 0px;
   /* Prevent content from overlapping the nav */
-  padding: 20px;
+  padding: 12px;
   width: 100%;
   /* Full width */
   box-sizing: border-box;
@@ -147,7 +147,11 @@ a,
 }
 
 .cd-list {
-  max-height: 400px;
+  max-height: calc(100vh - 207px);
+  flex: 1 1 auto; /* Grow and shrink, take available space */
+  overflow-y: auto; /* Enable scrolling if content overflows */
+  min-height: 0; /* Required for Firefox */
+
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -179,11 +183,16 @@ a,
   /* Background color */
   color: #fff;
   /* Text color */
-  padding: 20px;
+  padding: 12px;
   border-radius: 8px;
   width: 90%;
   margin: 0 auto;
   font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 90px); /* Subtract menu height */
+  overflow-y: scroll;
+  top: 45px;
 }
 
 .character-header h2 {
@@ -191,6 +200,7 @@ a,
   text-align: center;
   color: #ddd;
   margin-bottom: 20px;
+  flex: 0 0 auto; /* Don't grow or shrink, use content height */
 }
 
 .character-overview {
@@ -217,10 +227,11 @@ a,
   background-color: #555;
   border: 1px solid #333;
   text-align: center;
-  padding: 10px;
+  padding: 12px;
   border-radius: 5px;
   font-size: 0.9rem;
   font-weight: bold;
+  line-height: 1.2;
 }
 
 .stat span {
@@ -231,7 +242,7 @@ a,
 
 .character-info {
   background-color: #333;
-  padding: 15px;
+  padding: 12px;
   border-radius: 8px;
   line-height: 1.6;
   white-space: nowrap;
@@ -254,13 +265,13 @@ a,
   position: relative;
   background-color: #444;
   color: #fff;
-  padding: 20px;
+  padding: 12px;
   border-radius: 8px;
   width: 90%;
   margin: 0 auto;
   font-family: Arial, sans-serif;
-  min-height: 400px;
-  /* Ensure there's space for content */
+  min-height: calc(100vh - 60px - 64px);  /* Ensure there's space for content */
+  flex-direction: column;
 }
 
 .character-main {
@@ -268,7 +279,7 @@ a,
 }
 
 .character-aspect {
-  padding: 20px;
+  padding: 12px;
   background-color: #333;
   border-radius: 8px;
   min-height: 200px;
@@ -276,22 +287,23 @@ a,
 }
 
 .submenu {
-  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   background-color: #222;
   display: flex;
   justify-content: center;
-  padding: 10px;
+  padding: 3px;
   border-top: 1px solid #555;
+  flex: 0 0 auto; /* Don't grow or shrink, use content height */
+  margin-top: auto; /* Push to bottom */
 }
 
 .submenu button {
   background-color: #555;
   color: #fff;
   border: none;
-  padding: 10px 20px;
+  padding: 10px 12px;
   margin: 0 10px;
   border-radius: 4px;
   font-size: 0.9rem;

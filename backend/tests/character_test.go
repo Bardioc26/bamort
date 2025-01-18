@@ -222,18 +222,19 @@ func createChar() *character.Char {
 			BeinhaltetIn: "moam-container-47363",
 		},
 	}
-	char.Behaeltnisse = []equipment.Behaeltniss{
+	char.Behaeltnisse = []equipment.Container{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
 					Name: "Lederrucksack",
 				},
 			},
-			Beschreibung: "f\u00fcr 25 kg",
-			Wert:         4,
-			Tragkraft:    25,
-			Volumen:      25,
-			Gewicht:      0.5,
+			IsTransportation: false,
+			Beschreibung:     "f\u00fcr 25 kg",
+			Wert:             4,
+			Tragkraft:        25,
+			Volumen:          25,
+			Gewicht:          0.5,
 			Magisch: models.Magisch{
 				IstMagisch:  false,
 				Abw:         0,
@@ -242,7 +243,7 @@ func createChar() *character.Char {
 			BeinhaltetIn: "moam-container-47363",
 		},
 	}
-	char.Transportmittel = []equipment.Transportation{
+	char.Transportmittel = []equipment.Container{
 		{
 
 			BamortCharTrait: models.BamortCharTrait{
@@ -250,11 +251,12 @@ func createChar() *character.Char {
 					Name: "Karren",
 				},
 			},
-			Beschreibung: "für 500 kg",
-			Wert:         40,
-			Tragkraft:    500,
-			Volumen:      250,
-			Gewicht:      55.5,
+			IsTransportation: true,
+			Beschreibung:     "für 500 kg",
+			Wert:             40,
+			Tragkraft:        500,
+			Volumen:          250,
+			Gewicht:          55.5,
 			Magisch: models.Magisch{
 				IstMagisch:  true,
 				Abw:         30,
@@ -438,8 +440,8 @@ func createWaffen(sel int) *equipment.Waffe {
 	}
 	return &liste[sel]
 }
-func createBehaeltniss(sel int) *equipment.Behaeltniss {
-	liste := []equipment.Behaeltniss{
+func createBehaeltniss(sel int) *equipment.Container {
+	liste := []equipment.Container{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -465,8 +467,8 @@ func createBehaeltniss(sel int) *equipment.Behaeltniss {
 	}
 	return &liste[sel]
 }
-func createTransportmittel(sel int) *equipment.Transportation {
-	liste := []equipment.Transportation{
+func createTransportmittel(sel int) *equipment.Container {
+	liste := []equipment.Container{
 		{
 
 			BamortCharTrait: models.BamortCharTrait{
@@ -474,11 +476,12 @@ func createTransportmittel(sel int) *equipment.Transportation {
 					Name: "Karren",
 				},
 			},
-			Beschreibung: "für 500 kg",
-			Wert:         40,
-			Tragkraft:    500,
-			Volumen:      250,
-			Gewicht:      55.5,
+			IsTransportation: true,
+			Beschreibung:     "für 500 kg",
+			Wert:             40,
+			Tragkraft:        500,
+			Volumen:          250,
+			Gewicht:          55.5,
 			Magisch: models.Magisch{
 				IstMagisch:  true,
 				Abw:         30,
@@ -691,6 +694,8 @@ func charTests(t *testing.T, char *character.Char) {
 			assert.Equal(t, false, char.Behaeltnisse[i].IstMagisch)
 			assert.Equal(t, 0, char.Behaeltnisse[i].Abw)
 			assert.Equal(t, false, char.Behaeltnisse[i].Ausgebrannt)
+			assert.Equal(t, false, char.Behaeltnisse[i].IsTransportation)
+
 		}
 	}
 	assert.LessOrEqual(t, 1, len(char.Transportmittel))
@@ -709,6 +714,7 @@ func charTests(t *testing.T, char *character.Char) {
 			assert.Equal(t, true, char.Transportmittel[i].IstMagisch)
 			assert.Equal(t, 30, char.Transportmittel[i].Abw)
 			assert.Equal(t, false, char.Transportmittel[i].Ausgebrannt)
+			assert.Equal(t, true, char.Transportmittel[i].IsTransportation)
 		}
 	}
 	assert.LessOrEqual(t, 1, len(char.Ausruestung))

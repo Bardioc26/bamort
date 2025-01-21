@@ -52,8 +52,10 @@ Ziehe dazu die Dateien model.go in den Verzeichnissen backend/gsmaster, backend/
 */
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 )
 
 type SkillGroup string
@@ -72,6 +74,13 @@ const (
 	DiffSchwer     Difficulty = "schwer"
 	DiffSehrSchwer Difficulty = "sehr_schwer"
 )
+
+type LevelConfig struct {
+	BaseLearnCost   map[SkillGroup]map[Difficulty]int            `json:"baseLearnCost"`
+	ImprovementCost map[SkillGroup]map[Difficulty]map[string]int `json:"improvementCost"`
+	EPPerTE         map[CharClass]map[SkillGroup]int             `json:"epPerTE"`
+	AllowedGroups   map[CharClass]map[SkillGroup]bool            `json:"allowedGroups"`
+}
 
 // SkillDefinition beschreibt eine Fertigkeit
 type SkillDefinition struct {
@@ -103,7 +112,7 @@ var BaseLearnCost = map[SkillGroup]map[Difficulty]int{
 }
 
 // Verbesserungs-Kosten in einem Feld differenziert nach Gruppe & Schwierigkeit
-// (SkillGroup->Difficulty->(aktuellerBonus+1)->LE)
+// (SkillGroup->Difficulty->(aktuellerLevel+1)->LE)
 var ImprovementCost = map[SkillGroup]map[Difficulty]map[int]int{
 	GroupAlltag: {
 		DiffLeicht: {
@@ -188,12 +197,32 @@ var AllowedGroups = map[CharClass]map[SkillGroup]bool{
 	},
 }
 
-// CalculateLearnCost: erstmalige Kosten in EP
-func CalculateLearnCost(skill SkillDefinition, class CharClass) (int, error) {
-	if !AllowedGroups[class][skill.Group] {
-		return 0, fmt.Errorf("Klasse %s darf %s nicht lernen", class, skill.Group)
+var Config LevelConfig // holds all loaded data
+
+func init() {
+	// Adjust path as needed
+	filePath := "/data/dev/bamort/config/leveldata.json"
+	file, err := os.Open(filePath)
+	if err != nil {
+		panic(fmt.Errorf("failed to open JSON file: %w", err))
 	}
-	groupMap, ok := BaseLearnCost[skill.Group]
+	defer file.Close()
+
+	// Decode the JSON file into the ExportData structure
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&Config); err != nil {
+		panic(fmt.Errorf("failed to decode JSON file: %w", err))
+	}
+}
+
+// CalculateLearnCost: erstmalige Kosten in EP
+// Then refer to Config in your calculations:
+func CalculateLearnCost(skill SkillDefinition, class CharClass) (int, error) {
+	if !Config.AllowedGroups[class][skill.Group] {
+		return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
+	}
+
+	groupMap, ok := Config.BaseLearnCost[skill.Group]
 	if !ok {
 		return 0, errors.New("unbekannte Gruppe")
 	}
@@ -201,19 +230,19 @@ func CalculateLearnCost(skill SkillDefinition, class CharClass) (int, error) {
 	if !ok {
 		return 0, errors.New("keine LE-Definition für diese Schwierigkeit")
 	}
-	epPerLE, ok := EPPerLE[class][skill.Group]
+	epPerTE, ok := Config.EPPerTE[class][skill.Group]
 	if !ok {
 		return 0, fmt.Errorf("keine EP-Kosten für %s bei %s", class, skill.Group)
 	}
-	return baseLE * epPerLE, nil
+	return baseLE * (epPerTE * 3), nil
 }
 
 // CalculateImprovementCost: Kosten zum Steigern von +X auf +X+1
-func CalculateImprovementCost(skill SkillDefinition, class CharClass, currentBonus int) (int, error) {
-	if !AllowedGroups[class][skill.Group] {
-		return 0, fmt.Errorf("Klasse %s darf %s nicht lernen", class, skill.Group)
+func CalculateImprovementCost(skill SkillDefinition, class CharClass, currentSkillLevel int) (int, error) {
+	if !Config.AllowedGroups[class][skill.Group] {
+		return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
 	}
-	grpMap, ok := ImprovementCost[skill.Group]
+	grpMap, ok := Config.ImprovementCost[skill.Group]
 	if !ok {
 		return 0, errors.New("keine Improvement-Daten für diese Gruppe")
 	}
@@ -221,13 +250,14 @@ func CalculateImprovementCost(skill SkillDefinition, class CharClass, currentBon
 	if !ok {
 		return 0, errors.New("keine Improvement-Daten für diese Schwierigkeit")
 	}
-	neededLE, ok := diffMap[currentBonus+1]
-	if !ok {
-		return 0, fmt.Errorf("keine Kosten für +%d→+%d", currentBonus, currentBonus+1)
+
+	neededLE, found := diffMap[fmt.Sprintf("%d", currentSkillLevel+1)]
+	if !found {
+		return 0, fmt.Errorf("kein Eintrag für Bonus %d→%d", currentSkillLevel, currentSkillLevel+1)
 	}
-	epPerLE, ok := EPPerLE[class][skill.Group]
+	epPerTE, ok := Config.EPPerTE[class][skill.Group]
 	if !ok {
 		return 0, fmt.Errorf("keine EP-Kosten für %s bei %s", class, skill.Group)
 	}
-	return neededLE * epPerLE, nil
+	return neededLE * epPerTE, nil
 }

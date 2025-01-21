@@ -1,0 +1,67 @@
+{
+  "baseLearnCost": {
+    "Alltag": {
+      "leicht": 1,
+      "normal": 1,
+      "schwer": 2,
+      "sehr_schwer": 10
+    },
+    "Freiland": {
+      "leicht": 1,
+      "normal": 1,
+      "schwer": 2,
+      "sehr_schwer": 10
+    },
+    "Kampf": {
+      "leicht": 2,
+      "normal": 2,
+      "schwer": 4,
+      "sehr_schwer": 12
+    }
+  },
+  "improvementCost": {
+    "Alltag": {
+      "leicht": { "10": 0, "13": 1  },
+      "normal": { "9": 1, "13": 2  }
+    },    "Freiland": {
+      "leicht": { "9": 1, "13": 2  },
+      "normal": { "9": 2, "13": 15  }
+    },
+    "Kampf": {
+      "leicht": { "9": 1, "13": 4  }
+    }
+  },
+  "epPerLE": {
+    "Krieger": {
+      "Alltag": 20,
+      "Freiland": 20,
+      "Kampf": 10
+    },
+    "Magier": {
+      "Alltag": 30,
+      "Freiland": 30
+    },
+    "Schurke": {
+      "Alltag": 10,
+      "Freiland": 30,
+      "Kampf": 30
+    }
+  },
+  "allowedGroups": {
+    "Krieger": {
+      "Alltag": true,
+      "Freiland": true,
+      "Kampf": true
+    },
+    "Magier": {
+      "Alltag": true,
+      "Freiland": true,
+      "Kampf": false
+    },
+    "Schurke": {
+      "Alltag": true,
+      "Freiland": true,
+      "Kampf": true
+    }
+  }
+}

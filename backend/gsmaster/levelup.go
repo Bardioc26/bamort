@@ -160,7 +160,7 @@ const (
 	ClassSchurke CharClass = "Schurke"
 )
 
-var EPPerLE = map[CharClass]map[SkillGroup]int{
+var EPPerTE = map[CharClass]map[SkillGroup]int{
 	ClassKrieger: {
 		GroupAlltag:   20,
 		GroupFreiland: 20,
@@ -234,7 +234,13 @@ func CalculateLearnCost(skill SkillDefinition, class CharClass) (int, error) {
 	if !ok {
 		return 0, fmt.Errorf("keine EP-Kosten für %s bei %s", class, skill.Group)
 	}
-	return baseLE * (epPerTE * 3), nil
+	totalEP := baseLE * (epPerTE * 3)
+	// +6 EP for elves
+	if class == "Elfe" {
+		totalEP += 6
+	}
+
+	return totalEP, nil
 }
 
 // CalculateImprovementCost: Kosten zum Steigern von +X auf +X+1

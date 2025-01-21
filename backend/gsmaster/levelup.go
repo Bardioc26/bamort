@@ -50,67 +50,211 @@ Die pro Lerneinheit aufzuwendenden Erfahrungspunkte sind für die einzelnen Fert
 Erstelle aus diesen Informationen eine Datenstruktur, die es ermöglicht die Lernpunkte für eine Fertigkeit zu berechnen.
 Ziehe dazu die Dateien model.go in den Verzeichnissen backend/gsmaster, backend/skills, und backend/character zu Rate.
 */
+package gsmaster
+
+import (
+    "errors"
+    "fmt"
+)
+
+// SkillGroup kennzeichnet die übergeordnete Gruppe einer Fertigkeit
 type SkillGroup string
 
 const (
-	GroupAlltag   SkillGroup = "Alltag"
-	GroupFreiland SkillGroup = "Freiland"
-	GroupKampf    SkillGroup = "Kampf"
-	// ... add others as needed
+    GroupAlltag   SkillGroup = "Alltag"
+    GroupFreiland SkillGroup = "Freiland"
+    GroupKampf    SkillGroup = "Kampf"
+    // weitere Gruppen ...
 )
 
+// Difficulty gibt an, wie schwer eine Fertigkeit ist
 type Difficulty string
 
 const (
-	DifficultyLight     Difficulty = "leicht"
-	DifficultyNormal    Difficulty = "normal"
-	DifficultyHeavy     Difficulty = "schwer"
-	DifficultyVeryHeavy Difficulty = "sehr_schwer"
+    DiffLeicht     Difficulty = "leicht"
+    DiffNormal     Difficulty = "normal"
+    DiffSchwer     Difficulty = "schwer"
+    DiffSehrSchwer Difficulty = "sehr_schwer"
 )
 
-// Base cost per difficulty (example values)
-var DifficultyBaseCost = map[Difficulty]int{
-	DifficultyLight:     1,
-	DifficultyNormal:    2,
-	DifficultyHeavy:     3,
-	DifficultyVeryHeavy: 5,
-}
-
-// Character class multipliers by skill group (example values)
-var SkillGroupMultiplierByClass = map[string]map[SkillGroup]float64{
-	"Krieger": {
-		GroupAlltag:   1.0,
-		GroupFreiland: 1.5,
-		GroupKampf:    1.0,
-	},
-	"Magier": {
-		GroupAlltag:   1.2,
-		GroupFreiland: 2.0,
-		GroupKampf:    99.0, // not learnable or extremely expensive
-	},
-	// ... add more classes here
-}
-
-// SkillDefinition captures group & difficulty
+// SkillDefinition definiert eine einzelne Fertigkeit
 type SkillDefinition struct {
-	Name       string
-	Group      SkillGroup
-	Difficulty Difficulty
+    Name       string     // z.B. "Schwimmen"
+    Group      SkillGroup // z.B. GroupAlltag = "Alltag"
+    Difficulty Difficulty // z.B. DiffLeicht = "leicht"
+    // weitere Felder aus model.go, z.B. Bonus, AP-Kosten etc.
 }
 
-// CalculateSkillCost calculates the cost for one improvement step
-func CalculateSkillCost(skill SkillDefinition, charClass string) int {
-	base := DifficultyBaseCost[skill.Difficulty]
-	classMultiplier := 1.0
+// Kosten für das erstmalige Lernen pro Schwierigkeitsgrad in Lerneinheiten (LE)
+var BaseLearnCost = map[SkillGroup]map[Difficulty]int{
+    GroupAlltag: {
+        DiffLeicht:     1,
+        DiffNormal:     1,
+        DiffSchwer:     2,
+        DiffSehrSchwer: 10,
+    },
+    GroupFreiland: {
+        // Beispielwerte
+        DiffLeicht:     2,
+        DiffNormal:     3,
+        DiffSchwer:     5,
+        DiffSehrSchwer: 10,
+    },
+    GroupKampf: {
+        // Beispielwerte
+        DiffLeicht:     2,
+        DiffNormal:     2,
+        DiffSchwer:     4,
+        DiffSehrSchwer: 12,
+    },
+}
 
-	if multipliers, ok := SkillGroupMultiplierByClass[charClass]; ok {
-		if mult, found := multipliers[skill.Group]; found {
-			classMultiplier = mult
-		} else {
-			// If not found, treat as unlearnable or very high cost
-			classMultiplier = 99.0
-		}
-	}
+// Verbesserungs-Kosten in Lerneinheiten (LE) pro Schwierigkeitsgrad.  
+// Hier ein Beispiel-Layout: Map von "Fertigkeit +X" -> "Wie viele Lerneinheiten nötig"
+var ImprovementCost = map[Difficulty]map[int]int{
+    // Ein Beispiel: "leicht" => ab +13 kostet 1 LE usw.
+    DiffLeicht: {
+        9:  0, // "-" in der Tabelle => 0 oder man ignoriert’s
+        10: 0,
+        11: 0,
+        12: 0,
+        13: 1,
+        14: 1,
+        15: 1,
+        // ...
+    },
+    DiffNormal: {
+        9:  1,
+        10: 1,
+        11: 1,
+        12: 1,
+        13: 2,
+        14: 2,
+        15: 2,
+        // ...
+    },
+    DiffSchwer: {
+        9:  2,
+        10: 2,
+        11: 5,
+        12: 5,
+        13: 10,
+        // ...
+    },
+    DiffSehrSchwer: {
+        9:  5,
+        10: 5,
+        11: 10,
+        12: 10,
+        13: 20,
+        // ...
+    },
+}
 
-	return int(float64(base) * classMultiplier)
+// Charakterklassen mit EP-Kosten pro SkillGroup (Lerneinheit)
+type CharClass string
+
+const (
+    ClassKrieger CharClass = "Krieger"
+    ClassMagier  CharClass = "Magier"
+    ClassSchurke CharClass = "Schurke"
+    // weitere Klassen ...
+)
+
+// EP-Kosten pro Lerneinheit je Klasse und Gruppe
+// "-" (nicht erlernbar) wird hier als 0 interpretiert + Sperre in AllowedGroups
+var EPPerLE = map[CharClass]map[SkillGroup]int{
+    ClassKrieger: {
+        GroupAlltag:   20,
+        GroupFreiland: 20,
+        GroupKampf:    10,
+    },
+    ClassMagier: {
+        GroupAlltag:   30,
+        GroupFreiland: 30,
+        // GroupKampf: 0 => nicht erlernbar s.u.
+    },
+    ClassSchurke: {
+        GroupAlltag:   10,
+        GroupFreiland: 30,
+        GroupKampf:    30,
+    },
+}
+
+// AllowedGroups gibt an, ob eine Klasse eine bestimmte Gruppe lernen darf.
+// Falls false oder nicht vorhanden, ist diese Gruppe für die Klasse gesperrt.
+var AllowedGroups = map[CharClass]map[SkillGroup]bool{
+    ClassKrieger: {
+        GroupAlltag:   true,
+        GroupFreiland: true,
+        GroupKampf:    true,
+    },
+    ClassMagier: {
+        GroupAlltag:   true,
+        GroupFreiland: true,
+        GroupKampf:    false, // "-" in Tabelle
+    },
+    ClassSchurke: {
+        GroupAlltag:   true,
+        GroupFreiland: true,
+        GroupKampf:    true,
+    },
+}
+
+// CalculateLearnCost ermittelt, wie viele Lerneinheiten für das erstmalige Lernen notwendig sind
+// und multipliziert ihn mit den EP/Kosten pro LE für die gegebene Klasse
+func CalculateLearnCost(skill SkillDefinition, class CharClass) (int, error) {
+    // Ist die Gruppe für diese Klasse erlaubt?
+    if !AllowedGroups[class][skill.Group] {
+        return 0, fmt.Errorf("skill group %s cannot be learned by class %s", skill.Group, class)
+    }
+    grpMap, ok := BaseLearnCost[skill.Group]
+    if !ok {
+        return 0, errors.New("unknown skill group")
+    }
+    baseLE, ok := grpMap[skill.Difficulty]
+    if !ok {
+        return 0, errors.New("unknown difficulty in base cost table")
+    }
+    epTable, ok := EPPerLE[class]
+    if !ok {
+        return 0, errors.New("unknown class in EP table")
+    }
+    epPerLE, found := epTable[skill.Group]
+    if !found {
+        return 0, errors.New("no EP cost defined for group in class")
+    }
+
+    // Gesamt-EP = Lerneinheiten * EP pro LE
+    totalEP := baseLE * epPerLE
+    return totalEP, nil
+}
+
+// CalculateImprovementCost berechnet die EP-Kosten für die nächste Verbesserung (z.B. von +12 auf +13).
+// 'currentBonus' ist der aktuelle Bonus (z.B. +12).
+func CalculateImprovementCost(skill SkillDefinition, class CharClass, currentBonus int) (int, error) {
+    // Gruppe erlaubt?
+    if !AllowedGroups[class][skill.Group] {
+        return 0, fmt.Errorf("skill group %s cannot be learned by class %s", skill.Group, class)
+    }
+    // Passende ImprovementCost-Map
+    diffMap, ok := ImprovementCost[skill.Difficulty]
+    if !ok {
+        return 0, errors.New("unknown difficulty in improvement cost table")
+    }
+    neededLE, ok := diffMap[currentBonus+1] // z.B. +12 -> +13 => currentBonus+1
+    if !ok {
+        return 0, fmt.Errorf("no improvement cost for skill level %d", currentBonus+1)
+    }
+    epTable, ok := EPPerLE[class]
+    if !ok {
+        return 0, errors.New("unknown class in EP table")
+    }
+    epPerLE, found := epTable[skill.Group]
+    if !found {
+        return 0, errors.New("no EP cost defined for group in class")
+    }
+
+    totalEP := neededLE * epPerLE
+    return totalEP, nil
 }

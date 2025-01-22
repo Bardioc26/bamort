@@ -79,7 +79,10 @@ type LevelConfig struct {
 	BaseLearnCost   map[SkillGroup]map[Difficulty]int            `json:"baseLearnCost"`
 	ImprovementCost map[SkillGroup]map[Difficulty]map[string]int `json:"improvementCost"`
 	EPPerTE         map[CharClass]map[SkillGroup]int             `json:"epPerTE"`
-	AllowedGroups   map[CharClass]map[SkillGroup]bool            `json:"allowedGroups"`
+	//AllowedGroups           map[CharClass]map[SkillGroup]bool            `json:"allowedGroups"`
+	SpellLearnCost          map[int]int                   `json:"spellLearnCost"`
+	SpellEPPerSchoolByClass map[CharClass]map[string]int  `json:"spellEPPerSchoolByClass"`
+	AllowedSchools          map[CharClass]map[string]bool `json:"allowedSchools"`
 }
 
 // SkillDefinition beschreibt eine Fertigkeit
@@ -87,6 +90,31 @@ type SkillDefinition struct {
 	Name       string
 	Group      SkillGroup
 	Difficulty Difficulty
+}
+
+// SpellDefinition differs from SkillDefinition,
+// here we have a “Stufe” (1..12) plus a “School” (e.g. "Beherr", "Beweg", etc.)
+type SpellDefinition struct {
+	Name  string
+	Stufe int
+	// e.g. "Beherr", "Beweg", "Erken", etc.
+	School string
+}
+
+// SpellLearnCost: Stufe->Lerneinheiten (1..12)
+var SpellLearnCost = map[int]int{
+	1:  1,
+	2:  1,
+	3:  2,
+	4:  3,
+	5:  5,
+	6:  10,
+	7:  15,
+	8:  20,
+	9:  30,
+	10: 40,
+	11: 60,
+	12: 90,
 }
 
 // Erstmals Lernen: (SkillGroup->Difficulty->LE)
@@ -151,6 +179,51 @@ var ImprovementCost = map[SkillGroup]map[Difficulty]map[int]int{
 	},
 }
 
+// SpellEPPerSchoolByClass: EP-Kosten pro TE, depends on both
+// character class and spell school
+var SpellEPPerSchoolByClass = map[CharClass]map[string]int{
+	ClassKrieger: {
+		"Beherr":    30,
+		"Beweg":     90,
+		"Erken":     60,
+		"Erschaff":  60,
+		"Formen":    50,
+		"Verändern": 20,
+		"Zerstören": 60,
+		"Wunder":    0,
+		"Dweomer":   90,
+		"Lied":      0,
+		// ...
+	},
+	ClassMagier: {
+		"Beherr":    10,
+		"Beweg":     20,
+		"Erken":     20,
+		"Erschaff":  20,
+		"Formen":    10,
+		"Verändern": 10,
+		"Zerstören": 40,
+		"Wunder":    0,
+		"Dweomer":   90,
+		"Lied":      0,
+		// ...
+	},
+	ClassSchurke: {
+		// hier nur als Beispiel
+		"Beherr":    50,
+		"Beweg":     90,
+		"Erken":     90,
+		"Erschaff":  90,
+		"Formen":    60,
+		"Verändern": 30,
+		"Zerstören": 60,
+		"Wunder":    0,
+		"Dweomer":   90,
+		"Lied":      0,
+		// ...
+	},
+}
+
 // Beispiel: EP-Kosten pro LE je Klasse & Gruppe
 type CharClass string
 
@@ -178,6 +251,7 @@ var EPPerTE = map[CharClass]map[SkillGroup]int{
 	},
 }
 
+/*
 // Eventuell Erlaubnis pro Klasse/Gruppe
 var AllowedGroups = map[CharClass]map[SkillGroup]bool{
 	ClassKrieger: {
@@ -196,6 +270,7 @@ var AllowedGroups = map[CharClass]map[SkillGroup]bool{
 		GroupKampf:    true,
 	},
 }
+*/
 
 var Config LevelConfig // holds all loaded data
 
@@ -215,12 +290,44 @@ func init() {
 	}
 }
 
+// CalculateSpellLearnCost combines SpellLearnCost with SpellEPPerSchoolByClass
+func CalculateSpellLearnCost(spell SpellDefinition, class CharClass) (int, error) {
+	if !Config.AllowedSchools[class][spell.School] {
+		return 0, fmt.Errorf("die Klasse %s darf die Schule %s nicht lernen", class, spell.School)
+	}
+	neededLE, ok := Config.SpellLearnCost[spell.Stufe]
+	if !ok {
+		return 0, fmt.Errorf("ungültige Zauberstufe: %d", spell.Stufe)
+	}
+
+	classMap, ok := Config.SpellEPPerSchoolByClass[class]
+	if !ok {
+		return 0, fmt.Errorf("keine EP-Tabelle für Klasse: %s", class)
+	}
+
+	epPerTE, found := classMap[spell.School]
+	if !found {
+		return 0, fmt.Errorf("unbekannte Schule '%s' bei Klasse '%s'", spell.School, class)
+	}
+
+	// Gesamt-EP = benötigte LE * EP pro LE.
+	totalEP := neededLE * (epPerTE * 3)
+	// +6 EP for elves
+	if class == "Elfe" {
+		totalEP += 6
+	}
+
+	return totalEP, nil
+}
+
 // CalculateLearnCost: erstmalige Kosten in EP
 // Then refer to Config in your calculations:
 func CalculateLearnCost(skill SkillDefinition, class CharClass) (int, error) {
-	if !Config.AllowedGroups[class][skill.Group] {
-		return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
-	}
+	/*
+		if !Config.AllowedGroups[class][skill.Group] {
+			return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
+		}
+	*/
 
 	groupMap, ok := Config.BaseLearnCost[skill.Group]
 	if !ok {
@@ -245,9 +352,11 @@ func CalculateLearnCost(skill SkillDefinition, class CharClass) (int, error) {
 
 // CalculateImprovementCost: Kosten zum Steigern von +X auf +X+1
 func CalculateImprovementCost(skill SkillDefinition, class CharClass, currentSkillLevel int) (int, error) {
-	if !Config.AllowedGroups[class][skill.Group] {
-		return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
-	}
+	/*
+		if !Config.AllowedGroups[class][skill.Group] {
+			return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
+		}
+	*/
 	grpMap, ok := Config.ImprovementCost[skill.Group]
 	if !ok {
 		return 0, errors.New("keine Improvement-Daten für diese Gruppe")

@@ -2,6 +2,7 @@ package character
 
 import (
 	"bamort/database"
+	"bamort/gsmaster"
 	"bamort/models"
 	"bamort/skills"
 
@@ -131,6 +132,7 @@ func ToFeChar(object *Char) *FeChar {
 	feC.CategorizedSkills = categories
 	return feC
 }
+
 func splitSkills(object []skills.Fertigkeit) ([]skills.Fertigkeit, []skills.Fertigkeit, map[string][]skills.Fertigkeit) {
 	var normSkills []skills.Fertigkeit
 	var innateSkills []skills.Fertigkeit
@@ -154,4 +156,83 @@ func splitSkills(object []skills.Fertigkeit) ([]skills.Fertigkeit, []skills.Fert
 	}
 
 	return normSkills, innateSkills, categories
+}
+
+func GetLearnSkillCost(c *gin.Context) {
+	// Get the character ID from the request
+	charID := c.Param("id")
+
+	// Load the character from the database
+	var character Char
+	if err := character.FirstID(charID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+
+	// Load the skill from the request
+	var s skills.Fertigkeit
+	if err := c.ShouldBindJSON(&s); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var skill gsmaster.Skill
+	if err := skill.First(s.Name); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"can not find speel in gsmaster": err.Error()})
+		return
+	}
+
+	sd := gsmaster.SkillDefinition{
+		Name: skill.Name,
+		//Group:  skill.Category,
+		//Difficulty: skill.Category,
+	}
+
+	cost, err := gsmaster.CalculateLearnCost(sd, gsmaster.CharClass(character.Typ))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn skill": err.Error()})
+		return
+	}
+
+	// Return the updated character
+	c.JSON(http.StatusOK, cost)
+}
+
+func GetLearnSpellCost(c *gin.Context) {
+	// Get the character ID from the request
+	charID := c.Param("id")
+
+	// Load the character from the database
+	var character Char
+	if err := character.FirstID(charID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+
+	// Load the spell from the request
+	var s skills.Zauber
+	if err := c.ShouldBindJSON(&s); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var spell gsmaster.Spell
+	if err := spell.First(s.Name); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"can not find speel in gsmaster": err.Error()})
+		return
+	}
+	sd := gsmaster.SpellDefinition{
+		Name:   spell.Name,
+		Stufe:  spell.Stufe,
+		School: spell.Category,
+	}
+
+	cost, err := gsmaster.CalculateSpellLearnCost(sd, gsmaster.CharClass(character.Typ))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn spell": err.Error()})
+		return
+	}
+
+	sd.CostEP = cost
+	// Return the updated character
+	c.JSON(http.StatusOK, sd)
 }

@@ -76,12 +76,12 @@
   },
   "SpellEPPerSchoolByClass":{
     "Hexer": {
-      "Beherr":30, "Beweg":90, "Erken":90, "Erschaff":90, "Formen":60, "Verändern":30, "Zerstören":60, "Wunder":0, "Dweomer":90, "Lied":0
+      "Beherrschen":30, "Beweg":90, "Erken":90, "Erschaff":90, "Formen":60, "Verändern":30, "Zerstören":60, "Wunder":0, "Dweomer":90, "Lied":0
     }
   },
   "allowedSchools": {
     "Hexer": {
-      "Beherr":true, "Beweg":true, "Erken":true, "Erschaff":true, "Formen":true, "Verändern":true, "Zerstören":true, "Wunder":false, "Dweomer":true, "Lied":false
+      "Beherrschen":true, "Beweg":true, "Erken":true, "Erschaff":true, "Formen":true, "Verändern":true, "Zerstören":true, "Wunder":false, "Dweomer":true, "Lied":false
     } 
   },
   "obsolete":{

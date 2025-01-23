@@ -42,6 +42,7 @@ func SetupTestDB(opts ...bool) {
 				panic("failed to connect to the test database")
 			}
 			//*/
+			migrationDone = true
 		}
 		database.DB = db
 	}

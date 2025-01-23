@@ -59,14 +59,8 @@ import (
 )
 
 type SkillGroup string
-
-const (
-	GroupAlltag   SkillGroup = "Alltag"
-	GroupFreiland SkillGroup = "Freiland"
-	GroupKampf    SkillGroup = "Kampf"
-)
-
 type Difficulty string
+type CharClass string
 
 const (
 	DiffLeicht     Difficulty = "leicht"
@@ -95,188 +89,42 @@ type SkillDefinition struct {
 // SpellDefinition differs from SkillDefinition,
 // here we have a “Stufe” (1..12) plus a “School” (e.g. "Beherr", "Beweg", etc.)
 type SpellDefinition struct {
-	Name  string
-	Stufe int
-	// e.g. "Beherr", "Beweg", "Erken", etc.
-	School string
+	Name   string `json:"name"`
+	Stufe  int    `json:"level"`
+	School string `json:"school"` // e.g. "Beherr", "Beweg", "Erken", etc.
+	CostEP int    `json:"cost_ep"`
+	CostLE int    `json:"cost_le"`
 }
 
 // SpellLearnCost: Stufe->Lerneinheiten (1..12)
-var SpellLearnCost = map[int]int{
-	1:  1,
-	2:  1,
-	3:  2,
-	4:  3,
-	5:  5,
-	6:  10,
-	7:  15,
-	8:  20,
-	9:  30,
-	10: 40,
-	11: 60,
-	12: 90,
-}
+var SpellLearnCost = map[int]int{}
 
 // Erstmals Lernen: (SkillGroup->Difficulty->LE)
-var BaseLearnCost = map[SkillGroup]map[Difficulty]int{
-	GroupAlltag: {
-		DiffLeicht:     1,
-		DiffNormal:     1,
-		DiffSchwer:     2,
-		DiffSehrSchwer: 10,
-	},
-	GroupFreiland: {
-		DiffLeicht:     1,
-		DiffNormal:     1,
-		DiffSchwer:     2,
-		DiffSehrSchwer: 10,
-	},
-	GroupKampf: {
-		DiffLeicht:     2,
-		DiffNormal:     2,
-		DiffSchwer:     4,
-		DiffSehrSchwer: 12,
-	},
-}
+var BaseLearnCost = map[SkillGroup]map[Difficulty]int{}
 
 // Verbesserungs-Kosten in einem Feld differenziert nach Gruppe & Schwierigkeit
 // (SkillGroup->Difficulty->(aktuellerLevel+1)->LE)
-var ImprovementCost = map[SkillGroup]map[Difficulty]map[int]int{
-	GroupAlltag: {
-		DiffLeicht: {
-			9: 0, 10: 0, 11: 0, 12: 0, 13: 1, 14: 1,
-		},
-		DiffNormal: {
-			9: 1, 10: 1, 11: 1, 12: 1, 13: 2,
-		},
-		DiffSchwer: {
-			9: 2, 10: 2, 11: 5, 12: 5, 13: 10,
-		},
-		DiffSehrSchwer: {
-			9: 5, 10: 5, 11: 10, 12: 10, 13: 20,
-		},
-	},
-	GroupFreiland: {
-		DiffLeicht: {
-			9: 1, 10: 1, 11: 1, 12: 2, 13: 2,
-		},
-		DiffNormal: {
-			9: 2, 10: 5, 11: 5, 12: 10, 13: 15,
-		},
-		DiffSchwer: {
-			9: 5, 10: 5, 11: 10, 12: 10, 13: 20,
-		},
-		// z.B. keine Daten für sehr_schwer => 10er-Blöcke oder leer
-	},
-	// Gruppe Kampf nur Beispiele
-	GroupKampf: {
-		DiffLeicht: {
-			9: 1, 10: 1, 11: 2, 12: 2, 13: 4,
-		},
-		DiffNormal: {
-			9: 2, 10: 2, 11: 3,
-		},
-	},
-}
+var ImprovementCost = map[SkillGroup]map[Difficulty]map[int]int{}
 
 // SpellEPPerSchoolByClass: EP-Kosten pro TE, depends on both
 // character class and spell school
-var SpellEPPerSchoolByClass = map[CharClass]map[string]int{
-	ClassKrieger: {
-		"Beherr":    30,
-		"Beweg":     90,
-		"Erken":     60,
-		"Erschaff":  60,
-		"Formen":    50,
-		"Verändern": 20,
-		"Zerstören": 60,
-		"Wunder":    0,
-		"Dweomer":   90,
-		"Lied":      0,
-		// ...
-	},
-	ClassMagier: {
-		"Beherr":    10,
-		"Beweg":     20,
-		"Erken":     20,
-		"Erschaff":  20,
-		"Formen":    10,
-		"Verändern": 10,
-		"Zerstören": 40,
-		"Wunder":    0,
-		"Dweomer":   90,
-		"Lied":      0,
-		// ...
-	},
-	ClassSchurke: {
-		// hier nur als Beispiel
-		"Beherr":    50,
-		"Beweg":     90,
-		"Erken":     90,
-		"Erschaff":  90,
-		"Formen":    60,
-		"Verändern": 30,
-		"Zerstören": 60,
-		"Wunder":    0,
-		"Dweomer":   90,
-		"Lied":      0,
-		// ...
-	},
-}
+var SpellEPPerSchoolByClass = map[CharClass]map[string]int{}
 
-// Beispiel: EP-Kosten pro LE je Klasse & Gruppe
-type CharClass string
-
-const (
-	ClassKrieger CharClass = "Krieger"
-	ClassMagier  CharClass = "Magier"
-	ClassSchurke CharClass = "Schurke"
-)
-
-var EPPerTE = map[CharClass]map[SkillGroup]int{
-	ClassKrieger: {
-		GroupAlltag:   20,
-		GroupFreiland: 20,
-		GroupKampf:    10,
-	},
-	ClassMagier: {
-		GroupAlltag:   30,
-		GroupFreiland: 30,
-		// kein Kampf => 0 oder kein Eintrag
-	},
-	ClassSchurke: {
-		GroupAlltag:   10,
-		GroupFreiland: 30,
-		GroupKampf:    30,
-	},
-}
+var EPPerTE = map[CharClass]map[SkillGroup]int{}
 
 /*
 // Eventuell Erlaubnis pro Klasse/Gruppe
-var AllowedGroups = map[CharClass]map[SkillGroup]bool{
-	ClassKrieger: {
-		GroupAlltag:   true,
-		GroupFreiland: true,
-		GroupKampf:    true,
-	},
-	ClassMagier: {
-		GroupAlltag:   true,
-		GroupFreiland: true,
-		GroupKampf:    false,
-	},
-	ClassSchurke: {
-		GroupAlltag:   true,
-		GroupFreiland: true,
-		GroupKampf:    true,
-	},
-}
+var AllowedGroups = map[CharClass]map[SkillGroup]bool}
 */
 
 var Config LevelConfig // holds all loaded data
 
-func init() {
+func loadLevelingConfig(opts ...string) {
 	// Adjust path as needed
-	filePath := "/data/dev/bamort/config/leveldata.json"
+	filePath := "../testdata/leveldata.json"
+	if len(opts) > 0 {
+		filePath = opts[0]
+	}
 	file, err := os.Open(filePath)
 	if err != nil {
 		panic(fmt.Errorf("failed to open JSON file: %w", err))
@@ -292,6 +140,9 @@ func init() {
 
 // CalculateSpellLearnCost combines SpellLearnCost with SpellEPPerSchoolByClass
 func CalculateSpellLearnCost(spell SpellDefinition, class CharClass) (int, error) {
+	if Config.AllowedSchools == nil {
+		loadLevelingConfig()
+	}
 	if !Config.AllowedSchools[class][spell.School] {
 		return 0, fmt.Errorf("die Klasse %s darf die Schule %s nicht lernen", class, spell.School)
 	}
@@ -313,7 +164,7 @@ func CalculateSpellLearnCost(spell SpellDefinition, class CharClass) (int, error
 	// Gesamt-EP = benötigte LE * EP pro LE.
 	totalEP := neededLE * (epPerTE * 3)
 	// +6 EP for elves
-	if class == "Elfe" {
+	if class == "Elf" {
 		totalEP += 6
 	}
 
@@ -328,11 +179,18 @@ func CalculateLearnCost(skill SkillDefinition, class CharClass) (int, error) {
 			return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
 		}
 	*/
+	var skl Skill
+	if err := skl.First(skill.Name); err != nil {
+		return 0, errors.New("unbekannte Fertigkeit")
+	}
 
+	skill.Group = SkillGroup(skl.Category)
 	groupMap, ok := Config.BaseLearnCost[skill.Group]
 	if !ok {
 		return 0, errors.New("unbekannte Gruppe")
 	}
+
+	skill.Difficulty = Difficulty(skl.Difficulty)
 	baseLE, ok := groupMap[skill.Difficulty]
 	if !ok {
 		return 0, errors.New("keine LE-Definition für diese Schwierigkeit")
@@ -343,7 +201,7 @@ func CalculateLearnCost(skill SkillDefinition, class CharClass) (int, error) {
 	}
 	totalEP := baseLE * (epPerTE * 3)
 	// +6 EP for elves
-	if class == "Elfe" {
+	if class == "Elf" {
 		totalEP += 6
 	}
 

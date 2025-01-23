@@ -24,6 +24,7 @@ type Skill struct {
 	Improvable       bool   `gorm:"default:true" json:"improvable"`
 	InnateSkill      bool   `gorm:"default:false" json:"innateskill"`
 	Category         string `json:"category"`
+	Difficulty       string `json:"difficulty"`
 }
 
 type WeaponSkill struct {

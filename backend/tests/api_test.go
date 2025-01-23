@@ -11,6 +11,7 @@ import (
 	"bamort/user"
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -193,4 +194,52 @@ func TestCreateCharacter(t *testing.T) {
 	assert.Equal(t, "Aragorn", createdCharacter.Name)
 	assert.Equal(t, "Human", createdCharacter.Race)
 	assert.Equal(t, 1, createdCharacter.ID) // Check the simulated ID
+}
+
+func TestGetSpellLearnCost(t *testing.T) {
+	SetupTestDB(false)
+	// Initialize a Gin router
+	r := gin.Default()
+	router.SetupGin(r)
+
+	// Routes
+	protected := router.BaseRouterGrp(r)
+	// Character routes
+	rCharGrp := router.CharRouterGrp(protected)
+	rCharGrp.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
+	})
+
+	// Create a test HTTP request
+	req, _ := http.NewRequest("GET", "/api/characters/learn/18", nil)
+	//req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+	//req.Header.Set("Authorization", "Bearer ${token}")
+	req.Header.Set("Authorization", "Bearer dc7a780.1:bba7f4daabda117f2a2c14263")
+	jsonData, _ := json.Marshal(map[string]string{
+		"type": "spell",
+		"name": "Angst",
+	})
+	req.Body = io.NopCloser(bytes.NewBuffer(jsonData))
+
+	// Create a response recorder to capture the handler's response
+	respRecorder := httptest.NewRecorder()
+
+	// Perform the test request
+	r.ServeHTTP(respRecorder, req)
+
+	// Assert the response status code
+	assert.Equal(t, http.StatusOK, respRecorder.Code)
+
+	// Assert the response body
+	var sDeff *gsmaster.SpellDefinition
+	err := json.Unmarshal(respRecorder.Body.Bytes(), &sDeff)
+	assert.NoError(t, err)
+	assert.Equal(t, "Angst", sDeff.Name)
+	assert.Equal(t, "Beherrschen", sDeff.School)
+	assert.Equal(t, 2, int(sDeff.Stufe)) // Check the simulated ID
+	assert.Equal(t, 90, sDeff.CostEP)
+	//assert.Equal(t, "test", listOfCharacter.Owner)
+	//assert.Equal(t, false, listOfCharacter.Public)
+
 }

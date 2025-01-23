@@ -116,7 +116,7 @@ func (object *Char) TableName() string {
 	return dbPrefix + "_" + "chars"
 }
 
-func (object *Char) First(name string) error {
+func (object *Char) First(charName string) error {
 	err := database.DB.
 		Preload("Lp").
 		Preload("Ap").
@@ -132,7 +132,7 @@ func (object *Char) First(name string) error {
 		Preload("Behaeltnisse").
 		Preload("Transportmittel").
 		Preload("Ausruestung").
-		First(&object, " name = ?", name).Error
+		First(&object, " name = ?", charName).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -140,7 +140,7 @@ func (object *Char) First(name string) error {
 	return nil
 }
 
-func (object *Char) FirstID(name string) error {
+func (object *Char) FirstID(charID string) error {
 	err := database.DB.
 		Preload("Lp").
 		Preload("Ap").
@@ -156,7 +156,7 @@ func (object *Char) FirstID(name string) error {
 		Preload("Behaeltnisse").
 		Preload("Transportmittel").
 		Preload("Ausruestung").
-		First(&object, " id = ?", name).Error
+		First(&object, " id = ?", charID).Error
 	if err != nil {
 		// Char not found
 		return err

@@ -182,13 +182,7 @@ func GetLearnSkillCost(c *gin.Context) {
 		return
 	}
 
-	sd := gsmaster.SkillDefinition{
-		Name: skill.Name,
-		//Group:  skill.Category,
-		//Difficulty: skill.Category,
-	}
-
-	cost, err := gsmaster.CalculateLearnCost(sd, gsmaster.CharClass(character.Typ))
+	cost, err := gsmaster.CalculateSkillLearnCost(skill.Name, character.Typ)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn skill": err.Error()})
 		return
@@ -226,7 +220,7 @@ func GetLearnSpellCost(c *gin.Context) {
 		School: spell.Category,
 	}
 
-	cost, err := gsmaster.CalculateSpellLearnCost(sd, gsmaster.CharClass(character.Typ))
+	cost, err := gsmaster.CalculateSpellLearnCost(spell.Name, character.Typ)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn spell": err.Error()})
 		return

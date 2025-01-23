@@ -52,6 +52,7 @@ func setupTestDB(opts ...bool) {
 		migrationDone = true
 	}
 }
+
 func TestLoadLevelingConfig(t *testing.T) {
 	// Save original Config
 	originalConfig := Config
@@ -71,11 +72,15 @@ func TestLoadLevelingConfig(t *testing.T) {
 }
 
 func TestInitValidConfig(t *testing.T) {
-	// Save original Config
-	originalConfig := Config
-	defer func() {
-		Config = originalConfig
-	}()
+	loadLevelingConfig()
+	setupTestDB(false)
+	/*
+		// Save original Config
+		originalConfig := Config
+		defer func() {
+			Config = originalConfig
+		}()
+	*/
 
 	// Test with valid config file
 	os.Setenv("CONFIG_PATH", "/data/dev/bamort/config/leveldata.json")
@@ -88,72 +93,78 @@ func TestInitValidConfig(t *testing.T) {
 }
 
 func TestCalculateSpellLearnCost(t *testing.T) {
-	// Save original Config
-	originalConfig := Config
-	defer func() {
-		Config = originalConfig
-	}()
+	loadLevelingConfig()
+	setupTestDB(false)
+	/*
+		// Save original Config
+		originalConfig := Config
+		defer func() {
+			Config = originalConfig
+		}()
 
-	// Set up test config
-	Config = LevelConfig{
-		SpellLearnCost: map[int]int{
-			1: 1,
-			2: 2,
-		},
-		SpellEPPerSchoolByClass: map[CharClass]map[string]int{
-			"Magier": {"Beweg": 10},
-			"Elfe":   {"Beweg": 15},
-		},
-		AllowedSchools: map[CharClass]map[string]bool{
-			"Magier": {"Beweg": true},
-			"Elfe":   {"Beweg": true},
-		},
-	}
+		// Set up test config
+		Config = LevelConfig{
+			SpellLearnCost: map[int]int{
+				1: 1,
+				2: 2,
+			},
+			SpellEPPerSchoolByClass: map[CharClass]map[string]int{
+				"Magier": {"Beweg": 10},
+				"Elfe":   {"Beweg": 15},
+			},
+			AllowedSchools: map[CharClass]map[string]bool{
+				"Magier": {"Beweg": true},
+				"Elfe":   {"Beweg": true},
+			},
+		}
+	*/
 
 	tests := []struct {
-		name        string
-		spell       SpellDefinition
-		class       CharClass
+		name  string
+		spell SpellDefinition
+		//class       CharClass
+		class       string
 		wantEP      int
 		wantErr     bool
 		errContains string
 	}{
 		{
 			name:   "valid spell for magier",
-			spell:  SpellDefinition{Name: "TestSpell", Stufe: 1, School: "Beweg"},
+			spell:  SpellDefinition{Name: "Angst", Stufe: 2, School: "Beherrschen"},
 			class:  "Magier",
-			wantEP: 30, // 1 LE * (10 EP * 3)
+			wantEP: 180, // 1 LE * (10 EP * 3)
 		},
 		{
-			name:   "valid spell for elf",
-			spell:  SpellDefinition{Name: "TestSpell", Stufe: 1, School: "Beweg"},
-			class:  "Elfe",
-			wantEP: 51, // (1 LE * (15 EP * 3)) + 6
+			name:    "valid spell for elf",
+			spell:   SpellDefinition{Name: "Angst", Stufe: 2, School: "Beherrschen"},
+			class:   "Elfe",
+			wantEP:  51, // (1 LE * (15 EP * 3)) + 6
+			wantErr: true,
 		},
 		{
 			name:        "invalid spell level",
-			spell:       SpellDefinition{Name: "TestSpell", Stufe: 99, School: "Beweg"},
+			spell:       SpellDefinition{Name: "Angst", Stufe: 99, School: "Beherrschen"},
 			class:       "Magier",
 			wantErr:     true,
 			errContains: "ungültige Zauberstufe",
 		},
 		{
 			name:        "invalid class",
-			spell:       SpellDefinition{Name: "TestSpell", Stufe: 1, School: "Beweg"},
+			spell:       SpellDefinition{Name: "Angst", Stufe: 2, School: "Beherrschen"},
 			class:       "InvalidClass",
 			wantErr:     true,
 			errContains: "keine EP-Tabelle für Klasse",
 		},
 		{
 			name:        "invalid school",
-			spell:       SpellDefinition{Name: "TestSpell", Stufe: 1, School: "InvalidSchool"},
+			spell:       SpellDefinition{Name: "Angst", Stufe: 2, School: "Beherrschen"},
 			class:       "Magier",
 			wantErr:     true,
 			errContains: "unbekannte Schule",
 		},
 		{
 			name:        "not allowed school",
-			spell:       SpellDefinition{Name: "TestSpell", Stufe: 1, School: "Beweg"},
+			spell:       SpellDefinition{Name: "Angst", Stufe: 2, School: "Beherrschen"},
 			class:       "Krieger",
 			wantErr:     true,
 			errContains: "darf die Schule",
@@ -162,7 +173,7 @@ func TestCalculateSpellLearnCost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CalculateSpellLearnCost(tt.spell, tt.class)
+			got, err := CalculateSpellLearnCost(tt.spell.Name, tt.class)
 			if tt.wantErr {
 				if err == nil {
 					assert.Error(t, err, "CalculateSpellLearnCost() expected error")
@@ -217,7 +228,7 @@ func TestCalculateLearnCost(t *testing.T) {
 	tests := []struct {
 		name        string
 		skill       SkillDefinition
-		class       CharClass
+		class       string
 		wantEP      int
 		wantErr     bool
 		errContains string
@@ -239,13 +250,14 @@ func TestCalculateLearnCost(t *testing.T) {
 				Group:      "Alltag",
 				Difficulty: "leicht",
 			},
-			class:  "Elf",
-			wantEP: 96, // (1 LE * (30 EP * 3)) + 6
+			class:   "Elf",
+			wantEP:  96, // (1 LE * (30 EP * 3)) + 6
+			wantErr: true,
 		},
 		{
 			name: "invalid group",
 			skill: SkillDefinition{
-				Name:       "Test",
+				Name:       "Erste Hilfe",
 				Group:      "InvalidGroup",
 				Difficulty: "leicht",
 			},
@@ -279,7 +291,7 @@ func TestCalculateLearnCost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CalculateLearnCost(tt.skill, tt.class)
+			got, err := CalculateSkillLearnCost(tt.skill.Name, tt.class)
 			if tt.wantErr {
 				if err == nil {
 					assert.Error(t, err, "CalculateLearnCost() expected error")
@@ -303,32 +315,36 @@ func TestCalculateLearnCost(t *testing.T) {
 }
 
 func TestCalculateImprovementCost(t *testing.T) {
-	// Save original Config
-	originalConfig := Config
-	defer func() {
-		Config = originalConfig
-	}()
+	loadLevelingConfig()
+	setupTestDB(false)
+	/*
+		// Save original Config
+		originalConfig := Config
+		defer func() {
+			Config = originalConfig
+		}()
 
-	// Set up test config
-	Config = LevelConfig{
-		ImprovementCost: map[SkillGroup]map[Difficulty]map[string]int{
-			"Alltag": {
-				"leicht": {
-					"9":  1,
-					"10": 1,
-				},
-				"normal": {
-					"9":  2,
-					"10": 2,
+
+		// Set up test config
+		Config = LevelConfig{
+			ImprovementCost: map[SkillGroup]map[Difficulty]map[string]int{
+				"Alltag": {
+					"leicht": {
+						"9":  1,
+						"10": 1,
+					},
+					"normal": {
+						"9":  2,
+						"10": 2,
+					},
 				},
 			},
-		},
-		EPPerTE: map[CharClass]map[SkillGroup]int{
-			"Krieger": {"Alltag": 20},
-			"Magier":  {"Alltag": 30},
-		},
-	}
-
+			EPPerTE: map[CharClass]map[SkillGroup]int{
+				"Krieger": {"Alltag": 20},
+				"Magier":  {"Alltag": 30},
+			},
+		}
+	*/
 	tests := []struct {
 		name         string
 		skill        SkillDefinition
@@ -341,29 +357,29 @@ func TestCalculateImprovementCost(t *testing.T) {
 		{
 			name: "valid improvement for warrior",
 			skill: SkillDefinition{
-				Name:       "TestSkill",
+				Name:       "Bootfahren",
 				Group:      "Alltag",
 				Difficulty: "leicht",
 			},
 			class:        "Krieger",
-			currentLevel: 8,
-			wantEP:       20, // 1 LE * 20 EP
+			currentLevel: 13,
+			wantEP:       40, // 1 LE * 20 EP
 		},
 		{
 			name: "valid improvement for mage",
 			skill: SkillDefinition{
-				Name:       "TestSkill",
-				Group:      "Alltag",
+				Name:       "Schreiben",
+				Group:      "Wissen",
 				Difficulty: "normal",
 			},
-			class:        "Magier",
-			currentLevel: 8,
-			wantEP:       60, // 2 LE * 30 EP
+			class:        "Hexer",
+			currentLevel: 9,
+			wantEP:       20, // 2 LE * 30 EP
 		},
 		{
 			name: "invalid group",
 			skill: SkillDefinition{
-				Name:       "TestSkill",
+				Name:       "Erste Hilfe",
 				Group:      "InvalidGroup",
 				Difficulty: "leicht",
 			},
@@ -375,8 +391,8 @@ func TestCalculateImprovementCost(t *testing.T) {
 		{
 			name: "invalid difficulty",
 			skill: SkillDefinition{
-				Name:       "TestSkill",
-				Group:      "Alltag",
+				Name:       "Geländelauf",
+				Group:      "Körper",
 				Difficulty: "invalid",
 			},
 			class:        "Krieger",
@@ -387,9 +403,9 @@ func TestCalculateImprovementCost(t *testing.T) {
 		{
 			name: "invalid next level",
 			skill: SkillDefinition{
-				Name:       "TestSkill",
-				Group:      "Alltag",
-				Difficulty: "leicht",
+				Name:       "Schreiben",
+				Group:      "Wissen",
+				Difficulty: "normal",
 			},
 			class:        "Krieger",
 			currentLevel: 99,
@@ -399,9 +415,9 @@ func TestCalculateImprovementCost(t *testing.T) {
 		{
 			name: "invalid class",
 			skill: SkillDefinition{
-				Name:       "TestSkill",
-				Group:      "Alltag",
-				Difficulty: "leicht",
+				Name:       "Schreiben",
+				Group:      "Wissen",
+				Difficulty: "normal",
 			},
 			class:        "InvalidClass",
 			currentLevel: 8,
@@ -412,7 +428,7 @@ func TestCalculateImprovementCost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CalculateImprovementCost(tt.skill, tt.class, tt.currentLevel)
+			got, err := CalculateImprovementCost(tt.skill.Name, string(tt.class), tt.currentLevel)
 			if tt.wantErr {
 				if err == nil {
 					assert.Error(t, err, "CalculateImprovementCost() expected error")

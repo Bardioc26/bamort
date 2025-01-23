@@ -139,26 +139,32 @@ func loadLevelingConfig(opts ...string) {
 }
 
 // CalculateSpellLearnCost combines SpellLearnCost with SpellEPPerSchoolByClass
-func CalculateSpellLearnCost(spell SpellDefinition, class CharClass) (int, error) {
+func CalculateSpellLearnCost(spell string, class string) (int, error) {
 	if Config.AllowedSchools == nil {
 		loadLevelingConfig()
 	}
-	if !Config.AllowedSchools[class][spell.School] {
-		return 0, fmt.Errorf("die Klasse %s darf die Schule %s nicht lernen", class, spell.School)
-	}
-	neededLE, ok := Config.SpellLearnCost[spell.Stufe]
-	if !ok {
-		return 0, fmt.Errorf("ungültige Zauberstufe: %d", spell.Stufe)
+
+	var spl Spell
+	if err := spl.First(spell); err != nil {
+		return 0, errors.New("unbekannter Zauberspruch")
 	}
 
-	classMap, ok := Config.SpellEPPerSchoolByClass[class]
+	if !Config.AllowedSchools[CharClass(class)][spl.Category] {
+		return 0, fmt.Errorf("die Klasse %s darf die Schule %s nicht lernen", class, spl.Category)
+	}
+	neededLE, ok := Config.SpellLearnCost[spl.Stufe]
+	if !ok {
+		return 0, fmt.Errorf("ungültige Zauberstufe: %d", spl.Stufe)
+	}
+
+	classMap, ok := Config.SpellEPPerSchoolByClass[CharClass(class)]
 	if !ok {
 		return 0, fmt.Errorf("keine EP-Tabelle für Klasse: %s", class)
 	}
 
-	epPerTE, found := classMap[spell.School]
+	epPerTE, found := classMap[spl.Category]
 	if !found {
-		return 0, fmt.Errorf("unbekannte Schule '%s' bei Klasse '%s'", spell.School, class)
+		return 0, fmt.Errorf("unbekannte Schule '%s' bei Klasse '%s'", spl.Category, class)
 	}
 
 	// Gesamt-EP = benötigte LE * EP pro LE.
@@ -171,33 +177,31 @@ func CalculateSpellLearnCost(spell SpellDefinition, class CharClass) (int, error
 	return totalEP, nil
 }
 
-// CalculateLearnCost: erstmalige Kosten in EP
+// CalculateSkillLearnCost: erstmalige Kosten in EP
 // Then refer to Config in your calculations:
-func CalculateLearnCost(skill SkillDefinition, class CharClass) (int, error) {
+func CalculateSkillLearnCost(skill string, class string) (int, error) {
 	/*
 		if !Config.AllowedGroups[class][skill.Group] {
 			return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
 		}
 	*/
 	var skl Skill
-	if err := skl.First(skill.Name); err != nil {
+	if err := skl.First(skill); err != nil {
 		return 0, errors.New("unbekannte Fertigkeit")
 	}
 
-	skill.Group = SkillGroup(skl.Category)
-	groupMap, ok := Config.BaseLearnCost[skill.Group]
+	groupMap, ok := Config.BaseLearnCost[SkillGroup(skl.Category)]
 	if !ok {
 		return 0, errors.New("unbekannte Gruppe")
 	}
 
-	skill.Difficulty = Difficulty(skl.Difficulty)
-	baseLE, ok := groupMap[skill.Difficulty]
+	baseLE, ok := groupMap[Difficulty(skl.Difficulty)]
 	if !ok {
 		return 0, errors.New("keine LE-Definition für diese Schwierigkeit")
 	}
-	epPerTE, ok := Config.EPPerTE[class][skill.Group]
+	epPerTE, ok := Config.EPPerTE[CharClass(class)][SkillGroup(skl.Category)]
 	if !ok {
-		return 0, fmt.Errorf("keine EP-Kosten für %s bei %s", class, skill.Group)
+		return 0, fmt.Errorf("keine EP-Kosten für %s bei %s", class, skl.Category)
 	}
 	totalEP := baseLE * (epPerTE * 3)
 	// +6 EP for elves
@@ -209,17 +213,26 @@ func CalculateLearnCost(skill SkillDefinition, class CharClass) (int, error) {
 }
 
 // CalculateImprovementCost: Kosten zum Steigern von +X auf +X+1
-func CalculateImprovementCost(skill SkillDefinition, class CharClass, currentSkillLevel int) (int, error) {
+func CalculateSkillImprovementCost(skill string, class string, currentSkillLevel int) (int, error) {
+	return CalculateImprovementCost(skill, class, currentSkillLevel)
+}
+
+func CalculateImprovementCost(skill string, class string, currentSkillLevel int) (int, error) {
 	/*
 		if !Config.AllowedGroups[class][skill.Group] {
 			return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
 		}
 	*/
-	grpMap, ok := Config.ImprovementCost[skill.Group]
+	var skl Skill
+	if err := skl.First(skill); err != nil {
+		return 0, errors.New("unbekannte Fertigkeit")
+	}
+
+	grpMap, ok := Config.ImprovementCost[SkillGroup(skl.Category)]
 	if !ok {
 		return 0, errors.New("keine Improvement-Daten für diese Gruppe")
 	}
-	diffMap, ok := grpMap[skill.Difficulty]
+	diffMap, ok := grpMap[Difficulty(skl.Difficulty)]
 	if !ok {
 		return 0, errors.New("keine Improvement-Daten für diese Schwierigkeit")
 	}
@@ -228,9 +241,18 @@ func CalculateImprovementCost(skill SkillDefinition, class CharClass, currentSki
 	if !found {
 		return 0, fmt.Errorf("kein Eintrag für Bonus %d→%d", currentSkillLevel, currentSkillLevel+1)
 	}
-	epPerTE, ok := Config.EPPerTE[class][skill.Group]
+	epPerTE, ok := Config.EPPerTE[CharClass(class)][SkillGroup(skl.Category)]
 	if !ok {
-		return 0, fmt.Errorf("keine EP-Kosten für %s bei %s", class, skill.Group)
+		return 0, fmt.Errorf("keine EP-Kosten für %s bei %s", class, skl.Category)
 	}
 	return neededLE * epPerTE, nil
+}
+
+func CalculateLearnCost(skillType string, name string, class string) (int, error) {
+	if skillType == "skill" {
+		return CalculateSkillLearnCost(name, class)
+	} else if skillType == "spell" {
+		return CalculateSpellLearnCost(name, class)
+	}
+	return 0, errors.New("unknown skill type")
 }

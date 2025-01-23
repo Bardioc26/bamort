@@ -41,7 +41,7 @@ func CharRouterGrp(rt *gin.RouterGroup) *gin.RouterGroup {
 	//rCharGrp.PUT("/{id}/skills/{id}", character.UpdateSkill)                      //	Update skill for a character
 	//rCharGrp.POST("/{id}/skills", character.AddSkill)                       //Add a skill to a character
 	//rCharGrp.DELETE("/{id}/skills/{id}", character.DeleteSkill)                       //ADEletedd a skill to a character
-	rCharGrp.GET("/learn/:id", character.GetLearnSpellCost)
+	rCharGrp.GET("/learn/:id", character.GetLearnCost)
 	return rCharGrp
 }
 

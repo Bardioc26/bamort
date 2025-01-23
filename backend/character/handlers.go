@@ -12,11 +12,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-/*
-Character Handlers
+// Character Handlers
 
-Add CRUD operations for characters:
-*/
+type LearnRequestStruct struct {
+	SkillType string `json:"skillType"`
+	Name      string `json:"name"`
+	Stufe     int    `json:"stufe"`
+}
 
 func ListCharacters(c *gin.Context) {
 	var characters []Char
@@ -229,4 +231,42 @@ func GetLearnSpellCost(c *gin.Context) {
 	sd.CostEP = cost
 	// Return the updated character
 	c.JSON(http.StatusOK, sd)
+}
+
+func GetLearnCost(c *gin.Context) {
+	// Get the character ID from the request
+	charID := c.Param("id")
+
+	// Load the character from the database
+	var character Char
+	if err := character.FirstID(charID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+
+	// Load the spell from the request
+	var s LearnRequestStruct
+	if err := c.ShouldBindJSON(&s); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if s.SkillType != "spell" && s.SkillType != "skill" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "unknown skill type"})
+		return
+	}
+	if s.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no name given"})
+	}
+	if s.SkillType == "skill" && s.Stufe <= 6 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "stufe must be greater than 6"})
+	}
+
+	cost, err := gsmaster.CalculateLearnCost(s.SkillType, s.Name, character.Typ)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn spell": err.Error()})
+		return
+	}
+
+	// Return the updated character
+	c.JSON(http.StatusOK, cost)
 }

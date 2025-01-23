@@ -14,6 +14,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -196,7 +197,7 @@ func TestCreateCharacter(t *testing.T) {
 	assert.Equal(t, 1, createdCharacter.ID) // Check the simulated ID
 }
 
-func TestGetSpellLearnCost(t *testing.T) {
+func TestGetLearnCost(t *testing.T) {
 	SetupTestDB(false)
 	// Initialize a Gin router
 	r := gin.Default()
@@ -212,14 +213,13 @@ func TestGetSpellLearnCost(t *testing.T) {
 
 	// Create a test HTTP request
 	req, _ := http.NewRequest("GET", "/api/characters/learn/18", nil)
-	//req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Content-Type", "application/json")
-	//req.Header.Set("Authorization", "Bearer ${token}")
 	req.Header.Set("Authorization", "Bearer dc7a780.1:bba7f4daabda117f2a2c14263")
-	jsonData, _ := json.Marshal(map[string]string{
-		"type": "spell",
-		"name": "Angst",
-	})
+	rs := character.LearnRequestStruct{
+		SkillType: "spell",
+		Name:      "Angst",
+	}
+	jsonData, _ := json.Marshal(rs)
 	req.Body = io.NopCloser(bytes.NewBuffer(jsonData))
 
 	// Create a response recorder to capture the handler's response
@@ -232,13 +232,40 @@ func TestGetSpellLearnCost(t *testing.T) {
 	assert.Equal(t, http.StatusOK, respRecorder.Code)
 
 	// Assert the response body
-	var sDeff *gsmaster.SpellDefinition
-	err := json.Unmarshal(respRecorder.Body.Bytes(), &sDeff)
-	assert.NoError(t, err)
-	assert.Equal(t, "Angst", sDeff.Name)
-	assert.Equal(t, "Beherrschen", sDeff.School)
-	assert.Equal(t, 2, int(sDeff.Stufe)) // Check the simulated ID
-	assert.Equal(t, 90, sDeff.CostEP)
+	//var sDeff *gsmaster.SpellDefinition
+	//err := json.Unmarshal(respRecorder.Body.Bytes(), &sDeff)
+	//assert.NoError(t, err)
+	//assert.Equal(t, "Angst", sDeff.Name)
+	//assert.Equal(t, "Beherrschen", sDeff.School)
+	//assert.Equal(t, 2, int(sDeff.Stufe)) // Check the simulated ID
+	val, _ := strconv.ParseInt(respRecorder.Body.String(), 10, 32)
+	assert.Equal(t, uint(90), uint(val))
+	//assert.Equal(t, "test", listOfCharacter.Owner)
+	//assert.Equal(t, false, listOfCharacter.Public)
+
+	rs = character.LearnRequestStruct{
+		SkillType: "skill",
+		Name:      "Bootfahren",
+		Stufe:     10,
+	}
+	jsonData, _ = json.Marshal(rs)
+	req.Body = io.NopCloser(bytes.NewBuffer(jsonData))
+
+	// Create a response recorder to capture the handler's response
+	respRecorder = httptest.NewRecorder()
+
+	// Perform the test request
+	r.ServeHTTP(respRecorder, req)
+
+	// Assert the response status code
+	assert.Equal(t, http.StatusOK, respRecorder.Code)
+
+	// Assert the response body
+	//err = json.Unmarshal(respRecorder.Body.Bytes(), &sDeff)
+	//assert.NoError(t, err)
+
+	val, _ = strconv.ParseInt(respRecorder.Body.String(), 10, 32)
+	assert.Equal(t, int64(60), val)
 	//assert.Equal(t, "test", listOfCharacter.Owner)
 	//assert.Equal(t, false, listOfCharacter.Public)
 

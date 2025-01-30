@@ -17,6 +17,13 @@ type LookupList struct {
 	Quelle       string `json:"quelle"`
 }
 
+type LearnCost struct {
+	Stufe int `json:"stufe"`
+	LE    int `json:"le"`
+	Ep    int `json:"ep"`
+	Money int `json:"money"`
+}
+
 type Skill struct {
 	LookupList
 	Initialwert      int    `gorm:"default:5" json:"initialwert"`

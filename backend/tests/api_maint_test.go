@@ -21,48 +21,6 @@ func TestMaintSetupCheck(t *testing.T) {
 	c := gin.Context{}
 	maintenance.SetupCheck(&c)
 	assert.Empty(t, nil, "expected NIL to be empty")
-	/*
-		SetupTestDB()
-		TestCreateChar(t)
-		// Initialize a Gin router
-		r := gin.Default()
-		router.SetupGin(r)
-
-		// Routes
-		protected := router.BaseRouterGrp(r)
-		// Character routes
-		rCharGrp := router.CharRouterGrp(protected)
-		rCharGrp.GET("/test", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
-		})
-
-		// Create a test HTTP request
-		req, _ := http.NewRequest("GET", "/api/characters", nil)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer ${token}")
-
-		// Create a response recorder to capture the handler's response
-		respRecorder := httptest.NewRecorder()
-
-		// Perform the test request
-		r.ServeHTTP(respRecorder, req)
-
-		// Assert the response status code
-		assert.Equal(t, http.StatusOK, respRecorder.Code)
-
-		// Assert the response body
-		var listOfCharacter []*character.CharList
-		err := json.Unmarshal(respRecorder.Body.Bytes(), &listOfCharacter)
-		assert.NoError(t, err)
-		assert.Equal(t, "Harsk Hammerhuter, Zen", listOfCharacter[0].Name)
-		assert.Equal(t, "Zwerg", listOfCharacter[0].Rasse)
-		assert.Equal(t, 1, int(listOfCharacter[0].ID)) // Check the simulated ID
-		assert.Equal(t, "Krieger", listOfCharacter[0].Typ)
-		assert.Equal(t, 3, listOfCharacter[0].Grad)
-		assert.Equal(t, "test", listOfCharacter[0].Owner)
-		assert.Equal(t, false, listOfCharacter[0].Public)
-	*/
 }
 
 func TestGetMasterData(t *testing.T) {
@@ -73,9 +31,9 @@ func TestGetMasterData(t *testing.T) {
 
 	// Routes
 	protected := router.BaseRouterGrp(r)
-	// Character routes
-	rCharGrp := router.MaintenanceRouterGrp(protected)
-	rCharGrp.GET("/test", func(c *gin.Context) {
+	character.RegisterRoutes(protected)
+	gsmaster.RegisterRoutes(protected)
+	protected.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
 	})
 	u := user.User{}
@@ -125,9 +83,11 @@ func TestGetMDSkills(t *testing.T) {
 
 	// Routes
 	protected := router.BaseRouterGrp(r)
+
 	// Character routes
-	rCharGrp := router.MaintenanceRouterGrp(protected)
-	rCharGrp.GET("/test", func(c *gin.Context) {
+	character.RegisterRoutes(protected)
+	gsmaster.RegisterRoutes(protected)
+	protected.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
 	})
 	u := user.User{}
@@ -172,9 +132,9 @@ func TestUpdateMDSkill(t *testing.T) {
 
 	// Routes
 	protected := router.BaseRouterGrp(r)
-	// Character routes
-	rCharGrp := router.MaintenanceRouterGrp(protected)
-	rCharGrp.GET("/test", func(c *gin.Context) {
+	character.RegisterRoutes(protected)
+	gsmaster.RegisterRoutes(protected)
+	protected.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
 	})
 	u := user.User{}

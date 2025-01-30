@@ -1,56 +1,5 @@
 package gsmaster
 
-/*
-Fertigkeiten werden in Fertigkeitsgruppen eingeteilt zum Beispiel Alltag, Freiland und Kampf
-innerhalb der Gruppe saind die Fertigkeiten eingeordnet nach Schwierigkeit. Also leicht, normal, schwer und sehr schwer.
-Je schwerer eine Fertigkeit zu lernen ist um so mehr Lernpunkte müssen führ ihre Verbesserung investiert werden.
-Auch pro Verbesserungsstufe sind je nach Schwierigkeit unterschiedliche viele Lernpunkte zu investieren.
-
-Beispiel
-Tabelle Lern und Verbesserungskosten:
-Alltag
-Lernen:
-leicht: 1LE, {Bootfahren, Kochen, Reiten, Schwimmen, Tanzen, ...}
-normal: 1LE, {schreiben, Sprache, Lesen, ...}
-schwer: 2LE, {Erste Hilfe, Etikette, Fälschen, ...}
-sehr schwer: 10LE, {Gerätekunde, Geschäftssinn, ...}
-Verbessern:
-
-	+9;		+10;	+11;	+12;	+13;...
-
-leicht: 	-;		-;		-;		-;		1;...
-normal: 	1;		1;		1;		1;		2;...
-schwer: 	2;		2;		5;		5;		10;...
-sehr schwer: 5;		5;		10;		10;		20;...
-
-Freiland
-Lernen:
-leicht: 1LE, {Überleben, ...}
-normal: 1LE, {Naturkunde, ...}
-schwer: 2LE, {Tarnen, ...}
-Verbessern:
-
-	+9;		+10;	+11;	+12;	+13;...
-
-leicht: 	1;		1;		1;		2;		2;...
-normal: 	2;		5;		5;		10;		15;...
-schwer: 	5;		5;		10;		10;		20;...
-
-Tabelle EP Kosten pro Lerneeinheit
-
-	Alltag;	Freiland;	Kampf;	...
-
-Krieger		20;		20;			10;	...
-Magier		30;		30;			-;	...
-Schurke		10;		30;			30;	...
-...
-
-Die pro Lerneinheit aufzuwendenden Erfahrungspunkte sind für die einzelnen Fertigkeitsgruppen pro charakterklasse unterschiedlich. Für einige Charakterklassen sind einzelne Fertigkeitsgruppen nicht erlernbar.
-
-Erstelle aus diesen Informationen eine Datenstruktur, die es ermöglicht die Lernpunkte für eine Fertigkeit zu berechnen.
-Ziehe dazu die Dateien model.go in den Verzeichnissen backend/gsmaster, backend/skills, und backend/character zu Rate.
-*/
-
 import (
 	"encoding/json"
 	"errors"
@@ -213,39 +162,44 @@ func CalculateSkillLearnCost(skill string, class string) (int, error) {
 }
 
 // CalculateImprovementCost: Kosten zum Steigern von +X auf +X+1
-func CalculateSkillImprovementCost(skill string, class string, currentSkillLevel int) (int, error) {
+func CalculateSkillImprovementCost(skill string, class string, currentSkillLevel int) (*LearnCost, error) {
 	return CalculateImprovementCost(skill, class, currentSkillLevel)
 }
 
-func CalculateImprovementCost(skill string, class string, currentSkillLevel int) (int, error) {
+func CalculateImprovementCost(skill string, class string, currentSkillLevel int) (*LearnCost, error) {
 	/*
 		if !Config.AllowedGroups[class][skill.Group] {
 			return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
 		}
 	*/
+	lCost := LearnCost{}
 	var skl Skill
 	if err := skl.First(skill); err != nil {
-		return 0, errors.New("unbekannte Fertigkeit")
+		return nil, errors.New("unbekannte Fertigkeit")
 	}
 
 	grpMap, ok := Config.ImprovementCost[SkillGroup(skl.Category)]
 	if !ok {
-		return 0, errors.New("keine Improvement-Daten für diese Gruppe")
+		return nil, errors.New("keine Improvement-Daten für diese Gruppe")
 	}
 	diffMap, ok := grpMap[Difficulty(skl.Difficulty)]
 	if !ok {
-		return 0, errors.New("keine Improvement-Daten für diese Schwierigkeit")
+		return nil, errors.New("keine Improvement-Daten für diese Schwierigkeit")
 	}
 
 	neededLE, found := diffMap[fmt.Sprintf("%d", currentSkillLevel+1)]
 	if !found {
-		return 0, fmt.Errorf("kein Eintrag für Bonus %d→%d", currentSkillLevel, currentSkillLevel+1)
+		return nil, fmt.Errorf("kein Eintrag für Bonus %d→%d", currentSkillLevel, currentSkillLevel+1)
 	}
 	epPerTE, ok := Config.EPPerTE[CharClass(class)][SkillGroup(skl.Category)]
 	if !ok {
-		return 0, fmt.Errorf("keine EP-Kosten für %s bei %s", class, skl.Category)
+		return nil, fmt.Errorf("keine EP-Kosten für %s bei %s", class, skl.Category)
 	}
-	return neededLE * epPerTE, nil
+	lCost.LE = neededLE
+	lCost.Stufe = currentSkillLevel + 1
+	lCost.Ep = neededLE * epPerTE
+	lCost.Money = lCost.Ep
+	return &lCost, nil
 }
 
 func CalculateLearnCost(skillType string, name string, class string) (int, error) {

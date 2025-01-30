@@ -1,0 +1,17 @@
+package character
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+func RegisterRoutes(r *gin.RouterGroup) {
+	charGrp := r.Group("/characters")
+	charGrp.GET("", ListCharacters)
+	charGrp.POST("", CreateCharacter)
+	charGrp.GET("/:id", GetCharacter)
+	charGrp.PUT("/:id", UpdateCharacter)
+	charGrp.DELETE("/:id", DeleteCharacter)
+	charGrp.GET("/:id/improve", GetSkillNextLevelCosts)
+	charGrp.GET("/:id/improve/skill", GetSkillAllLevelCosts)
+	charGrp.GET("/:id/learn", GetLearnCost)
+}

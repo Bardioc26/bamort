@@ -270,3 +270,89 @@ func GetLearnCost(c *gin.Context) {
 	// Return the updated character
 	c.JSON(http.StatusOK, cost)
 }
+
+func GetSkillNextLevelCosts(c *gin.Context) {
+	// Get the character ID from the request
+	charID := c.Param("id")
+
+	// Load the character from the database
+	var character Char
+	if err := character.FirstID(charID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+
+	for int, skill := range character.Fertigkeiten {
+		lCost, err := gsmaster.CalculateSkillImprovementCost(skill.Name, character.Typ, skill.Fertigkeitswert)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn skill": err.Error()})
+			return
+		}
+		character.Fertigkeiten[int].LearningCost = *lCost
+	}
+
+	// Load the skill from the request
+	var s skills.Fertigkeit
+	if err := c.ShouldBindJSON(&s); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return the updated character
+	c.JSON(http.StatusOK, character.Fertigkeiten)
+}
+
+func GetSkillAllLevelCosts(c *gin.Context) {
+	// Get the character ID from the request
+	charID := c.Param("id")
+
+	// Load the character from the database
+	var character Char
+	if err := character.FirstID(charID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		return
+	}
+	var s LearnRequestStruct
+	if err := c.ShouldBindJSON(&s); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if s.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no name given"})
+	}
+
+	costArr := make([]gsmaster.LearnCost, 0)
+	notfound := true
+	for _, skill := range character.Fertigkeiten {
+		if skill.Name == s.Name {
+			for i := skill.Fertigkeitswert; i <= 20; i++ {
+				lCost, err := gsmaster.CalculateSkillImprovementCost(skill.Name, character.Typ, skill.Fertigkeitswert)
+				if err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn skill": err.Error()})
+					return
+				}
+				costArr = append(costArr, *lCost)
+			}
+			notfound = false
+			break
+		}
+	}
+	if notfound {
+		for _, skill := range character.Waffenfertigkeiten {
+			if skill.Name == s.Name {
+				for i := skill.Fertigkeitswert; i <= 20; i++ {
+					lCost, err := gsmaster.CalculateSkillImprovementCost(skill.Name, character.Typ, skill.Fertigkeitswert)
+					if err != nil {
+						c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn skill": err.Error()})
+						return
+					}
+					costArr = append(costArr, *lCost)
+				}
+				break
+			}
+		}
+	}
+
+	// Return the updated character
+	c.JSON(http.StatusOK, costArr)
+}

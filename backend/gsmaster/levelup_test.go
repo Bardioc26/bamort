@@ -443,7 +443,7 @@ func TestCalculateImprovementCost(t *testing.T) {
 				//t.Errorf("CalculateImprovementCost() unexpected error = %v", err)
 				return
 			}
-			if got != tt.wantEP {
+			if got.Ep != tt.wantEP {
 				assert.Equal(t, tt.wantEP, got, "CalculateImprovementCost() = %v, want %v", got, tt.wantEP)
 				//t.Errorf("CalculateImprovementCost() = %v, want %v", got, tt.wantEP)
 			}

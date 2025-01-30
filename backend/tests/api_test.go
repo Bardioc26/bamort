@@ -74,9 +74,9 @@ func TestListCharacters(t *testing.T) {
 
 	// Routes
 	protected := router.BaseRouterGrp(r)
-	// Character routes
-	rCharGrp := router.CharRouterGrp(protected)
-	rCharGrp.GET("/test", func(c *gin.Context) {
+	character.RegisterRoutes(protected)
+	gsmaster.RegisterRoutes(protected)
+	protected.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
 	})
 
@@ -119,9 +119,9 @@ func TestGetCharacters(t *testing.T) {
 
 	// Routes
 	protected := router.BaseRouterGrp(r)
-	// Character routes
-	rCharGrp := router.CharRouterGrp(protected)
-	rCharGrp.GET("/test", func(c *gin.Context) {
+	character.RegisterRoutes(protected)
+	gsmaster.RegisterRoutes(protected)
+	protected.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
 	})
 
@@ -163,9 +163,9 @@ func TestCreateCharacter(t *testing.T) {
 
 	// Routes
 	protected := router.BaseRouterGrp(r)
-	// Character routes
-	rCharGrp := router.CharRouterGrp(protected)
-	rCharGrp.GET("/test", func(c *gin.Context) {
+	character.RegisterRoutes(protected)
+	gsmaster.RegisterRoutes(protected)
+	protected.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
 	})
 	// Define the test case input
@@ -205,9 +205,9 @@ func TestGetLearnCost(t *testing.T) {
 
 	// Routes
 	protected := router.BaseRouterGrp(r)
-	// Character routes
-	rCharGrp := router.CharRouterGrp(protected)
-	rCharGrp.GET("/test", func(c *gin.Context) {
+	character.RegisterRoutes(protected)
+	gsmaster.RegisterRoutes(protected)
+	protected.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
 	})
 

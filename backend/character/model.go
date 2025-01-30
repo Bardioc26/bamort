@@ -109,7 +109,7 @@ type CharList struct {
 type FeChar struct {
 	Char
 	CategorizedSkills map[string][]skills.Fertigkeit `json:"categorizedskills"`
-	InnateSkills      []skills.Fertigkeit            `json:"innateskills`
+	InnateSkills      []skills.Fertigkeit            `json:"innateskills"`
 }
 
 func (object *Char) TableName() string {

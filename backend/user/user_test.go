@@ -1,7 +1,7 @@
-package tests
+package user
 
 import (
-	"bamort/user"
+	"bamort/tests"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
@@ -13,8 +13,8 @@ import (
 )
 
 func TestRegisterUser(t *testing.T) {
-	SetupTestDB()
-	usr := user.User{
+	tests.SetupTestDB()
+	usr := User{
 		Username:     "bebe",
 		PasswordHash: "osiris",
 		Email:        "frank@wuenscheonline.de",
@@ -25,7 +25,7 @@ func TestRegisterUser(t *testing.T) {
 	err := usr.Create()
 	assert.NoError(t, err, "no error expected when creating record")
 
-	usr2 := user.User{
+	usr2 := User{
 		Username:     "bubnu",
 		PasswordHash: "osiris",
 		Email:        "spacer@wuenscheonline.de",
@@ -38,7 +38,7 @@ func TestRegisterUser(t *testing.T) {
 
 func TestLoginUser(t *testing.T) {
 	TestRegisterUser(t)
-	var usr user.User
+	var usr User
 	input := struct {
 		Username       string `json:"username"`
 		Password       string `json:"password"`
@@ -58,7 +58,7 @@ func TestLoginUser(t *testing.T) {
 
 func TestHshing(t *testing.T) {
 	TestRegisterUser(t)
-	var u1 user.User
+	var u1 User
 	u1.First("bebe")
 	assert.Equal(t, "", u1.Username+u1.CreatedAt.String())
 	tx := md5.Sum([]byte(u1.Username + u1.CreatedAt.String()))
@@ -73,7 +73,7 @@ func TestHshing(t *testing.T) {
 	assert.Equal(t, "", token)
 
 	// check
-	var u user.User
+	var u User
 	var err error
 	userid := 0
 
@@ -101,15 +101,15 @@ func TestHshing(t *testing.T) {
 }
 
 func TestCors(t *testing.T) {
-	SetupTestDB()
-	us := user.User{
+	tests.SetupTestDB()
+	us := User{
 		Username:     "bebe",
 		UserID:       1,
 		PasswordHash: "5f29e63a3f26798930e5bf218445164f",
 		//CreatedAt: "2025-01-04 09:01:44.911",
 	}
-	token := user.GenerateToken(&us)
+	token := GenerateToken(&us)
 	fmt.Print(token)
-	usr := user.CheckToken("Bearer " + token)
+	usr := CheckToken("Bearer " + token)
 	fmt.Print(usr)
 }

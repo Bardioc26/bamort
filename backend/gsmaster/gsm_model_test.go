@@ -1,23 +1,23 @@
-package tests
+package gsmaster
 
 import (
-	"bamort/gsmaster"
+	"bamort/tests"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSkill_Create(t *testing.T) {
-	SetupTestDB()
-	tests := []struct {
+	tests.SetupTestDB()
+	testDefinition := []struct {
 		name    string
-		skill   *gsmaster.Skill
+		skill   *Skill
 		wantErr bool
 	}{
 		{
 			name: "valid skill",
-			skill: &gsmaster.Skill{
-				LookupList: gsmaster.LookupList{
+			skill: &Skill{
+				LookupList: LookupList{
 					Name:         "Test Skill",
 					Beschreibung: "Test Description",
 					Quelle:       "Test Source",
@@ -37,7 +37,7 @@ func TestSkill_Create(t *testing.T) {
 		},*/
 	}
 
-	for _, tt := range tests {
+	for _, tt := range testDefinition {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.skill.Create()
 			if tt.wantErr {
@@ -49,21 +49,21 @@ func TestSkill_Create(t *testing.T) {
 			assert.NotZero(t, tt.skill.ID)
 		})
 	}
-	resetDB()
+	tests.ResetDB()
 }
 
 func TestWeaponSkill_Create(t *testing.T) {
-	SetupTestDB()
-	tests := []struct {
+	tests.SetupTestDB()
+	testDefinition := []struct {
 		name        string
-		weaponSkill *gsmaster.WeaponSkill
+		weaponSkill *WeaponSkill
 		wantErr     bool
 	}{
 		{
 			name: "valid weapon skill",
-			weaponSkill: &gsmaster.WeaponSkill{
-				Skill: gsmaster.Skill{
-					LookupList: gsmaster.LookupList{
+			weaponSkill: &WeaponSkill{
+				Skill: Skill{
+					LookupList: LookupList{
 						Name:         "Test Weapon Skill",
 						Beschreibung: "Test Description",
 						Quelle:       "Test Source",
@@ -84,7 +84,7 @@ func TestWeaponSkill_Create(t *testing.T) {
 		},*/
 	}
 
-	for _, tt := range tests {
+	for _, tt := range testDefinition {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.weaponSkill.Create()
 			if tt.wantErr {
@@ -96,29 +96,29 @@ func TestWeaponSkill_Create(t *testing.T) {
 			assert.NotZero(t, tt.weaponSkill.ID)
 		})
 	}
-	resetDB()
+	tests.ResetDB()
 }
 
 func TestSkill_TableName(t *testing.T) {
-	SetupTestDB()
-	skill := &gsmaster.Skill{}
+	tests.SetupTestDB()
+	skill := &Skill{}
 	expected := "gsm_skills"
 	assert.Equal(t, expected, skill.TableName())
-	resetDB()
+	tests.ResetDB()
 }
 
 func TestSkill_First(t *testing.T) {
-	SetupTestDB()
-	tests := []struct {
+	tests.SetupTestDB()
+	testDefinition := []struct {
 		name     string
-		skill    *gsmaster.Skill
+		skill    *Skill
 		findName string
 		wantErr  bool
 	}{
 		{
 			name: "existing skill",
-			skill: &gsmaster.Skill{
-				LookupList: gsmaster.LookupList{
+			skill: &Skill{
+				LookupList: LookupList{
 					Name:       "Test Skill",
 					GameSystem: "midgard",
 				},
@@ -128,19 +128,19 @@ func TestSkill_First(t *testing.T) {
 		},
 		{
 			name:     "non-existing skill",
-			skill:    &gsmaster.Skill{},
+			skill:    &Skill{},
 			findName: "NonExistent",
 			wantErr:  true,
 		},
 		{
 			name:     "empty name",
-			skill:    &gsmaster.Skill{},
+			skill:    &Skill{},
 			findName: "",
 			wantErr:  true,
 		},
 	}
 
-	for _, tt := range tests {
+	for _, tt := range testDefinition {
 		t.Run(tt.name, func(t *testing.T) {
 			if !tt.wantErr {
 				// Create test data first
@@ -148,7 +148,7 @@ func TestSkill_First(t *testing.T) {
 				assert.NoError(t, err)
 			}
 
-			s := &gsmaster.Skill{}
+			s := &Skill{}
 			err := s.First(tt.findName)
 
 			if tt.wantErr {
@@ -161,21 +161,21 @@ func TestSkill_First(t *testing.T) {
 			assert.Equal(t, "midgard", s.GameSystem)
 		})
 	}
-	resetDB()
+	tests.ResetDB()
 }
 
 func TestSkill_FirstId(t *testing.T) {
-	SetupTestDB()
-	tests := []struct {
+	tests.SetupTestDB()
+	testDefinition := []struct {
 		name    string
-		skill   *gsmaster.Skill
+		skill   *Skill
 		findId  uint
 		wantErr bool
 	}{
 		{
 			name: "existing skill",
-			skill: &gsmaster.Skill{
-				LookupList: gsmaster.LookupList{
+			skill: &Skill{
+				LookupList: LookupList{
 					Name:       "Test Skill",
 					GameSystem: "midgard",
 				},
@@ -185,19 +185,19 @@ func TestSkill_FirstId(t *testing.T) {
 		},
 		{
 			name:    "non-existing id",
-			skill:   &gsmaster.Skill{},
+			skill:   &Skill{},
 			findId:  9999,
 			wantErr: true,
 		},
 		{
 			name:    "zero id",
-			skill:   &gsmaster.Skill{},
+			skill:   &Skill{},
 			findId:  0,
 			wantErr: true,
 		},
 	}
 
-	for _, tt := range tests {
+	for _, tt := range testDefinition {
 		t.Run(tt.name, func(t *testing.T) {
 			if !tt.wantErr {
 				// Create test data first
@@ -206,7 +206,7 @@ func TestSkill_FirstId(t *testing.T) {
 				tt.findId = tt.skill.ID
 			}
 
-			s := &gsmaster.Skill{}
+			s := &Skill{}
 			err := s.FirstId(tt.findId)
 
 			if tt.wantErr {
@@ -220,20 +220,20 @@ func TestSkill_FirstId(t *testing.T) {
 			assert.Equal(t, tt.findId, s.ID)
 		})
 	}
-	resetDB()
+	tests.ResetDB()
 }
 
 func TestSkill_Save(t *testing.T) {
-	SetupTestDB()
-	tests := []struct {
+	tests.SetupTestDB()
+	testDefinition := []struct {
 		name    string
-		skill   *gsmaster.Skill
+		skill   *Skill
 		wantErr bool
 	}{
 		{
 			name: "update existing skill",
-			skill: &gsmaster.Skill{
-				LookupList: gsmaster.LookupList{
+			skill: &Skill{
+				LookupList: LookupList{
 					Name:         "Test Skill",
 					Beschreibung: "Original Description",
 					GameSystem:   "midgard",
@@ -248,7 +248,7 @@ func TestSkill_Save(t *testing.T) {
 		},*/
 	}
 
-	for _, tt := range tests {
+	for _, tt := range testDefinition {
 		t.Run(tt.name, func(t *testing.T) {
 			if !tt.wantErr {
 				// Create initial record
@@ -269,27 +269,27 @@ func TestSkill_Save(t *testing.T) {
 				assert.NoError(t, err)
 
 				// Verify the update
-				saved := &gsmaster.Skill{}
+				saved := &Skill{}
 				err = saved.FirstId(tt.skill.ID)
 				assert.NoError(t, err)
 				assert.Equal(t, "Updated Description", saved.Beschreibung)
 			}
 		})
 	}
-	resetDB()
+	tests.ResetDB()
 }
 
 func TestSkill_Delete(t *testing.T) {
-	SetupTestDB()
-	tests := []struct {
+	tests.SetupTestDB()
+	testDefinition := []struct {
 		name    string
-		skill   *gsmaster.Skill
+		skill   *Skill
 		wantErr bool
 	}{
 		{
 			name: "delete existing skill",
-			skill: &gsmaster.Skill{
-				LookupList: gsmaster.LookupList{
+			skill: &Skill{
+				LookupList: LookupList{
 					Name:       "Test Skill",
 					GameSystem: "midgard",
 				},
@@ -298,8 +298,8 @@ func TestSkill_Delete(t *testing.T) {
 		},
 		{
 			name: "delete non-existing skill",
-			skill: &gsmaster.Skill{
-				LookupList: gsmaster.LookupList{
+			skill: &Skill{
+				LookupList: LookupList{
 					ID: 9999,
 				},
 			},
@@ -312,7 +312,7 @@ func TestSkill_Delete(t *testing.T) {
 		},*/
 	}
 
-	for _, tt := range tests {
+	for _, tt := range testDefinition {
 		t.Run(tt.name, func(t *testing.T) {
 			if !tt.wantErr && tt.skill != nil {
 				// Create test data first
@@ -333,41 +333,41 @@ func TestSkill_Delete(t *testing.T) {
 			assert.NoError(t, err)
 
 			// Verify deletion
-			s := &gsmaster.Skill{}
+			s := &Skill{}
 			err = s.FirstId(tt.skill.ID)
 			assert.Error(t, err) // Should error since record is deleted
 		})
 	}
-	resetDB()
+	tests.ResetDB()
 }
 
 func TestSkill_GetSkillCategories(t *testing.T) {
-	SetupTestDB()
+	tests.SetupTestDB()
 	// Create test skills with different categories
-	testSkills := []*gsmaster.Skill{
+	testSkills := []*Skill{
 		{
-			LookupList: gsmaster.LookupList{
+			LookupList: LookupList{
 				Name:       "Skill1",
 				GameSystem: "midgard",
 			},
 			Category: "Category1",
 		},
 		{
-			LookupList: gsmaster.LookupList{
+			LookupList: LookupList{
 				Name:       "Skill2",
 				GameSystem: "midgard",
 			},
 			Category: "Category2",
 		},
 		{
-			LookupList: gsmaster.LookupList{
+			LookupList: LookupList{
 				Name:       "Skill3",
 				GameSystem: "midgard",
 			},
 			Category: "Category1", // Duplicate category
 		},
 		{
-			LookupList: gsmaster.LookupList{
+			LookupList: LookupList{
 				Name:       "Skill4",
 				GameSystem: "midgard",
 			},
@@ -381,7 +381,7 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 		assert.NoError(t, err)
 	}
 
-	tests := []struct {
+	testDefinition := []struct {
 		name          string
 		expectedCount int
 		expectedFound []string
@@ -395,9 +395,9 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for _, tt := range testDefinition {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &gsmaster.Skill{}
+			s := &Skill{}
 			categories, err := s.GetSkillCategories()
 
 			if tt.wantErr {
@@ -410,5 +410,5 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 			assert.ElementsMatch(t, tt.expectedFound, categories)
 		})
 	}
-	resetDB()
+	tests.ResetDB()
 }

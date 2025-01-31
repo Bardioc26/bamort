@@ -1,4 +1,4 @@
-package tests
+package testutils
 
 import (
 	"bamort/character"
@@ -7,6 +7,7 @@ import (
 	"bamort/importer"
 	"bamort/models"
 	"bamort/skills"
+	"bamort/tests"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -338,6 +339,7 @@ func createFertigkeit(sel int) *skills.Fertigkeit {
 	}
 	return &liste[sel]
 }
+
 func createWaffenfertigkeit(sel int) *skills.Waffenfertigkeit {
 
 	liste := []skills.Waffenfertigkeit{
@@ -390,6 +392,7 @@ func createWaffenfertigkeit(sel int) *skills.Waffenfertigkeit {
 	}
 	return &liste[sel]
 }
+
 func createZauber(sel int) *skills.Zauber {
 
 	liste := []skills.Zauber{
@@ -440,6 +443,7 @@ func createWaffen(sel int) *equipment.Waffe {
 	}
 	return &liste[sel]
 }
+
 func createBehaeltniss(sel int) *equipment.Container {
 	liste := []equipment.Container{
 		{
@@ -467,6 +471,7 @@ func createBehaeltniss(sel int) *equipment.Container {
 	}
 	return &liste[sel]
 }
+
 func createTransportmittel(sel int) *equipment.Container {
 	liste := []equipment.Container{
 		{
@@ -497,6 +502,7 @@ func createTransportmittel(sel int) *equipment.Container {
 	}
 	return &liste[sel]
 }
+
 func createAusruestung(sel int) *equipment.Ausruestung {
 	liste := []equipment.Ausruestung{
 		{
@@ -739,7 +745,7 @@ func charTests(t *testing.T, char *character.Char) {
 }
 
 func TestCreateChar(t *testing.T) {
-	SetupTestDB()
+	tests.SetupTestDB()
 	char := createChar()
 	//char.Name = "Harsk Hammerhuter, Zen2"
 	err := char.First(char.Name)
@@ -756,7 +762,7 @@ func TestCreateChar(t *testing.T) {
 }
 
 func TestReadChar(t *testing.T) {
-	SetupTestDB()
+	tests.SetupTestDB()
 	TestCreateChar(t)
 	char := character.Char{}
 	char.Name = "Harsk Hammerhuter, Zen"
@@ -772,15 +778,15 @@ func TestReadChar(t *testing.T) {
 }
 
 func TestAddAusrüstung(t *testing.T) {
-	SetupTestDB()
+	tests.SetupTestDB()
 	/*
 		TestCreateChar(t)
-		char := character.Char{}
+		char := Char{}
 		char.Name = "Harsk Hammerhuter, Zen"
 		err := char.First(char.Name)
 		assert.NoError(t, err, "expexted no Errorselecting record from DataBase")
 		item := createAusruestung(0)
-		mcr := character.Char{}
+		mcr := Char{}
 		err = mcr.AddAusruestung(item.Name)
 		assert.NoError(t, err, "No error expected when adding Ausrüstung to char")
 	*/
@@ -788,7 +794,7 @@ func TestAddAusrüstung(t *testing.T) {
 }
 
 func TestImportVTT2Char(t *testing.T) {
-	SetupTestDB()
+	tests.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	char, err := importer.ImportVTTJSON(fileName)
 	assert.NoError(t, err, "expected no error when saving imported Char")

@@ -16,7 +16,7 @@ type Fertigkeit struct {
 	Bemerkung       string             `json:"bemerkung"`
 	Improvable      bool               `json:"improvable"`
 	Category        string             `json:"category"`
-	LearningCost    gsmaster.LearnCost `json:"learncost"`
+	LearningCost    gsmaster.LearnCost `gorm:"-" json:"learncost"`
 }
 
 type Waffenfertigkeit struct {

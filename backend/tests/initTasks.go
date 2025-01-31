@@ -1,13 +1,7 @@
 package tests
 
 import (
-	"bamort/character"
 	"bamort/database"
-	"bamort/equipment"
-	"bamort/gsmaster"
-	"bamort/importer"
-	"bamort/skills"
-	"bamort/user"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
@@ -46,16 +40,18 @@ func SetupTestDB(opts ...bool) {
 		}
 		database.DB = db
 	}
-	if !migrationDone {
-		err := MigrateStructure()
-		if err != nil {
-			panic("failed to MigrateStructure")
+	/*
+		if !migrationDone {
+			err := MigrateStructure()
+			if err != nil {
+				panic("failed to MigrateStructure")
+			}
+			migrationDone = true
 		}
-		migrationDone = true
-	}
+	*/
 }
 
-func resetDB() {
+func ResetDB() {
 	if isTestDb {
 		sqlDB, err := database.DB.DB()
 		if err == nil {
@@ -66,6 +62,7 @@ func resetDB() {
 	}
 }
 
+/*
 func MigrateStructure() error {
 	err := database.MigrateStructure()
 	if err != nil {
@@ -99,3 +96,4 @@ func MigrateStructure() error {
 
 	return nil
 }
+*/

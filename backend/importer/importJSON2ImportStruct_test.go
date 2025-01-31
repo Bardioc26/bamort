@@ -1,33 +1,15 @@
-package tests
+package importer
 
 import (
 	"bamort/gsmaster"
-	"bamort/importer"
-	"encoding/json"
+	"bamort/tests"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func readImportChar(fileName string) (*importer.CharacterImport, error) {
-	// loading file to Modell
-	fileContent, err := os.ReadFile(fileName)
-	if err != nil {
-		return nil, err
-	}
-	character := importer.CharacterImport{}
-	err = json.Unmarshal(fileContent, &character)
-	/*
-		for i := range character.Behaeltnisse {
-			character.Behaeltnisse[i].ExtID = character.Behaeltnisse[i].ID
-		}
-	*/
-	return &character, err
-}
-
-func testChar(t *testing.T, object *importer.CharacterImport) {
+func testChar(t *testing.T, object *CharacterImport) {
 	assert.Equal(t, "moam-character-41421", object.ID)
 	assert.Equal(t, "Harsk Hammerhuter, Zen", object.Name)
 	assert.Equal(t, "Zwerg", object.Rasse)
@@ -71,7 +53,7 @@ func testChar(t *testing.T, object *importer.CharacterImport) {
 
 }
 
-func testSkill(t *testing.T, objects []importer.Fertigkeit) {
+func testSkill(t *testing.T, objects []Fertigkeit) {
 	assert.Equal(t, 19, len(objects))
 	i := 0
 	assert.Equal(t, "moam-ability-horen", objects[i].ID)
@@ -100,7 +82,7 @@ func testSkill(t *testing.T, objects []importer.Fertigkeit) {
 
 }
 
-func testWeaponSkill(t *testing.T, objects []importer.Waffenfertigkeit) {
+func testWeaponSkill(t *testing.T, objects []Waffenfertigkeit) {
 	assert.Equal(t, 8, len(objects))
 	i := 0
 	assert.Equal(t, "moam-ability-759916", objects[i].ID)
@@ -121,7 +103,7 @@ func testWeaponSkill(t *testing.T, objects []importer.Waffenfertigkeit) {
 
 }
 
-func testSpell(t *testing.T, objects []importer.Zauber) {
+func testSpell(t *testing.T, objects []Zauber) {
 	assert.Equal(t, 1, len(objects))
 	i := 0
 	assert.Equal(t, "moam-spell-134630", objects[i].ID)
@@ -131,7 +113,7 @@ func testSpell(t *testing.T, objects []importer.Zauber) {
 	assert.Equal(t, "ARK5 63", objects[i].Quelle)
 }
 
-func testWeapon(t *testing.T, objects []importer.Waffe) {
+func testWeapon(t *testing.T, objects []Waffe) {
 	assert.Equal(t, 1, len(objects))
 	i := 0
 	assert.Equal(t, "moam-weapon-126819", objects[i].ID)
@@ -151,7 +133,7 @@ func testWeapon(t *testing.T, objects []importer.Waffe) {
 
 }
 
-func testEquipment(t *testing.T, objects []importer.Ausruestung) {
+func testEquipment(t *testing.T, objects []Ausruestung) {
 	assert.Equal(t, 1, len(objects))
 	i := 0
 	assert.Equal(t, "moam-armor-48616", objects[i].ID)
@@ -168,7 +150,7 @@ func testEquipment(t *testing.T, objects []importer.Ausruestung) {
 	assert.Equal(t, 0, objects[i].Bonus)
 }
 
-func testContainer(t *testing.T, objects []importer.Behaeltniss) {
+func testContainer(t *testing.T, objects []Behaeltniss) {
 	assert.Equal(t, 1, len(objects))
 	i := 0
 	assert.Equal(t, "moam-container-47363", objects[i].ID)
@@ -185,7 +167,7 @@ func testContainer(t *testing.T, objects []importer.Behaeltniss) {
 
 }
 
-func testTransportation(t *testing.T, objects []importer.Transportation) {
+func testTransportation(t *testing.T, objects []Transportation) {
 	assert.Equal(t, 1, len(objects))
 	i := 0
 	assert.Equal(t, "moam-container-47000", objects[i].ID)
@@ -218,13 +200,13 @@ func TestImportVTTStructure(t *testing.T) {
 
 func TestImportSkill2GSMaster(t *testing.T) {
 
-	SetupTestDB()
+	tests.SetupTestDB()
 
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 	//for i := range character.Fertigkeiten {
-	skill, erro := importer.TransformImportFertigkeit2GSDMaster(&character.Fertigkeiten[0])
+	skill, erro := TransformImportFertigkeit2GSDMaster(&character.Fertigkeiten[0])
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
@@ -255,17 +237,17 @@ func TestImportSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Improvable, skill3.Improvable)
 	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 
-	err = importer.CheckFertigkeiten2GSMaster(character.Fertigkeiten)
+	err = CheckFertigkeiten2GSMaster(character.Fertigkeiten)
 	assert.NoError(t, err, "Expected no error when checkimg Skills against gsmaster")
 }
 
 func TestImportWeaponSkill2GSMaster(t *testing.T) {
-	SetupTestDB()
+	tests.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 	//for i := range character.Fertigkeiten {
-	skill, erro := importer.TransformImportWaffenFertigkeit2GSDMaster(&character.Waffenfertigkeiten[0])
+	skill, erro := TransformImportWaffenFertigkeit2GSDMaster(&character.Waffenfertigkeiten[0])
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
@@ -296,17 +278,17 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Improvable, skill3.Improvable)
 	assert.Equal(t, skill2.GameSystem, skill3.GameSystem)
 
-	err = importer.CheckWaffenFertigkeiten2GSMaster(character.Waffenfertigkeiten)
+	err = CheckWaffenFertigkeiten2GSMaster(character.Waffenfertigkeiten)
 	assert.NoError(t, err, "Expected no error when checkimg WeaponSkills against gsmaster")
 }
 
 func TestImportSpell2GSMaster(t *testing.T) {
-	SetupTestDB()
+	tests.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 	//for i := range character.Fertigkeiten {
-	skill, erro := importer.TransformImportSpell2GSDMaster(&character.Zauber[0])
+	skill, erro := TransformImportSpell2GSDMaster(&character.Zauber[0])
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
@@ -339,17 +321,17 @@ func TestImportSpell2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Reichweite, skill3.Reichweite)
 	assert.Equal(t, skill2.Wirkungsziel, skill3.Wirkungsziel)
 
-	err = importer.CheckSpells2GSMaster(character.Zauber)
+	err = CheckSpells2GSMaster(character.Zauber)
 	assert.NoError(t, err, "Expected no error when checkimg Spells against gsmaster")
 }
 
 func TestImportWeapon2GSMaster(t *testing.T) {
-	SetupTestDB()
+	tests.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 	//for i := range character.Fertigkeiten {
-	skill, erro := importer.TransformImportWeapon2GSDMaster(&character.Waffen[0])
+	skill, erro := TransformImportWeapon2GSDMaster(&character.Waffen[0])
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
@@ -382,17 +364,17 @@ func TestImportWeapon2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.SkillRequired, skill3.SkillRequired)
 	assert.Equal(t, skill2.Damage, skill3.Damage)
 
-	err = importer.CheckWeapons2GSMaster(character.Waffen)
+	err = CheckWeapons2GSMaster(character.Waffen)
 	assert.NoError(t, err, "Expected no error when checkimg Weapons against gsmaster")
 }
 
 func TestImportContainer2GSMaster(t *testing.T) {
-	SetupTestDB()
+	tests.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 	//for i := range character.Fertigkeiten {
-	container, erro := importer.TransformImportContainer2GSDMaster(&character.Behaeltnisse[0])
+	container, erro := TransformImportContainer2GSDMaster(&character.Behaeltnisse[0])
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(container.ID), 1)
@@ -425,17 +407,17 @@ func TestImportContainer2GSMaster(t *testing.T) {
 	assert.Equal(t, container2.Volumen, container3.Volumen)
 	assert.Equal(t, container2.Tragkraft, container3.Tragkraft)
 
-	err = importer.CheckContainers2GSMaster(character.Behaeltnisse)
+	err = CheckContainers2GSMaster(character.Behaeltnisse)
 	assert.NoError(t, err, "Expected no error when checkimg Containers against gsmaster")
 }
 
 func TestImportTransportation2GSMaster(t *testing.T) {
-	SetupTestDB()
+	tests.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 	//for i := range character.Fertigkeiten {
-	skill, erro := importer.TransformImportTransportation2GSDMaster(&character.Transportmittel[0])
+	skill, erro := TransformImportTransportation2GSDMaster(&character.Transportmittel[0])
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
@@ -468,17 +450,17 @@ func TestImportTransportation2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Volumen, skill3.Volumen)
 	assert.Equal(t, skill2.Tragkraft, skill3.Tragkraft)
 
-	err = importer.CheckTransportationss2GSMaster(character.Transportmittel)
+	err = CheckTransportationss2GSMaster(character.Transportmittel)
 	assert.NoError(t, err, "Expected no error when checkimg Transüportations against gsmaster")
 }
 
 func TestImportEquipment2GSMaster(t *testing.T) {
-	SetupTestDB()
+	tests.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 	//for i := range character.Fertigkeiten {
-	skill, erro := importer.TransformImportEquipment2GSDMaster(&character.Ausruestung[0])
+	skill, erro := TransformImportEquipment2GSDMaster(&character.Ausruestung[0])
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
@@ -507,16 +489,16 @@ func TestImportEquipment2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Gewicht, skill3.Gewicht)
 	assert.Equal(t, skill2.Wert, skill3.Wert)
 
-	err = importer.CheckEquipments2GSMaster(character.Ausruestung)
+	err = CheckEquipments2GSMaster(character.Ausruestung)
 	assert.NoError(t, err, "Expected no error when checkimg Transüportations against gsmaster")
 }
 func TestImportBelieve2GSMaster(t *testing.T) {
-	SetupTestDB()
+	tests.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
 	//for i := range character.Fertigkeiten {
-	skill, erro := importer.TransformImportBelieve2GSDMaster(character.Glaube)
+	skill, erro := TransformImportBelieve2GSDMaster(character.Glaube)
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
@@ -540,6 +522,6 @@ func TestImportBelieve2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Name, skill3.Name)
 	assert.Equal(t, skill2.Beschreibung, skill3.Beschreibung)
 	assert.Equal(t, skill2.Quelle, skill3.Quelle)
-	err = importer.CheckBelieve2GSMaster(character)
+	err = CheckBelieve2GSMaster(character)
 	assert.NoError(t, err, "Expected no error when checkimg Transüportations against gsmaster")
 }

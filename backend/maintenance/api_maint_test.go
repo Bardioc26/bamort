@@ -1,10 +1,10 @@
-package tests
+package maintenance
 
 import (
 	"bamort/character"
 	"bamort/gsmaster"
-	"bamort/maintenance"
 	"bamort/router"
+	"bamort/tests"
 	"bamort/user"
 	"bytes"
 	"encoding/json"
@@ -19,12 +19,12 @@ import (
 func TestMaintSetupCheck(t *testing.T) {
 	//r := gin.Default()
 	c := gin.Context{}
-	maintenance.SetupCheck(&c)
+	SetupCheck(&c)
 	assert.Empty(t, nil, "expected NIL to be empty")
 }
 
 func TestGetMasterData(t *testing.T) {
-	SetupTestDB(false)
+	tests.SetupTestDB(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -67,7 +67,7 @@ func TestGetMasterData(t *testing.T) {
 	assert.NoError(t, err)
 }
 func TestGetMDSkillCategories(t *testing.T) {
-	SetupTestDB(false)
+	tests.SetupTestDB(false)
 	//gsmaster.MigrateStructure()
 	ski := gsmaster.Skill{}
 	categories, err := ski.GetSkillCategories()
@@ -76,7 +76,7 @@ func TestGetMDSkillCategories(t *testing.T) {
 	assert.Equal(t, "Allgemein", categories[0])
 }
 func TestGetMDSkills(t *testing.T) {
-	SetupTestDB(false)
+	tests.SetupTestDB(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -125,7 +125,7 @@ func TestGetMDSkills(t *testing.T) {
 
 // TestCreateCharacter tests the POST /characters endpoint
 func TestUpdateMDSkill(t *testing.T) {
-	SetupTestDB(false)
+	tests.SetupTestDB(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -165,10 +165,10 @@ func TestUpdateMDSkill(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, respRecorder.Code)
 
 	// Assert the response body
-	var createdCharacter Character
+	var createdCharacter character.Char
 	err = json.Unmarshal(respRecorder.Body.Bytes(), &createdCharacter)
 	assert.NoError(t, err)
 	assert.Equal(t, "Aragorn", createdCharacter.Name)
-	assert.Equal(t, "Human", createdCharacter.Race)
+	assert.Equal(t, "Human", createdCharacter.Rasse)
 	assert.Equal(t, 1, createdCharacter.ID) // Check the simulated ID
 }

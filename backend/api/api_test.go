@@ -8,7 +8,6 @@ import (
 	"bamort/importer"
 	"bamort/router"
 	"bamort/skills"
-	"bamort/tests"
 	"bamort/user"
 	"bytes"
 	"encoding/json"
@@ -67,8 +66,8 @@ func TestSetupCheck(t *testing.T) {
 
 }
 func TestListCharacters(t *testing.T) {
-	tests.SetupTestDB()
-	character.TestCreateChar(t)
+	database.SetupTestDB()
+	//character.TestCreateChar(t)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -111,7 +110,7 @@ func TestListCharacters(t *testing.T) {
 }
 
 func TestGetCharacters(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	//TestCreateChar(t)
 	//TestRegisterUser(t)
 	// Initialize a Gin router
@@ -199,7 +198,7 @@ func TestCreateCharacter(t *testing.T) {
 }
 
 func TestGetLearnCost(t *testing.T) {
-	tests.SetupTestDB(false)
+	database.SetupTestDB(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)

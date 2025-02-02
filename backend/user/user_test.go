@@ -1,7 +1,7 @@
 package user
 
 import (
-	"bamort/tests"
+	"bamort/database"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
@@ -13,7 +13,7 @@ import (
 )
 
 func TestRegisterUser(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	usr := User{
 		Username:     "bebe",
 		PasswordHash: "osiris",
@@ -101,7 +101,7 @@ func TestHshing(t *testing.T) {
 }
 
 func TestCors(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	us := User{
 		Username:     "bebe",
 		UserID:       1,

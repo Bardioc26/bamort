@@ -1,7 +1,7 @@
 package gsmaster
 
 import (
-	"bamort/tests"
+	"bamort/database"
 	"fmt"
 	"testing"
 	"time"
@@ -24,7 +24,7 @@ func generateFilename(prefix string, extension string) string {
 
 func TestExportGSMasterdata(t *testing.T) {
 	/*
-		tests.SetupTestDB()
+		database.SetupTestDB()
 		TestImportSkill2GSMaster(t)
 		TestImportWeaponSkill2GSMaster(t)
 		TestImportSpell2GSMaster(t)
@@ -39,13 +39,13 @@ func TestExportGSMasterdata(t *testing.T) {
 }
 
 func TestImportGSMasterdata(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	err := Import("../testdata/gsmaster_exported_gsdata.json")
 	assert.NoError(t, err, "expexted no Error during Export if gsmaster data")
 }
 
 func TestMigrateStructure(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	err := MigrateStructure()
 	assert.NoError(t, err, "expexted no Error during MigrateStructure")
 }

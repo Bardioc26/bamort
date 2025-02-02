@@ -7,7 +7,6 @@ import (
 	"bamort/importer"
 	"bamort/models"
 	"bamort/skills"
-	"bamort/tests"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -745,7 +744,7 @@ func charTests(t *testing.T, char *character.Char) {
 }
 
 func TestCreateChar(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	char := createChar()
 	//char.Name = "Harsk Hammerhuter, Zen2"
 	err := char.First(char.Name)
@@ -762,7 +761,7 @@ func TestCreateChar(t *testing.T) {
 }
 
 func TestReadChar(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	TestCreateChar(t)
 	char := character.Char{}
 	char.Name = "Harsk Hammerhuter, Zen"
@@ -778,7 +777,7 @@ func TestReadChar(t *testing.T) {
 }
 
 func TestAddAusrüstung(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	/*
 		TestCreateChar(t)
 		char := Char{}
@@ -794,7 +793,7 @@ func TestAddAusrüstung(t *testing.T) {
 }
 
 func TestImportVTT2Char(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	char, err := importer.ImportVTTJSON(fileName)
 	assert.NoError(t, err, "expected no error when saving imported Char")

@@ -2,9 +2,9 @@ package maintenance
 
 import (
 	"bamort/character"
+	"bamort/database"
 	"bamort/gsmaster"
 	"bamort/router"
-	"bamort/tests"
 	"bamort/user"
 	"bytes"
 	"encoding/json"
@@ -24,7 +24,7 @@ func TestMaintSetupCheck(t *testing.T) {
 }
 
 func TestGetMasterData(t *testing.T) {
-	tests.SetupTestDB(false)
+	database.SetupTestDB(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -67,7 +67,7 @@ func TestGetMasterData(t *testing.T) {
 	assert.NoError(t, err)
 }
 func TestGetMDSkillCategories(t *testing.T) {
-	tests.SetupTestDB(false)
+	database.SetupTestDB(false)
 	//gsmaster.MigrateStructure()
 	ski := gsmaster.Skill{}
 	categories, err := ski.GetSkillCategories()
@@ -76,7 +76,7 @@ func TestGetMDSkillCategories(t *testing.T) {
 	assert.Equal(t, "Allgemein", categories[0])
 }
 func TestGetMDSkills(t *testing.T) {
-	tests.SetupTestDB(false)
+	database.SetupTestDB(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -125,7 +125,7 @@ func TestGetMDSkills(t *testing.T) {
 
 // TestCreateCharacter tests the POST /characters endpoint
 func TestUpdateMDSkill(t *testing.T) {
-	tests.SetupTestDB(false)
+	database.SetupTestDB(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)

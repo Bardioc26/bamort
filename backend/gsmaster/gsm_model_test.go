@@ -1,14 +1,14 @@
 package gsmaster
 
 import (
-	"bamort/tests"
+	"bamort/database"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSkill_Create(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	testDefinition := []struct {
 		name    string
 		skill   *Skill
@@ -49,11 +49,11 @@ func TestSkill_Create(t *testing.T) {
 			assert.NotZero(t, tt.skill.ID)
 		})
 	}
-	tests.ResetDB()
+	database.ResetTestDB()
 }
 
 func TestWeaponSkill_Create(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	testDefinition := []struct {
 		name        string
 		weaponSkill *WeaponSkill
@@ -96,19 +96,19 @@ func TestWeaponSkill_Create(t *testing.T) {
 			assert.NotZero(t, tt.weaponSkill.ID)
 		})
 	}
-	tests.ResetDB()
+	database.ResetTestDB()
 }
 
 func TestSkill_TableName(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	skill := &Skill{}
 	expected := "gsm_skills"
 	assert.Equal(t, expected, skill.TableName())
-	tests.ResetDB()
+	database.ResetTestDB()
 }
 
 func TestSkill_First(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	testDefinition := []struct {
 		name     string
 		skill    *Skill
@@ -161,11 +161,11 @@ func TestSkill_First(t *testing.T) {
 			assert.Equal(t, "midgard", s.GameSystem)
 		})
 	}
-	tests.ResetDB()
+	database.ResetTestDB()
 }
 
 func TestSkill_FirstId(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	testDefinition := []struct {
 		name    string
 		skill   *Skill
@@ -220,11 +220,11 @@ func TestSkill_FirstId(t *testing.T) {
 			assert.Equal(t, tt.findId, s.ID)
 		})
 	}
-	tests.ResetDB()
+	database.ResetTestDB()
 }
 
 func TestSkill_Save(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	testDefinition := []struct {
 		name    string
 		skill   *Skill
@@ -276,11 +276,11 @@ func TestSkill_Save(t *testing.T) {
 			}
 		})
 	}
-	tests.ResetDB()
+	database.ResetTestDB()
 }
 
 func TestSkill_Delete(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	testDefinition := []struct {
 		name    string
 		skill   *Skill
@@ -338,11 +338,11 @@ func TestSkill_Delete(t *testing.T) {
 			assert.Error(t, err) // Should error since record is deleted
 		})
 	}
-	tests.ResetDB()
+	database.ResetTestDB()
 }
 
 func TestSkill_GetSkillCategories(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	// Create test skills with different categories
 	testSkills := []*Skill{
 		{
@@ -410,5 +410,5 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 			assert.ElementsMatch(t, tt.expectedFound, categories)
 		})
 	}
-	tests.ResetDB()
+	database.ResetTestDB()
 }

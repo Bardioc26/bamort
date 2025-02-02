@@ -1,8 +1,8 @@
 package importer
 
 import (
+	"bamort/database"
 	"bamort/gsmaster"
-	"bamort/tests"
 	"fmt"
 	"testing"
 
@@ -200,7 +200,7 @@ func TestImportVTTStructure(t *testing.T) {
 
 func TestImportSkill2GSMaster(t *testing.T) {
 
-	tests.SetupTestDB()
+	database.SetupTestDB()
 
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
@@ -242,7 +242,7 @@ func TestImportSkill2GSMaster(t *testing.T) {
 }
 
 func TestImportWeaponSkill2GSMaster(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -283,7 +283,7 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 }
 
 func TestImportSpell2GSMaster(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -326,7 +326,7 @@ func TestImportSpell2GSMaster(t *testing.T) {
 }
 
 func TestImportWeapon2GSMaster(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -369,7 +369,7 @@ func TestImportWeapon2GSMaster(t *testing.T) {
 }
 
 func TestImportContainer2GSMaster(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -412,7 +412,7 @@ func TestImportContainer2GSMaster(t *testing.T) {
 }
 
 func TestImportTransportation2GSMaster(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -455,7 +455,7 @@ func TestImportTransportation2GSMaster(t *testing.T) {
 }
 
 func TestImportEquipment2GSMaster(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -493,7 +493,7 @@ func TestImportEquipment2GSMaster(t *testing.T) {
 	assert.NoError(t, err, "Expected no error when checkimg Transüportations against gsmaster")
 }
 func TestImportBelieve2GSMaster(t *testing.T) {
-	tests.SetupTestDB()
+	database.SetupTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")

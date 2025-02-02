@@ -1,8 +1,6 @@
-package tests
+package database
 
 import (
-	"bamort/database"
-
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -17,7 +15,7 @@ func SetupTestDB(opts ...bool) {
 	if len(opts) > 0 {
 		isTestDb = opts[0]
 	}
-	if database.DB == nil {
+	if DB == nil {
 		var db *gorm.DB
 		var err error
 		if isTestDb {
@@ -38,7 +36,7 @@ func SetupTestDB(opts ...bool) {
 			//*/
 			migrationDone = true
 		}
-		database.DB = db
+		DB = db
 	}
 	/*
 		if !migrationDone {
@@ -50,50 +48,13 @@ func SetupTestDB(opts ...bool) {
 		}
 	*/
 }
-
-func ResetDB() {
+func ResetTestDB() {
 	if isTestDb {
-		sqlDB, err := database.DB.DB()
+		sqlDB, err := DB.DB()
 		if err == nil {
 			sqlDB.Close()
-			database.DB = nil
+			DB = nil
 			migrationDone = false
 		}
 	}
 }
-
-/*
-func MigrateStructure() error {
-	err := database.MigrateStructure()
-	if err != nil {
-		return err
-	}
-	err = character.MigrateStructure()
-	if err != nil {
-		return err
-	}
-	err = equipment.MigrateStructure()
-	if err != nil {
-		return err
-	}
-	err = gsmaster.MigrateStructure()
-	if err != nil {
-		return err
-	}
-	err = importer.MigrateStructure()
-	if err != nil {
-		return err
-	}
-	err = skills.MigrateStructure()
-	if err != nil {
-		return err
-	}
-	err = user.MigrateStructure()
-	if err != nil {
-		return err
-	}
-	migrationDone = true
-
-	return nil
-}
-*/

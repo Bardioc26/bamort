@@ -336,6 +336,7 @@ func createFertigkeit(sel int) *skills.Fertigkeit {
 	}
 	return &liste[sel]
 }
+
 func createWaffenfertigkeit(sel int) *skills.Waffenfertigkeit {
 
 	liste := []skills.Waffenfertigkeit{
@@ -388,6 +389,7 @@ func createWaffenfertigkeit(sel int) *skills.Waffenfertigkeit {
 	}
 	return &liste[sel]
 }
+
 func createZauber(sel int) *skills.Zauber {
 
 	liste := []skills.Zauber{
@@ -438,6 +440,7 @@ func createWaffen(sel int) *equipment.Waffe {
 	}
 	return &liste[sel]
 }
+
 func createBehaeltniss(sel int) *equipment.Container {
 	liste := []equipment.Container{
 		{
@@ -465,6 +468,7 @@ func createBehaeltniss(sel int) *equipment.Container {
 	}
 	return &liste[sel]
 }
+
 func createTransportmittel(sel int) *equipment.Container {
 	liste := []equipment.Container{
 		{
@@ -495,6 +499,7 @@ func createTransportmittel(sel int) *equipment.Container {
 	}
 	return &liste[sel]
 }
+
 func createAusruestung(sel int) *equipment.Ausruestung {
 	liste := []equipment.Ausruestung{
 		{
@@ -738,9 +743,17 @@ func charTests(t *testing.T, char *Char) {
 
 func TestCreateChar(t *testing.T) {
 	database.SetupTestDB()
+	err := MigrateStructure()
+	if err == nil {
+		err = skills.MigrateStructure()
+		if err == nil {
+			err = equipment.MigrateStructure()
+		}
+	}
+	assert.NoError(t, err, "expected no error MigrateStructure")
 	char := createChar()
 	//char.Name = "Harsk Hammerhuter, Zen2"
-	err := char.First(char.Name)
+	err = char.First(char.Name)
 	//assert.Error(t, err, "expected error character not found")
 	if err != nil && err.Error() == "record not found" {
 		err = char.Create()
@@ -771,16 +784,6 @@ func TestReadChar(t *testing.T) {
 
 func TestAddAusrüstung(t *testing.T) {
 	database.SetupTestDB()
-	/*
-		TestCreateChar(t)
-		char := Char{}
-		char.Name = "Harsk Hammerhuter, Zen"
-		err := char.First(char.Name)
-		assert.NoError(t, err, "expexted no Errorselecting record from DataBase")
-		item := createAusruestung(0)
-		mcr := Char{}
-		err = mcr.AddAusruestung(item.Name)
-		assert.NoError(t, err, "No error expected when adding Ausrüstung to char")
-	*/
+	TestCreateChar(t)
 
 }

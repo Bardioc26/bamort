@@ -67,7 +67,6 @@ func TestSetupCheck(t *testing.T) {
 }
 func TestListCharacters(t *testing.T) {
 	database.SetupTestDB()
-	//character.TestCreateChar(t)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -111,8 +110,6 @@ func TestListCharacters(t *testing.T) {
 
 func TestGetCharacters(t *testing.T) {
 	database.SetupTestDB()
-	//TestCreateChar(t)
-	//TestRegisterUser(t)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -155,7 +152,6 @@ func TestGetCharacters(t *testing.T) {
 
 }
 
-// TestCreateCharacter tests the POST /characters endpoint
 func TestCreateCharacter(t *testing.T) {
 	// Initialize a Gin router
 	r := gin.Default()

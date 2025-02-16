@@ -123,7 +123,6 @@ func TestGetMDSkills(t *testing.T) {
 
 }
 
-// TestCreateCharacter tests the POST /characters endpoint
 func TestUpdateMDSkill(t *testing.T) {
 	database.SetupTestDB(false)
 	// Initialize a Gin router

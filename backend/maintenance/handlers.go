@@ -13,10 +13,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func respondWithError(c *gin.Context, status int, message string) {
+	c.JSON(status, gin.H{"error": message})
+}
+
 func SetupCheck(c *gin.Context) {
 	db := database.ConnectDatabase()
 	if db == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to DataBase"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to connect to DataBase")
 		return
 	}
 	err := database.MigrateStructure()

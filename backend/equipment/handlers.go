@@ -14,15 +14,19 @@ Endpoints for Managing Ausruestung
 Allows users to add new equipment items for a specific character.
 */
 
+func respondWithError(c *gin.Context, status int, message string) {
+	c.JSON(status, gin.H{"error": message})
+}
+
 func CreateAusruestung(c *gin.Context) {
 	var ausruestung Ausruestung
 	if err := c.ShouldBindJSON(&ausruestung); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := database.DB.Create(&ausruestung).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create Ausruestung"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to create Ausruestung")
 		return
 	}
 
@@ -34,7 +38,7 @@ func ListAusruestung(c *gin.Context) {
 
 	var ausruestung []Ausruestung
 	if err := database.DB.Where("character_id = ?", characterID).Find(&ausruestung).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Ausruestung"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve Ausruestung")
 		return
 	}
 
@@ -46,17 +50,17 @@ func UpdateAusruestung(c *gin.Context) {
 	var ausruestung Ausruestung
 
 	if err := database.DB.First(&ausruestung, ausruestungID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Ausruestung not found"})
+		respondWithError(c, http.StatusNotFound, "Ausruestung not found")
 		return
 	}
 
 	if err := c.ShouldBindJSON(&ausruestung); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := database.DB.Save(&ausruestung).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update Ausruestung"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to update Ausruestung")
 		return
 	}
 
@@ -66,7 +70,7 @@ func UpdateAusruestung(c *gin.Context) {
 func DeleteAusruestung(c *gin.Context) {
 	ausruestungID := c.Param("ausruestung_id")
 	if err := database.DB.Delete(&Ausruestung{}, ausruestungID).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete Ausruestung"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to delete Ausruestung")
 		return
 	}
 

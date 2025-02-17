@@ -20,11 +20,15 @@ type LearnRequestStruct struct {
 	Stufe     int    `json:"stufe"`
 }
 
+func respondWithError(c *gin.Context, status int, message string) {
+	c.JSON(status, gin.H{"error": message})
+}
+
 func ListCharacters(c *gin.Context) {
 	var characters []Char
 	var listOfChars []CharList
 	if err := database.DB.Find(&characters).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve characters"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve characters")
 		return
 	}
 	for i := range characters {
@@ -45,12 +49,12 @@ func ListCharacters(c *gin.Context) {
 func CreateCharacter(c *gin.Context) {
 	var character Char
 	if err := c.ShouldBindJSON(&character); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := database.DB.Create(&character).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create character"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to create character")
 		return
 	}
 
@@ -61,7 +65,7 @@ func GetCharacter(c *gin.Context) {
 	var character Char
 	err := character.FirstID(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
 		return
 	}
 	feChar := ToFeChar(&character)
@@ -87,12 +91,12 @@ func DeleteCharacter(c *gin.Context) {
 	var character Char
 	err := character.FirstID(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
 		return
 	}
 	err = character.Delete()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete character"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to delete character")
 		return
 	}
 	/*
@@ -167,26 +171,26 @@ func GetLearnSkillCost(c *gin.Context) {
 	// Load the character from the database
 	var character Char
 	if err := character.FirstID(charID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
 		return
 	}
 
 	// Load the skill from the request
 	var s skills.Fertigkeit
 	if err := c.ShouldBindJSON(&s); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	var skill gsmaster.Skill
 	if err := skill.First(s.Name); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"can not find speel in gsmaster": err.Error()})
+		respondWithError(c, http.StatusBadRequest, "can not find speel in gsmaster: "+err.Error())
 		return
 	}
 
 	cost, err := gsmaster.CalculateSkillLearnCost(skill.Name, character.Typ)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn skill": err.Error()})
+		respondWithError(c, http.StatusBadRequest, "error getting costs to learn skill: "+err.Error())
 		return
 	}
 
@@ -201,19 +205,19 @@ func GetLearnSpellCost(c *gin.Context) {
 	// Load the character from the database
 	var character Char
 	if err := character.FirstID(charID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
 		return
 	}
 
 	// Load the spell from the request
 	var s skills.Zauber
 	if err := c.ShouldBindJSON(&s); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	var spell gsmaster.Spell
 	if err := spell.First(s.Name); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"can not find speel in gsmaster": err.Error()})
+		respondWithError(c, http.StatusBadRequest, "can not find speel in gsmaster: "+err.Error())
 		return
 	}
 	sd := gsmaster.SpellDefinition{
@@ -224,7 +228,7 @@ func GetLearnSpellCost(c *gin.Context) {
 
 	cost, err := gsmaster.CalculateSpellLearnCost(spell.Name, character.Typ)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn spell": err.Error()})
+		respondWithError(c, http.StatusBadRequest, "error getting costs to learn spell: "+err.Error())
 		return
 	}
 
@@ -240,30 +244,30 @@ func GetLearnCost(c *gin.Context) {
 	// Load the character from the database
 	var character Char
 	if err := character.FirstID(charID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
 		return
 	}
 
 	// Load the spell from the request
 	var s LearnRequestStruct
 	if err := c.ShouldBindJSON(&s); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if s.SkillType != "spell" && s.SkillType != "skill" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "unknown skill type"})
+		respondWithError(c, http.StatusBadRequest, "unknown skill type")
 		return
 	}
 	if s.Name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "no name given"})
+		respondWithError(c, http.StatusBadRequest, "no name given")
 	}
 	if s.SkillType == "skill" && s.Stufe <= 6 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "stufe must be greater than 6"})
+		respondWithError(c, http.StatusBadRequest, "stufe must be greater than 6")
 	}
 
 	cost, err := gsmaster.CalculateLearnCost(s.SkillType, s.Name, character.Typ)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn spell": err.Error()})
+		respondWithError(c, http.StatusBadRequest, "error getting costs to learn spell: "+err.Error())
 		return
 	}
 
@@ -278,14 +282,14 @@ func GetSkillNextLevelCosts(c *gin.Context) {
 	// Load the character from the database
 	var character Char
 	if err := character.FirstID(charID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
 		return
 	}
 
 	for int, skill := range character.Fertigkeiten {
 		lCost, err := gsmaster.CalculateSkillImprovementCost(skill.Name, character.Typ, skill.Fertigkeitswert)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn skill": err.Error()})
+			respondWithError(c, http.StatusBadRequest, "error getting costs to learn skill: "+err.Error())
 			return
 		}
 		character.Fertigkeiten[int].LearningCost = *lCost
@@ -294,7 +298,7 @@ func GetSkillNextLevelCosts(c *gin.Context) {
 	// Load the skill from the request
 	var s skills.Fertigkeit
 	if err := c.ShouldBindJSON(&s); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -309,16 +313,16 @@ func GetSkillAllLevelCosts(c *gin.Context) {
 	// Load the character from the database
 	var character Char
 	if err := character.FirstID(charID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve character"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
 		return
 	}
 	var s LearnRequestStruct
 	if err := c.ShouldBindJSON(&s); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if s.Name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "no name given"})
+		respondWithError(c, http.StatusBadRequest, "no name given")
 	}
 
 	costArr := make([]gsmaster.LearnCost, 0)
@@ -328,7 +332,7 @@ func GetSkillAllLevelCosts(c *gin.Context) {
 			for i := skill.Fertigkeitswert; i <= 20; i++ {
 				lCost, err := gsmaster.CalculateSkillImprovementCost(skill.Name, character.Typ, skill.Fertigkeitswert)
 				if err != nil {
-					c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn skill": err.Error()})
+					respondWithError(c, http.StatusBadRequest, "error getting costs to learn skill: "+err.Error())
 					return
 				}
 				costArr = append(costArr, *lCost)
@@ -343,7 +347,7 @@ func GetSkillAllLevelCosts(c *gin.Context) {
 				for i := skill.Fertigkeitswert; i <= 20; i++ {
 					lCost, err := gsmaster.CalculateSkillImprovementCost(skill.Name, character.Typ, skill.Fertigkeitswert)
 					if err != nil {
-						c.JSON(http.StatusBadRequest, gin.H{"error getting costs to learn skill": err.Error()})
+						respondWithError(c, http.StatusBadRequest, "error getting costs to learn skill: "+err.Error())
 						return
 					}
 					costArr = append(costArr, *lCost)

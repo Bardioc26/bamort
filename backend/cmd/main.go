@@ -11,6 +11,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @title Bamort API
+// @version 1
+// @description This is the API for Bamort
+// @host localhost:8180
+// @BasePath /
+// @schemes http
 func main() {
 	database.ConnectDatabase()
 	//database.DB.AutoMigrate(&models.User{}, &models.Character{}) // Add other models here

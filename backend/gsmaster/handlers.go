@@ -9,7 +9,7 @@ import (
 )
 
 // Helper functions
-func handleError(c *gin.Context, status int, message string) {
+func respondWithError(c *gin.Context, status int, message string) {
 	c.JSON(status, gin.H{"error": message})
 }
 
@@ -43,13 +43,13 @@ type Deleter interface {
 func getMDItem[T any](c *gin.Context) {
 	id, err := parseID(c)
 	if err != nil {
-		handleError(c, http.StatusBadRequest, "Invalid ID format")
+		respondWithError(c, http.StatusBadRequest, "Invalid ID format")
 		return
 	}
 	item := new(T)
 	if getter, ok := (interface{})(item).(FirstIdGetter); ok {
 		if err := getter.FirstId(id); err != nil {
-			handleError(c, http.StatusInternalServerError, "Failed to retrieve item")
+			respondWithError(c, http.StatusInternalServerError, "Failed to retrieve item")
 			return
 		}
 		c.JSON(http.StatusOK, item)
@@ -61,7 +61,7 @@ func getMDItem[T any](c *gin.Context) {
 func getMDItems[T any](c *gin.Context) {
 	var items []T
 	if err := database.DB.Find(&items).Error; err != nil {
-		handleError(c, http.StatusInternalServerError, "Failed to retrieve items")
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve items")
 		return
 	}
 	c.JSON(http.StatusOK, items)
@@ -72,13 +72,13 @@ func addMDItem[T any](c *gin.Context) {
 	item := new(T)
 
 	if err := c.ShouldBindJSON(item); err != nil {
-		handleError(c, http.StatusBadRequest, err.Error())
+		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if creator, ok := (interface{})(item).(Creator); ok {
 		if err := creator.Create(); err != nil {
-			handleError(c, http.StatusInternalServerError, "Failed to create item")
+			respondWithError(c, http.StatusInternalServerError, "Failed to create item")
 			return
 		}
 		c.JSON(http.StatusCreated, item)
@@ -89,25 +89,25 @@ func addMDItem[T any](c *gin.Context) {
 func updateMDItem[T any](c *gin.Context) {
 	id, err := parseID(c)
 	if err != nil {
-		handleError(c, http.StatusBadRequest, "Invalid ID format")
+		respondWithError(c, http.StatusBadRequest, "Invalid ID format")
 		return
 	}
 
 	item := new(T)
 	if getter, ok := (interface{})(item).(FirstIdGetter); ok {
 		if err := getter.FirstId(id); err != nil {
-			handleError(c, http.StatusNotFound, "Item not found")
+			respondWithError(c, http.StatusNotFound, "Item not found")
 			return
 		}
 
 		if err := c.ShouldBindJSON(item); err != nil {
-			handleError(c, http.StatusBadRequest, "Invalid input data")
+			respondWithError(c, http.StatusBadRequest, "Invalid input data")
 			return
 		}
 
 		if saver, ok := (interface{})(item).(Saver); ok {
 			if err := saver.Save(); err != nil {
-				handleError(c, http.StatusInternalServerError, "Failed to update item")
+				respondWithError(c, http.StatusInternalServerError, "Failed to update item")
 				return
 			}
 			c.JSON(http.StatusOK, item)
@@ -119,20 +119,20 @@ func updateMDItem[T any](c *gin.Context) {
 func deleteMDItem[T any](c *gin.Context) {
 	id, err := parseID(c)
 	if err != nil {
-		handleError(c, http.StatusBadRequest, "Invalid ID format")
+		respondWithError(c, http.StatusBadRequest, "Invalid ID format")
 		return
 	}
 
 	item := new(T)
 	if getter, ok := (interface{})(item).(FirstIdGetter); ok {
 		if err := getter.FirstId(id); err != nil {
-			handleError(c, http.StatusNotFound, "Item not found")
+			respondWithError(c, http.StatusNotFound, "Item not found")
 			return
 		}
 
 		if deleter, ok := (interface{})(item).(Deleter); ok {
 			if err := deleter.Delete(); err != nil {
-				handleError(c, http.StatusInternalServerError, "Failed to delete item")
+				respondWithError(c, http.StatusInternalServerError, "Failed to delete item")
 				return
 			}
 			c.JSON(http.StatusNoContent, nil)

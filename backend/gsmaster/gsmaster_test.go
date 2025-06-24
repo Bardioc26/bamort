@@ -45,7 +45,7 @@ func TestImportGSMasterdata(t *testing.T) {
 }
 
 func TestMigrateStructure(t *testing.T) {
-	database.SetupTestDB()
+	database.SetupTestDB(true) // Use in-memory SQLite for testing
 	err := MigrateStructure()
-	assert.NoError(t, err, "expexted no Error during MigrateStructure")
+	assert.NoError(t, err, "expected no Error during MigrateStructure")
 }

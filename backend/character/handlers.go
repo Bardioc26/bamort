@@ -72,26 +72,36 @@ func GetCharacter(c *gin.Context) {
 	c.JSON(http.StatusOK, feChar)
 }
 func UpdateCharacter(c *gin.Context) {
+	id := c.Param("id")
 	var character Char
-	/*
-		if err := c.ShouldBindJSON(&character.ID); err != nil {
-			respondWithError(c, http.StatusBadRequest,  err.Error())
-			return
-		}
 
-		if err := database.DB.Create(&character).Error; err != nil {
-			respondWithError(c, http.StatusInternalServerError, "Failed to create character")
-			return
-		}
-	*/
-	c.JSON(http.StatusCreated, character)
+	// First, find the existing character
+	err := character.FirstID(id)
+	if err != nil {
+		respondWithError(c, http.StatusNotFound, "Character not found")
+		return
+	}
+
+	// Bind the updated data
+	if err := c.ShouldBindJSON(&character); err != nil {
+		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Save the updated character
+	if err := database.DB.Save(&character).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to update character")
+		return
+	}
+
+	c.JSON(http.StatusOK, character)
 }
 func DeleteCharacter(c *gin.Context) {
 	id := c.Param("id")
 	var character Char
 	err := character.FirstID(id)
 	if err != nil {
-		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
+		respondWithError(c, http.StatusNotFound, "Character not found")
 		return
 	}
 	err = character.Delete()
@@ -99,18 +109,8 @@ func DeleteCharacter(c *gin.Context) {
 		respondWithError(c, http.StatusInternalServerError, "Failed to delete character")
 		return
 	}
-	/*
-		if err := c.ShouldBindJSON(&character.ID); err != nil {
-			respondWithError(c, http.StatusBadRequest, err.Error())
-			return
-		}
 
-		if err := database.DB.Create(&character).Error; err != nil {
-			respondWithError(c, http.StatusInternalServerError,  "Failed to create character")
-			return
-		}
-	*/
-	c.JSON(http.StatusCreated, character)
+	c.JSON(http.StatusOK, gin.H{"message": "Character deleted successfully"})
 }
 
 // Add Fertigkeit by putting it directly to the DB

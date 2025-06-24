@@ -43,28 +43,36 @@ type Character struct {
 
 func TestSetupCheck(t *testing.T) {
 	// must be in sync with maintenance.SetupCheck(&c)
-	//maintenance.SetupCheck(&c)
+	database.SetupTestDB(true) // Use in-memory database for tests
+
 	db := database.ConnectDatabase()
-	assert.NotEqual(t, nil, db, "expected NIL to be empty")
+	assert.NotNil(t, db, "expected database connection to be established")
 	if db == nil {
 		return
 	}
+
 	err := database.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating database tables")
+
 	err = character.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating character tables")
+
 	err = user.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating user tables")
+
 	err = gsmaster.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating gsmaster tables")
+
 	err = equipment.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating equipment tables")
-	err = skills.MigrateStructure()
-	assert.NoError(t, err, "No error expected when migrating skill tables  ")
-	err = importer.MigrateStructure()
-	assert.NoError(t, err, "No error expected when migrating importer tables ", err)
 
+	err = skills.MigrateStructure()
+	assert.NoError(t, err, "No error expected when migrating skill tables")
+
+	err = importer.MigrateStructure()
+	assert.NoError(t, err, "No error expected when migrating importer tables")
 }
+
 func TestListCharacters(t *testing.T) {
 	database.SetupTestDB()
 	// Initialize a Gin router

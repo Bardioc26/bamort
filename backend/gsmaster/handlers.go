@@ -49,12 +49,13 @@ func getMDItem[T any](c *gin.Context) {
 	item := new(T)
 	if getter, ok := (interface{})(item).(FirstIdGetter); ok {
 		if err := getter.FirstId(id); err != nil {
-			respondWithError(c, http.StatusInternalServerError, "Failed to retrieve item")
+			respondWithError(c, http.StatusNotFound, "Item not found")
 			return
 		}
 		c.JSON(http.StatusOK, item)
+	} else {
+		respondWithError(c, http.StatusInternalServerError, "Item type does not support ID lookup")
 	}
-
 }
 
 // Generic get all items handler
@@ -78,10 +79,12 @@ func addMDItem[T any](c *gin.Context) {
 
 	if creator, ok := (interface{})(item).(Creator); ok {
 		if err := creator.Create(); err != nil {
-			respondWithError(c, http.StatusInternalServerError, "Failed to create item")
+			respondWithError(c, http.StatusInternalServerError, "Failed to create item: "+err.Error())
 			return
 		}
 		c.JSON(http.StatusCreated, item)
+	} else {
+		respondWithError(c, http.StatusInternalServerError, "Item type does not support creation")
 	}
 }
 
@@ -107,11 +110,15 @@ func updateMDItem[T any](c *gin.Context) {
 
 		if saver, ok := (interface{})(item).(Saver); ok {
 			if err := saver.Save(); err != nil {
-				respondWithError(c, http.StatusInternalServerError, "Failed to update item")
+				respondWithError(c, http.StatusInternalServerError, "Failed to update item: "+err.Error())
 				return
 			}
 			c.JSON(http.StatusOK, item)
+		} else {
+			respondWithError(c, http.StatusInternalServerError, "Item type does not support saving")
 		}
+	} else {
+		respondWithError(c, http.StatusInternalServerError, "Item type does not support ID lookup")
 	}
 }
 
@@ -132,11 +139,15 @@ func deleteMDItem[T any](c *gin.Context) {
 
 		if deleter, ok := (interface{})(item).(Deleter); ok {
 			if err := deleter.Delete(); err != nil {
-				respondWithError(c, http.StatusInternalServerError, "Failed to delete item")
+				respondWithError(c, http.StatusInternalServerError, "Failed to delete item: "+err.Error())
 				return
 			}
 			c.JSON(http.StatusNoContent, nil)
+		} else {
+			respondWithError(c, http.StatusInternalServerError, "Item type does not support deletion")
 		}
+	} else {
+		respondWithError(c, http.StatusInternalServerError, "Item type does not support ID lookup")
 	}
 }
 

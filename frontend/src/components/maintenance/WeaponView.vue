@@ -207,7 +207,7 @@ export default {
               }
             }
           )
-          if (!response.statusText== "OK") throw new Error('Update failed');
+          if (response.status !== 200) throw new Error('Update failed');
           const updatedSkill = response.data;
           // Update the weapons in mdata
           this.mdata.weapons = this.mdata.weapons.map(s =>

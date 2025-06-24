@@ -75,12 +75,12 @@ func UpdateCharacter(c *gin.Context) {
 	var character Char
 	/*
 		if err := c.ShouldBindJSON(&character.ID); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			respondWithError(c, http.StatusBadRequest,  err.Error())
 			return
 		}
 
 		if err := database.DB.Create(&character).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create character"})
+			respondWithError(c, http.StatusInternalServerError, "Failed to create character")
 			return
 		}
 	*/
@@ -101,12 +101,12 @@ func DeleteCharacter(c *gin.Context) {
 	}
 	/*
 		if err := c.ShouldBindJSON(&character.ID); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			respondWithError(c, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		if err := database.DB.Create(&character).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create character"})
+			respondWithError(c, http.StatusInternalServerError,  "Failed to create character")
 			return
 		}
 	*/

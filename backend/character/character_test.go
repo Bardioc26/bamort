@@ -752,17 +752,19 @@ func TestCreateChar(t *testing.T) {
 	}
 	assert.NoError(t, err, "expected no error MigrateStructure")
 	char := createChar()
-	//char.Name = "Harsk Hammerhuter, Zen2"
+
 	err = char.First(char.Name)
-	//assert.Error(t, err, "expected error character not found")
 	if err != nil && err.Error() == "record not found" {
 		err = char.Create()
 		assert.NoError(t, err, "expected no error creating the char")
+	} else {
+		assert.NoError(t, err, "expected no error finding existing char")
 	}
+
 	char2 := Char{}
 	char2.Name = "Harsk Hammerhuter, Zen"
 	err = char2.First(char2.Name)
-	assert.NoError(t, err, "expected no error creating the char")
+	assert.NoError(t, err, "expected no error finding the char")
 	charTests(t, &char2)
 }
 

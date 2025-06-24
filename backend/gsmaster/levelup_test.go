@@ -32,9 +32,11 @@ func setupTestDB(opts ...bool) {
 			}
 			//*/
 		} else {
-			//* //testin with persitant MariaDB
-			dsn := "bamort:bG4)efozrc@tcp(192.168.0.5:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
-			//dsn := "root:26Osiris-Mar@tcp(192.168.0.5:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
+			//* //testing with persistent MariaDB
+			dsn := os.Getenv("TEST_DB_DSN")
+			if dsn == "" {
+				dsn = "bamort:password@tcp(localhost:3306)/bamort_test?charset=utf8mb4&parseTime=True&loc=Local"
+			}
 			db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 			if err != nil {
 				panic("failed to connect to the test database")

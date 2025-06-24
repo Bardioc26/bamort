@@ -50,19 +50,19 @@ func TestSetupCheck(t *testing.T) {
 		return
 	}
 	err := database.MigrateStructure()
-	assert.NoError(t, nil, err, "No error expected when migrating database tables ", err)
+	assert.NoError(t, err, "No error expected when migrating database tables")
 	err = character.MigrateStructure()
-	assert.NoError(t, nil, err, "No error expected when migrating character tables ", err)
+	assert.NoError(t, err, "No error expected when migrating character tables")
 	err = user.MigrateStructure()
-	assert.NoError(t, nil, err, "No error expected when migrating user tables ", err)
+	assert.NoError(t, err, "No error expected when migrating user tables")
 	err = gsmaster.MigrateStructure()
-	assert.NoError(t, nil, err, "No error expected when migrating gsmaster tables ", err)
+	assert.NoError(t, err, "No error expected when migrating gsmaster tables")
 	err = equipment.MigrateStructure()
-	assert.NoError(t, nil, err, "No error expected when migrating equipment tables ", err)
+	assert.NoError(t, err, "No error expected when migrating equipment tables")
 	err = skills.MigrateStructure()
-	assert.NoError(t, nil, err, "No error expected when migrating skill tables  ", err)
+	assert.NoError(t, err, "No error expected when migrating skill tables  ")
 	err = importer.MigrateStructure()
-	assert.NoError(t, nil, err, "No error expected when migrating importer tables ", err)
+	assert.NoError(t, err, "No error expected when migrating importer tables ", err)
 
 }
 func TestListCharacters(t *testing.T) {

@@ -446,7 +446,7 @@ func CheckContainers2GSMaster(objects []Behaeltniss) error {
 	}
 	return nil
 }
-func CheckTransportationss2GSMaster(objects []Transportation) error {
+func CheckTransportations2GSMaster(objects []Transportation) error {
 	for i := range objects {
 		gsmobj, err := TransformImportTransportation2GSDMaster(&objects[i])
 		if err != nil {

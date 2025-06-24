@@ -89,13 +89,5 @@
     "Magier": {
       "Beherrschen":true, "Beweg":true, "Erken":true, "Erschaff":true, "Formen":true, "Verändern":true, "Zerstören":true, "Wunder":false, "Dweomer":false, "Lied":false
     }
-  },
-  "obsolete":{
-    "allowedGroups": {
-      "Krieger": { "Alltag": true, "Freiland": true, "Halbwelt": true, "Kampf": true, "Körperbeherrschung": true, "Sozial": true, "Unterwelt": true, "Waffer": true, "Wissen": true },
-      "Hexer": { "Alltag": true, "Freiland": true, "Halbwelt": true, "Kampf": true, "Körperbeherrschung": true, "Sozial": true, "Unterwelt": true, "Waffer": true, "Wissen": true },
-      "Magier": {      "Alltag": true,      "Freiland": true,      "Kampf": false    },
-      "Schurke": {      "Alltag": true,      "Freiland": true,      "Kampf": true    }
-    }
   }
 }

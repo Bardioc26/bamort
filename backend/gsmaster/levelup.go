@@ -68,7 +68,7 @@ var AllowedGroups = map[CharClass]map[SkillGroup]bool}
 
 var Config LevelConfig // holds all loaded data
 
-func loadLevelingConfig(opts ...string) {
+func loadLevelingConfig(opts ...string) error {
 	// Adjust path as needed
 	filePath := "../testdata/leveldata.json"
 	if len(opts) > 0 {
@@ -76,15 +76,16 @@ func loadLevelingConfig(opts ...string) {
 	}
 	file, err := os.Open(filePath)
 	if err != nil {
-		panic(fmt.Errorf("failed to open JSON file: %w", err))
+		return fmt.Errorf("failed to open JSON file: %w", err)
 	}
 	defer file.Close()
 
 	// Decode the JSON file into the ExportData structure
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&Config); err != nil {
-		panic(fmt.Errorf("failed to decode JSON file: %w", err))
+		return fmt.Errorf("failed to decode JSON file: %w", err)
 	}
+	return nil
 }
 
 // CalculateSpellLearnCost combines SpellLearnCost with SpellEPPerSchoolByClass

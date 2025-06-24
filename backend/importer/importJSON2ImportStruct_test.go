@@ -450,7 +450,7 @@ func TestImportTransportation2GSMaster(t *testing.T) {
 	assert.Equal(t, skill2.Volumen, skill3.Volumen)
 	assert.Equal(t, skill2.Tragkraft, skill3.Tragkraft)
 
-	err = CheckTransportationss2GSMaster(character.Transportmittel)
+	err = CheckTransportations2GSMaster(character.Transportmittel)
 	assert.NoError(t, err, "Expected no error when checkimg Transüportations against gsmaster")
 }
 

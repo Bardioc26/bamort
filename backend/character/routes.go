@@ -14,4 +14,5 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.GET("/:id/improve", GetSkillNextLevelCosts)
 	charGrp.GET("/:id/improve/skill", GetSkillAllLevelCosts)
 	charGrp.GET("/:id/learn", GetLearnCost)
+	charGrp.POST("/:id/skill-cost", GetSkillCost) // Neuer Endpunkt für detaillierte Kostenberechnung
 }

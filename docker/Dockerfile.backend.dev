@@ -1,7 +1,9 @@
 # Development Dockerfile für Go Backend mit Live-Reloading
-FROM golang:1.23-alpine
+#FROM golang:1.23-alpine
+FROM golang:1.24-alpine
 
-# Install Air für Live-Reloading
+# Install Air für Live-Reloading (kompatible Version für Go 1.23)
+#RUN go install github.com/cosmtrek/air@v1.49.0
 RUN go install github.com/cosmtrek/air@latest
 
 WORKDIR /app

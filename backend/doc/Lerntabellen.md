@@ -143,65 +143,68 @@ leicht	–	–	–	–	1	2	5	10	10	20
 normal	1	1	2	2	5	10	10	20	20	50
 schwer	2	2	5	5	10	10	20	20	50	50
 
-Die restlichen Tabellen (Waffen, Unterwelt, Wissen) folgen im nächsten Beitrag (wegen Länge). Möchtest du, dass ich sie jetzt direkt sende?
-Du:
-ja sende sie jetzt
-ChatGPT:
-
-Perfekt! Hier sind die restlichen Tabellen der Seiten 158–162 im gleichen strukturierten Format:
-
 # Unterwelt
 Lernen:
 Schwierigkeit	Einträge
-leicht (2 LE)	Fälschen+12 (Gs), Stehlen+8 (Gs)
-normal (2 LE)	Gassenwissen+8 (In), Verhören+8 (pA)
-schwer (4 LE)	Einschüchtern+8 (pA), Menschenkenntnis+8 (In)
+leicht (2 LE)	Gassenwissen+8 (In), Stehlen+8 (Gs)
+normal (4 LE)	Fallen entdecken+8 (In), Schleichen+8 (Gw), Schlösser öffnen+8 (Gs), Spurensuche+8 (In), Tarnen+8 (Gw)
+schwer (10 LE)	Fallenmechanik+8 (Gs), Meucheln+8 (Gs)
 Verbessern (TE):
 Stufe	+9	+10	+11	+12	+13	+14	+15	+16	+17	+18
-leicht	2	2	5	5	10	10	20	20	50	50
-normal	2	5	5	10	10	20	20	50	50	50
-schwer	5	5	10	10	20	20	50	50	100	100
+leicht	2	5	5	10	10	20	20	50	50	50
+normal	5	5	10	10	20	20	50	50	100	100
+schwer	5	10	20	20	30	50	80	80	100	100
 
 # Waffen
 Lernen:
 Schwierigkeit	Einträge
-leicht (1 LE)	Armbrust+8 (Gs), Bogen+8 (Gs), Dolch+8 (Gs), Hiebwaffen+8 (St), Kettenwaffen+8 (St), Wurfwaffen+8 (Gs)
-normal (2 LE)	Fechten+5 (Gs), Schilde+8 (St), Stangenwaffen+8 (St), Zweihandhiebwaffen+8 (St), Zweihandflegel+8 (St)
-schwer (10 LE)	Beidhändiger Kampf+5 (Gs), Kampf in Vollrüstung+5 (St), Scharfschießen+5 (Gs)
+leicht (2 LE)	Spießwaﬀen+5, Stichwaffen+5, Zauberstäbe+5* - Schilde+1, 
+normal (4 LE)	Einhandschlagwaﬀen+5, Einhandschwerter+5- Stielwurfwaﬀen+5,
+Wurfklingen+5, Wurfspieße+5 - Parierwaﬀen+1
+schwer (6 LE)	Fechtwaﬀen+5, Zweihandschlagwaﬀen+5, Zweihandschwerter+5 -
+Armbrüste+5, Blasrohre+5, Bögen+5, Schleudern+5, Wurfscheiben+5
+sehr schwer (8 LE)	Kettenwaﬀen+5, Stockwaﬀen+5, waﬀenloser Kampf+5
 
     Hinweis: Waffenfertigkeiten steigen langsamer und kostenintensiver mit zunehmendem Wert.
 
 Verbessern (TE):
-Stufe	+6	+7	+8	+9	+10	+11	+12	+13	+14	+15	+16	+17	+18
-leicht	–	–	–	–	–	–	–	1	2	5	10	10	20
-normal	–	–	–	2	2	5	5	10	10	20	20	50	50
-schwer	2	5	10	10	20	20	30	50	50	100	100	150	200
+Stufe	+6	+7	+8	+9	+10	+11	+12	+13	+14	+15	+16	+17	+18	
+leicht	1	1	1	2	2	5	10	20	50	100	100	150	150	
+normal	1	1	2	2	5	10	20	50	50	100	150	150	200	
+schwer	1	2	2	5	5	10	20	50	100	150	200	300	300	
+sehr schwer	1	2	2	5	10	20	50	100	150	200	300	300	400
+
+Schilde und Parierwaﬀen
++2	+3	+4	+5	+6	+7	+8
+1	2	10	30	50	100	150
 
 # Wissen
 Lernen:
 Schwierigkeit	Einträge
-leicht (1 LE)	–
-normal (2 LE)	Alchemie+8 (In), Götter+8 (In), Geschichte+8 (In), Heraldik+8 (In), Kriegsführung+8 (In), Rechtskunde+8 (In), Strategie+8 (In)
-schwer (4 LE)	Gerätekunde+8 (In), Pflanzenkunde+8 (In), Tierkunde+8 (In)
+leicht (1 LE)	Lesen von Zauberschrift+8 (In), Schreiben+8 (In), Sprache+8 (In)
+normal (2 LE)	Erste Hilfe+8 (Gs), Meditieren+8 (Wk)
+schwer (2 LE)	Alchimie+8 (In), Heilkunde+8 (In), Landeskunde+8 (In), Naturkunde+8 (In), Pflanzenkunde+8 (In), Tierkunde+8 (In), Zauberkunde+8 (In)
 
- Wissenstalente erfordern meist hohe Intelligenz und langfristige Investition.
+Wissenstalente erfordern meist hohe Intelligenz und langfristige Investition.
 
 Verbessern (TE):
-Stufe	+9	+10	+11	+12	+13	+14	+15	+16	+17	+18
-normal	2	2	5	5	10	10	20	20	50	50
-schwer	5	10	10	20	20	50	50	100	100	100
+Stufe  +9	+10	+11	+12	+13	+14	+15	+16	+17	+18	
+leicht	1	1	1	1	2	2	5	10	10	20	
+normal	2	2	5	5	10	10	20	20	50	50	
+schwer	2	5	5	10	10	20	20	20	50	50
 
 # Körperbeherrschung
 Lernen:
 Schwierigkeit	Einträge
-leicht (1 LE)	Athletik+8 (St), Klettern+8 (Gs), Reiten+8 (Gs)
-normal (2 LE)	Akrobatik+8 (Gs), Balance+8 (Gs), Entwinden+8 (Gs), Schwimmen+8 (St), Selbstbeherrschung+8 (pA)
-schwer (4 LE)	Schleichen+8 (Gs), Springen+8 (St), Tauchen+8 (St), Verstecken+8 (Gs)
+leicht (1 LE)	Balancieren+12 (Gw), Geländelauf+12 (Gw), Klettern+12 (St), Schwimmen+12 (Gw)
+normal (1 LE)	Tauchen+8 (Ko)
+schwer (2 LE)	Akrobatik+8 (Gw), Athletik+8 (St), Laufen+8 (Ko), Meditieren+8 (Wk)
+
 Verbessern (TE):
-Stufe	+9	+10	+11	+12	+13	+14	+15	+16	+17	+18
-leicht	2	2	5	5	10	10	20	20	50	50
-normal	2	5	5	10	10	20	20	50	50	50
-schwer	5	5	10	10	20	20	50	50	100	100
+Stufe	+9	+10	+11	+12	+13	+14	+15	+16	+17	+18	
+leicht	-	-	-	-	1	2	5	10	10	20	
+normal	1	1	2	2	5	10	10	20	20	50	
+schwer	2	2	5	5	10	10	20	20	50	50
 
 
 # Lernliste Zauber

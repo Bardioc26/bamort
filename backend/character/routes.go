@@ -15,4 +15,10 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.GET("/:id/improve/skill", GetSkillAllLevelCosts)
 	charGrp.GET("/:id/learn", GetLearnCost)
 	charGrp.POST("/:id/skill-cost", GetSkillCost) // Neuer Endpunkt für detaillierte Kostenberechnung
+
+	// Praxispunkte-Verwaltung
+	charGrp.GET("/:id/practice-points", GetPracticePoints)
+	charGrp.PUT("/:id/practice-points", UpdatePracticePoints)
+	charGrp.POST("/:id/practice-points/add", AddPracticePoint)
+	charGrp.POST("/:id/practice-points/use", UsePracticePoint)
 }

@@ -16,6 +16,7 @@ type SkillCostRequest struct {
 	Type         string `json:"type" binding:"required,oneof=skill spell weapon"` // 'skill', 'spell' oder 'weapon'
 	Action       string `json:"action" binding:"required,oneof=learn improve"`    // 'learn' oder 'improve'
 	TargetLevel  int    `json:"target_level,omitempty"`                           // Zielwert (optional, für Kostenberechnung bis zu einem bestimmten Level)
+	UsePP        int    `json:"use_pp,omitempty"`                                 // Anzahl der zu verwendenden Praxispunkte
 }
 
 type SkillCostResponse struct {
@@ -30,6 +31,11 @@ type SkillCostResponse struct {
 	Difficulty   string `json:"difficulty,omitempty"`
 	CanAfford    bool   `json:"can_afford"`
 	Notes        string `json:"notes,omitempty"`
+	PPUsed       int    `json:"pp_used,omitempty"`       // Anzahl der verwendeten Praxispunkte
+	PPAvailable  int    `json:"pp_available,omitempty"`  // Verfügbare Praxispunkte für diese Kategorie
+	PPReduction  int    `json:"pp_reduction,omitempty"`  // Reduktion der Kosten durch PP
+	OriginalCost int    `json:"original_cost,omitempty"` // Ursprüngliche Kosten (vor PP-Reduktion)
+	FinalCost    int    `json:"final_cost,omitempty"`    // Endgültige Kosten (nach PP-Reduktion)
 }
 
 type MultiLevelCostResponse struct {
@@ -94,6 +100,39 @@ func GetSkillCost(c *gin.Context) {
 		return
 	}
 
+	// Originalkosten berechnen (ohne PP-Reduktion)
+	originalRequest := request
+	originalRequest.UsePP = 0
+	originalCost, _, err := calculateSingleCost(&character, &originalRequest)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, "Fehler bei der ursprünglichen Kostenberechnung: "+err.Error())
+		return
+	}
+
+	// PP-Informationen sammeln
+	var ppCategory string
+	if request.Type == "spell" {
+		ppCategory = getSpellPPCategory(skillInfo.Category)
+	} else {
+		ppCategory = skillInfo.Category
+	}
+
+	availablePP := getPPForCategory(&character, ppCategory)
+	ppUsed := request.UsePP
+	if ppUsed > availablePP {
+		ppUsed = availablePP
+	}
+
+	// PP-Reduktion berechnen
+	var ppReduction int
+	if request.UsePP > 0 {
+		if request.Action == "improve" {
+			ppReduction = ppUsed // PP entsprechen direkt der TE-Reduktion
+		} else if request.Action == "learn" && request.Type == "spell" {
+			ppReduction = ppUsed // PP entsprechen direkt der LE-Reduktion
+		}
+	}
+
 	// Check if character can afford it
 	canAfford := canCharacterAfford(&character, cost)
 
@@ -110,6 +149,11 @@ func GetSkillCost(c *gin.Context) {
 		Difficulty:   skillInfo.Difficulty,
 		CanAfford:    canAfford,
 		Notes:        generateNotes(&character, &request, cost),
+		PPUsed:       ppUsed,
+		PPAvailable:  availablePP,
+		PPReduction:  ppReduction,
+		OriginalCost: originalCost.Ep,
+		FinalCost:    cost.Ep,
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -172,6 +216,31 @@ func calculateSingleCost(character *Char, request *SkillCostRequest) (*gsmaster.
 		return nil, nil, fmt.Errorf("ungültige Kombination aus Aktion und Typ")
 	}
 
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Praxispunkte anwenden, falls angefordert
+	if request.UsePP > 0 {
+		var ppCategory string
+		if request.Type == "spell" {
+			ppCategory = getSpellPPCategory(info.Category)
+		} else {
+			ppCategory = info.Category
+		}
+
+		availablePP := getPPForCategory(character, ppCategory)
+		finalEP, finalLE, _ := applyPPReduction(request, cost, availablePP)
+
+		// Erstelle eine neue LearnCost mit den reduzierten Werten
+		cost = &gsmaster.LearnCost{
+			Stufe: cost.Stufe,
+			LE:    finalLE,
+			Ep:    finalEP,
+			Money: cost.Money, // Geldkosten bleiben unverändert
+		}
+	}
+
 	return cost, &info, err
 }
 
@@ -184,15 +253,42 @@ func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiL
 	var levelCosts []SkillCostResponse
 	totalEP := 0
 	totalMoney := 0
+	remainingPP := request.UsePP
 
 	for level := request.CurrentLevel; level < request.TargetLevel; level++ {
 		tempRequest := *request
 		tempRequest.CurrentLevel = level
 		tempRequest.Action = "improve"
 
+		// Verteile die PP auf die verschiedenen Level
+		if remainingPP > 0 {
+			tempRequest.UsePP = 1 // Maximal 1 PP pro Level
+			remainingPP--
+		} else {
+			tempRequest.UsePP = 0
+		}
+
 		cost, skillInfo, err := calculateSingleCost(character, &tempRequest)
 		if err != nil {
 			continue
+		}
+
+		// Originalkosten berechnen (ohne PP)
+		originalRequest := tempRequest
+		originalRequest.UsePP = 0
+		originalCost, _, _ := calculateSingleCost(character, &originalRequest)
+
+		// PP-Informationen sammeln
+		ppCategory := skillInfo.Category
+		availablePP := getPPForCategory(character, ppCategory)
+		ppUsed := tempRequest.UsePP
+		if ppUsed > availablePP {
+			ppUsed = availablePP
+		}
+
+		ppReduction := 0
+		if tempRequest.UsePP > 0 {
+			ppReduction = ppUsed
 		}
 
 		levelCost := SkillCostResponse{
@@ -206,6 +302,11 @@ func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiL
 			Category:     skillInfo.Category,
 			Difficulty:   skillInfo.Difficulty,
 			CanAfford:    canCharacterAfford(character, cost),
+			PPUsed:       ppUsed,
+			PPAvailable:  availablePP,
+			PPReduction:  ppReduction,
+			OriginalCost: originalCost.Ep,
+			FinalCost:    cost.Ep,
 		}
 
 		levelCosts = append(levelCosts, levelCost)
@@ -284,10 +385,76 @@ func generateNotes(character *Char, request *SkillCostRequest, cost *gsmaster.Le
 		notes = append(notes, fmt.Sprintf("Kosten für %s", character.Typ))
 	}
 
+	// Add PP usage notes
+	if request.UsePP > 0 {
+		notes = append(notes, fmt.Sprintf("Verwendung von %d Praxispunkten", request.UsePP))
+	}
+
 	// Add affordability note
 	if !canCharacterAfford(character, cost) {
 		notes = append(notes, "Nicht genügend EP oder Gold vorhanden")
 	}
 
 	return strings.Join(notes, ". ")
+}
+
+// getPPForCategory ermittelt die verfügbaren Praxispunkte für eine bestimmte Kategorie
+func getPPForCategory(character *Char, category string) int {
+	for _, pp := range character.Praxispunkte {
+		if pp.Kategorie == category {
+			return pp.Anzahl
+		}
+	}
+	return 0
+}
+
+// getSpellPPCategory ermittelt die entsprechende PP-Kategorie für eine Zauberschule
+func getSpellPPCategory(spellCategory string) string {
+	// Für Zauber verwenden wir direkt die Zauberschule als PP-Kategorie
+	return spellCategory
+}
+
+// applyPPReduction reduziert die Kosten entsprechend der verwendeten Praxispunkte
+func applyPPReduction(request *SkillCostRequest, cost *gsmaster.LearnCost, availablePP int) (int, int, int) {
+	if request.UsePP <= 0 {
+		return cost.Ep, cost.LE, 0
+	}
+
+	// Maximal so viele PP verwenden, wie verfügbar sind
+	ppToUse := request.UsePP
+	if ppToUse > availablePP {
+		ppToUse = availablePP
+	}
+
+	originalEP := cost.Ep
+	originalLE := cost.LE
+
+	var finalEP, finalLE int
+	var reduction int
+
+	if request.Action == "improve" {
+		// Für Verbesserungen: 1 TE für 1 PP
+		// Jeder PP ersetzt 1 TE, daher wird die entsprechende EP-Menge reduziert
+		reduction = ppToUse // PP-Punkte direkt als Reduktion verwenden
+		finalEP = originalEP - reduction
+		finalLE = originalLE
+		if finalEP < 0 {
+			finalEP = 0
+		}
+	} else if request.Action == "learn" && request.Type == "spell" {
+		// Für Zauber lernen: 1 LE für 1 PP
+		reduction = ppToUse // PP-Punkte direkt als Reduktion verwenden
+		finalLE = originalLE - reduction
+		finalEP = originalEP
+		if finalLE < 0 {
+			finalLE = 0
+		}
+	} else {
+		// Für andere Lernfälle: keine PP-Reduktion
+		finalEP = originalEP
+		finalLE = originalLE
+		reduction = 0
+	}
+
+	return finalEP, finalLE, reduction
 }

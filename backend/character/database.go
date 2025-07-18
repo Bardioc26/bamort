@@ -28,6 +28,7 @@ func MigrateStructure() error {
 		&Merkmale{},
 		&Erfahrungsschatz{},
 		&Bennies{},
+		&Praxispunkt{},
 	)
 	if err != nil {
 		return err

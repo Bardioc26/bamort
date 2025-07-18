@@ -69,6 +69,12 @@ type Bennies struct {
 	Sg int `json:"sg"`
 }
 
+type Praxispunkt struct {
+	models.BamortCharTrait
+	Kategorie string `json:"kategorie"` // z.B. "Alltag", "Sozial", "Beherr", "Beweg", etc.
+	Anzahl    int    `json:"anzahl"`
+}
+
 type Char struct {
 	models.BamortBase
 	Rasse              string                    `json:"rasse"`
@@ -91,6 +97,7 @@ type Char struct {
 	Spezialisierung    database.StringArray      `gorm:"type:TEXT"  json:"spezialisierung"`
 	Bennies            Bennies                   `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"bennies"`
 	Erfahrungsschatz   Erfahrungsschatz          `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"erfahrungsschatz"`
+	Praxispunkte       []Praxispunkt             `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"praxispunkte"`
 	Waffen             []equipment.Waffe         `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"waffen"`
 	Behaeltnisse       []equipment.Container     `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"behaeltnisse"`
 	Transportmittel    []equipment.Container     `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"transportmittel"`
@@ -128,6 +135,7 @@ func (object *Char) First(charName string) error {
 		Preload("Zauber").
 		Preload("Bennies").
 		Preload("Erfahrungsschatz").
+		Preload("Praxispunkte").
 		Preload("Waffen").
 		Preload("Behaeltnisse").
 		Preload("Transportmittel").
@@ -152,13 +160,14 @@ func (object *Char) FirstID(charID string) error {
 		Preload("Zauber").
 		Preload("Bennies").
 		Preload("Erfahrungsschatz").
+		Preload("Praxispunkte").
 		Preload("Waffen").
 		Preload("Behaeltnisse").
 		Preload("Transportmittel").
 		Preload("Ausruestung").
-		First(&object, " id = ?", charID).Error
+		First(&object, charID).Error
 	if err != nil {
-		// Char not found
+		// zauber found
 		return err
 	}
 	return nil

@@ -109,15 +109,9 @@ func GetSkillCost(c *gin.Context) {
 		return
 	}
 
-	// PP-Informationen sammeln
-	var ppCategory string
-	if request.Type == "spell" {
-		ppCategory = getSpellPPCategory(skillInfo.Category)
-	} else {
-		ppCategory = skillInfo.Category
-	}
-
-	availablePP := getPPForCategory(&character, ppCategory)
+	// PP-Informationen sammeln (fertigkeitsspezifisch)
+	skillType := getSkillType(request.Type)
+	availablePP := getPPForSkill(&character, request.Name, skillType)
 	ppUsed := request.UsePP
 	if ppUsed > availablePP {
 		ppUsed = availablePP
@@ -220,16 +214,10 @@ func calculateSingleCost(character *Char, request *SkillCostRequest) (*gsmaster.
 		return nil, nil, err
 	}
 
-	// Praxispunkte anwenden, falls angefordert
+	// Praxispunkte anwenden, falls angefordert (fertigkeitsspezifisch)
 	if request.UsePP > 0 {
-		var ppCategory string
-		if request.Type == "spell" {
-			ppCategory = getSpellPPCategory(info.Category)
-		} else {
-			ppCategory = info.Category
-		}
-
-		availablePP := getPPForCategory(character, ppCategory)
+		skillType := getSkillType(request.Type)
+		availablePP := getPPForSkill(character, request.Name, skillType)
 		finalEP, finalLE, _ := applyPPReduction(request, cost, availablePP)
 
 		// Erstelle eine neue LearnCost mit den reduzierten Werten
@@ -278,9 +266,9 @@ func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiL
 		originalRequest.UsePP = 0
 		originalCost, _, _ := calculateSingleCost(character, &originalRequest)
 
-		// PP-Informationen sammeln
-		ppCategory := skillInfo.Category
-		availablePP := getPPForCategory(character, ppCategory)
+		// PP-Informationen sammeln (fertigkeitsspezifisch)
+		skillType := getSkillType(request.Type)
+		availablePP := getPPForSkill(character, request.Name, skillType)
 		ppUsed := tempRequest.UsePP
 		if ppUsed > availablePP {
 			ppUsed = availablePP
@@ -398,20 +386,28 @@ func generateNotes(character *Char, request *SkillCostRequest, cost *gsmaster.Le
 	return strings.Join(notes, ". ")
 }
 
-// getPPForCategory ermittelt die verfügbaren Praxispunkte für eine bestimmte Kategorie
-func getPPForCategory(character *Char, category string) int {
+// getPPForSkill ermittelt die verfügbaren Praxispunkte für eine spezifische Fertigkeit
+func getPPForSkill(character *Char, skillName string, skillType string) int {
 	for _, pp := range character.Praxispunkte {
-		if pp.Kategorie == category {
+		if pp.SkillName == skillName && pp.SkillType == skillType {
 			return pp.Anzahl
 		}
 	}
 	return 0
 }
 
-// getSpellPPCategory ermittelt die entsprechende PP-Kategorie für eine Zauberschule
-func getSpellPPCategory(spellCategory string) string {
-	// Für Zauber verwenden wir direkt die Zauberschule als PP-Kategorie
-	return spellCategory
+// getSkillType konvertiert den Request-Type in den internen SkillType
+func getSkillType(requestType string) string {
+	switch requestType {
+	case "skill":
+		return "fertigkeit"
+	case "weapon":
+		return "waffenfertigkeit"
+	case "spell":
+		return "zauber"
+	default:
+		return ""
+	}
 }
 
 // applyPPReduction reduziert die Kosten entsprechend der verwendeten Praxispunkte

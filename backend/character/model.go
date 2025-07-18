@@ -71,8 +71,9 @@ type Bennies struct {
 
 type Praxispunkt struct {
 	models.BamortCharTrait
-	Kategorie string `json:"kategorie"` // z.B. "Alltag", "Sozial", "Beherr", "Beweg", etc.
-	Anzahl    int    `json:"anzahl"`
+	SkillName   string `json:"skill_name"`   // Name der spezifischen Fertigkeit
+	SkillType   string `json:"skill_type"`   // "fertigkeit", "waffenfertigkeit", oder "zauber"
+	Anzahl      int    `json:"anzahl"`       // Anzahl der verfügbaren PP für diese Fertigkeit
 }
 
 type Char struct {
@@ -217,4 +218,7 @@ func (object *Erfahrungsschatz) TableName() string {
 }
 func (object *Bennies) TableName() string {
 	return dbPrefix + "_" + "bennies"
+}
+func (object *Praxispunkt) TableName() string {
+	return dbPrefix + "_" + "praxispunkte"
 }

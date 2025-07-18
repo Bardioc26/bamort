@@ -68,7 +68,8 @@ func AddPracticePoint(c *gin.Context) {
 
 	// Request-Parameter abrufen
 	type AddPPRequest struct {
-		Kategorie string `json:"kategorie" binding:"required"`
+		SkillName string `json:"skill_name" binding:"required"`
+		SkillType string `json:"skill_type" binding:"required"` // "fertigkeit", "waffenfertigkeit", "zauber"
 		Anzahl    int    `json:"anzahl"`
 	}
 
@@ -82,10 +83,16 @@ func AddPracticePoint(c *gin.Context) {
 		request.Anzahl = 1
 	}
 
-	// Praxispunkt zur entsprechenden Kategorie hinzufügen
+	// Validierung des Skill-Types
+	if request.SkillType != "fertigkeit" && request.SkillType != "waffenfertigkeit" && request.SkillType != "zauber" {
+		respondWithError(c, http.StatusBadRequest, "Ungültiger skill_type. Erlaubt sind: fertigkeit, waffenfertigkeit, zauber")
+		return
+	}
+
+	// Praxispunkt zur entsprechenden Fertigkeit hinzufügen
 	found := false
 	for i := range character.Praxispunkte {
-		if character.Praxispunkte[i].Kategorie == request.Kategorie {
+		if character.Praxispunkte[i].SkillName == request.SkillName && character.Praxispunkte[i].SkillType == request.SkillType {
 			character.Praxispunkte[i].Anzahl += request.Anzahl
 			found = true
 			break
@@ -93,10 +100,11 @@ func AddPracticePoint(c *gin.Context) {
 	}
 
 	if !found {
-		// Neue Kategorie hinzufügen
+		// Neue Fertigkeit hinzufügen
 		characterIDUint, _ := strconv.ParseUint(charID, 10, 32)
 		newPP := Praxispunkt{
-			Kategorie: request.Kategorie,
+			SkillName: request.SkillName,
+			SkillType: request.SkillType,
 			Anzahl:    request.Anzahl,
 		}
 		newPP.CharacterID = uint(characterIDUint)
@@ -112,7 +120,7 @@ func AddPracticePoint(c *gin.Context) {
 	c.JSON(http.StatusOK, character.Praxispunkte)
 }
 
-// UsePracticePoint verbraucht Praxispunkte aus einer Kategorie
+// UsePracticePoint verbraucht Praxispunkte für eine spezifische Fertigkeit
 func UsePracticePoint(c *gin.Context) {
 	// Charakter-ID aus der URL abrufen
 	charID := c.Param("id")
@@ -126,7 +134,8 @@ func UsePracticePoint(c *gin.Context) {
 
 	// Request-Parameter abrufen
 	type UsePPRequest struct {
-		Kategorie string `json:"kategorie" binding:"required"`
+		SkillName string `json:"skill_name" binding:"required"`
+		SkillType string `json:"skill_type" binding:"required"` // "fertigkeit", "waffenfertigkeit", "zauber"
 		Anzahl    int    `json:"anzahl"`
 	}
 
@@ -140,10 +149,16 @@ func UsePracticePoint(c *gin.Context) {
 		request.Anzahl = 1
 	}
 
-	// Praxispunkt von der entsprechenden Kategorie abziehen
+	// Validierung des Skill-Types
+	if request.SkillType != "fertigkeit" && request.SkillType != "waffenfertigkeit" && request.SkillType != "zauber" {
+		respondWithError(c, http.StatusBadRequest, "Ungültiger skill_type. Erlaubt sind: fertigkeit, waffenfertigkeit, zauber")
+		return
+	}
+
+	// Praxispunkt von der entsprechenden Fertigkeit abziehen
 	found := false
 	for i := range character.Praxispunkte {
-		if character.Praxispunkte[i].Kategorie == request.Kategorie {
+		if character.Praxispunkte[i].SkillName == request.SkillName && character.Praxispunkte[i].SkillType == request.SkillType {
 			if character.Praxispunkte[i].Anzahl >= request.Anzahl {
 				character.Praxispunkte[i].Anzahl -= request.Anzahl
 				found = true
@@ -156,7 +171,7 @@ func UsePracticePoint(c *gin.Context) {
 	}
 
 	if !found {
-		respondWithError(c, http.StatusBadRequest, "Keine Praxispunkte in dieser Kategorie vorhanden")
+		respondWithError(c, http.StatusBadRequest, "Keine Praxispunkte für diese Fertigkeit vorhanden")
 		return
 	}
 

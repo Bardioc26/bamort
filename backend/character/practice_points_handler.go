@@ -69,7 +69,6 @@ func AddPracticePoint(c *gin.Context) {
 	// Request-Parameter abrufen
 	type AddPPRequest struct {
 		SkillName string `json:"skill_name" binding:"required"`
-		SkillType string `json:"skill_type" binding:"required"` // "fertigkeit", "waffenfertigkeit", "zauber"
 		Anzahl    int    `json:"anzahl"`
 	}
 
@@ -83,16 +82,17 @@ func AddPracticePoint(c *gin.Context) {
 		request.Anzahl = 1
 	}
 
-	// Validierung des Skill-Types
-	if request.SkillType != "fertigkeit" && request.SkillType != "waffenfertigkeit" && request.SkillType != "zauber" {
-		respondWithError(c, http.StatusBadRequest, "Ungültiger skill_type. Erlaubt sind: fertigkeit, waffenfertigkeit, zauber")
-		return
-	}
+	// Prüfe ob die Fertigkeit existiert (optional - wenn Tabellen vorhanden)
+	// In Produktionsumgebung sollte dies aktiviert werden
+	// if !skillExists(request.SkillName) {
+	//     respondWithError(c, http.StatusBadRequest, "Unbekannte Fertigkeit: "+request.SkillName)
+	//     return
+	// }
 
 	// Praxispunkt zur entsprechenden Fertigkeit hinzufügen
 	found := false
 	for i := range character.Praxispunkte {
-		if character.Praxispunkte[i].SkillName == request.SkillName && character.Praxispunkte[i].SkillType == request.SkillType {
+		if character.Praxispunkte[i].SkillName == request.SkillName {
 			character.Praxispunkte[i].Anzahl += request.Anzahl
 			found = true
 			break
@@ -104,7 +104,6 @@ func AddPracticePoint(c *gin.Context) {
 		characterIDUint, _ := strconv.ParseUint(charID, 10, 32)
 		newPP := Praxispunkt{
 			SkillName: request.SkillName,
-			SkillType: request.SkillType,
 			Anzahl:    request.Anzahl,
 		}
 		newPP.CharacterID = uint(characterIDUint)
@@ -135,7 +134,6 @@ func UsePracticePoint(c *gin.Context) {
 	// Request-Parameter abrufen
 	type UsePPRequest struct {
 		SkillName string `json:"skill_name" binding:"required"`
-		SkillType string `json:"skill_type" binding:"required"` // "fertigkeit", "waffenfertigkeit", "zauber"
 		Anzahl    int    `json:"anzahl"`
 	}
 
@@ -149,16 +147,17 @@ func UsePracticePoint(c *gin.Context) {
 		request.Anzahl = 1
 	}
 
-	// Validierung des Skill-Types
-	if request.SkillType != "fertigkeit" && request.SkillType != "waffenfertigkeit" && request.SkillType != "zauber" {
-		respondWithError(c, http.StatusBadRequest, "Ungültiger skill_type. Erlaubt sind: fertigkeit, waffenfertigkeit, zauber")
-		return
-	}
+	// Prüfe ob die Fertigkeit existiert (optional - wenn Tabellen vorhanden)
+	// In Produktionsumgebung sollte dies aktiviert werden
+	// if !skillExists(request.SkillName) {
+	//     respondWithError(c, http.StatusBadRequest, "Unbekannte Fertigkeit: "+request.SkillName)
+	//     return
+	// }
 
 	// Praxispunkt von der entsprechenden Fertigkeit abziehen
 	found := false
 	for i := range character.Praxispunkte {
-		if character.Praxispunkte[i].SkillName == request.SkillName && character.Praxispunkte[i].SkillType == request.SkillType {
+		if character.Praxispunkte[i].SkillName == request.SkillName {
 			if character.Praxispunkte[i].Anzahl >= request.Anzahl {
 				character.Praxispunkte[i].Anzahl -= request.Anzahl
 				found = true

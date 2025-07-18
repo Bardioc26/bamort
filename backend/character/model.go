@@ -72,7 +72,6 @@ type Bennies struct {
 type Praxispunkt struct {
 	models.BamortCharTrait
 	SkillName string `json:"skill_name"` // Name der spezifischen Fertigkeit
-	SkillType string `json:"skill_type"` // "fertigkeit", "waffenfertigkeit", oder "zauber"
 	Anzahl    int    `json:"anzahl"`     // Anzahl der verfügbaren PP für diese Fertigkeit
 }
 

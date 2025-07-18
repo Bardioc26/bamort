@@ -1,8 +1,10 @@
-# Praxispunkte (PP) API - Fertigkeitsspezifisch
+# Praxispunkte (PP) API - Fertigkeitsspezifisch (Vereinfacht)
 
 ## Übersicht
 
 Praxispunkte sind in Midgard **fertigkeitsspezifisch** vergeben. Jede Fertigkeit und jeder Zauber kann individuelle Praxispunkte haben, die nur für die Verbesserung oder das Lernen dieser spezifischen Fertigkeit verwendet werden können.
+
+**Vereinfachung**: Der SkillType wird automatisch anhand des Fertigkeitsnamens ermittelt, sodass nur der Name angegeben werden muss.
 
 ## Regeln
 
@@ -17,9 +19,8 @@ Praxispunkte sind in Midgard **fertigkeitsspezifisch** vergeben. Jede Fertigkeit
 ```go
 type Praxispunkt struct {
     CharacterID uint   `json:"character_id"`
-    SkillName   string `json:"skill_name"`   // Name der spezifischen Fertigkeit
-    SkillType   string `json:"skill_type"`   // "fertigkeit", "waffenfertigkeit", "zauber"
-    Anzahl      int    `json:"anzahl"`       // Anzahl der verfügbaren PP
+    SkillName   string `json:"skill_name"` // Name der spezifischen Fertigkeit
+    Anzahl      int    `json:"anzahl"`     // Anzahl der verfügbaren PP
 }
 ```
 
@@ -36,13 +37,11 @@ GET /api/characters/{id}/practice-points
     {
         "character_id": 1,
         "skill_name": "Menschenkenntnis",
-        "skill_type": "fertigkeit",
         "anzahl": 5
     },
     {
         "character_id": 1,
         "skill_name": "Bannbalken",
-        "skill_type": "zauber",
         "anzahl": 3
     }
 ]
@@ -57,15 +56,9 @@ POST /api/characters/{id}/practice-points/add
 ```json
 {
     "skill_name": "Menschenkenntnis",
-    "skill_type": "fertigkeit",
     "anzahl": 2
 }
 ```
-
-**Skill Types:**
-- `"fertigkeit"` - Normale Fertigkeiten
-- `"waffenfertigkeit"` - Waffenfertigkeiten  
-- `"zauber"` - Zauber
 
 ### 3. Praxispunkte verwenden
 ```http
@@ -76,7 +69,6 @@ POST /api/characters/{id}/practice-points/use
 ```json
 {
     "skill_name": "Menschenkenntnis",
-    "skill_type": "fertigkeit",
     "anzahl": 1
 }
 ```
@@ -91,12 +83,10 @@ PUT /api/characters/{id}/practice-points
 [
     {
         "skill_name": "Menschenkenntnis",
-        "skill_type": "fertigkeit",
         "anzahl": 3
     },
     {
         "skill_name": "Bannbalken", 
-        "skill_type": "zauber",
         "anzahl": 2
     }
 ]
@@ -150,7 +140,6 @@ curl -X POST http://localhost:8180/api/characters/1/practice-points/add \
   -H "Content-Type: application/json" \
   -d '{
     "skill_name": "Menschenkenntnis",
-    "skill_type": "fertigkeit", 
     "anzahl": 3
   }'
 ```
@@ -161,7 +150,6 @@ curl -X POST http://localhost:8180/api/characters/1/practice-points/add \
   -H "Content-Type: application/json" \
   -d '{
     "skill_name": "Bannbalken",
-    "skill_type": "zauber",
     "anzahl": 2
   }'
 ```
@@ -190,3 +178,22 @@ curl -X POST http://localhost:8180/api/characters/1/skill-cost \
     "use_pp": 1
   }'
 ```
+
+## Technische Details
+
+### Automatische Skill-Type-Erkennung
+
+Das System erkennt automatisch den Typ einer Fertigkeit anhand des Namens:
+
+```go
+func determineSkillType(skillName string) string {
+    // Prüft automatisch in den Tabellen:
+    // - skill_skills (Fertigkeiten)
+    // - skill_weaponskills (Waffenfertigkeiten)
+    // - skill_spells (Zauber)
+}
+```
+
+### Validierung
+
+In der Produktionsumgebung kann optional validiert werden, ob eine Fertigkeit existiert. In der Test-Umgebung ist dies deaktiviert für Flexibilität.

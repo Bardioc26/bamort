@@ -71,7 +71,6 @@ func TestPracticePointsAPI(t *testing.T) {
 		// Add practice points to a specific skill
 		request := map[string]interface{}{
 			"skill_name": "Menschenkenntnis",
-			"skill_type": "fertigkeit",
 			"anzahl":     3,
 		}
 		jsonData, _ := json.Marshal(request)
@@ -88,7 +87,6 @@ func TestPracticePointsAPI(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, pp, 1)
 		assert.Equal(t, "Menschenkenntnis", pp[0].SkillName)
-		assert.Equal(t, "fertigkeit", pp[0].SkillType)
 		assert.Equal(t, 3, pp[0].Anzahl)
 	})
 
@@ -96,7 +94,6 @@ func TestPracticePointsAPI(t *testing.T) {
 		// Use one practice point
 		request := map[string]interface{}{
 			"skill_name": "Menschenkenntnis",
-			"skill_type": "fertigkeit",
 			"anzahl":     1,
 		}
 		jsonData, _ := json.Marshal(request)
@@ -113,7 +110,6 @@ func TestPracticePointsAPI(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, pp, 1)
 		assert.Equal(t, "Menschenkenntnis", pp[0].SkillName)
-		assert.Equal(t, "fertigkeit", pp[0].SkillType)
 		assert.Equal(t, 2, pp[0].Anzahl) // Should be reduced by 1
 	})
 

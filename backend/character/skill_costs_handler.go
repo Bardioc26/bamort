@@ -110,8 +110,7 @@ func GetSkillCost(c *gin.Context) {
 	}
 
 	// PP-Informationen sammeln (fertigkeitsspezifisch)
-	skillType := getSkillType(request.Type)
-	availablePP := getPPForSkill(&character, request.Name, skillType)
+	availablePP := getPPForSkill(&character, request.Name)
 	ppUsed := request.UsePP
 	if ppUsed > availablePP {
 		ppUsed = availablePP
@@ -216,8 +215,7 @@ func calculateSingleCost(character *Char, request *SkillCostRequest) (*gsmaster.
 
 	// Praxispunkte anwenden, falls angefordert (fertigkeitsspezifisch)
 	if request.UsePP > 0 {
-		skillType := getSkillType(request.Type)
-		availablePP := getPPForSkill(character, request.Name, skillType)
+		availablePP := getPPForSkill(character, request.Name)
 		finalEP, finalLE, _ := applyPPReduction(request, cost, availablePP)
 
 		// Erstelle eine neue LearnCost mit den reduzierten Werten
@@ -267,8 +265,7 @@ func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiL
 		originalCost, _, _ := calculateSingleCost(character, &originalRequest)
 
 		// PP-Informationen sammeln (fertigkeitsspezifisch)
-		skillType := getSkillType(request.Type)
-		availablePP := getPPForSkill(character, request.Name, skillType)
+		availablePP := getPPForSkill(character, request.Name)
 		ppUsed := tempRequest.UsePP
 		if ppUsed > availablePP {
 			ppUsed = availablePP
@@ -352,11 +349,7 @@ func canCharacterAfford(character *Char, cost *gsmaster.LearnCost) bool {
 	// Check if character has enough money
 	// Assuming money is stored in Bennies (Gold pieces)
 	totalMoney := character.Bennies.Gg + character.Bennies.Gp + character.Bennies.Sg
-	if totalMoney < cost.Money {
-		return false
-	}
-
-	return true
+	return totalMoney >= cost.Money
 }
 
 func generateNotes(character *Char, request *SkillCostRequest, cost *gsmaster.LearnCost) string {
@@ -387,27 +380,13 @@ func generateNotes(character *Char, request *SkillCostRequest, cost *gsmaster.Le
 }
 
 // getPPForSkill ermittelt die verfügbaren Praxispunkte für eine spezifische Fertigkeit
-func getPPForSkill(character *Char, skillName string, skillType string) int {
+func getPPForSkill(character *Char, skillName string) int {
 	for _, pp := range character.Praxispunkte {
-		if pp.SkillName == skillName && pp.SkillType == skillType {
+		if pp.SkillName == skillName {
 			return pp.Anzahl
 		}
 	}
 	return 0
-}
-
-// getSkillType konvertiert den Request-Type in den internen SkillType
-func getSkillType(requestType string) string {
-	switch requestType {
-	case "skill":
-		return "fertigkeit"
-	case "weapon":
-		return "waffenfertigkeit"
-	case "spell":
-		return "zauber"
-	default:
-		return ""
-	}
 }
 
 // applyPPReduction reduziert die Kosten entsprechend der verwendeten Praxispunkte

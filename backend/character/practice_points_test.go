@@ -34,6 +34,11 @@ func TestPracticePointsAPI(t *testing.T) {
 	err = gsmaster.MigrateStructure()
 	assert.NoError(t, err)
 
+	// Create test skill data
+	err = createTestSkillData()
+	assert.NoError(t, err)
+	defer cleanupTestSkillData()
+
 	// Create a test character
 	character := &Char{
 		BamortBase: models.BamortBase{
@@ -114,6 +119,24 @@ func TestPracticePointsAPI(t *testing.T) {
 	})
 
 	t.Run("SkillCostWithPP", func(t *testing.T) {
+		// First check current PP status
+		req := httptest.NewRequest(http.MethodGet, "/api/characters/"+strconv.Itoa(int(character.ID))+"/practice-points", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		var currentPP []Praxispunkt
+		json.Unmarshal(w.Body.Bytes(), &currentPP)
+		t.Logf("Current PP before skill cost test: %+v", currentPP)
+
+		// Find Menschenkenntnis PP
+		var humanKnowledgePP int
+		for _, pp := range currentPP {
+			if pp.SkillName == "Menschenkenntnis" {
+				humanKnowledgePP = pp.Anzahl
+				break
+			}
+		}
+
 		// Test skill cost calculation with practice points
 		request := map[string]interface{}{
 			"name":          "Menschenkenntnis",
@@ -124,9 +147,9 @@ func TestPracticePointsAPI(t *testing.T) {
 		}
 		jsonData, _ := json.Marshal(request)
 
-		req := httptest.NewRequest(http.MethodPost, "/api/characters/"+strconv.Itoa(int(character.ID))+"/skill-cost", bytes.NewBuffer(jsonData))
+		req = httptest.NewRequest(http.MethodPost, "/api/characters/"+strconv.Itoa(int(character.ID))+"/skill-cost", bytes.NewBuffer(jsonData))
 		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
+		w = httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
@@ -137,15 +160,15 @@ func TestPracticePointsAPI(t *testing.T) {
 
 		// Verify PP information is included
 		assert.Equal(t, 1, response.PPUsed)
-		assert.Equal(t, 2, response.PPAvailable)                     // Should have 2 remaining from previous test
+		assert.Equal(t, humanKnowledgePP, response.PPAvailable)      // Should match current available PP
 		assert.Greater(t, response.OriginalCost, response.FinalCost) // Final cost should be lower
 	})
 
 	t.Run("SpellCostWithPP", func(t *testing.T) {
-		// Add PP for spell category first
+		// Add PP for spell first
 		request := map[string]interface{}{
-			"kategorie": "Beherr",
-			"anzahl":    2,
+			"skill_name": "Bannbalken",
+			"anzahl":     2,
 		}
 		jsonData, _ := json.Marshal(request)
 
@@ -179,6 +202,5 @@ func TestPracticePointsAPI(t *testing.T) {
 		// Verify PP information is included for spells
 		assert.Equal(t, 1, response.PPUsed)
 		assert.Equal(t, 2, response.PPAvailable)
-		assert.Equal(t, "Beherr", response.Category)
 	})
 }

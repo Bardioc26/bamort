@@ -202,3 +202,157 @@ Stufe	+9	+10	+11	+12	+13	+14	+15	+16	+17	+18
 leicht	2	2	5	5	10	10	20	20	50	50
 normal	2	5	5	10	10	20	20	50	50	50
 schwer	5	5	10	10	20	20	50	50	100	100
+
+
+# Lernliste Zauber
+Die folgende Liste gibt einen
+Überblick über die Zauberfähigkeiten, die im Arkanum näher beschrieben sind. Sie sind jeweils nach der für die Lernkosten wichtigen Stufe sortiert, wobei die Zaubersprüche nachder Spezialisierung gegliedert sind.
+
+Hier ist der erste Teil des gewünschten Obsidian-kompatiblen Tabellenformats für die Zauberfähigkeiten:
+
+### Dweomerzauber
+
+| Zauber                     | Stufe |
+| :------------------------- | ----: |
+| Kraftspende                |     1 |
+| Linienlesen                |     1 |
+| Bärenwut                   |     2 |
+| Baum                       |     2 |
+| Erkennen von Krankheit     |     2 |
+| Mutlosigkeit               |     2 |
+| Wandeln wie der Wind       |     2 |
+| Wundersame Tarnung         |     2 |
+| Zähmen                     |     2 |
+| Fährtendurft               |     3 |
+| Lebensflammen              |     3 |
+| Lindern von Krankheit      |     3 |
+| Wittern                    |     3 |
+| Zaubersprung               |     3 |
+| Bannen von Gift            |     4 |
+| Entgiften                  |     4 |
+| Erkennen von Gift          |     4 |
+| Lebensstärkung             |     4 |
+| Naturgeist rufen           |     4 |
+| Rindenhaut                 |     4 |
+| Schwarm                    |     4 |
+| Tierischer Helfer          |     4 |
+| Elfenfeuer                 |     5 |
+| Elfenklinge                |     5 |
+| Feenfluch                  |     5 |
+| Laufen wie der Wind        |     5 |
+| Lebenskeule                |     5 |
+| Lebensrettung              |     5 |
+| Ring des Lebens            |     5 |
+| Schutzgeist                |     5 |
+| Tiere rufen                |     5 |
+| Feenschutz                 |     6 |
+| Feenschwert                |     6 |
+| Göttliche Eingebung        |     8 |
+| Rüstung d. Rechtschaffenen |     8 |
+| Wort des Lebens            |     8 |
+| Wort der Trauer            |     8 |
+| Allheilung                 |     9 |
+| Erheben der Toten          |    12 |
+
+### Zauberlied
+
+| Zauber                          | Stufe |
+| :------------------------------ | ----: |
+| Das Lied der Feier              |     1 |
+| Das Lied der Tapferkeit         |     1 |
+| Die anfeuernde Ballade          |     2 |
+| Die stählende Ballade           |     2 |
+| Das Lied des Fesselns           |     3 |
+| Das Lied der Ruhe               |     3 |
+| Das Lied des Spottes            |     3 |
+| Das Lied der Verführung         |     3 |
+| Das Lied des Wagemuts           |     3 |
+| Das Loblied                     |     3 |
+| Der verunsichernde Gesang       |     3 |
+| Der einschläfernde Gesang       |     4 |
+| Der frohlockende Gesang         |     4 |
+| Der traurige Gesang             |     4 |
+| Das Lied der Tanzlust           |     5 |
+| Die Klänge der Linderung        |     5 |
+| Die Klänge des Zusammenwachsens |     5 |
+| Die überzeugende Stimme         |     5 |
+| Das Lied der verborg. Kraft     |     6 |
+| Der betäubende Gesang           |     6 |
+| Die Hymne der Ordnung           |     6 |
+| Die Klänge der Genesung         |     6 |
+| Das Lied des Erinnerns          |     7 |
+| Das Lied der Liebe              |     7 |
+| Das Lied des Vergessens         |     7 |
+| Das Lied der Verzweifl ung      |     7 |
+| Das Lied der Lockung            |     8 |
+| Das Lied des Grauens            |     9 |
+| Das Lied des Wahnsinns          |     9 |
+| Das Lied des Friedens           |    10 |
+| Das Lied der Zwietracht         |    10 |
+| Das Lied des Zorns              |    11 |
+
+Hier ist die Tabelle im Obsidian-Markdown-Format für die Kategorien **„Spruch: Beherrschen“** und **„Wundertat“**:
+
+---
+
+### Spruch: Beherrschen
+
+| Zauber                  | Stufe |
+| :---------------------- | ----: |
+| Macht über das Selbst   |     1 |
+| Schlummer               |     1 |
+| Feuerbienen             |     6 |
+| Schnellheilung          |     6 |
+| Lindern von Entkräftung |     7 |
+| Linienwanderung         |     8 |
+| Schlachtenwahnsinn      |     8 |
+| Zeichen des Lebens      |     8 |
+| Grüne Hand              |     9 |
+| Tiergestalt             |     9 |
+
+---
+
+### Wundertat
+
+| Zauber                     | Stufe |
+| :------------------------- | ----: |
+| Göttl. Schutz v. d. Bösen  |     1 |
+| Reinigen                   |     1 |
+| Bannen von Dunkelheit      |     2 |
+| Blutmeisterschaft          |     2 |
+| Erkennen der Aura          |     2 |
+| Erkennen von Krankheit     |     2 |
+| Handauflegen               |     2 |
+| Heiliger Zorn              |     2 |
+| Schützende Hülle           |     2 |
+| Schwingenkeule             |     2 |
+| Arm der Götter             |     3 |
+| Erkennen von Besessenheit  |     3 |
+| Segnen                     |     3 |
+| Verfluchen                 |     3 |
+| Wagemut                    |     3 |
+| Austreibung des Bösen      |     4 |
+| Bannen von Finsterwerk     |     4 |
+| Bannen von Gift            |     4 |
+| Erholung                   |     4 |
+| Göttlicher Schirm          |     4 |
+| Heilen von Krankheit       |     4 |
+| Heilen von Wunden          |     4 |
+| Himmlicher Beschützer      |     4 |
+| Himmlicher Helfer          |     4 |
+| Seelenheilung              |     4 |
+| Strahlender Panzer         |     4 |
+| Beruhigen                  |     5 |
+| Goldene Wehr               |     5 |
+| Gottesgabe                 |     5 |
+| Göttlicher Blitz           |     5 |
+| Göttlicher Schutz v. Magie |     5 |
+| Waffensegen                |     5 |
+| Heilen schwerer Wunden     |     6 |
+| Vision                     |     6 |
+| Waffenwirbel               |     6 |
+| Heiliges Wort              |     7 |
+
+---
+
+Möchtest du, dass ich mit den restlichen Kategorien (z. B. *Bewegen*, *Erkennen*, *Erschaffen*) weitermache?

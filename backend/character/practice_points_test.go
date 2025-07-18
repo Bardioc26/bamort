@@ -167,7 +167,7 @@ func TestPracticePointsAPI(t *testing.T) {
 	t.Run("SpellCostWithPP", func(t *testing.T) {
 		// Add PP for spell first
 		request := map[string]interface{}{
-			"skill_name": "Bannbalken",
+			"skill_name": "Macht über das Selbst",
 			"anzahl":     2,
 		}
 		jsonData, _ := json.Marshal(request)
@@ -181,7 +181,7 @@ func TestPracticePointsAPI(t *testing.T) {
 
 		// Test spell learning with practice points
 		spellRequest := map[string]interface{}{
-			"name":   "Bannbalken",
+			"name":   "Macht über das Selbst",
 			"type":   "spell",
 			"action": "learn",
 			"use_pp": 1,

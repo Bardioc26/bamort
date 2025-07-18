@@ -30,7 +30,7 @@ func createTestSkillData() error {
 	testSpell := skills.Zauber{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
-				Name: "Bannbalken",
+				Name: "Macht über das Selbst",
 			},
 			CharacterID: 0, // Global spell
 		},
@@ -62,7 +62,7 @@ func createTestSkillData() error {
 	gsmSpell := gsmaster.Spell{
 		LookupList: gsmaster.LookupList{
 			GameSystem:   "midgard",
-			Name:         "Bannbalken",
+			Name:         "Macht über das Selbst",
 			Beschreibung: "Test Spell",
 			Quelle:       "Test",
 		},
@@ -80,7 +80,7 @@ func createTestSkillData() error {
 // cleanupTestSkillData entfernt Test-Daten
 func cleanupTestSkillData() {
 	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&skills.Fertigkeit{})
-	database.DB.Where("name = ?", "Bannbalken").Delete(&skills.Zauber{})
+	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&skills.Zauber{})
 	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&gsmaster.Skill{})
-	database.DB.Where("name = ?", "Bannbalken").Delete(&gsmaster.Spell{})
+	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&gsmaster.Spell{})
 }

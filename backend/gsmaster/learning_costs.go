@@ -421,8 +421,8 @@ type SkillCostResult struct {
 // CalculateDetailedSkillLearningCost berechnet die Kosten für das Lernen einer Fertigkeit mit Details
 func CalculateDetailedSkillLearningCost(skillName, characterClass string) (*LearnCost, error) {
 	// Fallback-Werte für Skills ohne definierte Kategorie/Schwierigkeit
-	category := getDefaultCategory(skillName)
-	difficulty := getDefaultDifficulty(skillName)
+	category := GetDefaultCategory(skillName)
+	difficulty := GetDefaultDifficulty(skillName)
 
 	result, err := CalculateSkillLearningCosts(characterClass, category, difficulty)
 	if err != nil {
@@ -441,8 +441,8 @@ func CalculateDetailedSkillLearningCost(skillName, characterClass string) (*Lear
 // CalculateDetailedSkillImprovementCost berechnet die Kosten für die Verbesserung einer Fertigkeit
 func CalculateDetailedSkillImprovementCost(skillName, characterClass string, currentLevel int) (*LearnCost, error) {
 	// Fallback-Werte für Skills ohne definierte Kategorie/Schwierigkeit
-	category := getDefaultCategory(skillName)
-	difficulty := getDefaultDifficulty(skillName)
+	category := GetDefaultCategory(skillName)
+	difficulty := GetDefaultDifficulty(skillName)
 
 	// Verwende die Lernkosten als Basis für Verbesserungen
 	// In einer vollständigen Implementierung würden hier die ImprovementCost-Tabellen verwendet
@@ -604,8 +604,8 @@ func GetAvailableSkillCategories(skillName string) []SkillCategoryOption {
 	}
 
 	// Fallback: verwende Standard-Mapping (erste gefundene Kategorie)
-	category := getDefaultCategory(skillName)
-	difficulty := getDefaultDifficulty(skillName)
+	category := GetDefaultCategory(skillName)
+	difficulty := GetDefaultDifficulty(skillName)
 
 	// Bestimme LE basierend auf Schwierigkeit
 	le := 2 // Standard
@@ -625,8 +625,8 @@ func GetAvailableSkillCategories(skillName string) []SkillCategoryOption {
 	}
 }
 
-// getDefaultCategory gibt die erste (bevorzugte) Kategorie für eine Fertigkeit zurück
-func getDefaultCategory(skillName string) string {
+// GetDefaultCategory gibt die erste (bevorzugte) Kategorie für eine Fertigkeit zurück
+func GetDefaultCategory(skillName string) string {
 	// WICHTIG: Wir verwenden bewusst die erste gefundene Kategorie als Standard.
 	// Für das Lernen ist es unerheblich, aber später wird es für andere Dinge wichtig werden.
 	// Die Reihenfolge der Kategorien ist nach Wichtigkeit/Häufigkeit sortiert.
@@ -689,8 +689,8 @@ func getDefaultCategory(skillName string) string {
 	return "Alltag"
 }
 
-// getDefaultDifficulty gibt die erste (bevorzugte) Schwierigkeit für eine Fertigkeit zurück
-func getDefaultDifficulty(skillName string) string {
+// GetDefaultDifficulty gibt die erste (bevorzugte) Schwierigkeit für eine Fertigkeit zurück
+func GetDefaultDifficulty(skillName string) string {
 	// WICHTIG: Korrespondiert mit getDefaultCategory() - verwendet die Schwierigkeit
 	// der ersten (bevorzugten) Kategorie für konsistente Ergebnisse.
 	// Schwierigkeitszuordnung basierend auf dem Fertigkeitsnamen und Lerntabellen.md

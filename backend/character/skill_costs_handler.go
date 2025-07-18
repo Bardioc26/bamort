@@ -458,105 +458,15 @@ func getSkillInfo(skillName, skillType string) skillInfo {
 
 	if category == "" {
 		// Standard-Kategorien basierend auf Skill-Namen
-		category = getDefaultCategory(skillName)
+		category = gsmaster.GetDefaultCategory(skillName)
 	}
 
 	if difficulty == "" {
 		// Standard-Schwierigkeit für verschiedene Skills
-		difficulty = getDefaultDifficulty(skillName)
+		difficulty = gsmaster.GetDefaultDifficulty(skillName)
 	}
 
 	return skillInfo{Category: category, Difficulty: difficulty}
-}
-
-// getDefaultCategory gibt Standard-Kategorien für bekannte Skills zurück
-func getDefaultCategory(skillName string) string {
-	categoryMap := map[string]string{
-		// Alltag-Fertigkeiten
-		"Erste Hilfe":   "Alltag",
-		"Wahrnehmung":   "Alltag",
-		"Hören":         "Alltag",
-		"Sehen":         "Alltag",
-		"Nachtsicht":    "Alltag",
-		"Riechen":       "Alltag",
-		"Sechster Sinn": "Alltag",
-
-		// Freiland-Fertigkeiten
-		"Geländelauf": "Freiland",
-
-		// Körper-Fertigkeiten
-		"Athletik":   "Körper",
-		"Klettern":   "Körper",
-		"Laufen":     "Körper",
-		"Robustheit": "Körper",
-
-		// Kampf-Fertigkeiten
-		"Kampf in Vollrüstung": "Kampf",
-
-		// Wissen-Fertigkeiten
-		"Landeskunde": "Wissen",
-		"Sprache":     "Wissen",
-
-		// Waffen-Fertigkeiten
-		"Stichwaffen":          "Waffen",
-		"Einhandschlagwaffen":  "Waffen",
-		"Zweihandschlagwaffen": "Waffen",
-		"Spießwaffen":          "Waffen",
-		"Waffenloser Kampf":    "Waffen",
-		"Armbrüste":            "Waffen",
-		"Stielwurfwaffen":      "Waffen",
-		"Schilde":              "Waffen",
-	}
-
-	if cat, exists := categoryMap[skillName]; exists {
-		return cat
-	}
-	return "Alltag" // Default fallback
-}
-
-// getDefaultDifficulty gibt Standard-Schwierigkeiten für bekannte Skills zurück
-func getDefaultDifficulty(skillName string) string {
-	difficultyMap := map[string]string{
-		// Alltag-Fertigkeiten
-		"Erste Hilfe":   "normal", // 1 LE
-		"Wahrnehmung":   "leicht", // 1 LE
-		"Hören":         "leicht", // 1 LE
-		"Sehen":         "leicht", // 1 LE
-		"Nachtsicht":    "leicht", // 1 LE
-		"Riechen":       "leicht", // 1 LE
-		"Sechster Sinn": "leicht", // 1 LE
-
-		// Freiland-Fertigkeiten
-		"Geländelauf": "normal", // 2 LE
-
-		// Körper-Fertigkeiten
-		"Athletik":   "normal", // 1 LE
-		"Klettern":   "schwer", // 2 LE
-		"Laufen":     "normal", // 1 LE
-		"Robustheit": "normal", // 1 LE
-
-		// Kampf-Fertigkeiten
-		"Kampf in Vollrüstung": "schwer", // 10 LE
-
-		// Wissen-Fertigkeiten
-		"Landeskunde": "normal", // 2 LE
-		"Sprache":     "normal", // 2 LE
-
-		// Waffen-Fertigkeiten
-		"Stichwaffen":          "normal", // 2 LE
-		"Einhandschlagwaffen":  "normal", // 2 LE
-		"Zweihandschlagwaffen": "normal", // 2 LE
-		"Spießwaffen":          "normal", // 2 LE
-		"Waffenloser Kampf":    "normal", // 2 LE
-		"Armbrüste":            "normal", // 2 LE
-		"Stielwurfwaffen":      "normal", // 2 LE
-		"Schilde":              "leicht", // 1 LE
-	}
-
-	if diff, exists := difficultyMap[skillName]; exists {
-		return diff
-	}
-	return "normal" // Default fallback
 }
 
 func getSpellInfo(spellName string) skillInfo {

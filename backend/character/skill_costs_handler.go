@@ -17,6 +17,16 @@ type SkillCostRequest struct {
 	Action       string `json:"action" binding:"required,oneof=learn improve"`    // 'learn' oder 'improve'
 	TargetLevel  int    `json:"target_level,omitempty"`                           // Zielwert (optional, für Kostenberechnung bis zu einem bestimmten Level)
 	UsePP        int    `json:"use_pp,omitempty"`                                 // Anzahl der zu verwendenden Praxispunkte
+
+	// Belohnungsoptionen
+	Reward *RewardOptions `json:"reward,omitempty"` // Belohnungsoptionen
+}
+
+// RewardOptions definiert die verschiedenen Belohnungsmöglichkeiten
+type RewardOptions struct {
+	Type         string `json:"type,omitempty" binding:"omitempty,oneof=free_learning free_spell_learning half_ep_improvement gold_for_ep"` // Art der Belohnung
+	UseGoldForEP bool   `json:"use_gold_for_ep,omitempty"`                                                                                  // 10 GS statt 1 EP verwenden
+	MaxGoldEP    int    `json:"max_gold_ep,omitempty"`                                                                                      // Maximale EP die durch Gold ersetzt werden (automatisch: Hälfte der Kosten)
 }
 
 type SkillCostResponse struct {
@@ -31,11 +41,17 @@ type SkillCostResponse struct {
 	Difficulty   string `json:"difficulty,omitempty"`
 	CanAfford    bool   `json:"can_afford"`
 	Notes        string `json:"notes,omitempty"`
-	PPUsed       int    `json:"pp_used,omitempty"`       // Anzahl der verwendeten Praxispunkte
-	PPAvailable  int    `json:"pp_available,omitempty"`  // Verfügbare Praxispunkte für diese Kategorie
-	PPReduction  int    `json:"pp_reduction,omitempty"`  // Reduktion der Kosten durch PP
-	OriginalCost int    `json:"original_cost,omitempty"` // Ursprüngliche Kosten (vor PP-Reduktion)
-	FinalCost    int    `json:"final_cost,omitempty"`    // Endgültige Kosten (nach PP-Reduktion)
+	PPUsed       int    `json:"pp_used,omitempty"`      // Anzahl der verwendeten Praxispunkte
+	PPAvailable  int    `json:"pp_available,omitempty"` // Verfügbare Praxispunkte für diese Kategorie
+
+	// Belohnungsdetails
+	RewardApplied      string              `json:"reward_applied,omitempty"`       // Art der angewendeten Belohnung
+	OriginalCostStruct *gsmaster.LearnCost `json:"original_cost_struct,omitempty"` // Ursprüngliche Kosten ohne Belohnung
+	Savings            *gsmaster.LearnCost `json:"savings,omitempty"`              // Ersparnisse durch Belohnung
+	GoldUsedForEP      int                 `json:"gold_used_for_ep,omitempty"`     // Gold das für EP verwendet wurde
+	PPReduction        int                 `json:"pp_reduction,omitempty"`         // Reduktion der Kosten durch PP
+	OriginalCost       int                 `json:"original_cost,omitempty"`        // Ursprüngliche Kosten (vor PP-Reduktion)
+	FinalCost          int                 `json:"final_cost,omitempty"`           // Endgültige Kosten (nach PP-Reduktion)
 }
 
 type MultiLevelCostResponse struct {
@@ -94,7 +110,7 @@ func GetSkillCost(c *gin.Context) {
 	}
 
 	// Single cost calculation
-	cost, skillInfo, err := calculateSingleCost(&character, &request)
+	cost, originalCost, skillInfo, err := calculateSingleCost(&character, &request)
 	if err != nil {
 		respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
 		return
@@ -103,7 +119,7 @@ func GetSkillCost(c *gin.Context) {
 	// Originalkosten berechnen (ohne PP-Reduktion)
 	originalRequest := request
 	originalRequest.UsePP = 0
-	originalCost, _, err := calculateSingleCost(&character, &originalRequest)
+	_, _, _, err = calculateSingleCost(&character, &originalRequest)
 	if err != nil {
 		respondWithError(c, http.StatusBadRequest, "Fehler bei der ursprünglichen Kostenberechnung: "+err.Error())
 		return
@@ -129,24 +145,49 @@ func GetSkillCost(c *gin.Context) {
 	// Check if character can afford it
 	canAfford := canCharacterAfford(&character, cost)
 
+	// Belohnungsinformationen berechnen
+	var rewardApplied string
+	var savings *gsmaster.LearnCost
+	var goldUsedForEP int
+
+	if request.Reward != nil && request.Reward.Type != "" {
+		rewardApplied = request.Reward.Type
+
+		// Ersparnisse berechnen
+		savings = &gsmaster.LearnCost{
+			Ep:    originalCost.Ep - cost.Ep,
+			LE:    originalCost.LE - cost.LE,
+			Money: originalCost.Money - cost.Money,
+		}
+
+		// Gold für EP berechnen
+		if request.Reward.Type == "gold_for_ep" && request.Reward.UseGoldForEP {
+			goldUsedForEP = (cost.Money - originalCost.Money) / 10
+		}
+	}
+
 	// Create response
 	response := &SkillCostResponse{
-		LearnCost:    cost,
-		SkillName:    request.Name,
-		SkillType:    request.Type,
-		Action:       request.Action,
-		CharacterID:  character.ID,
-		CurrentLevel: request.CurrentLevel,
-		TargetLevel:  request.TargetLevel,
-		Category:     skillInfo.Category,
-		Difficulty:   skillInfo.Difficulty,
-		CanAfford:    canAfford,
-		Notes:        generateNotes(&character, &request, cost),
-		PPUsed:       ppUsed,
-		PPAvailable:  availablePP,
-		PPReduction:  ppReduction,
-		OriginalCost: originalCost.Ep,
-		FinalCost:    cost.Ep,
+		LearnCost:          cost,
+		SkillName:          request.Name,
+		SkillType:          request.Type,
+		Action:             request.Action,
+		CharacterID:        character.ID,
+		CurrentLevel:       request.CurrentLevel,
+		TargetLevel:        request.TargetLevel,
+		Category:           skillInfo.Category,
+		Difficulty:         skillInfo.Difficulty,
+		CanAfford:          canAfford,
+		Notes:              generateNotes(&character, &request, cost),
+		PPUsed:             ppUsed,
+		PPAvailable:        availablePP,
+		PPReduction:        ppReduction,
+		OriginalCost:       originalCost.Ep,
+		FinalCost:          cost.Ep,
+		RewardApplied:      rewardApplied,
+		OriginalCostStruct: originalCost,
+		Savings:            savings,
+		GoldUsedForEP:      goldUsedForEP,
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -175,7 +216,7 @@ func getCurrentSkillLevel(character *Char, skillName, skillType string) int {
 }
 
 // Helper function to calculate single cost
-func calculateSingleCost(character *Char, request *SkillCostRequest) (*gsmaster.LearnCost, *skillInfo, error) {
+func calculateSingleCost(character *Char, request *SkillCostRequest) (*gsmaster.LearnCost, *gsmaster.LearnCost, *skillInfo, error) {
 	var cost *gsmaster.LearnCost
 	var err error
 	var info skillInfo
@@ -206,11 +247,17 @@ func calculateSingleCost(character *Char, request *SkillCostRequest) (*gsmaster.
 		}
 
 	default:
-		return nil, nil, fmt.Errorf("ungültige Kombination aus Aktion und Typ")
+		return nil, nil, nil, fmt.Errorf("ungültige Kombination aus Aktion und Typ")
 	}
 
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
+	}
+
+	// Belohnungen anwenden, falls spezifiziert
+	originalCost := *cost // Kopie der ursprünglichen Kosten
+	if request.Reward != nil && request.Reward.Type != "" {
+		cost = applyReward(cost, request)
 	}
 
 	// Praxispunkte anwenden, falls angefordert (fertigkeitsspezifisch)
@@ -227,7 +274,57 @@ func calculateSingleCost(character *Char, request *SkillCostRequest) (*gsmaster.
 		}
 	}
 
-	return cost, &info, err
+	return cost, &originalCost, &info, err
+}
+
+// applyReward wendet Belohnungen auf die Kosten an
+func applyReward(cost *gsmaster.LearnCost, request *SkillCostRequest) *gsmaster.LearnCost {
+	if request.Reward == nil || request.Reward.Type == "" {
+		return cost
+	}
+
+	newCost := *cost // Kopie der ursprünglichen Kosten
+
+	switch request.Reward.Type {
+	case "free_learning":
+		// Kostenlose Fertigkeiten: Nur Geld ist 0, EP/LE bleiben
+		if request.Type == "skill" && request.Action == "learn" {
+			newCost.Money = 0
+		}
+
+	case "free_spell_learning":
+		// Kostenlose Zauber: Nur LE ist 0, EP/Geld bleiben
+		if request.Type == "spell" && request.Action == "learn" {
+			newCost.LE = 0
+		}
+
+	case "half_ep_improvement":
+		// Halbe EP für Verbesserungen
+		if request.Action == "improve" {
+			newCost.Ep = newCost.Ep / 2
+		}
+
+	case "gold_for_ep":
+		// Gold statt EP verwenden (10 GS = 1 EP)
+		if request.Reward.UseGoldForEP && newCost.Ep > 0 {
+			maxGoldEP := request.Reward.MaxGoldEP
+			if maxGoldEP == 0 {
+				// Standard: Maximal die Hälfte der EP durch Gold ersetzen
+				maxGoldEP = newCost.Ep / 2
+			}
+
+			// Beschränke auf verfügbare EP
+			if maxGoldEP > newCost.Ep {
+				maxGoldEP = newCost.Ep
+			}
+
+			// Ersetze EP durch Gold (10 GS pro EP)
+			newCost.Ep -= maxGoldEP
+			newCost.Money += maxGoldEP * 10
+		}
+	}
+
+	return &newCost
 }
 
 // Helper function to calculate multi-level costs
@@ -254,7 +351,7 @@ func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiL
 			tempRequest.UsePP = 0
 		}
 
-		cost, skillInfo, err := calculateSingleCost(character, &tempRequest)
+		cost, originalCost, skillInfo, err := calculateSingleCost(character, &tempRequest)
 		if err != nil {
 			continue
 		}
@@ -262,7 +359,7 @@ func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiL
 		// Originalkosten berechnen (ohne PP)
 		originalRequest := tempRequest
 		originalRequest.UsePP = 0
-		originalCost, _, _ := calculateSingleCost(character, &originalRequest)
+		_, _, _, _ = calculateSingleCost(character, &originalRequest)
 
 		// PP-Informationen sammeln (fertigkeitsspezifisch)
 		availablePP := getPPForSkill(character, request.Name)
@@ -276,22 +373,47 @@ func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiL
 			ppReduction = ppUsed
 		}
 
+		// Belohnungsinformationen für Level berechnen
+		var rewardApplied string
+		var savings *gsmaster.LearnCost
+		var goldUsedForEP int
+
+		if tempRequest.Reward != nil && tempRequest.Reward.Type != "" {
+			rewardApplied = tempRequest.Reward.Type
+
+			// Ersparnisse berechnen
+			savings = &gsmaster.LearnCost{
+				Ep:    originalCost.Ep - cost.Ep,
+				LE:    originalCost.LE - cost.LE,
+				Money: originalCost.Money - cost.Money,
+			}
+
+			// Gold für EP berechnen
+			if tempRequest.Reward.Type == "gold_for_ep" && tempRequest.Reward.UseGoldForEP {
+				goldUsedForEP = (cost.Money - originalCost.Money) / 10
+			}
+		}
+
 		levelCost := SkillCostResponse{
-			LearnCost:    cost,
-			SkillName:    request.Name,
-			SkillType:    request.Type,
-			Action:       "improve",
-			CharacterID:  character.ID,
-			CurrentLevel: level,
-			TargetLevel:  level + 1,
-			Category:     skillInfo.Category,
-			Difficulty:   skillInfo.Difficulty,
-			CanAfford:    canCharacterAfford(character, cost),
-			PPUsed:       ppUsed,
-			PPAvailable:  availablePP,
-			PPReduction:  ppReduction,
-			OriginalCost: originalCost.Ep,
-			FinalCost:    cost.Ep,
+			LearnCost:          cost,
+			SkillName:          request.Name,
+			SkillType:          request.Type,
+			Action:             "improve",
+			CharacterID:        character.ID,
+			CurrentLevel:       level,
+			TargetLevel:        level + 1,
+			Category:           skillInfo.Category,
+			Difficulty:         skillInfo.Difficulty,
+			CanAfford:          canCharacterAfford(character, cost),
+			PPUsed:             ppUsed,
+			PPAvailable:        availablePP,
+			PPReduction:        ppReduction,
+			OriginalCost:       originalCost.Ep,
+			FinalCost:          cost.Ep,
+			RewardApplied:      rewardApplied,
+			OriginalCostStruct: originalCost,
+			Savings:            savings,
+			GoldUsedForEP:      goldUsedForEP,
 		}
 
 		levelCosts = append(levelCosts, levelCost)
@@ -329,7 +451,74 @@ func getSkillInfo(skillName, skillType string) skillInfo {
 	if err := skill.First(skillName); err != nil {
 		return skillInfo{Category: "unknown", Difficulty: "unknown"}
 	}
-	return skillInfo{Category: skill.Category, Difficulty: skill.Difficulty}
+	
+	// Fallback für fehlende Category und Difficulty Werte
+	category := skill.Category
+	difficulty := skill.Difficulty
+	
+	if category == "" {
+		// Standard-Kategorien basierend auf Skill-Namen
+		category = getDefaultCategory(skillName)
+	}
+	
+	if difficulty == "" {
+		// Standard-Schwierigkeit für verschiedene Skills
+		difficulty = getDefaultDifficulty(skillName)
+	}
+	
+	return skillInfo{Category: category, Difficulty: difficulty}
+}
+
+// getDefaultCategory gibt Standard-Kategorien für bekannte Skills zurück
+func getDefaultCategory(skillName string) string {
+	categoryMap := map[string]string{
+		"Geländelauf":            "Freiland",
+		"Athletik":               "Körper", 
+		"Klettern":               "Körper",
+		"Laufen":                 "Körper",
+		"Erste Hilfe":            "Alltag",
+		"Wahrnehmung":           "Alltag",
+		"Hören":                 "Alltag",
+		"Sehen":                 "Alltag",
+		"Nachtsicht":            "Alltag",
+		"Riechen":               "Alltag",
+		"Sechster Sinn":         "Alltag",
+		"Robustheit":            "Körper",
+		"Kampf in Vollrüstung":  "Kampf",
+		"Landeskunde":           "Wissen",
+		"Sprache":               "Wissen",
+	}
+	
+	if cat, exists := categoryMap[skillName]; exists {
+		return cat
+	}
+	return "Alltag" // Default fallback
+}
+
+// getDefaultDifficulty gibt Standard-Schwierigkeiten für bekannte Skills zurück  
+func getDefaultDifficulty(skillName string) string {
+	difficultyMap := map[string]string{
+		"Geländelauf":            "normal",  // Freiland: leicht, normal, schwer
+		"Athletik":               "normal",  // Körper: leicht, normal, schwer
+		"Klettern":               "schwer",  // Körper: leicht, normal, schwer
+		"Laufen":                 "normal",  // Körper: leicht, normal, schwer
+		"Erste Hilfe":            "normal",  // Alltag: leicht, normal, schwer, sehr_schwer
+		"Wahrnehmung":           "leicht",  // Alltag: leicht, normal, schwer, sehr_schwer
+		"Hören":                 "leicht",  // Alltag: leicht, normal, schwer, sehr_schwer
+		"Sehen":                 "leicht",  // Alltag: leicht, normal, schwer, sehr_schwer
+		"Nachtsicht":            "leicht",  // Alltag: leicht, normal, schwer, sehr_schwer
+		"Riechen":               "leicht",  // Alltag: leicht, normal, schwer, sehr_schwer
+		"Sechster Sinn":         "leicht",  // Alltag: leicht, normal, schwer, sehr_schwer
+		"Robustheit":            "normal",  // Körper: leicht, normal, schwer
+		"Kampf in Vollrüstung":  "schwer",  // Kampf: leicht, normal, schwer, sehr_schwer
+		"Landeskunde":           "normal",  // Wissen: leicht, normal, schwer, sehr_schwer
+		"Sprache":               "normal",  // Wissen: leicht, normal, schwer, sehr_schwer
+	}
+	
+	if diff, exists := difficultyMap[skillName]; exists {
+		return diff
+	}
+	return "normal" // Default fallback
 }
 
 func getSpellInfo(spellName string) skillInfo {

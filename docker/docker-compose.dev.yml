@@ -7,7 +7,7 @@ services:
       dockerfile: ../docker/Dockerfile.backend.dev
     container_name: bamort-backend-dev
     ports:
-      - "8080:8080"
+      - "8180:8180"
     volumes:
       - ../backend:/app
       - go-mod-cache:/go/pkg/mod

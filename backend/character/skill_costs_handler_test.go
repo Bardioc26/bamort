@@ -1,6 +1,7 @@
 package character
 
 import (
+	"bamort/gsmaster"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -208,5 +209,94 @@ func TestHelperFunctions(t *testing.T) {
 		var character Char
 		level := getCurrentSkillLevel(&character, "Test", "skill")
 		assert.Equal(t, -1, level, "Should return -1 for non-existent skill")
+	})
+}
+
+// Test integration with gsmaster exported functions
+func TestGSMasterIntegration(t *testing.T) {
+	t.Run("GetDefaultCategory integration", func(t *testing.T) {
+		// Test that we can access the exported function from gsmaster
+		category := gsmaster.GetDefaultCategory("Menschenkenntnis")
+		assert.Equal(t, "Sozial", category, "Should return correct category for Menschenkenntnis")
+
+		category = gsmaster.GetDefaultCategory("Stichwaffen")
+		assert.Equal(t, "Waffen", category, "Should return correct category for Stichwaffen")
+
+		// Test fallback for unknown skill
+		category = gsmaster.GetDefaultCategory("NonExistentSkill")
+		assert.Equal(t, "Alltag", category, "Should return default category for unknown skill")
+	})
+
+	t.Run("GetDefaultDifficulty integration", func(t *testing.T) {
+		// Test that we can access the exported function from gsmaster
+		difficulty := gsmaster.GetDefaultDifficulty("Menschenkenntnis")
+		assert.Equal(t, "schwer", difficulty, "Should return correct difficulty for Menschenkenntnis")
+
+		difficulty = gsmaster.GetDefaultDifficulty("Stichwaffen")
+		assert.Equal(t, "leicht", difficulty, "Should return correct difficulty for Stichwaffen")
+
+		// Test fallback for unknown skill
+		difficulty = gsmaster.GetDefaultDifficulty("NonExistentSkill")
+		assert.Equal(t, "normal", difficulty, "Should return default difficulty for unknown skill")
+	})
+
+	t.Run("Reward system structures", func(t *testing.T) {
+		// Test RewardOptions structure
+		rewards := RewardOptions{
+			Type:         "free_learning",
+			UseGoldForEP: true,
+			MaxGoldEP:    50,
+		}
+
+		// Test JSON marshaling
+		jsonData, err := json.Marshal(rewards)
+		assert.NoError(t, err, "RewardOptions should be marshallable to JSON")
+
+		// Test JSON unmarshaling
+		var parsedRewards RewardOptions
+		err = json.Unmarshal(jsonData, &parsedRewards)
+		assert.NoError(t, err, "RewardOptions should be unmarshallable from JSON")
+
+		assert.Equal(t, rewards.Type, parsedRewards.Type, "Type should match")
+		assert.Equal(t, rewards.UseGoldForEP, parsedRewards.UseGoldForEP, "UseGoldForEP should match")
+		assert.Equal(t, rewards.MaxGoldEP, parsedRewards.MaxGoldEP, "MaxGoldEP should match")
+
+		// Test validation of reward types
+		validTypes := []string{"free_learning", "free_spell_learning", "half_ep_improvement", "gold_for_ep"}
+		for _, validType := range validTypes {
+			rewards.Type = validType
+			_, err := json.Marshal(rewards)
+			assert.NoError(t, err, fmt.Sprintf("Should marshal valid type: %s", validType))
+		}
+	})
+
+	t.Run("Reward system integration with gsmaster functions", func(t *testing.T) {
+		// Test that the reward system works with the exported gsmaster functions
+		// This simulates the flow where we get skill info from gsmaster and apply rewards
+
+		skillName := "Menschenkenntnis"
+
+		// Get skill info using exported functions
+		category := gsmaster.GetDefaultCategory(skillName)
+		difficulty := gsmaster.GetDefaultDifficulty(skillName)
+
+		assert.Equal(t, "Sozial", category, "Should get correct category from gsmaster")
+		assert.Equal(t, "schwer", difficulty, "Should get correct difficulty from gsmaster")
+
+		// Test reward structure that would be used in the actual API
+		rewards := RewardOptions{
+			Type:         "half_ep_improvement",
+			UseGoldForEP: false,
+			MaxGoldEP:    0,
+		}
+
+		// Test that structure is valid
+		jsonData, err := json.Marshal(rewards)
+		assert.NoError(t, err, "Reward options should marshal correctly")
+
+		var parsedRewards RewardOptions
+		err = json.Unmarshal(jsonData, &parsedRewards)
+		assert.NoError(t, err, "Reward options should unmarshal correctly")
+		assert.Equal(t, "half_ep_improvement", parsedRewards.Type, "Reward type should be preserved")
 	})
 }

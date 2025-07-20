@@ -194,88 +194,88 @@ var learningCosts = &LearningCostsTable{
 	// EP-Kosten für 1 Lerneinheit (LE) für Zauber pro Charakterklasse und Zauberschule
 	SpellEPPerLE: map[string]map[string]int{
 		"Dr": { // Druide
-			"Beherr":    90,
-			"Bewegen":   60,
-			"Erkennen":  120,
-			"Erschaff":  90,
-			"Formen":    60,
-			"Veränd":    90,
-			"Zerstören": 120,
-			"Wunder":    0, // Nicht verfügbar
-			"Dweom":     30,
-			"Lied":      0, // Nicht verfügbar
+			"Beherrschen": 90,
+			"Bewegen":     60,
+			"Erkennen":    120,
+			"Erschaffen":  90,
+			"Formen":      60,
+			"Verändern":   90,
+			"Zerstören":   120,
+			"Wunder":      0, // Nicht verfügbar
+			"Dweomer":     30,
+			"Lied":        0, // Nicht verfügbar
 		},
 		"Hx": { // Hexer
-			"Beherr":    30,
-			"Bewegen":   90,
-			"Erkennen":  90,
-			"Erschaff":  90,
-			"Formen":    60,
-			"Veränd":    30,
-			"Zerstören": 60,
-			"Wunder":    0, // Nicht verfügbar
-			"Dweom":     90,
-			"Lied":      0, // Nicht verfügbar
+			"Beherrschen": 30,
+			"Bewegen":     90,
+			"Erkennen":    90,
+			"Erschaffen":  90,
+			"Formen":      60,
+			"Verändern":   30,
+			"Zerstören":   60,
+			"Wunder":      0, // Nicht verfügbar
+			"Dweomer":     90,
+			"Lied":        0, // Nicht verfügbar
 		},
 		"Ma": { // Magier (* = Spezialgebiet für 30 EP)
-			"Beherr":    60, // *30
-			"Bewegen":   60, // *30
-			"Erkennen":  60, // *30
-			"Erschaff":  60, // *30
-			"Formen":    60, // *30
-			"Veränd":    60, // *30
-			"Zerstören": 60, // *30
-			"Wunder":    0,  // Nicht verfügbar
-			"Dweom":     120,
-			"Lied":      0, // Nicht verfügbar
+			"Beherrschen": 60, // *30
+			"Bewegen":     60, // *30
+			"Erkennen":    60, // *30
+			"Erschaffen":  60, // *30
+			"Formen":      60, // *30
+			"Verändern":   60, // *30
+			"Zerstören":   60, // *30
+			"Wunder":      0,  // Nicht verfügbar
+			"Dweomer":     120,
+			"Lied":        0, // Nicht verfügbar
 		},
 		"PB": { // Priester Beschützer
-			"Beherr":    90,
-			"Bewegen":   90,
-			"Erkennen":  60,
-			"Erschaff":  90,
-			"Formen":    90,
-			"Veränd":    90,
-			"Zerstören": 90,
-			"Wunder":    30,
-			"Dweom":     120,
-			"Lied":      0, // Nicht verfügbar
+			"Beherrschen": 90,
+			"Bewegen":     90,
+			"Erkennen":    60,
+			"Erschaffen":  90,
+			"Formen":      90,
+			"Verändern":   90,
+			"Zerstören":   90,
+			"Wunder":      30,
+			"Dweomer":     120,
+			"Lied":        0, // Nicht verfügbar
 		},
 		"PS": { // Priester Streiter
-			"Beherr":    90,
-			"Bewegen":   90,
-			"Erkennen":  90,
-			"Erschaff":  90,
-			"Formen":    90,
-			"Veränd":    90,
-			"Zerstören": 60,
-			"Wunder":    30,
-			"Dweom":     120,
-			"Lied":      0, // Nicht verfügbar
+			"Beherrschen": 90,
+			"Bewegen":     90,
+			"Erkennen":    90,
+			"Erschaffen":  90,
+			"Formen":      90,
+			"Verändern":   90,
+			"Zerstören":   60,
+			"Wunder":      30,
+			"Dweomer":     120,
+			"Lied":        0, // Nicht verfügbar
 		},
 		"Sc": { // Schamane
-			"Beherr":    90,
-			"Bewegen":   90,
-			"Erkennen":  60,
-			"Erschaff":  60,
-			"Formen":    90,
-			"Veränd":    90,
-			"Zerstören": 90,
-			"Wunder":    30,
-			"Dweom":     120,
-			"Lied":      0, // Nicht verfügbar
+			"Beherrschen": 90,
+			"Bewegen":     90,
+			"Erkennen":    60,
+			"Erschaffen":  60,
+			"Formen":      90,
+			"Verändern":   90,
+			"Zerstören":   90,
+			"Wunder":      30,
+			"Dweomer":     120,
+			"Lied":        0, // Nicht verfügbar
 		},
 		"Ba": { // Barde
-			"Beherr":    0, // Nicht verfügbar
-			"Bewegen":   0, // Nicht verfügbar
-			"Erkennen":  0, // Nicht verfügbar
-			"Erschaff":  0, // Nicht verfügbar
-			"Formen":    0, // Nicht verfügbar
-			"Veränd":    0, // Nicht verfügbar
-			"Zerstören": 0, // Nicht verfügbar
-			"Wunder":    0, // Nicht verfügbar
-			"Dweom":     0, // Nicht verfügbar
-			"Lied":      30,
+			"Beherrschen": 0, // Nicht verfügbar
+			"Bewegen":     0, // Nicht verfügbar
+			"Erkennen":    0, // Nicht verfügbar
+			"Erschaffen":  0, // Nicht verfügbar
+			"Formen":      0, // Nicht verfügbar
+			"Verändern":   0, // Nicht verfügbar
+			"Zerstören":   0, // Nicht verfügbar
+			"Wunder":      0, // Nicht verfügbar
+			"Dweomer":     0, // Nicht verfügbar
+			"Lied":        30,
 		},
 	},
 
@@ -770,11 +770,11 @@ func GetDefaultDifficulty(skillName string) string {
 func getDefaultSpellSchool(spellName string) string {
 	// Vereinfachte Zuordnung von Zauber zu Schulen
 	spellSchoolMap := map[string]string{
-		"Licht":          "Erschaff",
+		"Licht":          "Erschaffen",
 		"Sehen":          "Erkennen",
-		"Heilen":         "Veränd",
-		"Schutz":         "Beherr",
-		"Unsichtbarkeit": "Veränd",
+		"Heilen":         "Verändern",
+		"Schutz":         "Beherrschen",
+		"Unsichtbarkeit": "Verändern",
 		"Feuerlanze":     "Zerstören",
 		"Eislanze":       "Zerstören",
 		"Blitze":         "Zerstören",
@@ -787,7 +787,7 @@ func getDefaultSpellSchool(spellName string) string {
 	}
 
 	// Standard-Fallback
-	return "Veränd"
+	return "Verändern"
 }
 
 // getClassAbbreviation konvertiert Charakterklassen-Vollnamen zu Abkürzungen

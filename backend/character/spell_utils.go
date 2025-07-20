@@ -15,24 +15,7 @@ func getSpellCategory(name string) string {
 		return name
 	}
 
-	// Zauber gefunden, Kategorie zurückgeben
-	// Die Kategorien sind typischerweise kurze Formen wie "Beherr", "Veränd", etc.
-	// Wir müssen diese zu den vollen Zaubergruppen-Namen mappen
-	switch spell.Category {
-	case "Beherr":
-		return "Beherrschen"
-	case "Veränd":
-		return "Verändern"
-	case "Erken":
-		return "Erkennen"
-	case "Erschaf":
-		return "Erschaffen"
-	case "Zerstör":
-		return "Zerstören"
-	case "Bewegen":
-		return "Bewegen"
-	default:
-		// Fallback: Kategorie direkt verwenden
-		return spell.Category
-	}
+	// Zauber gefunden, Kategorie direkt zurückgeben
+	// Die Kategorien sind bereits die vollen Namen wie "Beherrschen", "Verändern", etc.
+	return spell.Category
 }

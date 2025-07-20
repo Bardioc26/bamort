@@ -35,7 +35,7 @@ func createTestSkillData() error {
 			CharacterID: 0, // Global spell
 		},
 		Beschreibung: "Test-Zauber für PP Tests",
-		Quelle:       "Beherr",
+		Quelle:       "Beherrschen",
 	}
 	if err := database.DB.Create(&testSpell).Error; err != nil {
 		return err
@@ -68,7 +68,7 @@ func createTestSkillData() error {
 		},
 		Stufe:    1,
 		AP:       "1",
-		Category: "Beherr",
+		Category: "Beherrschen",
 	}
 	if err := database.DB.Create(&gsmSpell).Error; err != nil {
 		return err

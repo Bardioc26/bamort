@@ -36,11 +36,11 @@ type SkillDefinition struct {
 }
 
 // SpellDefinition differs from SkillDefinition,
-// here we have a “Stufe” (1..12) plus a “School” (e.g. "Beherr", "Beweg", etc.)
+// here we have a “Stufe” (1..12) plus a “School” (e.g. "Beherrschen", "Bewegen", etc.)
 type SpellDefinition struct {
 	Name   string `json:"name"`
 	Stufe  int    `json:"level"`
-	School string `json:"school"` // e.g. "Beherr", "Beweg", "Erken", etc.
+	School string `json:"school"` // e.g. "Beherrschen", "Bewegen", "Erkennen", etc.
 	CostEP int    `json:"cost_ep"`
 	CostLE int    `json:"cost_le"`
 }

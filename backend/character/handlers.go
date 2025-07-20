@@ -404,3 +404,135 @@ func GetCharacterExperienceAndWealth(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+// UpdateExperienceRequest repräsentiert die Anfrage für EP-Update
+type UpdateExperienceRequest struct {
+	ExperiencePoints int `json:"experience_points" binding:"required,min=0"`
+}
+
+// UpdateCharacterExperience aktualisiert die Erfahrungspunkte eines Charakters
+func UpdateCharacterExperience(c *gin.Context) {
+	id := c.Param("id")
+	var character Char
+
+	// Lade den Charakter
+	err := database.DB.
+		Preload("Erfahrungsschatz").
+		First(&character, id).Error
+	if err != nil {
+		respondWithError(c, http.StatusNotFound, "Character not found")
+		return
+	}
+
+	// Parse Request
+	var req UpdateExperienceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Aktualisiere oder erstelle Erfahrungsschatz
+	if character.Erfahrungsschatz.ID == 0 {
+		// Erstelle neuen Erfahrungsschatz
+		character.Erfahrungsschatz = Erfahrungsschatz{
+			BamortCharTrait: models.BamortCharTrait{
+				CharacterID: character.ID,
+			},
+			Value: req.ExperiencePoints,
+		}
+		if err := database.DB.Create(&character.Erfahrungsschatz).Error; err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Failed to create experience record")
+			return
+		}
+	} else {
+		// Aktualisiere existierenden Erfahrungsschatz
+		character.Erfahrungsschatz.Value = req.ExperiencePoints
+		if err := database.DB.Save(&character.Erfahrungsschatz).Error; err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Failed to update experience")
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":           "Experience updated successfully",
+		"experience_points": req.ExperiencePoints,
+	})
+}
+
+// UpdateWealthRequest repräsentiert die Anfrage für Vermögens-Update
+type UpdateWealthRequest struct {
+	Goldstücke   *int `json:"goldstücke,omitempty"`
+	Silberstücke *int `json:"silberstücke,omitempty"`
+	Kupferstücke *int `json:"kupferstücke,omitempty"`
+}
+
+// UpdateCharacterWealth aktualisiert das Vermögen eines Charakters
+func UpdateCharacterWealth(c *gin.Context) {
+	id := c.Param("id")
+	var character Char
+
+	// Lade den Charakter
+	err := database.DB.
+		Preload("Vermoegen").
+		First(&character, id).Error
+	if err != nil {
+		respondWithError(c, http.StatusNotFound, "Character not found")
+		return
+	}
+
+	// Parse Request
+	var req UpdateWealthRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Aktualisiere oder erstelle Vermögen
+	if character.Vermoegen.ID == 0 {
+		// Erstelle neues Vermögen
+		character.Vermoegen = Vermoegen{
+			BamortCharTrait: models.BamortCharTrait{
+				CharacterID: character.ID,
+			},
+			Goldstücke:   getValueOrDefault(req.Goldstücke, 0),
+			Silberstücke: getValueOrDefault(req.Silberstücke, 0),
+			Kupferstücke: getValueOrDefault(req.Kupferstücke, 0),
+		}
+		if err := database.DB.Create(&character.Vermoegen).Error; err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Failed to create wealth record")
+			return
+		}
+	} else {
+		// Aktualisiere existierendes Vermögen
+		if req.Goldstücke != nil {
+			character.Vermoegen.Goldstücke = *req.Goldstücke
+		}
+		if req.Silberstücke != nil {
+			character.Vermoegen.Silberstücke = *req.Silberstücke
+		}
+		if req.Kupferstücke != nil {
+			character.Vermoegen.Kupferstücke = *req.Kupferstücke
+		}
+		if err := database.DB.Save(&character.Vermoegen).Error; err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Failed to update wealth")
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Wealth updated successfully",
+		"wealth": gin.H{
+			"goldstücke":   character.Vermoegen.Goldstücke,
+			"silberstücke": character.Vermoegen.Silberstücke,
+			"kupferstücke": character.Vermoegen.Kupferstücke,
+		},
+	})
+}
+
+// getValueOrDefault gibt den Wert zurück oder einen Default-Wert falls nil
+func getValueOrDefault(value *int, defaultValue int) int {
+	if value != nil {
+		return *value
+	}
+	return defaultValue
+}

@@ -14,6 +14,8 @@ func RegisterRoutes(r *gin.RouterGroup) {
 
 	// Erfahrung und Vermögen
 	charGrp.GET("/:id/experience-wealth", GetCharacterExperienceAndWealth)
+	charGrp.PUT("/:id/experience", UpdateCharacterExperience)
+	charGrp.PUT("/:id/wealth", UpdateCharacterWealth)
 
 	// Kostenberechnung (konsolidiert)
 	charGrp.POST("/:id/skill-cost", GetSkillCost)            // Hauptendpunkt für alle Kostenberechnungen

@@ -3,10 +3,15 @@ package character
 import (
 	"bamort/database"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
+
+// PracticePointResponse repräsentiert die Antwort für Praxispunkte einer Fertigkeit
+type PracticePointResponse struct {
+	SkillName string `json:"skill_name"`
+	Amount    int    `json:"amount"`
+}
 
 // GetPracticePoints gibt die verfügbaren Praxispunkte eines Charakters zurück
 func GetPracticePoints(c *gin.Context) {
@@ -20,7 +25,18 @@ func GetPracticePoints(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, character.Praxispunkte)
+	// Praxispunkte aus den Fertigkeiten extrahieren
+	var practicePoints []PracticePointResponse
+	for _, skill := range character.Fertigkeiten {
+		if skill.Pp > 0 {
+			practicePoints = append(practicePoints, PracticePointResponse{
+				SkillName: skill.Name,
+				Amount:    skill.Pp,
+			})
+		}
+	}
+
+	c.JSON(http.StatusOK, practicePoints)
 }
 
 // UpdatePracticePoints aktualisiert die Praxispunkte eines Charakters
@@ -36,14 +52,26 @@ func UpdatePracticePoints(c *gin.Context) {
 	}
 
 	// Request-Parameter abrufen
-	var praxispunkte []Praxispunkt
-	if err := c.ShouldBindJSON(&praxispunkte); err != nil {
+	var practicePoints []PracticePointResponse
+	if err := c.ShouldBindJSON(&practicePoints); err != nil {
 		respondWithError(c, http.StatusBadRequest, "Ungültige Praxispunkt-Daten: "+err.Error())
 		return
 	}
 
-	// Praxispunkte aktualisieren
-	character.Praxispunkte = praxispunkte
+	// Alle Fertigkeiten durchgehen und Praxispunkte zurücksetzen
+	for i := range character.Fertigkeiten {
+		character.Fertigkeiten[i].Pp = 0
+	}
+
+	// Neue Praxispunkte setzen
+	for _, pp := range practicePoints {
+		for i := range character.Fertigkeiten {
+			if character.Fertigkeiten[i].Name == pp.SkillName {
+				character.Fertigkeiten[i].Pp = pp.Amount
+				break
+			}
+		}
+	}
 
 	// Charakter in der Datenbank speichern
 	if err := database.DB.Save(&character).Error; err != nil {
@@ -51,10 +79,21 @@ func UpdatePracticePoints(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, character.Praxispunkte)
+	// Aktualisierte Praxispunkte zurückgeben
+	var updatedPracticePoints []PracticePointResponse
+	for _, skill := range character.Fertigkeiten {
+		if skill.Pp > 0 {
+			updatedPracticePoints = append(updatedPracticePoints, PracticePointResponse{
+				SkillName: skill.Name,
+				Amount:    skill.Pp,
+			})
+		}
+	}
+
+	c.JSON(http.StatusOK, updatedPracticePoints)
 }
 
-// AddPracticePoint fügt einen Praxispunkt zu einer Kategorie hinzu
+// AddPracticePoint fügt einen Praxispunkt zu einer Fertigkeit hinzu
 func AddPracticePoint(c *gin.Context) {
 	// Charakter-ID aus der URL abrufen
 	charID := c.Param("id")
@@ -69,7 +108,7 @@ func AddPracticePoint(c *gin.Context) {
 	// Request-Parameter abrufen
 	type AddPPRequest struct {
 		SkillName string `json:"skill_name" binding:"required"`
-		Anzahl    int    `json:"anzahl"`
+		Amount    int    `json:"amount"`
 	}
 
 	var request AddPPRequest
@@ -78,45 +117,51 @@ func AddPracticePoint(c *gin.Context) {
 		return
 	}
 
-	if request.Anzahl <= 0 {
-		request.Anzahl = 1
+	if request.Amount <= 0 {
+		request.Amount = 1
 	}
 
-	// Prüfe ob die Fertigkeit existiert (optional - wenn Tabellen vorhanden)
-	// In Produktionsumgebung sollte dies aktiviert werden
-	// if !skillExists(request.SkillName) {
-	//     respondWithError(c, http.StatusBadRequest, "Unbekannte Fertigkeit: "+request.SkillName)
-	//     return
-	// }
+	// Ermittle die tatsächliche Fertigkeit (bei Zaubern die Zaubergruppe)
+	targetSkillName := getSpellCategory(request.SkillName)
 
 	// Praxispunkt zur entsprechenden Fertigkeit hinzufügen
 	found := false
-	for i := range character.Praxispunkte {
-		if character.Praxispunkte[i].SkillName == request.SkillName {
-			character.Praxispunkte[i].Anzahl += request.Anzahl
+	for i := range character.Fertigkeiten {
+		if character.Fertigkeiten[i].Name == targetSkillName {
+			character.Fertigkeiten[i].Pp += request.Amount
 			found = true
 			break
 		}
 	}
 
 	if !found {
-		// Neue Fertigkeit hinzufügen
-		characterIDUint, _ := strconv.ParseUint(charID, 10, 32)
-		newPP := Praxispunkt{
-			SkillName: request.SkillName,
-			Anzahl:    request.Anzahl,
-		}
-		newPP.CharacterID = uint(characterIDUint)
-		character.Praxispunkte = append(character.Praxispunkte, newPP)
-	}
-
-	// Charakter in der Datenbank speichern
-	if err := database.DB.Save(&character).Error; err != nil {
-		respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern der Praxispunkte: "+err.Error())
+		respondWithError(c, http.StatusBadRequest, "Fertigkeit nicht gefunden: "+targetSkillName)
 		return
 	}
 
-	c.JSON(http.StatusOK, character.Praxispunkte)
+	// Fertigkeiten explizit speichern
+	for i := range character.Fertigkeiten {
+		if character.Fertigkeiten[i].Name == targetSkillName {
+			if err := database.DB.Save(&character.Fertigkeiten[i]).Error; err != nil {
+				respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern der Fertigkeit: "+err.Error())
+				return
+			}
+			break
+		}
+	}
+
+	// Aktualisierte Praxispunkte zurückgeben
+	var practicePoints []PracticePointResponse
+	for _, skill := range character.Fertigkeiten {
+		if skill.Pp > 0 {
+			practicePoints = append(practicePoints, PracticePointResponse{
+				SkillName: skill.Name,
+				Amount:    skill.Pp,
+			})
+		}
+	}
+
+	c.JSON(http.StatusOK, practicePoints)
 }
 
 // UsePracticePoint verbraucht Praxispunkte für eine spezifische Fertigkeit
@@ -134,7 +179,7 @@ func UsePracticePoint(c *gin.Context) {
 	// Request-Parameter abrufen
 	type UsePPRequest struct {
 		SkillName string `json:"skill_name" binding:"required"`
-		Anzahl    int    `json:"anzahl"`
+		Amount    int    `json:"amount"`
 	}
 
 	var request UsePPRequest
@@ -143,23 +188,19 @@ func UsePracticePoint(c *gin.Context) {
 		return
 	}
 
-	if request.Anzahl <= 0 {
-		request.Anzahl = 1
+	if request.Amount <= 0 {
+		request.Amount = 1
 	}
 
-	// Prüfe ob die Fertigkeit existiert (optional - wenn Tabellen vorhanden)
-	// In Produktionsumgebung sollte dies aktiviert werden
-	// if !skillExists(request.SkillName) {
-	//     respondWithError(c, http.StatusBadRequest, "Unbekannte Fertigkeit: "+request.SkillName)
-	//     return
-	// }
+	// Ermittle die tatsächliche Fertigkeit (bei Zaubern die Zaubergruppe)
+	targetSkillName := getSpellCategory(request.SkillName)
 
 	// Praxispunkt von der entsprechenden Fertigkeit abziehen
 	found := false
-	for i := range character.Praxispunkte {
-		if character.Praxispunkte[i].SkillName == request.SkillName {
-			if character.Praxispunkte[i].Anzahl >= request.Anzahl {
-				character.Praxispunkte[i].Anzahl -= request.Anzahl
+	for i := range character.Fertigkeiten {
+		if character.Fertigkeiten[i].Name == targetSkillName {
+			if character.Fertigkeiten[i].Pp >= request.Amount {
+				character.Fertigkeiten[i].Pp -= request.Amount
 				found = true
 			} else {
 				respondWithError(c, http.StatusBadRequest, "Nicht genügend Praxispunkte verfügbar")
@@ -170,15 +211,31 @@ func UsePracticePoint(c *gin.Context) {
 	}
 
 	if !found {
-		respondWithError(c, http.StatusBadRequest, "Keine Praxispunkte für diese Fertigkeit vorhanden")
+		respondWithError(c, http.StatusBadRequest, "Fertigkeit nicht gefunden: "+targetSkillName)
 		return
 	}
 
-	// Charakter in der Datenbank speichern
-	if err := database.DB.Save(&character).Error; err != nil {
-		respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern der Praxispunkte: "+err.Error())
-		return
+	// Fertigkeiten explizit speichern
+	for i := range character.Fertigkeiten {
+		if character.Fertigkeiten[i].Name == targetSkillName {
+			if err := database.DB.Save(&character.Fertigkeiten[i]).Error; err != nil {
+				respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern der Fertigkeit: "+err.Error())
+				return
+			}
+			break
+		}
 	}
 
-	c.JSON(http.StatusOK, character.Praxispunkte)
+	// Aktualisierte Praxispunkte zurückgeben
+	var practicePoints []PracticePointResponse
+	for _, skill := range character.Fertigkeiten {
+		if skill.Pp > 0 {
+			practicePoints = append(practicePoints, PracticePointResponse{
+				SkillName: skill.Name,
+				Amount:    skill.Pp,
+			})
+		}
+	}
+
+	c.JSON(http.StatusOK, practicePoints)
 }

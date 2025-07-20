@@ -518,9 +518,12 @@ func generateNotes(character *Char, request *SkillCostRequest, cost *gsmaster.Le
 
 // getPPForSkill ermittelt die verfügbaren Praxispunkte für eine spezifische Fertigkeit
 func getPPForSkill(character *Char, skillName string) int {
-	for _, pp := range character.Praxispunkte {
-		if pp.SkillName == skillName {
-			return pp.Anzahl
+	// Ermittle die tatsächliche Fertigkeit (bei Zaubern die Zaubergruppe)
+	targetSkillName := getSpellCategory(skillName)
+
+	for _, fertigkeit := range character.Fertigkeiten {
+		if fertigkeit.Name == targetSkillName {
+			return fertigkeit.Pp
 		}
 	}
 	return 0

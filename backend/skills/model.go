@@ -12,7 +12,7 @@ type Fertigkeit struct {
 	Beschreibung    string             `json:"beschreibung"`
 	Fertigkeitswert int                `json:"fertigkeitswert"`
 	Bonus           int                `json:"bonus,omitempty"`
-	Pp              int                `json:"pp,omitempty"`
+	Pp              int                `json:"pp,omitempty"` //Praxispunkte
 	Bemerkung       string             `json:"bemerkung"`
 	Improvable      bool               `json:"improvable"`
 	Category        string             `json:"category"`

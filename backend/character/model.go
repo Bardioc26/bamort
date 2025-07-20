@@ -64,15 +64,16 @@ type Erfahrungsschatz struct {
 
 type Bennies struct {
 	models.BamortCharTrait
-	Gg int `json:"gg"`
-	Gp int `json:"gp"`
-	Sg int `json:"sg"`
+	Gg int `json:"gg"` // Göttliche Gnade
+	Gp int `json:"gp"` // Glückspunkte
+	Sg int `json:"sg"` // Schicksalsgunst
 }
 
-type Praxispunkt struct {
+type Vermoegen struct {
 	models.BamortCharTrait
-	SkillName string `json:"skill_name"` // Name der spezifischen Fertigkeit
-	Anzahl    int    `json:"anzahl"`     // Anzahl der verfügbaren PP für diese Fertigkeit
+	Goldstücke   int `json:"goldstücke"`   // GS
+	Silberstücke int `json:"silberstücke"` // SS
+	Kupferstücke int `json:"kupferstücke"` // KS
 }
 
 type Char struct {
@@ -96,8 +97,8 @@ type Char struct {
 	Zauber             []skills.Zauber           `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"zauber"`
 	Spezialisierung    database.StringArray      `gorm:"type:TEXT"  json:"spezialisierung"`
 	Bennies            Bennies                   `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"bennies"`
+	Vermoegen          Vermoegen                 `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"vermoegen"`
 	Erfahrungsschatz   Erfahrungsschatz          `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"erfahrungsschatz"`
-	Praxispunkte       []Praxispunkt             `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"praxispunkte"`
 	Waffen             []equipment.Waffe         `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"waffen"`
 	Behaeltnisse       []equipment.Container     `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"behaeltnisse"`
 	Transportmittel    []equipment.Container     `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"transportmittel"`
@@ -134,8 +135,8 @@ func (object *Char) First(charName string) error {
 		Preload("Waffenfertigkeiten").
 		Preload("Zauber").
 		Preload("Bennies").
+		Preload("Vermoegen").
 		Preload("Erfahrungsschatz").
-		Preload("Praxispunkte").
 		Preload("Waffen").
 		Preload("Behaeltnisse").
 		Preload("Transportmittel").
@@ -159,8 +160,8 @@ func (object *Char) FirstID(charID string) error {
 		Preload("Waffenfertigkeiten").
 		Preload("Zauber").
 		Preload("Bennies").
+		Preload("Vermoegen").
 		Preload("Erfahrungsschatz").
-		Preload("Praxispunkte").
 		Preload("Waffen").
 		Preload("Behaeltnisse").
 		Preload("Transportmittel").
@@ -218,6 +219,6 @@ func (object *Erfahrungsschatz) TableName() string {
 func (object *Bennies) TableName() string {
 	return dbPrefix + "_" + "bennies"
 }
-func (object *Praxispunkt) TableName() string {
-	return dbPrefix + "_" + "praxispunkte"
+func (object *Vermoegen) TableName() string {
+	return dbPrefix + "_" + "wealth"
 }

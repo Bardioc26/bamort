@@ -12,6 +12,9 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.PUT("/:id", UpdateCharacter)
 	charGrp.DELETE("/:id", DeleteCharacter)
 
+	// Erfahrung und Vermögen
+	charGrp.GET("/:id/experience-wealth", GetCharacterExperienceAndWealth)
+
 	// Kostenberechnung (konsolidiert)
 	charGrp.POST("/:id/skill-cost", GetSkillCost)            // Hauptendpunkt für alle Kostenberechnungen
 	charGrp.GET("/:id/improve", GetSkillNextLevelCosts)      // Legacy - für nächste Stufe

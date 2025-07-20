@@ -360,3 +360,47 @@ func GetSkillAllLevelCosts(c *gin.Context) {
 	// Return the updated character
 	c.JSON(http.StatusOK, costArr)
 }
+
+// ExperienceAndWealthResponse repräsentiert die Antwort für EP und Vermögen
+type ExperienceAndWealthResponse struct {
+	ExperiencePoints int `json:"experience_points"`
+	Wealth           struct {
+		Goldstücke   int `json:"gold_coins"`   // GS
+		Silberstücke int `json:"silver_coins"` // SS
+		Kupferstücke int `json:"copper_coins"` // KS
+		TotalInGS    int `json:"total_in_ss"`  // Gesamt in Silberstücken
+	} `json:"wealth"`
+}
+
+// GetCharacterExperienceAndWealth gibt nur die EP und Vermögensdaten eines Charakters zurück
+func GetCharacterExperienceAndWealth(c *gin.Context) {
+	id := c.Param("id")
+	var character Char
+
+	// Lade nur die benötigten Felder
+	err := database.DB.
+		Preload("Erfahrungsschatz").
+		Preload("Vermoegen").
+		First(&character, id).Error
+	if err != nil {
+		respondWithError(c, http.StatusNotFound, "Character not found")
+		return
+	}
+
+	// Berechne Gesamtvermögen in Silbergroschen
+	// Annahme: 1 GS = 10 SS, 1 SS = 10 KS (typische Midgard Währung)
+	gs := character.Vermoegen.Goldstücke
+	ss := character.Vermoegen.Silberstücke
+	ks := character.Vermoegen.Kupferstücke
+	totalInSS := (gs * 10) + ss + (ks / 10)
+
+	response := ExperienceAndWealthResponse{
+		ExperiencePoints: character.Erfahrungsschatz.Value,
+	}
+	response.Wealth.Goldstücke = gs
+	response.Wealth.Silberstücke = ss
+	response.Wealth.Kupferstücke = ks
+	response.Wealth.TotalInGS = totalInSS
+
+	c.JSON(http.StatusOK, response)
+}

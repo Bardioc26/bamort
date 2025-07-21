@@ -1001,7 +1001,6 @@ func GetRewardTypes(c *gin.Context) {
 		)
 
 	case "improve":
-	default:
 		// Fertigkeit verbessern - Standard-Optionen
 		rewardTypes = append(rewardTypes,
 			gin.H{"value": "ep", "label": "Erfahrungspunkte verwenden", "description": "Verwende EP zum Verbessern"},
@@ -1017,6 +1016,7 @@ func GetRewardTypes(c *gin.Context) {
 				gin.H{"value": "training", "label": "Training mit Meister", "description": "Intensives Training mit einem Waffenmeister"},
 			)
 		}
+	default:
 	}
 
 	c.JSON(http.StatusOK, gin.H{

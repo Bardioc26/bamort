@@ -80,6 +80,12 @@
         </div>
       </div>
     </div>
+    
+    <!-- Audit Log -->
+    <AuditLogView 
+      v-if="character" 
+      :character="character"
+    />
   </div>
 </template>
 
@@ -237,9 +243,13 @@
 
 <script>
 import API from '@/utils/api'
+import AuditLogView from './AuditLogView.vue'
 
 export default {
   name: "ExperianceView",
+  components: {
+    AuditLogView
+  },
   props: {
     character: {
       type: Object,
@@ -345,7 +355,9 @@ export default {
         if (!this.testMode) {
           // API-Call zum Speichern der Erfahrungspunkte
           const response = await this.$api.put(`/api/characters/${this.character.id}/experience`, {
-            experience_points: newValue
+            experience_points: newValue,
+            reason: "manual",
+            notes: `Manual adjustment: ${this.experienceAmount > 0 ? 'Added' : 'Removed'} ${Math.abs(this.experienceAmount || 0)} EP`
           });
           
           console.log('Experience update response:', response.data);
@@ -385,7 +397,9 @@ export default {
         if (!this.testMode) {
           // API-Call zum Speichern der Goldstücke
           const response = await this.$api.put(`/api/characters/${this.character.id}/wealth`, {
-            goldstücke: newValue
+            goldstücke: newValue,
+            reason: "manual",
+            notes: `Manual adjustment: ${this.goldAmount > 0 ? 'Added' : 'Removed'} ${Math.abs(this.goldAmount || 0)} GS`
           });
           
           console.log('Gold update response:', response.data);

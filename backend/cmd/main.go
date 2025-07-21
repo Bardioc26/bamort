@@ -21,6 +21,11 @@ func main() {
 	database.ConnectDatabase()
 	//database.DB.AutoMigrate(&models.User{}, &models.Character{}) // Add other models here
 
+	// Migrate Audit-Log table
+	if err := character.MigrateAuditLog(); err != nil {
+		panic("Failed to migrate audit log table: " + err.Error())
+	}
+
 	r := gin.Default()
 	router.SetupGin(r)
 

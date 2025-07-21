@@ -237,44 +237,6 @@ func GetLearnSpellCost(c *gin.Context) {
 	c.JSON(http.StatusOK, sd)
 }
 
-func GetLearnCost(c *gin.Context) {
-	// Get the character ID from the request
-	charID := c.Param("id")
-
-	// Load the character from the database
-	var character Char
-	if err := character.FirstID(charID); err != nil {
-		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
-		return
-	}
-
-	// Load the spell from the request
-	var s LearnRequestStruct
-	if err := c.ShouldBindJSON(&s); err != nil {
-		respondWithError(c, http.StatusBadRequest, err.Error())
-		return
-	}
-	if s.SkillType != "spell" && s.SkillType != "skill" {
-		respondWithError(c, http.StatusBadRequest, "unknown skill type")
-		return
-	}
-	if s.Name == "" {
-		respondWithError(c, http.StatusBadRequest, "no name given")
-	}
-	if s.SkillType == "skill" && s.Stufe <= 6 {
-		respondWithError(c, http.StatusBadRequest, "stufe must be greater than 6")
-	}
-
-	cost, err := gsmaster.CalculateLearnCost(s.SkillType, s.Name, character.Typ)
-	if err != nil {
-		respondWithError(c, http.StatusBadRequest, "error getting costs to learn spell: "+err.Error())
-		return
-	}
-
-	// Return the updated character
-	c.JSON(http.StatusOK, cost)
-}
-
 func GetSkillNextLevelCosts(c *gin.Context) {
 	// Get the character ID from the request
 	charID := c.Param("id")
@@ -407,7 +369,9 @@ func GetCharacterExperienceAndWealth(c *gin.Context) {
 
 // UpdateExperienceRequest repräsentiert die Anfrage für EP-Update
 type UpdateExperienceRequest struct {
-	ExperiencePoints int `json:"experience_points" binding:"required,min=0"`
+	ExperiencePoints int    `json:"experience_points" binding:"required,min=0"`
+	Reason           string `json:"reason,omitempty"` // Grund der Änderung
+	Notes            string `json:"notes,omitempty"`  // Zusätzliche Notizen
 }
 
 // UpdateCharacterExperience aktualisiert die Erfahrungspunkte eines Charakters
@@ -429,6 +393,17 @@ func UpdateCharacterExperience(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
+	}
+
+	// Standard-Grund setzen, falls nicht angegeben
+	if req.Reason == "" {
+		req.Reason = string(ReasonManual)
+	}
+
+	// Alten Wert für Audit-Log speichern
+	oldValue := 0
+	if character.Erfahrungsschatz.ID != 0 {
+		oldValue = character.Erfahrungsschatz.Value
 	}
 
 	// Aktualisiere oder erstelle Erfahrungsschatz
@@ -453,17 +428,40 @@ func UpdateCharacterExperience(c *gin.Context) {
 		}
 	}
 
+	// Audit-Log-Eintrag erstellen (nur wenn sich der Wert geändert hat)
+	if oldValue != req.ExperiencePoints {
+		// TODO: User-ID aus dem Authentifizierungs-Context holen
+		userID := uint(0) // Placeholder
+
+		err = CreateAuditLogEntry(
+			character.ID,
+			"experience_points",
+			oldValue,
+			req.ExperiencePoints,
+			AuditLogReason(req.Reason),
+			userID,
+			req.Notes,
+		)
+		if err != nil {
+			// Log-Fehler sollten die Hauptoperation nicht blockieren
+			// TODO: Proper logging implementieren
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message":           "Experience updated successfully",
 		"experience_points": req.ExperiencePoints,
+		"audit_logged":      oldValue != req.ExperiencePoints,
 	})
 }
 
 // UpdateWealthRequest repräsentiert die Anfrage für Vermögens-Update
 type UpdateWealthRequest struct {
-	Goldstücke   *int `json:"goldstücke,omitempty"`
-	Silberstücke *int `json:"silberstücke,omitempty"`
-	Kupferstücke *int `json:"kupferstücke,omitempty"`
+	Goldstücke   *int   `json:"goldstücke,omitempty"`
+	Silberstücke *int   `json:"silberstücke,omitempty"`
+	Kupferstücke *int   `json:"kupferstücke,omitempty"`
+	Reason       string `json:"reason,omitempty"` // Grund der Änderung
+	Notes        string `json:"notes,omitempty"`  // Zusätzliche Notizen
 }
 
 // UpdateCharacterWealth aktualisiert das Vermögen eines Charakters
@@ -485,6 +483,21 @@ func UpdateCharacterWealth(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
+	}
+
+	// Standard-Grund setzen, falls nicht angegeben
+	if req.Reason == "" {
+		req.Reason = string(ReasonManual)
+	}
+
+	// Alte Werte für Audit-Log speichern
+	oldGold := 0
+	oldSilver := 0
+	oldCopper := 0
+	if character.Vermoegen.ID != 0 {
+		oldGold = character.Vermoegen.Goldstücke
+		oldSilver = character.Vermoegen.Silberstücke
+		oldCopper = character.Vermoegen.Kupferstücke
 	}
 
 	// Aktualisiere oder erstelle Vermögen
@@ -519,6 +532,46 @@ func UpdateCharacterWealth(c *gin.Context) {
 		}
 	}
 
+	// Audit-Log-Einträge erstellen (nur für geänderte Werte)
+	// TODO: User-ID aus dem Authentifizierungs-Context holen
+	userID := uint(0) // Placeholder
+
+	if req.Goldstücke != nil && oldGold != character.Vermoegen.Goldstücke {
+		CreateAuditLogEntry(
+			character.ID,
+			"gold",
+			oldGold,
+			character.Vermoegen.Goldstücke,
+			AuditLogReason(req.Reason),
+			userID,
+			req.Notes,
+		)
+	}
+
+	if req.Silberstücke != nil && oldSilver != character.Vermoegen.Silberstücke {
+		CreateAuditLogEntry(
+			character.ID,
+			"silver",
+			oldSilver,
+			character.Vermoegen.Silberstücke,
+			AuditLogReason(req.Reason),
+			userID,
+			req.Notes,
+		)
+	}
+
+	if req.Kupferstücke != nil && oldCopper != character.Vermoegen.Kupferstücke {
+		CreateAuditLogEntry(
+			character.ID,
+			"copper",
+			oldCopper,
+			character.Vermoegen.Kupferstücke,
+			AuditLogReason(req.Reason),
+			userID,
+			req.Notes,
+		)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Wealth updated successfully",
 		"wealth": gin.H{
@@ -535,4 +588,386 @@ func getValueOrDefault(value *int, defaultValue int) int {
 		return *value
 	}
 	return defaultValue
+}
+
+// Learn and Improve handlers with automatic audit logging
+
+// LearnSkillRequest definiert die Struktur für das Lernen einer Fertigkeit
+type LearnSkillRequest struct {
+	Name   string `json:"name" binding:"required"`
+	Notes  string `json:"notes,omitempty"`
+	UsePP  int    `json:"use_pp,omitempty"`
+}
+
+// ImproveSkillRequest definiert die Struktur für das Verbessern einer Fertigkeit
+type ImproveSkillRequest struct {
+	Name         string `json:"name" binding:"required"`
+	CurrentLevel int    `json:"current_level,omitempty"`
+	Notes        string `json:"notes,omitempty"`
+	UsePP        int    `json:"use_pp,omitempty"`
+}
+
+// LearnSpellRequest definiert die Struktur für das Lernen eines Zaubers
+type LearnSpellRequest struct {
+	Name  string `json:"name" binding:"required"`
+	Notes string `json:"notes,omitempty"`
+}
+
+// ImproveSpellRequest definiert die Struktur für das Verbessern eines Zaubers
+type ImproveSpellRequest struct {
+	Name         string `json:"name" binding:"required"`
+	CurrentLevel int    `json:"current_level,omitempty"`
+	Notes        string `json:"notes,omitempty"`
+}
+
+// LearnSkill lernt eine neue Fertigkeit und erstellt Audit-Log-Einträge
+func LearnSkill(c *gin.Context) {
+	charID := c.Param("id")
+	var character Char
+	
+	if err := character.FirstID(charID); err != nil {
+		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	var request LearnSkillRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
+		return
+	}
+
+	// Berechne Kosten mit GetSkillCost
+	costRequest := SkillCostRequest{
+		Name:   request.Name,
+		Type:   "skill",
+		Action: "learn",
+		UsePP:  request.UsePP,
+	}
+
+	cost, _, _, err := calculateSingleCost(&character, &costRequest)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
+		return
+	}
+
+	// Prüfe, ob genügend EP vorhanden sind
+	currentEP := character.Erfahrungsschatz.Value
+	if currentEP < cost.Ep {
+		respondWithError(c, http.StatusBadRequest, "Nicht genügend Erfahrungspunkte vorhanden")
+		return
+	}
+
+	// Prüfe, ob genügend Gold vorhanden ist
+	currentGold := character.Vermoegen.Goldstücke
+	if currentGold < cost.Money {
+		respondWithError(c, http.StatusBadRequest, "Nicht genügend Gold vorhanden")
+		return
+	}
+
+	// EP abziehen und Audit-Log erstellen
+	newEP := currentEP - cost.Ep
+	if cost.Ep > 0 {
+		notes := fmt.Sprintf("Fertigkeit '%s' gelernt", request.Name)
+		if request.Notes != "" {
+			notes += " - " + request.Notes
+		}
+		
+		err = CreateAuditLogEntry(character.ID, "experience_points", currentEP, newEP, ReasonSkillLearning, 0, notes)
+		if err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
+			return
+		}
+		character.Erfahrungsschatz.Value = newEP
+	}
+
+	// Gold abziehen und Audit-Log erstellen
+	newGold := currentGold - cost.Money
+	if cost.Money > 0 {
+		notes := fmt.Sprintf("Gold für Fertigkeit '%s' ausgegeben", request.Name)
+		if request.Notes != "" {
+			notes += " - " + request.Notes
+		}
+		
+		err = CreateAuditLogEntry(character.ID, "gold", currentGold, newGold, ReasonSkillLearning, 0, notes)
+		if err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
+			return
+		}
+		character.Vermoegen.Goldstücke = newGold
+	}
+
+	// TODO: Hier sollte die Fertigkeit dem Charakter hinzugefügt werden
+	// Das hängt davon ab, wie Fertigkeiten in der Datenbank gespeichert werden
+
+	// Charakter speichern
+	if err := database.DB.Save(&character).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern des Charakters")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":         "Fertigkeit erfolgreich gelernt",
+		"skill_name":      request.Name,
+		"ep_cost":         cost.Ep,
+		"gold_cost":       cost.Money,
+		"remaining_ep":    newEP,
+		"remaining_gold":  newGold,
+	})
+}
+
+// ImproveSkill verbessert eine bestehende Fertigkeit und erstellt Audit-Log-Einträge
+func ImproveSkill(c *gin.Context) {
+	charID := c.Param("id")
+	var character Char
+	
+	if err := character.FirstID(charID); err != nil {
+		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	var request ImproveSkillRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
+		return
+	}
+
+	// Aktuellen Level ermitteln, falls nicht angegeben
+	currentLevel := request.CurrentLevel
+	if currentLevel <= 0 {
+		currentLevel = getCurrentSkillLevel(&character, request.Name, "skill")
+		if currentLevel == -1 {
+			respondWithError(c, http.StatusBadRequest, "Fertigkeit nicht bei diesem Charakter vorhanden")
+			return
+		}
+	}
+
+	// Berechne Kosten mit GetSkillCost
+	costRequest := SkillCostRequest{
+		Name:         request.Name,
+		Type:         "skill",
+		Action:       "improve",
+		CurrentLevel: currentLevel,
+		UsePP:        request.UsePP,
+	}
+
+	cost, _, _, err := calculateSingleCost(&character, &costRequest)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
+		return
+	}
+
+	// Prüfe, ob genügend EP vorhanden sind
+	currentEP := character.Erfahrungsschatz.Value
+	if currentEP < cost.Ep {
+		respondWithError(c, http.StatusBadRequest, "Nicht genügend Erfahrungspunkte vorhanden")
+		return
+	}
+
+	// Prüfe, ob genügend Gold vorhanden ist
+	currentGold := character.Vermoegen.Goldstücke
+	if currentGold < cost.Money {
+		respondWithError(c, http.StatusBadRequest, "Nicht genügend Gold vorhanden")
+		return
+	}
+
+	// EP abziehen und Audit-Log erstellen
+	newEP := currentEP - cost.Ep
+	if cost.Ep > 0 {
+		notes := fmt.Sprintf("Fertigkeit '%s' von %d auf %d verbessert", request.Name, currentLevel, currentLevel+1)
+		if request.Notes != "" {
+			notes += " - " + request.Notes
+		}
+		
+		err = CreateAuditLogEntry(character.ID, "experience_points", currentEP, newEP, ReasonSkillImprovement, 0, notes)
+		if err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
+			return
+		}
+		character.Erfahrungsschatz.Value = newEP
+	}
+
+	// Gold abziehen und Audit-Log erstellen
+	newGold := currentGold - cost.Money
+	if cost.Money > 0 {
+		notes := fmt.Sprintf("Gold für Verbesserung von '%s' ausgegeben", request.Name)
+		if request.Notes != "" {
+			notes += " - " + request.Notes
+		}
+		
+		err = CreateAuditLogEntry(character.ID, "gold", currentGold, newGold, ReasonSkillImprovement, 0, notes)
+		if err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
+			return
+		}
+		character.Vermoegen.Goldstücke = newGold
+	}
+
+	// TODO: Hier sollte die Fertigkeit des Charakters verbessert werden
+	// Das hängt davon ab, wie Fertigkeiten in der Datenbank gespeichert werden
+
+	// Charakter speichern
+	if err := database.DB.Save(&character).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern des Charakters")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":         "Fertigkeit erfolgreich verbessert",
+		"skill_name":      request.Name,
+		"from_level":      currentLevel,
+		"to_level":        currentLevel + 1,
+		"ep_cost":         cost.Ep,
+		"gold_cost":       cost.Money,
+		"remaining_ep":    newEP,
+		"remaining_gold":  newGold,
+	})
+}
+
+// LearnSpell lernt einen neuen Zauber und erstellt Audit-Log-Einträge
+func LearnSpell(c *gin.Context) {
+	charID := c.Param("id")
+	var character Char
+	
+	if err := character.FirstID(charID); err != nil {
+		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	var request LearnSpellRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
+		return
+	}
+
+	// Berechne Kosten mit GetSkillCost
+	costRequest := SkillCostRequest{
+		Name:   request.Name,
+		Type:   "spell",
+		Action: "learn",
+	}
+
+	cost, _, _, err := calculateSingleCost(&character, &costRequest)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
+		return
+	}
+
+	// Prüfe, ob genügend EP vorhanden sind
+	currentEP := character.Erfahrungsschatz.Value
+	if currentEP < cost.Ep {
+		respondWithError(c, http.StatusBadRequest, "Nicht genügend Erfahrungspunkte vorhanden")
+		return
+	}
+
+	// EP abziehen und Audit-Log erstellen
+	newEP := currentEP - cost.Ep
+	if cost.Ep > 0 {
+		notes := fmt.Sprintf("Zauber '%s' gelernt", request.Name)
+		if request.Notes != "" {
+			notes += " - " + request.Notes
+		}
+		
+		err = CreateAuditLogEntry(character.ID, "experience_points", currentEP, newEP, ReasonSpellLearning, 0, notes)
+		if err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
+			return
+		}
+		character.Erfahrungsschatz.Value = newEP
+	}
+
+	// TODO: Hier sollte der Zauber dem Charakter hinzugefügt werden
+
+	// Charakter speichern
+	if err := database.DB.Save(&character).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern des Charakters")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":        "Zauber erfolgreich gelernt",
+		"spell_name":     request.Name,
+		"ep_cost":        cost.Ep,
+		"remaining_ep":   newEP,
+	})
+}
+
+// ImproveSpell verbessert einen bestehenden Zauber und erstellt Audit-Log-Einträge
+func ImproveSpell(c *gin.Context) {
+	charID := c.Param("id")
+	var character Char
+	
+	if err := character.FirstID(charID); err != nil {
+		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	var request ImproveSpellRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
+		return
+	}
+
+	// Aktuellen Level ermitteln, falls nicht angegeben
+	currentLevel := request.CurrentLevel
+	if currentLevel <= 0 {
+		currentLevel = getCurrentSkillLevel(&character, request.Name, "spell")
+		if currentLevel == -1 {
+			respondWithError(c, http.StatusBadRequest, "Zauber nicht bei diesem Charakter vorhanden")
+			return
+		}
+	}
+
+	// Berechne Kosten mit GetSkillCost
+	costRequest := SkillCostRequest{
+		Name:         request.Name,
+		Type:         "spell",
+		Action:       "improve",
+		CurrentLevel: currentLevel,
+	}
+
+	cost, _, _, err := calculateSingleCost(&character, &costRequest)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
+		return
+	}
+
+	// Prüfe, ob genügend EP vorhanden sind
+	currentEP := character.Erfahrungsschatz.Value
+	if currentEP < cost.Ep {
+		respondWithError(c, http.StatusBadRequest, "Nicht genügend Erfahrungspunkte vorhanden")
+		return
+	}
+
+	// EP abziehen und Audit-Log erstellen
+	newEP := currentEP - cost.Ep
+	if cost.Ep > 0 {
+		notes := fmt.Sprintf("Zauber '%s' von %d auf %d verbessert", request.Name, currentLevel, currentLevel+1)
+		if request.Notes != "" {
+			notes += " - " + request.Notes
+		}
+		
+		err = CreateAuditLogEntry(character.ID, "experience_points", currentEP, newEP, ReasonSpellImprovement, 0, notes)
+		if err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
+			return
+		}
+		character.Erfahrungsschatz.Value = newEP
+	}
+
+	// TODO: Hier sollte der Zauber des Charakters verbessert werden
+
+	// Charakter speichern
+	if err := database.DB.Save(&character).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern des Charakters")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":        "Zauber erfolgreich verbessert",
+		"spell_name":     request.Name,
+		"from_level":     currentLevel,
+		"to_level":       currentLevel + 1,
+		"ep_cost":        cost.Ep,
+		"remaining_ep":   newEP,
+	})
 }

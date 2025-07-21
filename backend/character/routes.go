@@ -17,11 +17,20 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.PUT("/:id/experience", UpdateCharacterExperience)
 	charGrp.PUT("/:id/wealth", UpdateCharacterWealth)
 
+	// Audit-Log für Änderungen
+	charGrp.GET("/:id/audit-log", GetCharacterAuditLog)   // Alle Änderungen oder gefiltert nach Feld (?field=experience_points)
+	charGrp.GET("/:id/audit-log/stats", GetAuditLogStats) // Statistiken über Änderungen
+
 	// Kostenberechnung (konsolidiert)
 	charGrp.POST("/:id/skill-cost", GetSkillCost)            // Hauptendpunkt für alle Kostenberechnungen
 	charGrp.GET("/:id/improve", GetSkillNextLevelCosts)      // Legacy - für nächste Stufe
 	charGrp.GET("/:id/improve/skill", GetSkillAllLevelCosts) // Legacy - für alle Stufen
-	charGrp.GET("/:id/learn", GetLearnCost)                  // Legacy - einfache Lernkosten
+
+	// Lernen und Verbessern (mit automatischem Audit-Log)
+	charGrp.POST("/:id/learn-skill", LearnSkill)           // Fertigkeit lernen
+	charGrp.POST("/:id/improve-skill", ImproveSkill)       // Fertigkeit verbessern  
+	charGrp.POST("/:id/learn-spell", LearnSpell)           // Zauber lernen
+	charGrp.POST("/:id/improve-spell", ImproveSpell)       // Zauber verbessern
 
 	// Praxispunkte-Verwaltung
 	charGrp.GET("/:id/practice-points", GetPracticePoints)

@@ -32,6 +32,9 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.POST("/:id/learn-spell", LearnSpell)     // Zauber lernen
 	charGrp.POST("/:id/improve-spell", ImproveSpell) // Zauber verbessern
 
+	// Belohnungsarten für verschiedene Lernszenarien
+	charGrp.GET("/:id/reward-types", GetRewardTypes) // Verfügbare Belohnungsarten je nach Kontext
+
 	// Praxispunkte-Verwaltung
 	charGrp.GET("/:id/practice-points", GetPracticePoints)
 	charGrp.PUT("/:id/practice-points", UpdatePracticePoints)

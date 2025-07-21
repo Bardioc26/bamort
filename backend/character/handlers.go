@@ -971,3 +971,59 @@ func ImproveSpell(c *gin.Context) {
 		"remaining_ep": newEP,
 	})
 }
+
+// GetRewardTypes liefert verfügbare Belohnungsarten für ein bestimmtes Lernszenario
+func GetRewardTypes(c *gin.Context) {
+	characterID := c.Param("id")
+	learningType := c.Query("learning_type") // 'improve', 'learn', 'spell'
+	skillName := c.Query("skill_name")
+	skillType := c.Query("skill_type") // 'skill', 'weapon', 'spell'
+
+	// Basis-Belohnungsarten
+	rewardTypes := []gin.H{}
+
+	// Je nach Lerntyp verschiedene Belohnungsarten anbieten
+	switch learningType {
+	case "learn":
+		// Neue Fertigkeit lernen - meist nur EP oder Gold
+		rewardTypes = append(rewardTypes,
+			gin.H{"value": "ep", "label": "Erfahrungspunkte verwenden", "description": "Verwende EP zum Lernen"},
+			gin.H{"value": "gold", "label": "Gold verwenden", "description": "Bezahle einen Lehrer mit Gold"},
+		)
+
+	case "spell":
+		// Zauber - mehr Optionen including Ritual
+		rewardTypes = append(rewardTypes,
+			gin.H{"value": "ep", "label": "Erfahrungspunkte verwenden", "description": "Verwende EP zum Verbessern"},
+			gin.H{"value": "gold", "label": "Gold verwenden", "description": "Bezahle einen Zauberlehrer"},
+			gin.H{"value": "pp", "label": "Praxispunkte verwenden", "description": "Nutze gesammelte Praxis"},
+			gin.H{"value": "mixed", "label": "Gemischt (EP + PP)", "description": "Kombiniere EP und PP für reduzierten Aufwand"},
+		)
+
+	case "improve":
+	default:
+		// Fertigkeit verbessern - Standard-Optionen
+		rewardTypes = append(rewardTypes,
+			gin.H{"value": "ep", "label": "Erfahrungspunkte verwenden", "description": "Verwende EP zum Verbessern"},
+			gin.H{"value": "gold", "label": "Gold verwenden", "description": "Bezahle einen Lehrer"},
+			gin.H{"value": "pp", "label": "Praxispunkte verwenden", "description": "Nutze gesammelte Praxis"},
+			gin.H{"value": "mixed", "label": "Gemischt (EP + PP)", "description": "Kombiniere EP und PP für reduzierten Aufwand"},
+		)
+
+		// Spezielle Optionen für bestimmte Fertigkeiten
+		if skillType == "weapon" {
+			// Waffenfertigkeiten könnten spezielle Trainingsmethoden haben
+			rewardTypes = append(rewardTypes,
+				gin.H{"value": "training", "label": "Training mit Meister", "description": "Intensives Training mit einem Waffenmeister"},
+			)
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"reward_types":  rewardTypes,
+		"learning_type": learningType,
+		"skill_name":    skillName,
+		"skill_type":    skillType,
+		"character_id":  characterID,
+	})
+}

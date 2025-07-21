@@ -217,6 +217,7 @@
       :character="character"
       :skill="selectedSkillToLearn"
       :isVisible="showDetailedLearnDialog"
+      :learningType="selectedLearningType"
       @close="closeDialogs"
       @skill-updated="handleSkillUpdated"
     />
@@ -554,6 +555,7 @@ export default {
       
       // Detailliertes Lernen
       selectedSkillToLearn: null,
+      selectedLearningType: 'improve', // 'improve', 'learn', 'spell'
       
       isLoading: false
     };
@@ -604,6 +606,7 @@ export default {
       
       // Detailliertes Lernen zurücksetzen
       this.selectedSkillToLearn = null;
+      this.selectedLearningType = 'improve';
     },
     
     async learnNewSkill() {
@@ -663,6 +666,7 @@ export default {
     async improveSkill(skill) {
       // Detailliertes Lernformular über neue Komponente öffnen
       this.selectedSkillToLearn = skill;
+      this.selectedLearningType = 'improve';
       this.showDetailedLearnDialog = true;
     },
     

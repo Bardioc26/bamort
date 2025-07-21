@@ -294,6 +294,7 @@
   align-items: center;
   gap: 5px;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .btn-learning-mode:hover {
@@ -338,6 +339,7 @@
   justify-content: center;
   font-size: 16px;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .btn-learn-new:hover {
@@ -378,6 +380,7 @@
   cursor: pointer;
   font-size: 12px;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .btn-action:hover {
@@ -501,6 +504,16 @@
 
 .icon {
   font-size: 14px;
+}
+
+/* Tooltip-Verbesserungen */
+[title] {
+  position: relative;
+}
+
+/* Sicherstellen, dass Tooltips funktionieren */
+button[title]:hover {
+  position: relative;
 }
 </style>
 

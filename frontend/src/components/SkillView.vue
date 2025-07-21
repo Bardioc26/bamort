@@ -211,6 +211,15 @@
         </div>
       </div>
     </div>
+
+    <!-- Neue Dialog-Komponente für detailliertes Fertigkeiten-Lernen -->
+    <SkillLearningDialog 
+      :character="character"
+      :skill="selectedSkillToLearn"
+      :isVisible="showDetailedLearnDialog"
+      @close="closeDialogs"
+      @skill-updated="handleSkillUpdated"
+    />
   </div> <!--- end character -datasheet-->
 
 </template>
@@ -512,9 +521,13 @@
 
 <script>
 import API from '@/utils/api'
+import SkillLearningDialog from './SkillLearningDialog.vue'
 
 export default {
   name: "SkillView",
+  components: {
+    SkillLearningDialog
+  },
   props: {
     character: {
       type: Object,
@@ -527,6 +540,7 @@ export default {
       showLearnDialog: false,
       showImproveSelectionDialog: false,
       showAddDialog: false,
+      showDetailedLearnDialog: false,
       
       // Formulardaten
       newSkillName: '',
@@ -537,6 +551,9 @@ export default {
       addSkillName: '',
       addSkillValue: 0,
       addNotes: '',
+      
+      // Detailliertes Lernen
+      selectedSkillToLearn: null,
       
       isLoading: false
     };
@@ -571,6 +588,7 @@ export default {
       this.showLearnDialog = false;
       this.showImproveSelectionDialog = false;
       this.showAddDialog = false;
+      this.showDetailedLearnDialog = false;
       this.clearFormData();
     },
     
@@ -583,6 +601,9 @@ export default {
       this.addSkillName = '';
       this.addSkillValue = 0;
       this.addNotes = '';
+      
+      // Detailliertes Lernen zurücksetzen
+      this.selectedSkillToLearn = null;
     },
     
     async learnNewSkill() {
@@ -640,26 +661,9 @@ export default {
     },
     
     async improveSkill(skill) {
-      // Direkte Verbesserung von der Tabelle aus
-      this.isLoading = true;
-      try {
-        const response = await this.$api.post(`/api/characters/${this.character.id}/improve-skill`, {
-          name: skill.name,
-          current_level: skill.fertigkeitswert,
-          use_pp: 0,
-          notes: `Fertigkeit ${skill.name} direkt aus Tabelle verbessert`
-        });
-        
-        console.log('Fertigkeit erfolgreich verbessert:', response.data);
-        alert(`Fertigkeit "${skill.name}" erfolgreich verbessert!`);
-        this.$emit('character-updated');
-        
-      } catch (error) {
-        console.error('Fehler beim Verbessern der Fertigkeit:', error);
-        alert('Fehler beim Verbessern der Fertigkeit: ' + (error.response?.data?.error || error.message));
-      } finally {
-        this.isLoading = false;
-      }
+      // Detailliertes Lernformular über neue Komponente öffnen
+      this.selectedSkillToLearn = skill;
+      this.showDetailedLearnDialog = true;
     },
     
     async improveWeaponSkill(skill) {
@@ -701,6 +705,11 @@ export default {
       
       alert(`Fertigkeit "${this.addSkillName}" mit Wert ${this.addSkillValue} hinzugefügt! (Noch nicht implementiert)`);
       this.closeDialogs();
+    },
+    
+    handleSkillUpdated() {
+      // Event-Handler für die neue Dialog-Komponente
+      this.$emit('character-updated');
     }
   }
 };

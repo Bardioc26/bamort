@@ -506,15 +506,7 @@
   font-size: 14px;
 }
 
-/* Tooltip-Verbesserungen */
-[title] {
-  position: relative;
-}
 
-/* Sicherstellen, dass Tooltips funktionieren */
-button[title]:hover {
-  position: relative;
-}
 </style>
 
 

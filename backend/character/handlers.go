@@ -594,9 +594,9 @@ func getValueOrDefault(value *int, defaultValue int) int {
 
 // LearnSkillRequest definiert die Struktur für das Lernen einer Fertigkeit
 type LearnSkillRequest struct {
-	Name   string `json:"name" binding:"required"`
-	Notes  string `json:"notes,omitempty"`
-	UsePP  int    `json:"use_pp,omitempty"`
+	Name  string `json:"name" binding:"required"`
+	Notes string `json:"notes,omitempty"`
+	UsePP int    `json:"use_pp,omitempty"`
 }
 
 // ImproveSkillRequest definiert die Struktur für das Verbessern einer Fertigkeit
@@ -624,7 +624,7 @@ type ImproveSpellRequest struct {
 func LearnSkill(c *gin.Context) {
 	charID := c.Param("id")
 	var character Char
-	
+
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -671,7 +671,7 @@ func LearnSkill(c *gin.Context) {
 		if request.Notes != "" {
 			notes += " - " + request.Notes
 		}
-		
+
 		err = CreateAuditLogEntry(character.ID, "experience_points", currentEP, newEP, ReasonSkillLearning, 0, notes)
 		if err != nil {
 			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
@@ -687,7 +687,7 @@ func LearnSkill(c *gin.Context) {
 		if request.Notes != "" {
 			notes += " - " + request.Notes
 		}
-		
+
 		err = CreateAuditLogEntry(character.ID, "gold", currentGold, newGold, ReasonSkillLearning, 0, notes)
 		if err != nil {
 			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
@@ -706,12 +706,12 @@ func LearnSkill(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":         "Fertigkeit erfolgreich gelernt",
-		"skill_name":      request.Name,
-		"ep_cost":         cost.Ep,
-		"gold_cost":       cost.Money,
-		"remaining_ep":    newEP,
-		"remaining_gold":  newGold,
+		"message":        "Fertigkeit erfolgreich gelernt",
+		"skill_name":     request.Name,
+		"ep_cost":        cost.Ep,
+		"gold_cost":      cost.Money,
+		"remaining_ep":   newEP,
+		"remaining_gold": newGold,
 	})
 }
 
@@ -719,7 +719,7 @@ func LearnSkill(c *gin.Context) {
 func ImproveSkill(c *gin.Context) {
 	charID := c.Param("id")
 	var character Char
-	
+
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -777,7 +777,7 @@ func ImproveSkill(c *gin.Context) {
 		if request.Notes != "" {
 			notes += " - " + request.Notes
 		}
-		
+
 		err = CreateAuditLogEntry(character.ID, "experience_points", currentEP, newEP, ReasonSkillImprovement, 0, notes)
 		if err != nil {
 			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
@@ -793,7 +793,7 @@ func ImproveSkill(c *gin.Context) {
 		if request.Notes != "" {
 			notes += " - " + request.Notes
 		}
-		
+
 		err = CreateAuditLogEntry(character.ID, "gold", currentGold, newGold, ReasonSkillImprovement, 0, notes)
 		if err != nil {
 			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
@@ -812,14 +812,14 @@ func ImproveSkill(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":         "Fertigkeit erfolgreich verbessert",
-		"skill_name":      request.Name,
-		"from_level":      currentLevel,
-		"to_level":        currentLevel + 1,
-		"ep_cost":         cost.Ep,
-		"gold_cost":       cost.Money,
-		"remaining_ep":    newEP,
-		"remaining_gold":  newGold,
+		"message":        "Fertigkeit erfolgreich verbessert",
+		"skill_name":     request.Name,
+		"from_level":     currentLevel,
+		"to_level":       currentLevel + 1,
+		"ep_cost":        cost.Ep,
+		"gold_cost":      cost.Money,
+		"remaining_ep":   newEP,
+		"remaining_gold": newGold,
 	})
 }
 
@@ -827,7 +827,7 @@ func ImproveSkill(c *gin.Context) {
 func LearnSpell(c *gin.Context) {
 	charID := c.Param("id")
 	var character Char
-	
+
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -866,7 +866,7 @@ func LearnSpell(c *gin.Context) {
 		if request.Notes != "" {
 			notes += " - " + request.Notes
 		}
-		
+
 		err = CreateAuditLogEntry(character.ID, "experience_points", currentEP, newEP, ReasonSpellLearning, 0, notes)
 		if err != nil {
 			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
@@ -884,10 +884,10 @@ func LearnSpell(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":        "Zauber erfolgreich gelernt",
-		"spell_name":     request.Name,
-		"ep_cost":        cost.Ep,
-		"remaining_ep":   newEP,
+		"message":      "Zauber erfolgreich gelernt",
+		"spell_name":   request.Name,
+		"ep_cost":      cost.Ep,
+		"remaining_ep": newEP,
 	})
 }
 
@@ -895,7 +895,7 @@ func LearnSpell(c *gin.Context) {
 func ImproveSpell(c *gin.Context) {
 	charID := c.Param("id")
 	var character Char
-	
+
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -945,7 +945,7 @@ func ImproveSpell(c *gin.Context) {
 		if request.Notes != "" {
 			notes += " - " + request.Notes
 		}
-		
+
 		err = CreateAuditLogEntry(character.ID, "experience_points", currentEP, newEP, ReasonSpellImprovement, 0, notes)
 		if err != nil {
 			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
@@ -963,11 +963,11 @@ func ImproveSpell(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":        "Zauber erfolgreich verbessert",
-		"spell_name":     request.Name,
-		"from_level":     currentLevel,
-		"to_level":       currentLevel + 1,
-		"ep_cost":        cost.Ep,
-		"remaining_ep":   newEP,
+		"message":      "Zauber erfolgreich verbessert",
+		"spell_name":   request.Name,
+		"from_level":   currentLevel,
+		"to_level":     currentLevel + 1,
+		"ep_cost":      cost.Ep,
+		"remaining_ep": newEP,
 	})
 }

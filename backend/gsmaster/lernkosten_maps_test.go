@@ -948,3 +948,227 @@ func TestCalcSpellLernCostWithRewards(t *testing.T) {
 		})
 	}
 }
+
+// TestGetSpecialization tests the GetSpecialization function
+func TestGetSpecialization(t *testing.T) {
+	tests := []struct {
+		name         string
+		characterID  string
+		expectedSpec string
+	}{
+		{
+			name:         "Default specialization",
+			characterID:  "123",
+			expectedSpec: "Beherrschen",
+		},
+		{
+			name:         "Another character",
+			characterID:  "456",
+			expectedSpec: "Beherrschen", // Currently returns default
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := GetSpecialization(tt.characterID)
+			if result != tt.expectedSpec {
+				t.Errorf("Expected specialization %s, got %s", tt.expectedSpec, result)
+			}
+		})
+	}
+}
+
+// TestFindBestCategoryForSkillLearning tests the findBestCategoryForSkillLearning function
+func TestFindBestCategoryForSkillLearning(t *testing.T) {
+	tests := []struct {
+		name           string
+		skillName      string
+		characterClass string
+		expectedCat    string
+		expectedDiff   string
+		expectError    bool
+	}{
+		{
+			name:           "Klettern for Assassine - should find best category",
+			skillName:      "Klettern",
+			characterClass: "As",
+			expectedCat:    "Körper", // Should prefer Körper (10 EP/TE * 1 LE * 3 = 30 EP) over Alltag (20 EP/TE * 1 LE * 3 = 60 EP)
+			expectedDiff:   "leicht",
+			expectError:    false,
+		},
+		{
+			name:           "Schleichen for Spitzbube - should find Unterwelt",
+			skillName:      "Schleichen",
+			characterClass: "Sp",
+			expectedCat:    "Unterwelt", // Sp has 10 EP/TE for Unterwelt vs 30 EP/TE for Freiland
+			expectedDiff:   "normal",
+			expectError:    false,
+		},
+		{
+			name:           "Invalid skill",
+			skillName:      "NonExistentSkill",
+			characterClass: "As",
+			expectError:    true,
+		},
+		{
+			name:           "Invalid character class",
+			skillName:      "Klettern",
+			characterClass: "InvalidClass",
+			expectError:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			category, difficulty, err := findBestCategoryForSkillLearning(tt.skillName, tt.characterClass)
+
+			if tt.expectError {
+				if err == nil {
+					t.Error("Expected an error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+				return
+			}
+
+			if category != tt.expectedCat {
+				t.Errorf("Expected category %s, got %s", tt.expectedCat, category)
+			}
+
+			if difficulty != tt.expectedDiff {
+				t.Errorf("Expected difficulty %s, got %s", tt.expectedDiff, difficulty)
+			}
+		})
+	}
+}
+
+// TestGetLernCostNextLevel tests the GetLernCostNextLevel function
+func TestGetLernCostNextLevel(t *testing.T) {
+	tests := []struct {
+		name          string
+		request       *LernCostRequest
+		costResult    *SkillCostResultNew
+		reward        *string
+		level         int
+		characterTyp  string
+		expectError   bool
+		expectedEP    int
+		expectedGold  int
+		expectedElfEP int // Expected EP bonus for Elves
+	}{
+		{
+			name: "Learn skill as Human",
+			request: &LernCostRequest{
+				Action: "learn",
+				Type:   "skill",
+				Reward: stringPtr("default"),
+			},
+			costResult: &SkillCostResultNew{
+				CharacterClass: "As",
+				SkillName:      "Klettern",
+				Category:       "Körper",
+				Difficulty:     "leicht",
+			},
+			level:        1,
+			characterTyp: "Mensch",
+			expectError:  false,
+			expectedEP:   30,  // 10 * 1 * 3
+			expectedGold: 200, // 1 * 200
+		},
+		{
+			name: "Learn skill as Elf - should have EP bonus",
+			request: &LernCostRequest{
+				Action: "learn",
+				Type:   "skill",
+				Reward: stringPtr("default"),
+			},
+			costResult: &SkillCostResultNew{
+				CharacterClass: "As",
+				SkillName:      "Klettern",
+				Category:       "Körper",
+				Difficulty:     "leicht",
+			},
+			level:         1,
+			characterTyp:  "Elf",
+			expectError:   false,
+			expectedEP:    30,
+			expectedElfEP: 6, // Additional 6 EP for Elves
+			expectedGold:  200,
+		},
+		{
+			name: "Improve skill as human",
+			request: &LernCostRequest{
+				Action:       "improve",
+				Type:         "skill",
+				CurrentLevel: 12,
+				Reward:       stringPtr("default"),
+			},
+			costResult: &SkillCostResultNew{
+				CharacterClass: "As",
+				SkillName:      "Klettern",
+				Category:       "Körper",
+				Difficulty:     "leicht",
+			},
+			level:        13,
+			characterTyp: "Mensch",
+			expectError:  false,
+			expectedEP:   10, // 10 * 1 (TE cost for level 13)
+			expectedGold: 20, // 1 * 20
+		},
+
+		{
+			name: "Improve skill as Elf",
+			request: &LernCostRequest{
+				Action:       "improve",
+				Type:         "skill",
+				CurrentLevel: 12,
+				Reward:       stringPtr("default"),
+			},
+			costResult: &SkillCostResultNew{
+				CharacterClass: "As",
+				SkillName:      "Klettern",
+				Category:       "Körper",
+				Difficulty:     "leicht",
+			},
+			level:        13,
+			characterTyp: "Elf",
+			expectError:  false,
+			expectedEP:   10, // 10 * 1 (TE cost for level 13)
+			expectedGold: 20, // 1 * 20
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := GetLernCostNextLevel(tt.request, tt.costResult, tt.reward, tt.level, tt.characterTyp)
+
+			if tt.expectError {
+				if err == nil {
+					t.Error("Expected an error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+				return
+			}
+
+			expectedTotalEP := tt.expectedEP
+			if tt.characterTyp == "Elf" && (tt.request.Action == "learn") {
+				expectedTotalEP += tt.expectedElfEP
+			}
+
+			if tt.costResult.EP != expectedTotalEP {
+				t.Errorf("Expected EP %d, got %d", expectedTotalEP, tt.costResult.EP)
+			}
+
+			if tt.costResult.GoldCost != tt.expectedGold {
+				t.Errorf("Expected gold cost %d, got %d", tt.expectedGold, tt.costResult.GoldCost)
+			}
+		})
+	}
+}

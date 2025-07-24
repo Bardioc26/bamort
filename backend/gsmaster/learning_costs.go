@@ -328,7 +328,7 @@ func CalculateSkillLearningCosts(characterClass, category, difficulty string) (*
 	}
 
 	// Konvertiere Vollnamen der Charakterklasse zu Abkürzungen falls nötig
-	classKey := getClassAbbreviation(characterClass)
+	classKey := GetClassAbbreviation(characterClass)
 
 	// Hole die EP-Kosten pro TE für die angegebene Charakterklasse
 	classData, exists := learningCosts.EPPerTE[classKey]
@@ -378,7 +378,7 @@ func CalculateSpellLearningCosts(characterClass, spellSchool string, leNeeded in
 	}
 
 	// Konvertiere Vollnamen zu Abkürzungen falls nötig
-	classKey := getClassAbbreviation(characterClass)
+	classKey := GetClassAbbreviation(characterClass)
 
 	classData, exists := learningCosts.SpellEPPerLE[classKey]
 	if !exists {
@@ -812,8 +812,8 @@ func getDefaultSpellSchool(spellName string) string {
 	return "Verändern"
 }
 
-// getClassAbbreviation konvertiert Charakterklassen-Vollnamen zu Abkürzungen
-func getClassAbbreviation(characterClass string) string {
+// GetClassAbbreviation konvertiert Charakterklassen-Vollnamen zu Abkürzungen
+func GetClassAbbreviation(characterClass string) string {
 	// Mapping von Vollnamen zu Abkürzungen
 	classMap := map[string]string{
 		// Abenteurer-Klassen

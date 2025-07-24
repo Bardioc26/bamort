@@ -594,3 +594,226 @@ func TestGetSkillAllLevelCostsEndpoint(t *testing.T) {
 		assert.Contains(t, response, "error", "Response should contain error message")
 	})
 }
+
+// Test GetLernCost endpoint specifically with gsmaster.LernCostRequest structure
+func TestGetLernCostEndpoint(t *testing.T) {
+	// Setup test database
+	database.SetupTestDB()
+	defer database.ResetTestDB()
+
+	// Migrate the schema
+	err := MigrateStructure()
+	assert.NoError(t, err)
+
+	// Also migrate skills and equipment to avoid preload errors
+	err = skills.MigrateStructure()
+	assert.NoError(t, err)
+	err = equipment.MigrateStructure()
+	assert.NoError(t, err)
+	err = gsmaster.MigrateStructure()
+	assert.NoError(t, err)
+
+	// Create test skill data
+	err = createTestSkillData()
+	assert.NoError(t, err)
+	defer cleanupTestSkillData()
+
+	// Create test character with ID 20 and class "Krieger"
+	testChar := createChar()
+	testChar.ID = 20
+	testChar.Typ = "Krieger" // Set character class to "Krieger"
+
+	// Add Athletik skill at level 9
+	skillName := "Athletik"
+	skill := skills.Fertigkeit{
+		BamortCharTrait: models.BamortCharTrait{
+			BamortBase: models.BamortBase{
+				Name: skillName,
+			},
+			CharacterID: 20,
+		},
+		Fertigkeitswert: 9,
+	}
+	testChar.Fertigkeiten = append(testChar.Fertigkeiten, skill)
+
+	err = testChar.Create()
+	assert.NoError(t, err)
+
+	// Setup Gin in test mode
+	gin.SetMode(gin.TestMode)
+
+	t.Run("GetLernCost with Athletik for Krieger character", func(t *testing.T) {
+		// Create request body using gsmaster.LernCostRequest structure
+		requestData := gsmaster.LernCostRequest{
+			CharId:       20,                      // CharacterID = 20
+			Name:         "Athletik",              // SkillName = Athletik
+			CurrentLevel: 9,                       // CurrentLevel = 9
+			Type:         "skill",                 // Type = skill
+			Action:       "improve",               // Action = improve (since we have current level)
+			TargetLevel:  0,                       // TargetLevel = 0 (will calculate up to level 18)
+			UsePP:        0,                       // No practice points used
+			Reward:       &[]string{"default"}[0], // Default reward type
+		}
+		requestBody, _ := json.Marshal(requestData)
+
+		// Create HTTP request
+		req, _ := http.NewRequest("POST", "/api/characters/lerncost", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		// Create response recorder
+		w := httptest.NewRecorder()
+
+		// Create Gin context
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Params = []gin.Param{{Key: "id", Value: "20"}}
+
+		fmt.Printf("Test: GetLernCost for Athletik improvement for Krieger character ID 20\n")
+		fmt.Printf("Request: CharId=%d, SkillName=%s, CurrentLevel=%d, TargetLevel=%d\n",
+			requestData.CharId, requestData.Name, requestData.CurrentLevel, requestData.TargetLevel)
+
+		// Call the actual handler function
+		GetLernCost(c)
+
+		// Print the actual response to see what we get
+		fmt.Printf("Response Status: %d\n", w.Code)
+		fmt.Printf("Response Body: %s\n", w.Body.String())
+
+		// Check if we got an error response first
+		if w.Code != http.StatusOK {
+			var errorResponse map[string]interface{}
+			err := json.Unmarshal(w.Body.Bytes(), &errorResponse)
+			if err == nil {
+				fmt.Printf("Error Response: %+v\n", errorResponse)
+			}
+			assert.Fail(t, "Expected successful response but got error: %s", w.Body.String())
+			return
+		}
+
+		// Parse and validate response for success case
+		var response []gsmaster.SkillCostResultNew
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err, "Response should be valid JSON array of SkillCostResultNew")
+
+		// Should have costs for levels 10, 11, 12, ... up to 18 (from current level 9)
+		assert.Greater(t, len(response), 0, "Should return learning costs for multiple levels")
+		assert.LessOrEqual(t, len(response), 9, "Should not return more than 9 levels (10-18)")
+
+		// Validate the first entry (level 10)
+		if len(response) > 0 {
+			firstResult := response[0]
+			assert.Equal(t, "20", firstResult.CharacterID, "Character ID should match")
+			assert.Equal(t, "Athletik", firstResult.SkillName, "Skill name should match")
+			assert.Equal(t, 10, firstResult.TargetLevel, "First target level should be 10")
+
+			// Character class should be "Kr" (abbreviation for "Krieger")
+			assert.Equal(t, "Kr", firstResult.CharacterClass, "Character class should be abbreviated to 'Kr'")
+
+			// Should have valid costs
+			assert.Greater(t, firstResult.EP, 0, "EP cost should be greater than 0")
+			assert.GreaterOrEqual(t, firstResult.GoldCost, 0, "Gold cost should be 0 or greater")
+
+			fmt.Printf("Level 10 cost: EP=%d, GoldCost=%d, LE=%d\n",
+				firstResult.EP, firstResult.GoldCost, firstResult.LE)
+			fmt.Printf("Category=%s, Difficulty=%s\n",
+				firstResult.Category, firstResult.Difficulty)
+		}
+
+		// Find cost for level 12 specifically to test mid-range
+		var level12Cost *gsmaster.SkillCostResultNew
+		for i := range response {
+			if response[i].TargetLevel == 12 {
+				level12Cost = &response[i]
+				break
+			}
+		}
+
+		if level12Cost != nil {
+			assert.Equal(t, 12, level12Cost.TargetLevel, "Target level should be 12")
+			assert.Greater(t, level12Cost.EP, 0, "EP cost should be greater than 0 for level 12")
+
+			fmt.Printf("Level 12 cost: EP=%d, GoldCost=%d, LE=%d\n",
+				level12Cost.EP, level12Cost.GoldCost, level12Cost.LE)
+		} else {
+			fmt.Printf("No cost found for level 12. Available levels: ")
+			for _, cost := range response {
+				fmt.Printf("%d ", cost.TargetLevel)
+			}
+			fmt.Println()
+		}
+
+		// Verify all target levels are sequential and start from current level + 1
+		expectedLevel := 10 // Current level 9 + 1
+		for _, cost := range response {
+			assert.Equal(t, expectedLevel, cost.TargetLevel,
+				"Target levels should be sequential starting from %d", expectedLevel)
+			assert.Equal(t, "Athletik", cost.SkillName, "All entries should have correct skill name")
+			assert.Equal(t, "Kr", cost.CharacterClass, "All entries should have correct character class")
+			expectedLevel++
+		}
+	})
+
+	t.Run("GetLernCost with invalid character ID", func(t *testing.T) {
+		// Test with non-existent character ID
+		requestData := gsmaster.LernCostRequest{
+			CharId:       999, // Non-existent character
+			Name:         "Athletik",
+			CurrentLevel: 9,
+			Type:         "skill",
+			Action:       "improve",
+			TargetLevel:  0,
+			UsePP:        0,
+			Reward:       &[]string{"default"}[0],
+		}
+		requestBody, _ := json.Marshal(requestData)
+
+		req, _ := http.NewRequest("POST", "/api/characters/999/lerncost", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Params = []gin.Param{{Key: "id", Value: "999"}}
+
+		GetLernCost(c)
+
+		// Should return 404 Not Found
+		assert.Equal(t, http.StatusNotFound, w.Code, "Status code should be 404 Not Found")
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err, "Response should be valid JSON")
+		assert.Contains(t, response, "error", "Response should contain error message")
+
+		fmt.Printf("Error case - Invalid character ID: %s\n", response["error"])
+	})
+
+	t.Run("GetLernCost with invalid request structure", func(t *testing.T) {
+		// Test with missing required fields
+		requestData := map[string]interface{}{
+			"char_id": "invalid", // Invalid type - should be uint
+			"name":    "",        // Empty name
+		}
+		requestBody, _ := json.Marshal(requestData)
+
+		req, _ := http.NewRequest("POST", "/api/characters/20/lerncost", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Params = []gin.Param{{Key: "id", Value: "20"}}
+
+		GetLernCost(c)
+
+		// Should return 400 Bad Request
+		assert.Equal(t, http.StatusBadRequest, w.Code, "Status code should be 400 Bad Request")
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err, "Response should be valid JSON")
+		assert.Contains(t, response, "error", "Response should contain error message")
+
+		fmt.Printf("Error case - Invalid request: %s\n", response["error"])
+	})
+}

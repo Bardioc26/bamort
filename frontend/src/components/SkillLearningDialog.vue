@@ -600,13 +600,13 @@ export default {
       switch (this.learningType) {
         case 'learn':
           rewardTypes = [
-            { value: 'ep', label: 'Erfahrungspunkte verwenden' },
+            { value: 'default', label: 'Erfahrungspunkte verwenden' },
             { value: 'gold', label: 'Gold verwenden' }
           ];
           break;
         case 'spell':
           rewardTypes = [
-            { value: 'ep', label: 'Erfahrungspunkte verwenden' },
+            { value: 'default', label: 'Erfahrungspunkte verwenden' },
             { value: 'gold', label: 'Gold verwenden' },
             { value: 'pp', label: 'Praxispunkte verwenden' },
             { value: 'mixed', label: 'Gemischt (EP + PP)' },
@@ -616,7 +616,7 @@ export default {
         case 'improve':
         default:
           rewardTypes = [
-            { value: 'ep', label: 'Erfahrungspunkte verwenden' },
+            { value: 'default', label: 'Erfahrungspunkte verwenden' },
             { value: 'gold', label: 'Gold verwenden' },
             { value: 'pp', label: 'Praxispunkte verwenden' },
             { value: 'mixed', label: 'Gemischt (EP + PP)' }
@@ -655,44 +655,47 @@ export default {
           current_level: this.skill.fertigkeitswert || 0
         });
         
-        // Verwende die bestehende Route /:id/improve/skill mit POST
+        // Verwende den neuen /lerncost Endpunkt mit gsmaster.LernCostRequest Struktur
         const requestData = {
-          skillType: this.skill.type || 'skill',
+          char_id: parseInt(this.character.id),
           name: this.skill.name,
-          stufe: this.skill.fertigkeitswert || 0
+          current_level: this.skill.fertigkeitswert || 0,
+          type: this.skill.type || 'skill',
+          action: this.learningType === 'learn' ? 'learn' : 'improve',
+          target_level: 0, // Wird vom Backend automatisch bis Level 18 berechnet
+          use_pp: 0,
+          reward: this.selectedRewardType || 'default'
         };
         
-        const response = await this.$api.post(`/api/characters/${this.character.id}/improve/skill`, requestData);
+        const response = await this.$api.post(`/api/characters/lerncost`, requestData);
         
         console.log('Learning costs API response:', response.data);
         
         if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-          // Konvertiere gsmaster.LearnCost Array zu unserem internen Format
+          // Konvertiere gsmaster.SkillCostResultNew Array zu unserem internen Format
           const availableEP = this.character.erfahrungsschatz?.value || 0;
           const availableGold = this.character.vermoegen?.goldstücke || 0;
           const availablePP = this.skill?.pp || 0;
           
           let cumulativeEP = 0;
           let cumulativeGold = 0;
-          let cumulativePP = 0;
           
           this.availableLevels = response.data.map(cost => {
             cumulativeEP += cost.ep;
-            cumulativeGold += cost.money;
-            cumulativePP += cost.le; // LE als PP-Äquivalent
+            cumulativeGold += cost.gold_cost;
             
             return {
-              targetLevel: cost.stufe,
+              targetLevel: cost.target_level,
               epCost: cost.ep,
-              goldCost: cost.money,
-              ppCost: cost.le,
+              goldCost: cost.gold_cost,
+              ppCost: cost.le, // LE wird als PP-Äquivalent verwendet
               totalEpCost: cumulativeEP,
               totalGoldCost: cumulativeGold,
-              totalPpCost: cumulativePP,
+              totalPpCost: cost.le,
               canAfford: {
                 ep: availableEP >= cumulativeEP,
                 gold: availableGold >= cumulativeGold,
-                pp: availablePP >= cumulativePP
+                pp: availablePP >= cost.le
               }
             };
           });

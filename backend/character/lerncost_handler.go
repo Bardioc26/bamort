@@ -81,7 +81,13 @@ func GetLernCost(c *gin.Context) {
 	}
 	var costResult gsmaster.SkillCostResultNew
 	costResult.CharacterID = charID
-	costResult.CharacterClass = character.Typ
+
+	// Verwende Klassenabkürzung wenn der Typ länger als 3 Zeichen ist
+	if len(character.Typ) > 3 {
+		costResult.CharacterClass = gsmaster.GetClassAbbreviation(character.Typ)
+	} else {
+		costResult.CharacterClass = character.Typ
+	}
 
 	// Normalize skill name (trim whitespace, proper case)
 	costResult.SkillName = strings.TrimSpace(request.Name)
@@ -89,21 +95,23 @@ func GetLernCost(c *gin.Context) {
 	costResult.Difficulty = gsmaster.GetSkillDifficulty(costResult.Category, costResult.SkillName)
 	var response []gsmaster.SkillCostResultNew
 	for i := request.CurrentLevel + 1; i <= 18; i++ {
-		response = append(response, gsmaster.SkillCostResultNew{
+		levelResult := gsmaster.SkillCostResultNew{
 			CharacterID:    costResult.CharacterID,
 			CharacterClass: costResult.CharacterClass,
 			SkillName:      costResult.SkillName,
 			Category:       costResult.Category,
 			Difficulty:     costResult.Difficulty,
-			TargetLevel:    i})
-		err := gsmaster.GetLernCostNextLevel(&request, &response[i], request.Reward, i, character.Typ)
+			TargetLevel:    i,
+		}
+		err := gsmaster.GetLernCostNextLevel(&request, &levelResult, request.Reward, i, character.Typ)
 		if err != nil {
 			respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
 			return
 		}
+		response = append(response, levelResult)
 	}
 
-	c.JSON(http.StatusOK, costResult)
+	c.JSON(http.StatusOK, response)
 }
 
 // GetSkillCost berechnet die Kosten zum Erlernen oder Verbessern einer Fertigkeit

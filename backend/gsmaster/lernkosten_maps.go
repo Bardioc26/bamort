@@ -1,6 +1,8 @@
 package gsmaster
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // DifficultyData enthält Skills und Trainingskosten für eine Schwierigkeitsstufe
 type DifficultyData struct {
@@ -15,7 +17,8 @@ type LearningCostsTable2 struct {
 	EPPerTE map[string]map[string]int
 
 	// EP-Kosten für 1 Lerneinheit (LE) für Zauber pro Charakterklasse und Zauberschule
-	SpellEPPerLE map[string]map[string]int
+	SpellEPPerLE    map[string]map[string]int
+	SpellLEPerLevel map[int]int
 
 	// LE-Kosten für Fertigkeiten basierend auf Schwierigkeit
 	BaseLearnCost map[string]map[string]int
@@ -282,6 +285,9 @@ var learningCostsData = &LearningCostsTable2{
 			"Lied":        30,
 		},
 	},
+	// Lernen von Zaubern
+	// LE pro Stufe des Zaubers
+	SpellLEPerLevel: map[int]int{1: 1, 2: 1, 3: 2, 4: 3, 5: 5, 6: 10, 7: 15, 8: 20, 9: 30, 10: 40, 11: 60, 12: 90},
 
 	// TE-Kosten für Verbesserungen basierend auf Kategorie, Schwierigkeit und aktuellem Wert
 	ImprovementCost: map[string]map[string]DifficultyData{
@@ -518,6 +524,28 @@ func contains(slice []string, item string) bool {
 
 //### End of Helper functions ###
 
+// GetSpellInfo returns the school and level of a spell from the database
+func GetSpellInfo(spellName string) (string, int, error) {
+	// Create a Spell instance to search in the database
+	var spell Spell
+
+	// Search for the spell in the database
+	err := spell.First(spellName)
+	if err != nil {
+		return "", 0, fmt.Errorf("spell '%s' not found in database: %w", spellName, err)
+	}
+
+	return spell.Category, spell.Stufe, nil
+}
+
+// GetSpecialization returns the specialization school for a character (placeholder)
+// This should be implemented to get the actual specialization from character data
+func GetSpecialization(characterID string) string {
+	// TODO: Implement actual character specialization lookup
+	// For now, return a default specialization
+	return "Beherrschen"
+}
+
 // findBestCategoryForSkillImprovement findet die Kategorie mit den niedrigsten EP-Kosten für eine Fertigkeit
 func findBestCategoryForSkillImprovement(skillName, characterClass string, level int) (string, string, error) {
 	classKey := characterClass
@@ -713,6 +741,43 @@ func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, rewa
 func CalcSpellLernCost(costResult *SkillCostResultNew, reward *string) error {
 	// Für Zauber verwenden wir eine ähnliche Logik wie für Skills
 	// TODO: Implementiere spezifische Zauber-Kostenlogik wenn verfügbar
-	// Für jetzt verwenden wir die gleiche Logik wie für Skills
-	return CalcSkillLernCost(costResult, reward)
+	classKey := costResult.CharacterClass
+	spellCategory, spellLevel, err := GetSpellInfo(costResult.SkillName)
+	if err != nil {
+		return fmt.Errorf("failed to get spell info: %w", err)
+	}
+	SpellEPPerLE, ok := learningCostsData.SpellEPPerLE[classKey][spellCategory]
+	if !ok {
+		return fmt.Errorf("EP-Kosten für Zauber '%s' und Klasse '%s' nicht gefunden", costResult.SkillName, classKey)
+	}
+	if classKey == "Ma" {
+		spezialgebiet := GetSpecialization(costResult.CharacterID)
+		if spellCategory == spezialgebiet {
+			SpellEPPerLE = 30 // Spezialgebiet für Magier
+		}
+	}
+
+	trainCost := learningCostsData.SpellLEPerLevel[spellLevel] // LE pro Stufe des Zaubers
+	if costResult.PPUsed > 0 {
+		trainCost -= costResult.PPUsed // Wenn PP verwendet werden, setze die Kosten auf die PP
+	}
+	costResult.EP = trainCost * SpellEPPerLE // EP-Kosten für das Lernen des Zaubers
+	costResult.GoldCost = trainCost * 100    // Beispiel: 200 Gold pro LE
+	costResult.Category = spellCategory
+	costResult.Difficulty = fmt.Sprintf("Stufe %d", spellLevel) // Zauber haben keine Schwierigkeit, sondern eine Stufe
+	if reward != nil && *reward == "spruchrolle" {
+		costResult.GoldCost = 20          // 20 Gold für Jeden Versuch
+		costResult.EP = costResult.EP / 3 // 1/3 EP-Kosten bei Erfolg
+	} else {
+
+		if reward != nil && *reward == "halveep" {
+			costResult.EP = costResult.EP / 2 // Halbiere die EP-Kosten für diese Belohnung
+		}
+		if reward != nil && *reward == "halveepnoGold" {
+			costResult.EP = costResult.EP / 2 // Halbiere die EP-Kosten für diese Belohnung
+			costResult.GoldCost = 0           // Keine Goldkosten für diese Belohnung
+		}
+	}
+
+	return nil
 }

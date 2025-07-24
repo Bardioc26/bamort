@@ -1,8 +1,14 @@
 package gsmaster
 
 import (
+	"bamort/database"
 	"testing"
 )
+
+// Helper function to create string pointers
+func stringPtr(s string) *string {
+	return &s
+}
 
 // TestGetSkillCategory tests the GetSkillCategory function
 func TestGetSkillCategory(t *testing.T) {
@@ -606,11 +612,6 @@ func TestCalcSkillLernCostWithRewards(t *testing.T) {
 	}
 }
 
-// Helper function to create string pointers
-func stringPtr(s string) *string {
-	return &s
-}
-
 // TestCalcSpellLernCostWithRewards tests the reward logic in CalcSpellLernCost
 /*
 func TestCalcSpellLernCostWithRewards(t *testing.T) {
@@ -724,6 +725,218 @@ func TestCalcSkillImproveCostWithRewards(t *testing.T) {
 
 			// Log the chosen category for debugging
 			t.Logf("Skill: %s, Class %s, Chosen category: %s, difficulty: %s", costResult.SkillName, costResult.CharacterClass, costResult.Category, costResult.Difficulty)
+
+			if costResult.EP != tt.expectedEP {
+				t.Errorf("Expected EP %d, got %d", tt.expectedEP, costResult.EP)
+			}
+
+			if costResult.GoldCost != tt.expectedGold {
+				t.Errorf("Expected gold cost %d, got %d", tt.expectedGold, costResult.GoldCost)
+			}
+		})
+	}
+}
+
+// TestGetSpellInfo tests the GetSpellInfo function
+func TestGetSpellInfo(t *testing.T) {
+
+	// Initialize test database with migration (but no test data since we don't have the preparedTestDB file)
+	database.SetupTestDB(true, false) // Use in-memory SQLite, no test data loading
+	defer database.ResetTestDB()
+	MigrateStructure()
+
+	// Create minimal test spell data for our test
+	testSpells := []Spell{
+		{
+			LookupList: LookupList{
+				GameSystem:   "midgard",
+				Name:         "Schlummer",
+				Beschreibung: "Test spell for GetSpellInfo",
+				Quelle:       "Test",
+			},
+			Stufe:    1,
+			Category: "Beherrschen",
+		},
+		{
+			LookupList: LookupList{
+				GameSystem:   "midgard",
+				Name:         "Erkennen von Krankheit",
+				Beschreibung: "Test spell for GetSpellInfo",
+				Quelle:       "Test",
+			},
+			Stufe:    2,
+			Category: "Dweomerzauber",
+		},
+		{
+			LookupList: LookupList{
+				GameSystem:   "midgard",
+				Name:         "Das Loblied",
+				Beschreibung: "Test spell for GetSpellInfo",
+				Quelle:       "Test",
+			},
+			Stufe:    3,
+			Category: "Zauberlied",
+		},
+	}
+
+	// Insert test data directly
+	for _, spell := range testSpells {
+		if err := database.DB.Create(&spell).Error; err != nil {
+			t.Fatalf("Failed to create test spell: %v", err)
+		}
+	}
+
+	tests := []struct {
+		spellName      string
+		expectedSchool string
+		expectedLevel  int
+		expectError    bool
+	}{
+		{
+			spellName:      "Schlummer",
+			expectedSchool: "Beherrschen",
+			expectedLevel:  1,
+			expectError:    false,
+		},
+		{
+			spellName:      "Erkennen von Krankheit",
+			expectedSchool: "Dweomerzauber",
+			expectedLevel:  2,
+			expectError:    false,
+		},
+		{
+			spellName:      "Das Loblied",
+			expectedSchool: "Zauberlied",
+			expectedLevel:  3,
+			expectError:    false,
+		},
+		{
+			spellName:      "Unknown Spell",
+			expectedSchool: "", // Should error for unknown spell
+			expectedLevel:  0,  // Should error for unknown spell
+			expectError:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.spellName, func(t *testing.T) {
+			school, level, err := GetSpellInfo(tt.spellName)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error for unknown spell, but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("Failed to get spell info: %v", err)
+			}
+
+			if school != tt.expectedSchool {
+				t.Errorf("Expected school %s, got %s", tt.expectedSchool, school)
+			}
+
+			if level != tt.expectedLevel {
+				t.Errorf("Expected level %d, got %d", tt.expectedLevel, level)
+			}
+		})
+	}
+}
+
+// TestCalcSpellLernCostWithRewards tests the reward logic in CalcSpellLernCost
+func TestCalcSpellLernCostWithRewards(t *testing.T) {
+	// Initialize test database with migration (but no test data since we don't have the preparedTestDB file)
+	database.SetupTestDB(true, false) // Use in-memory SQLite, no test data loading
+	defer database.ResetTestDB()
+	MigrateStructure()
+
+	// Create minimal test spell data for our test
+	testSpells := []Spell{
+		{
+			LookupList: LookupList{
+				GameSystem:   "midgard",
+				Name:         "Schlummer",
+				Beschreibung: "Test spell for GetSpellInfo",
+				Quelle:       "Test",
+			},
+			Stufe:    1,
+			Category: "Beherrschen",
+		},
+		{
+			LookupList: LookupList{
+				GameSystem:   "midgard",
+				Name:         "Erkennen von Krankheit",
+				Beschreibung: "Test spell for GetSpellInfo",
+				Quelle:       "Test",
+			},
+			Stufe:    2,
+			Category: "Dweomer",
+		},
+		{
+			LookupList: LookupList{
+				GameSystem:   "midgard",
+				Name:         "Das Loblied",
+				Beschreibung: "Test spell for GetSpellInfo",
+				Quelle:       "Test",
+			},
+			Stufe:    3,
+			Category: "Zauberlied",
+		},
+	}
+	// Insert test data directly
+	for _, spell := range testSpells {
+		if err := database.DB.Create(&spell).Error; err != nil {
+			t.Fatalf("Failed to create test spell: %v", err)
+		}
+	}
+
+	tests := []struct {
+		name           string
+		spellName      string
+		characterClass string
+		reward         *string
+		expectedEP     int
+		expectedGold   int
+	}{
+		{
+			name:           "Simple spell for Magier without but specialized",
+			spellName:      "Schlummer",
+			characterClass: "Ma",
+			reward:         nil,
+			expectedEP:     30,  // Ma has 60 EP/LE for Beherrschen, Furcht is level 1 = 1 LE, so 1*60=60
+			expectedGold:   100, // 1 LE * 100 Gold per LE
+		},
+		{
+			name:           "Spell with spruchrolle no reward",
+			spellName:      "Erkennen von Krankheit",
+			characterClass: "Ma",
+			reward:         nil,
+			expectedEP:     120, // 60/3 for spruchrolle
+			expectedGold:   100, // Fixed 20 Gold for spruchrolle
+		},
+		{
+			name:           "Spell with spruchrolle reward",
+			spellName:      "Erkennen von Krankheit",
+			characterClass: "Ma",
+			reward:         stringPtr("spruchrolle"),
+			expectedEP:     40, // 60/3 for spruchrolle
+			expectedGold:   20, // Fixed 20 Gold for spruchrolle
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			costResult := &SkillCostResultNew{
+				CharacterClass: tt.characterClass,
+				SkillName:      tt.spellName,
+				CharacterID:    "test-character",
+			}
+
+			err := CalcSpellLernCost(costResult, tt.reward)
+			if err != nil {
+				t.Fatalf("Failed to calculate spell costs: %v", err)
+			}
 
 			if costResult.EP != tt.expectedEP {
 				t.Errorf("Expected EP %d, got %d", tt.expectedEP, costResult.EP)

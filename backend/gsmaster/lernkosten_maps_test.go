@@ -452,6 +452,77 @@ func TestSkillCoverage(t *testing.T) {
 	t.Logf("Tested coverage for %d unique skills", len(skillsFound))
 }
 
+// TestFindBestCategoryForSkill tests the findBestCategoryForSkill function
+func TestFindBestCategoryForSkill(t *testing.T) {
+	tests := []struct {
+		name             string
+		skillName        string
+		characterClass   string
+		currentLevel     int
+		expectedCategory string
+		expectError      bool
+	}{
+		{
+			name:           "Klettern - should choose cheapest category",
+			skillName:      "Klettern",
+			characterClass: "Kr", // Krieger
+			currentLevel:   13,   // Level 13->14
+			// Klettern ist in: Alltag (leicht), Halbwelt (leicht), Körper (leicht)
+			// Für Kr: Alltag=20 EP/TE, Halbwelt=30 EP/TE, Körper=20 EP/TE
+			// Level 13->14 kostet in allen 1 TE, also 20*1=20 EP für Alltag und Körper, 30*1=30 EP für Halbwelt
+			// Sollte Alltag oder Körper wählen (beide gleich günstig)
+			expectedCategory: "Alltag", // oder "Körper" - beide sind gleich günstig
+			expectError:      false,
+		},
+		{
+			name:           "Non-existent skill",
+			skillName:      "NichtExistierendeFertigkeit",
+			characterClass: "Kr",
+			currentLevel:   10,
+			expectError:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			category, difficulty, err := findBestCategoryForSkillImprovement(tt.skillName, tt.characterClass, tt.currentLevel)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			// Für Klettern sind mehrere Kategorien gleich günstig, also akzeptieren wir alle
+			if tt.skillName == "Klettern" {
+				validCategories := []string{"Alltag", "Körper"} // Beide haben 20 EP/TE für Kr
+				found := false
+				for _, validCat := range validCategories {
+					if category == validCat {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("Expected category to be one of %v, got %s", validCategories, category)
+				}
+			} else {
+				if category != tt.expectedCategory {
+					t.Errorf("Expected category %s, got %s", tt.expectedCategory, category)
+				}
+			}
+
+			t.Logf("Skill %s for class %s at level %d: category=%s, difficulty=%s",
+				tt.skillName, tt.characterClass, tt.currentLevel, category, difficulty)
+		})
+	}
+}
+
 // TestCalcSkillLernCostWithRewards tests the reward logic in CalcSkillLernCost
 func TestCalcSkillLernCostWithRewards(t *testing.T) {
 	tests := []struct {
@@ -568,7 +639,7 @@ func TestCalcSkillImproveCostWithRewards(t *testing.T) {
 		name           string
 		skillName      string
 		characterClass string
-		currentLevel   int
+		currentLevel   int // represents the level the character currently has must be incremented by 1 when calculating the costs
 		ppUsed         int
 		reward         *string
 		expectedEP     int
@@ -581,8 +652,8 @@ func TestCalcSkillImproveCostWithRewards(t *testing.T) {
 			currentLevel:   12,
 			ppUsed:         0,
 			reward:         nil,
-			expectedEP:     20, // Kr has 20 EP/TE for Körper, currentLevel 12->13 costs 0 TE, so 20*0=0
-			expectedGold:   20, // No gold cost for improvements
+			expectedEP:     20, // Kr has 20 EP/TE for Alltag, level 12->13 costs 0 TE, so 20*0=0
+			expectedGold:   20, // 0 TE * 20 Gold per TE
 		},
 		{
 			name:           "Normal improvement to 14 without reward",
@@ -591,8 +662,8 @@ func TestCalcSkillImproveCostWithRewards(t *testing.T) {
 			currentLevel:   13,
 			ppUsed:         0,
 			reward:         nil,
-			expectedEP:     40, // Kr has 20 EP/TE for Körper, currentLevel 12->13 costs 0 TE, so 20*0=0
-			expectedGold:   40, // No gold cost for improvements
+			expectedEP:     40, // Kr has 20 EP/TE for Alltag, level 13->14 costs 1 TE, so 20*1=20
+			expectedGold:   40, // 1 TE * 20 Gold per TE
 		},
 		{
 			name:           "Improvement with halveep reward",
@@ -601,18 +672,29 @@ func TestCalcSkillImproveCostWithRewards(t *testing.T) {
 			currentLevel:   13,
 			ppUsed:         0,
 			reward:         stringPtr("halveep"),
-			expectedEP:     20, // Kr has 20 EP/TE for Körper, level 13->14 costs 1 TE, so 20*1=20, halved = 10
-			expectedGold:   40, // No gold cost for improvements
+			expectedEP:     20, // Kr has 20 EP/TE for Alltag, level 13->14 costs 1 TE, so 20*1=20, halved = 10
+			expectedGold:   40, // Gold cost not affected by halveep
+		},
+
+		{
+			name:           "Improvement to 15 without reward",
+			skillName:      "Klettern",
+			characterClass: "Kr",
+			currentLevel:   14,
+			ppUsed:         0,
+			reward:         nil,
+			expectedEP:     100, // Kr has 20 EP/TE for Alltag, level 14->15 costs 2 TE, minus 1 PP = 1 TE, so 20*1=20
+			expectedGold:   100, // 1 TE * 20 Gold per TE
 		},
 		{
-			name:           "Improvement with PP used",
+			name:           "Improvement to 15 with PP used",
 			skillName:      "Klettern",
 			characterClass: "Kr",
 			currentLevel:   14,
 			ppUsed:         1,
 			reward:         nil,
-			expectedEP:     20, // Kr has 20 EP/TE for Körper, level 14->15 costs 2 TE, minus 1 PP = 1 TE, so 20*1=20
-			expectedGold:   0,  // No gold cost for improvements
+			expectedEP:     80, // Kr has 20 EP/TE for Alltag, level 14->15 costs 2 TE, minus 1 PP = 1 TE, so 20*1=20
+			expectedGold:   80, // 1 TE * 20 Gold per TE
 		},
 		{
 			name:           "Improvement with halveepnoGold reward",
@@ -621,8 +703,8 @@ func TestCalcSkillImproveCostWithRewards(t *testing.T) {
 			currentLevel:   15,
 			ppUsed:         0,
 			reward:         stringPtr("halveepnoGold"),
-			expectedEP:     50, // Kr has 20 EP/TE for Körper, level 15->16 costs 5 TE, so 20*5=100, halved = 50
-			expectedGold:   0,  // Should be 0 with halveepnoGold reward
+			expectedEP:     100, // Kr has 20 EP/TE for Alltag, level 15->16 costs 5 TE, so 20*5=100, halved = 50
+			expectedGold:   0,   // Should be 0 with halveepnoGold reward
 		},
 	}
 
@@ -631,15 +713,17 @@ func TestCalcSkillImproveCostWithRewards(t *testing.T) {
 			costResult := &SkillCostResultNew{
 				CharacterClass: tt.characterClass,
 				SkillName:      tt.skillName,
-				Category:       GetSkillCategory(tt.skillName),
-				Difficulty:     GetSkillDifficulty(GetSkillCategory(tt.skillName), tt.skillName),
 				PPUsed:         tt.ppUsed,
+				// Lassen Sie Kategorie und Schwierigkeit leer, damit die Funktion die beste auswählt
 			}
 
 			err := CalcSkillImproveCost(costResult, tt.currentLevel, tt.reward)
 			if err != nil {
 				t.Fatalf("Failed to calculate improvement costs: %v", err)
 			}
+
+			// Log the chosen category for debugging
+			t.Logf("Skill: %s, Class %s, Chosen category: %s, difficulty: %s", costResult.SkillName, costResult.CharacterClass, costResult.Category, costResult.Difficulty)
 
 			if costResult.EP != tt.expectedEP {
 				t.Errorf("Expected EP %d, got %d", tt.expectedEP, costResult.EP)

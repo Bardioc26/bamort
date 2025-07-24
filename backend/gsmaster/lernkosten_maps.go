@@ -518,6 +518,102 @@ func contains(slice []string, item string) bool {
 
 //### End of Helper functions ###
 
+// findBestCategoryForSkillImprovement findet die Kategorie mit den niedrigsten EP-Kosten für eine Fertigkeit
+func findBestCategoryForSkillImprovement(skillName, characterClass string, level int) (string, string, error) {
+	classKey := characterClass
+
+	// Sammle alle Kategorien und Schwierigkeiten, in denen die Fertigkeit verfügbar ist
+	type categoryOption struct {
+		category   string
+		difficulty string
+		epCost     int
+	}
+
+	var options []categoryOption
+
+	for category, difficulties := range learningCostsData.ImprovementCost {
+		for difficulty, data := range difficulties {
+			if contains(data.Skills, skillName) {
+				// Prüfe ob EP-Kosten für diese Kategorie und Klasse existieren
+				epPerTE, exists := learningCostsData.EPPerTE[classKey][category]
+				if exists {
+					// Hole die Trainingskosten für level
+					trainCost, hasCost := data.TrainCosts[level]
+					if hasCost {
+						totalEP := epPerTE * trainCost
+						options = append(options, categoryOption{
+							category:   category,
+							difficulty: difficulty,
+							epCost:     totalEP,
+						})
+					}
+				}
+			}
+		}
+	}
+
+	if len(options) == 0 {
+		return "", "", fmt.Errorf("keine verfügbare Kategorie für Fertigkeit '%s' und Klasse '%s' auf Level %d gefunden", skillName, characterClass, level)
+	}
+
+	// Finde die Option mit den niedrigsten EP-Kosten
+	bestOption := options[0]
+	for _, option := range options[1:] {
+		if option.epCost < bestOption.epCost {
+			bestOption = option
+		}
+	}
+
+	return bestOption.category, bestOption.difficulty, nil
+}
+
+// findBestCategoryForSkillLearning findet die Kategorie mit den niedrigsten EP-Kosten für das Lernen einer Fertigkeit
+func findBestCategoryForSkillLearning(skillName, characterClass string) (string, string, error) {
+	classKey := characterClass
+
+	// Sammle alle Kategorien und Schwierigkeiten, in denen die Fertigkeit verfügbar ist
+	type categoryOption struct {
+		category   string
+		difficulty string
+		epCost     int
+	}
+
+	var options []categoryOption
+
+	for category, difficulties := range learningCostsData.ImprovementCost {
+		for difficulty, data := range difficulties {
+			if contains(data.Skills, skillName) {
+				// Prüfe ob EP-Kosten für diese Kategorie und Klasse existieren
+				epPerTE, exists := learningCostsData.EPPerTE[classKey][category]
+				if exists {
+					// Für das Lernen verwenden wir LearnCost * 3
+					learnCost := data.LearnCost
+					totalEP := epPerTE * learnCost * 3
+					options = append(options, categoryOption{
+						category:   category,
+						difficulty: difficulty,
+						epCost:     totalEP,
+					})
+				}
+			}
+		}
+	}
+
+	if len(options) == 0 {
+		return "", "", fmt.Errorf("keine verfügbare Kategorie für Fertigkeit '%s' und Klasse '%s' gefunden", skillName, characterClass)
+	}
+
+	// Finde die Option mit den niedrigsten EP-Kosten
+	bestOption := options[0]
+	for _, option := range options[1:] {
+		if option.epCost < bestOption.epCost {
+			bestOption = option
+		}
+	}
+
+	return bestOption.category, bestOption.difficulty, nil
+}
+
 func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
 	// Berechne die Lernkosten basierend auf den aktuellen Werten im costResult
 	// Hier sollte die Logik zur Berechnung der Lernkosten implementiert werden
@@ -525,6 +621,16 @@ func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
 	// Konvertiere Vollnamen der Charakterklasse zu Abkürzungen falls nötig
 	//classKey := getClassAbbreviation(costResult.CharacterClass)
 	classKey := costResult.CharacterClass
+
+	// Wenn Kategorie und Schwierigkeit noch nicht gesetzt sind, finde die beste Option
+	if costResult.Category == "" || costResult.Difficulty == "" {
+		bestCategory, bestDifficulty, err := findBestCategoryForSkillLearning(costResult.SkillName, classKey)
+		if err != nil {
+			return err
+		}
+		costResult.Category = bestCategory
+		costResult.Difficulty = bestDifficulty
+	}
 
 	epPerTE, ok := learningCostsData.EPPerTE[classKey][costResult.Category]
 	if !ok {
@@ -540,8 +646,19 @@ func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
 	costResult.GoldCost = costResult.LE * 200 // Beispiel: 200 Gold pro LE
 
 	// Apply reward logic
-	if reward != nil && *reward == "noGold" {
-		costResult.GoldCost = 0 // Keine Goldkosten für diese Belohnung
+	if reward != nil {
+		switch *reward {
+		case "noGold":
+			costResult.GoldCost = 0 // Keine Goldkosten für diese Belohnung
+		case "halveep":
+			costResult.EP = costResult.EP / 2 // Halbe EP-Kosten
+			costResult.GoldCost = 0           // Keine Goldkosten bei halven EP
+		case "halveepnoGold":
+			costResult.GoldCost = 0           // Keine Goldkosten für diese Belohnung
+			costResult.EP = costResult.EP / 2 // Halbe EP-Kosten
+		case "default":
+			// Keine Änderungen, normale Kosten
+		}
 	}
 
 	return nil
@@ -555,12 +672,23 @@ func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, rewa
 	//classKey := getClassAbbreviation(costResult.CharacterClass)
 	classKey := costResult.CharacterClass
 
+	// Wenn Kategorie und Schwierigkeit noch nicht gesetzt sind, finde die beste Option
+	if costResult.Category == "" || costResult.Difficulty == "" {
+		bestCategory, bestDifficulty, err := findBestCategoryForSkillImprovement(costResult.SkillName, classKey, currentLevel+1)
+		if err != nil {
+			return err
+		}
+		costResult.Category = bestCategory
+		costResult.Difficulty = bestDifficulty
+	}
+
 	epPerTE, ok := learningCostsData.EPPerTE[classKey][costResult.Category]
 	if !ok {
 		return fmt.Errorf("EP-Kosten für Kategorie '%s' und Klasse '%s' nicht gefunden", costResult.Category, costResult.CharacterClass)
 	}
 
 	diffData := learningCostsData.ImprovementCost[costResult.Category][costResult.Difficulty]
+
 	trainCost := diffData.TrainCosts[currentLevel+1]
 	if costResult.PPUsed > 0 {
 		trainCost -= costResult.PPUsed // Wenn PP verwendet werden, setze die Kosten auf die PP

@@ -4,6 +4,21 @@ import (
 	"fmt"
 )
 
+type LernCostRequest struct {
+	CharId       uint   `json:"char_id" binding:"required"`                       // Charakter-ID
+	Name         string `json:"name" binding:"required"`                          // Name der Fertigkeit / des Zaubers
+	CurrentLevel int    `json:"current_level,omitempty"`                          // Aktueller Wert (nur für Verbesserung)
+	Type         string `json:"type" binding:"required,oneof=skill spell weapon"` // 'skill', 'spell' oder 'weapon' Waffenfertigkeiten sind normale Fertigkeiten (evtl. kann hier später der Name der Waffe angegeben werden )
+	Action       string `json:"action" binding:"required,oneof=learn improve"`    // 'learn' oder 'improve'
+	TargetLevel  int    `json:"target_level,omitempty"`                           // Zielwert (optional, für Kostenberechnung bis zu einem bestimmten Level)
+	UsePP        int    `json:"use_pp,omitempty"`                                 // Anzahl der zu verwendenden Praxispunkte
+	// Belohnungsoptionen
+	Reward *string `json:"reward" binding:"required,oneof=default noGold halveep halveepnoGold"` // Belohnungsoptionen Lernen als Belohnung
+	// default
+	// learn: ohne Gold
+	// improve/spell: halbe EP kein Gold
+}
+
 // DifficultyData enthält Skills und Trainingskosten für eine Schwierigkeitsstufe
 type DifficultyData struct {
 	LearnCost  int         `json:"learncosts"`
@@ -779,5 +794,40 @@ func CalcSpellLernCost(costResult *SkillCostResultNew, reward *string) error {
 		}
 	}
 
+	return nil
+}
+
+func GetLernCostNextLevel(request *LernCostRequest, costResult *SkillCostResultNew, reward *string, level int, characterTyp string) error {
+	// Diese Funktion berechnet die Kosten für das Erlernen oder Verbessern einer Fertigkeit oder eines Zaubers
+	// abhängig von der Aktion (learn/improve) und der Belohnung.
+	// die Berechnung erfolgt immer für genau 1 Level
+	// Diese Funktion wird in GetLernCost aufgerufen.
+	switch {
+	case request.Action == "learn" && request.Type == "skill":
+		err := CalcSkillLernCost(costResult, request.Reward)
+		if err != nil {
+			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)
+		}
+		// extrakosten für elfen
+		if characterTyp == "Elf" {
+			costResult.EP += 6
+		}
+	case request.Action == "learn" && request.Type == "spell":
+		err := CalcSpellLernCost(costResult, request.Reward)
+		if err != nil {
+			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)
+		}
+		// extrakosten für elfen
+		if characterTyp == "Elf" {
+			costResult.EP += 6
+		}
+	case request.Action == "improve" && request.Type == "skill":
+		err := CalcSkillImproveCost(costResult, request.CurrentLevel, request.Reward)
+		if err != nil {
+			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)
+		}
+
+	default:
+	}
 	return nil
 }

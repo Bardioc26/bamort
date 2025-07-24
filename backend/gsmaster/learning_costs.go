@@ -431,6 +431,7 @@ type SkillCostResultNew struct {
 	LE             int                    `json:"le"`
 	GoldCost       int                    `json:"gold_cost"`
 	PPUsed         int                    `json:"pp_used"`
+	TargetLevel    int                    `json:"target_level"`
 	Details        map[string]interface{} `json:"details"`
 }
 

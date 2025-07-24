@@ -74,7 +74,7 @@ type LernCostRequest struct {
 	TargetLevel  int    `json:"target_level,omitempty"`                           // Zielwert (optional, für Kostenberechnung bis zu einem bestimmten Level)
 	UsePP        int    `json:"use_pp,omitempty"`                                 // Anzahl der zu verwendenden Praxispunkte
 	// Belohnungsoptionen
-	Reward *string `json:"reward" binding:"required,oneof=default noGold halveep"` // Belohnungsoptionen Lernen als Belohnung
+	Reward *string `json:"reward" binding:"required,oneof=default noGold halveep halveepnoGold"` // Belohnungsoptionen Lernen als Belohnung
 	// default
 	// learn: ohne Gold
 	// improve/spell: halbe EP kein Gold

@@ -522,7 +522,11 @@ func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
 	// Berechne die Lernkosten basierend auf den aktuellen Werten im costResult
 	// Hier sollte die Logik zur Berechnung der Lernkosten implementiert werden
 	//Finde EP kosten für die Kategorie für die Charakterklasse aus learningCostsData.EPPerTE
-	epPerTE, ok := learningCostsData.EPPerTE[costResult.CharacterClass][costResult.Category]
+	// Konvertiere Vollnamen der Charakterklasse zu Abkürzungen falls nötig
+	//classKey := getClassAbbreviation(costResult.CharacterClass)
+	classKey := costResult.CharacterClass
+
+	epPerTE, ok := learningCostsData.EPPerTE[classKey][costResult.Category]
 	if !ok {
 		return fmt.Errorf("EP-Kosten für Kategorie '%s' und Klasse '%s' nicht gefunden", costResult.Category, costResult.CharacterClass)
 	}
@@ -546,9 +550,35 @@ func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
 // CalcSkillImproveCost berechnet die Kosten für die Verbesserung einer Fertigkeit
 func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, reward *string) error {
 	// Für Skill-Verbesserung könnten die Kosten vom aktuellen Level abhängen
-	// TODO: Implementiere spezifische Verbesserungslogik
-	// Für jetzt verwenden wir die gleiche Logik wie für das Lernen
-	return CalcSkillLernCost(costResult, reward)
+
+	//Finde EP kosten für die Kategorie für die Charakterklasse aus learningCostsData.EPPerTE
+	//classKey := getClassAbbreviation(costResult.CharacterClass)
+	classKey := costResult.CharacterClass
+
+	epPerTE, ok := learningCostsData.EPPerTE[classKey][costResult.Category]
+	if !ok {
+		return fmt.Errorf("EP-Kosten für Kategorie '%s' und Klasse '%s' nicht gefunden", costResult.Category, costResult.CharacterClass)
+	}
+
+	diffData := learningCostsData.ImprovementCost[costResult.Category][costResult.Difficulty]
+	trainCost := diffData.TrainCosts[currentLevel+1]
+	if costResult.PPUsed > 0 {
+		trainCost -= costResult.PPUsed // Wenn PP verwendet werden, setze die Kosten auf die PP
+	}
+	// Apply reward logic
+	costResult.LE = trainCost
+	costResult.EP = epPerTE * trainCost
+	costResult.GoldCost = trainCost * 20 // Beispiel: 20 Gold pro TE
+
+	if reward != nil && *reward == "halveep" {
+		costResult.EP = costResult.EP / 2 // Halbiere die EP-Kosten für diese Belohnung
+	}
+	if reward != nil && *reward == "halveepnoGold" {
+		costResult.GoldCost = 0           // Keine Goldkosten für diese Belohnung
+		costResult.EP = costResult.EP / 2 // Halbiere die EP-Kosten für diese Belohnung
+	}
+
+	return nil
 }
 
 // CalcSpellLernCost berechnet die Kosten für das Erlernen eines Zaubers

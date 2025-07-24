@@ -506,6 +506,18 @@ func GetSkillDifficulty(category string, skillName string) string {
 	return "Unbekannt"
 }
 
+// contains checks if a slice contains a specific string
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
+}
+
+//### End of Helper functions ###
+
 func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
 	// Berechne die Lernkosten basierend auf den aktuellen Werten im costResult
 	// Hier sollte die Logik zur Berechnung der Lernkosten implementiert werden
@@ -531,14 +543,6 @@ func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
 	return nil
 }
 
-// CalcSpellLernCost berechnet die Kosten für das Erlernen eines Zaubers
-func CalcSpellLernCost(costResult *SkillCostResultNew, reward *string) error {
-	// Für Zauber verwenden wir eine ähnliche Logik wie für Skills
-	// TODO: Implementiere spezifische Zauber-Kostenlogik wenn verfügbar
-	// Für jetzt verwenden wir die gleiche Logik wie für Skills
-	return CalcSkillLernCost(costResult, reward)
-}
-
 // CalcSkillImproveCost berechnet die Kosten für die Verbesserung einer Fertigkeit
 func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, reward *string) error {
 	// Für Skill-Verbesserung könnten die Kosten vom aktuellen Level abhängen
@@ -547,12 +551,10 @@ func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, rewa
 	return CalcSkillLernCost(costResult, reward)
 }
 
-// contains checks if a slice contains a specific string
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
+// CalcSpellLernCost berechnet die Kosten für das Erlernen eines Zaubers
+func CalcSpellLernCost(costResult *SkillCostResultNew, reward *string) error {
+	// Für Zauber verwenden wir eine ähnliche Logik wie für Skills
+	// TODO: Implementiere spezifische Zauber-Kostenlogik wenn verfügbar
+	// Für jetzt verwenden wir die gleiche Logik wie für Skills
+	return CalcSkillLernCost(costResult, reward)
 }

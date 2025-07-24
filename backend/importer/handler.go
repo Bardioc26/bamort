@@ -9,17 +9,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Helper function for error responses
+func respondWithError(c *gin.Context, status int, message string) {
+	c.JSON(status, gin.H{"error": message})
+}
+
 // Upload files
 func UploadFiles(c *gin.Context) {
 	// Get files from the request
 	file_vtt, err1 := c.FormFile("file_vtt")
 	file_csv, err2 := c.FormFile("file_csv")
 	if err1 != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "file_vtt is required"})
+		respondWithError(c, http.StatusBadRequest, "file_vtt is required")
 		return
 	}
 	if !isValidFileType(file_vtt.Filename) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "File1 must be a .csv or .json file"})
+		respondWithError(c, http.StatusBadRequest, "File1 must be a .csv or .json file")
 		return
 	}
 
@@ -31,14 +36,14 @@ func UploadFiles(c *gin.Context) {
 
 	// Validate file2 if provided
 	if file_csv != nil && !isValidFileType(file_csv.Filename) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "File2 must be a .csv or .json file"})
+		respondWithError(c, http.StatusBadRequest, "File2 must be a .csv or .json file")
 		return
 	}
 
 	// Save File 1
 	err := c.SaveUploadedFile(file_vtt, vttFileName)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file_vtt"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to save file_vtt")
 		return
 	}
 
@@ -46,18 +51,18 @@ func UploadFiles(c *gin.Context) {
 	if err2 == nil {
 		err := c.SaveUploadedFile(file_csv, csvFileName)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file_csv"})
+			respondWithError(c, http.StatusInternalServerError, "Failed to save file_csv")
 			return
 		}
 	}
 
 	character, err3 := ImportVTTJSON(vttFileName)
 	if err3 != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to Import Character from file %s", err3.Error())})
+		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to Import Character from file %s", err3.Error()))
 		return
 	}
 	if character.ID < 1 {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to Import Character from file ID  is < 1"})
+		respondWithError(c, http.StatusInternalServerError, "Failed to Import Character from file ID is < 1")
 		return
 	}
 

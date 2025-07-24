@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  backend-dev:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend.dev
+    container_name: bamort-backend-dev
+    ports:
+      - "8180:8180"
+    volumes:
+      - ../backend:/app
+      - go-mod-cache:/go/pkg/mod
+    environment:
+      - GO_ENV=development
+      - CGO_ENABLED=0
+      #- CGO_ENABLED=1
+    working_dir: /app
+    # Restart if Go code changes cause crash
+    restart: unless-stopped
+
+  frontend-dev:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend.dev
+    container_name: bamort-frontend-dev
+    ports:
+      - "5173:5173"  # Vite dev server port
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules  # Prevent overwriting node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:8080
+    depends_on:
+      - backend-dev
+    restart: unless-stopped
+
+volumes:
+  go-mod-cache:

@@ -26,15 +26,13 @@ export default {
   methods: {
     async register() {
       try {
-        const response = await API.post("/register", {
+        const response = await API.post('/api/register', {
           username: this.username,
-          email: this.email,
           password: this.password,
+          email: this.email
         });
-        this.success = "Registration successful! You can now log in.";
+        this.success = "Registration successful!";
         this.error = "";
-        this.username = "";
-        this.email = "";
         this.password = "";
       } catch (err) {
         this.error = err.response?.data?.error || "Registration failed.";

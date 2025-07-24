@@ -179,8 +179,7 @@ export default {
       this.editedItem = { ...this.filteredAndSortedWaeponSkills[index] };
     },
     saveEdit(index) {
-      //this.$emit('update-skill', { index, skill: this.editedItem });
-      this.handleWaeponSkillUpdate({ index, skill: this.editedItem });
+      this.handleWeaponSkillUpdate({ index, weaponSkill: this.editedItem });
       this.editingIndex = -1;
       this.editedItem = null;
     },
@@ -196,25 +195,25 @@ export default {
         this.sortAsc = true;
       }
     },
-    async handleWaeponSkillUpdate({ index, skill }) {
+    async handleWeaponSkillUpdate({ index, weaponSkill }) {
       try {
         const response = await API.put(
-          `/api/maintenance/skills/${skill.id}`, skill,
+          `/api/maintenance/weaponskills/${weaponSkill.id}`, weaponSkill,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}` ,
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
               'Content-Type': 'application/json'
             }
           }
         )
-        if (!response.statusText== "OK") throw new Error('Update failed');
-        const updatedWaeponSkill = response.data;
-        // Update the skill in mdata
+        if (response.status !== 200) throw new Error('Update failed');
+        const updatedSkill = response.data;
+        // Update the weaponskills in mdata
         this.mdata.weaponskills = this.mdata.weaponskills.map(s =>
-          s.id === updatedWaeponSkill.id ? updatedWaeponSkill : s
+          s.id === updatedSkill.id ? updatedSkill : s
         );
       } catch (error) {
-        console.error('Failed to update skill:', error);
+        console.error('Failed to update weapon skill:', error);
       }
     }
   }

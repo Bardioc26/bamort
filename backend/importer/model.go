@@ -421,36 +421,39 @@ func CheckWaffenFertigkeiten2GSMaster(objects []Waffenfertigkeit) error {
 }
 func CheckSpells2GSMaster(objects []Zauber) error {
 	for i := range objects {
-		gsmobj, err := TransformImportSpell2GSDMaster(&objects[i])
+		_, err := TransformImportSpell2GSDMaster(&objects[i])
 		if err != nil {
-			return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
+			return fmt.Errorf("creating gsmaster failed for spell '%s': %w", objects[i].Name, err)
 		}
 	}
 	return nil
 }
+
 func CheckWeapons2GSMaster(objects []Waffe) error {
 	for i := range objects {
-		gsmobj, err := TransformImportWeapon2GSDMaster(&objects[i])
+		_, err := TransformImportWeapon2GSDMaster(&objects[i])
 		if err != nil {
-			return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
+			return fmt.Errorf("creating gsmaster failed for weapon '%s': %w", objects[i].Name, err)
 		}
 	}
 	return nil
 }
+
 func CheckContainers2GSMaster(objects []Behaeltniss) error {
 	for i := range objects {
-		gsmobj, err := TransformImportContainer2GSDMaster(&objects[i])
+		_, err := TransformImportContainer2GSDMaster(&objects[i])
 		if err != nil {
-			return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
+			return fmt.Errorf("creating gsmaster failed for container '%s': %w", objects[i].Name, err)
 		}
 	}
 	return nil
 }
-func CheckTransportationss2GSMaster(objects []Transportation) error {
+
+func CheckTransportations2GSMaster(objects []Transportation) error {
 	for i := range objects {
-		gsmobj, err := TransformImportTransportation2GSDMaster(&objects[i])
+		_, err := TransformImportTransportation2GSDMaster(&objects[i])
 		if err != nil {
-			return fmt.Errorf("creating gsmaster failed for 1 record: %s, %v", err, gsmobj)
+			return fmt.Errorf("creating gsmaster failed for transportation '%s': %w", objects[i].Name, err)
 		}
 	}
 	return nil

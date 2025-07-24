@@ -128,4 +128,14 @@ export default {
   },
   search:'Suche',
   Skill:'Fertigkeit',
+  experience: {
+    title: 'Erfahrung & Vermögen',
+    experience_points: 'Erfahrungspunkte',
+    available_ep: 'Verfügbare EP',
+    wealth: 'Vermögen',
+    gold_coins: 'Goldstücke',
+    silver_coins: 'Silberstücke',
+    copper_coins: 'Kupferstücke',
+    total_in_gs: 'Gesamt in GS'
+  }
 }

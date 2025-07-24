@@ -1,9 +1,21 @@
 package gsmaster
 
-import "bamort/database"
+import (
+	"bamort/database"
 
-func MigrateStructure() error {
-	err := database.DB.AutoMigrate(
+	"gorm.io/gorm"
+)
+
+func MigrateStructure(db ...*gorm.DB) error {
+	// Use provided DB or default to database.DB
+	var targetDB *gorm.DB
+	if len(db) > 0 && db[0] != nil {
+		targetDB = db[0]
+	} else {
+		targetDB = database.DB
+	}
+
+	err := targetDB.AutoMigrate(
 		&Skill{},
 		&WeaponSkill{},
 		&Spell{},

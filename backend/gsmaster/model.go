@@ -11,10 +11,19 @@ var dbPrefix = "gsm"
 
 type LookupList struct {
 	ID           uint   `gorm:"primaryKey" json:"id"` //`gorm:"default:uuid_generate_v3()"` // db func
-	GameSystem   string `gorm:"index;default:midgard" json:"system"`
+	GameSystem   string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
 	Name         string `json:"name"`
 	Beschreibung string `json:"beschreibung"`
 	Quelle       string `json:"quelle"`
+}
+
+type LearnCost struct {
+	Stufe int `json:"stufe"`
+	LE    int `json:"le"`
+	TE    int `json:"te"`
+	Ep    int `json:"ep"`
+	Money int `json:"money"`
+	PP    int `json:"pp"`
 }
 
 type Skill struct {
@@ -24,6 +33,7 @@ type Skill struct {
 	Improvable       bool   `gorm:"default:true" json:"improvable"`
 	InnateSkill      bool   `gorm:"default:false" json:"innateskill"`
 	Category         string `json:"category"`
+	Difficulty       string `json:"difficulty"`
 }
 
 type WeaponSkill struct {

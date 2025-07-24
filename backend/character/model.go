@@ -64,9 +64,16 @@ type Erfahrungsschatz struct {
 
 type Bennies struct {
 	models.BamortCharTrait
-	Gg int `json:"gg"`
-	Gp int `json:"gp"`
-	Sg int `json:"sg"`
+	Gg int `json:"gg"` // Göttliche Gnade
+	Gp int `json:"gp"` // Glückspunkte
+	Sg int `json:"sg"` // Schicksalsgunst
+}
+
+type Vermoegen struct {
+	models.BamortCharTrait
+	Goldstücke   int `json:"goldstücke"`   // GS
+	Silberstücke int `json:"silberstücke"` // SS
+	Kupferstücke int `json:"kupferstücke"` // KS
 }
 
 type Char struct {
@@ -90,6 +97,7 @@ type Char struct {
 	Zauber             []skills.Zauber           `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"zauber"`
 	Spezialisierung    database.StringArray      `gorm:"type:TEXT"  json:"spezialisierung"`
 	Bennies            Bennies                   `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"bennies"`
+	Vermoegen          Vermoegen                 `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"vermoegen"`
 	Erfahrungsschatz   Erfahrungsschatz          `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"erfahrungsschatz"`
 	Waffen             []equipment.Waffe         `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"waffen"`
 	Behaeltnisse       []equipment.Container     `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"behaeltnisse"`
@@ -109,14 +117,14 @@ type CharList struct {
 type FeChar struct {
 	Char
 	CategorizedSkills map[string][]skills.Fertigkeit `json:"categorizedskills"`
-	InnateSkills      []skills.Fertigkeit            `json:"innateskills`
+	InnateSkills      []skills.Fertigkeit            `json:"innateskills"`
 }
 
 func (object *Char) TableName() string {
 	return dbPrefix + "_" + "chars"
 }
 
-func (object *Char) First(name string) error {
+func (object *Char) First(charName string) error {
 	err := database.DB.
 		Preload("Lp").
 		Preload("Ap").
@@ -127,12 +135,13 @@ func (object *Char) First(name string) error {
 		Preload("Waffenfertigkeiten").
 		Preload("Zauber").
 		Preload("Bennies").
+		Preload("Vermoegen").
 		Preload("Erfahrungsschatz").
 		Preload("Waffen").
 		Preload("Behaeltnisse").
 		Preload("Transportmittel").
 		Preload("Ausruestung").
-		First(&object, " name = ?", name).Error
+		First(&object, " name = ?", charName).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -140,7 +149,7 @@ func (object *Char) First(name string) error {
 	return nil
 }
 
-func (object *Char) FirstID(name string) error {
+func (object *Char) FirstID(charID string) error {
 	err := database.DB.
 		Preload("Lp").
 		Preload("Ap").
@@ -151,14 +160,15 @@ func (object *Char) FirstID(name string) error {
 		Preload("Waffenfertigkeiten").
 		Preload("Zauber").
 		Preload("Bennies").
+		Preload("Vermoegen").
 		Preload("Erfahrungsschatz").
 		Preload("Waffen").
 		Preload("Behaeltnisse").
 		Preload("Transportmittel").
 		Preload("Ausruestung").
-		First(&object, " id = ?", name).Error
+		First(&object, charID).Error
 	if err != nil {
-		// Char not found
+		// zauber found
 		return err
 	}
 	return nil
@@ -208,4 +218,7 @@ func (object *Erfahrungsschatz) TableName() string {
 }
 func (object *Bennies) TableName() string {
 	return dbPrefix + "_" + "bennies"
+}
+func (object *Vermoegen) TableName() string {
+	return dbPrefix + "_" + "wealth"
 }

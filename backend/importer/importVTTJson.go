@@ -46,7 +46,7 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = CheckTransportationss2GSMaster(imp.Transportmittel)
+	err = CheckTransportations2GSMaster(imp.Transportmittel)
 	if err != nil {
 		return nil, err
 	}

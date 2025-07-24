@@ -1,8 +1,18 @@
 package importer
 
-func MigrateStructure() error {
+import "gorm.io/gorm"
+
+func MigrateStructure(db ...*gorm.DB) error {
+	// Use provided DB or default to database.DB
+	// var targetDB *gorm.DB
+	// if len(db) > 0 && db[0] != nil {
+	// 	targetDB = db[0]
+	// } else {
+	// 	targetDB = database.DB
+	// }
+
 	/*
-		err := database.DB.AutoMigrate()
+		err := targetDB.AutoMigrate()
 		if err != nil {
 			return err
 		}

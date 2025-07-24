@@ -1,0 +1,34 @@
+# Alternative Development Dockerfile ohne Air
+FROM golang:1.23-alpine
+
+# Install inotify-tools für File-Watching
+RUN apk add --no-cache inotify-tools
+
+WORKDIR /app
+
+# Copy go.mod and go.sum first
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Expose port
+EXPOSE 8080
+
+# Simple file watcher script
+COPY <<EOF /usr/local/bin/watch-and-run.sh
+#!/bin/sh
+echo "Starting Go application with file watcher..."
+go run ./cmd/main.go &
+PID=$!
+
+while inotifywait -r -e modify,create,delete,move . --exclude '(\.git|tmp|uploads|testdata)'; do
+    echo "Files changed, restarting..."
+    kill $PID 2>/dev/null
+    sleep 1
+    go run ./cmd/main.go &
+    PID=$!
+done
+EOF
+
+RUN chmod +x /usr/local/bin/watch-and-run.sh
+
+CMD ["/usr/local/bin/watch-and-run.sh"]

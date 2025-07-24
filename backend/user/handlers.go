@@ -16,10 +16,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func respondWithError(c *gin.Context, status int, message string) {
+	c.JSON(status, gin.H{"error": message})
+}
+
 func RegisterUser(c *gin.Context) {
 	var user User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	//fmt.Printf("User input: '%s'", user.PasswordHash)
@@ -28,7 +32,7 @@ func RegisterUser(c *gin.Context) {
 	user.PasswordHash = hex.EncodeToString(hashedPassword[:])
 	//fmt.Printf("pwdh: %s", user.PasswordHash)
 	if err := user.Create(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to create user: %s", err)})
+		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to create user: %s", err))
 		return
 	}
 	//fmt.Printf(" ___ pwdh2: %s", user.PasswordHash)
@@ -100,25 +104,25 @@ func LoginUser(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	//if err := database.DB.Where("username = ?", input.Username).First(&user).Error; err != nil {
 	if err := user.First(input.Username); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("Invalid username. or password %v", input)})
+		respondWithError(c, http.StatusUnauthorized, fmt.Sprintf("Invalid username. or password %v", input))
 		return
 	}
 
 	hashedPassword := md5.Sum([]byte(input.Password))
 	fmt.Printf("pwdh: %s", hex.EncodeToString(hashedPassword[:]))
 	if user.PasswordHash != hex.EncodeToString(hashedPassword[:]) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("Invalid username. or password. %s %s", input.Password, hex.EncodeToString(hashedPassword[:]))})
+		respondWithError(c, http.StatusUnauthorized, fmt.Sprintf("Invalid username. or password. %s %s", input.Password, hex.EncodeToString(hashedPassword[:])))
 		return
 	}
 	/*
 		if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)); err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password."})
+			respondWithError(c, http.StatusUnauthorized, "Invalid username or password.")
 			return
 		}
 	*/
@@ -131,12 +135,12 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
 		if token == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			respondWithError(c, http.StatusUnauthorized, "Unauthorized")
 			c.Abort()
 			return
 		}
 		if CheckToken(token) == nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized."})
+			respondWithError(c, http.StatusUnauthorized, "Unauthorized.")
 			c.Abort()
 			return
 		}

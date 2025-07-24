@@ -64,4 +64,14 @@ export default {
     bonus:'Bonus',
     contained_in:'contained in',
   },
+  experience: {
+    title: 'Experience & Wealth',
+    experience_points: 'Experience Points',
+    available_ep: 'Available EP',
+    wealth: 'Wealth',
+    gold_coins: 'Gold Coins',
+    silver_coins: 'Silver Coins',
+    copper_coins: 'Copper Coins',
+    total_in_gs: 'Total in GS'
+  }
 }

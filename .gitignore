@@ -25,3 +25,6 @@ go.work.sum
 .env
 
 *.bk
+backend/maintenance/testdata/*
+backend/testdata/*_data.db
+backend/tmp/main

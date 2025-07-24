@@ -4,6 +4,8 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"path/filepath"
+	"runtime"
 
 	"log"
 
@@ -12,6 +14,27 @@ import (
 )
 
 var DB *gorm.DB
+
+// getBackendDir returns the absolute path to the backend directory
+func getBackendDir() string {
+	_, filename, _, _ := runtime.Caller(0)
+	// This file is in backend/database/config.go
+	// So we need to go up one level to get to backend/
+	return filepath.Dir(filepath.Dir(filename))
+}
+
+// Test database configuration paths
+var (
+	// PreparedTestDB is the path to the prepared test database file
+	// This file contains a snapshot of test data that can be loaded into test databases
+	// Usage: database.PreparedTestDB to access from any package
+	PreparedTestDB = filepath.Join(getBackendDir(), "testdata", "prepared_test_data.db")
+
+	// TestDataDir is the directory for maintenance test data
+	// This directory contains temporary test data files during test execution
+	// Usage: database.TestDataDir to access from any package
+	TestDataDir = filepath.Join(getBackendDir(), "maintenance", "testdata")
+)
 
 func ConnectDatabase() *gorm.DB {
 	dsn := "bamort:bG4)efozrc@tcp(192.168.0.5:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"

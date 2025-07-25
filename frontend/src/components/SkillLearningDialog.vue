@@ -22,9 +22,15 @@
             <div class="resource-info">
               <div class="resource-label">Gold</div>
               <div class="resource-amount">{{ character.vermoegen?.goldstücke || 0 }} GS</div>
+              <div class="resource-remaining">
+                <small>
+                  Verwendet: {{ goldUsed || 0 }} GS | 
+                  Verbleibend: {{ Math.max(0, (character.vermoegen?.goldstücke || 0) - (goldUsed || 0)) }} GS
+                </small>
+              </div>
               <div v-if="selectedLevel && selectedGoldCost > 0" class="resource-remaining">
                 <small :class="{ 'text-warning': remainingGold < 20, 'text-danger': remainingGold <= 0 }">
-                  Verbleibend: {{ remainingGold }} GS
+                  Nach Lernen: {{ remainingGold }} GS
                 </small>
               </div>
             </div>
@@ -47,9 +53,9 @@
               </div>
             </div>
           </div>
-        </div>      <!-- Belohnungsart und PP-Eingabe nebeneinander -->
+        </div>      <!-- Belohnungsart, PP-Eingabe und Gold-Eingabe nebeneinander -->
       <div class="form-group form-row">
-        <div class="form-col">
+        <div class="form-col form-col-main">
           <label>Lernen als Belohnung:</label>
           <select v-model="selectedRewardType" :disabled="isLoadingRewardTypes">
             <option value="" disabled>
@@ -64,7 +70,7 @@
             </option>
           </select>
         </div>
-        <div class="form-col">
+        <div class="form-col form-col-input">
           <label>Praxispunkte verwenden:</label>
           <input 
             v-model.number="ppUsed" 
@@ -76,6 +82,20 @@
           />
           <small class="help-text">
             {{ ppUsed || 0 }} / {{ skill?.pp || 0 }} PP
+          </small>
+        </div>
+        <div class="form-col form-col-input">
+          <label>Goldstücke verwenden:</label>
+          <input 
+            v-model.number="goldUsed" 
+            type="number" 
+            min="0" 
+            :max="character.vermoegen?.goldstücke || 0"
+            placeholder="GS verwenden"
+            @input="updateGoldUsage"
+          />
+          <small class="help-text">
+            {{ goldUsed || 0 }} / {{ character.vermoegen?.goldstücke || 0 }} GS
           </small>
         </div>
       </div>
@@ -308,8 +328,14 @@
   min-width: 0;
 }
 
-.form-col:last-child {
-  flex: 0 0 180px;
+.form-col-main {
+  flex: 2;
+  min-width: 200px;
+}
+
+.form-col-input {
+  flex: 1;
+  min-width: 140px;
 }
 
 .form-group label {
@@ -418,6 +444,7 @@ export default {
       selectedRewardType: '',
       selectedLevel: null,
       ppUsed: 0,
+      goldUsed: 0,
       notes: '',
       availableLevels: [],
       availableRewardTypes: [],
@@ -513,6 +540,7 @@ export default {
       this.selectedRewardType = '';
       this.selectedLevel = null;
       this.ppUsed = 0;
+      this.goldUsed = 0;
       this.notes = '';
       this.availableLevels = [];
       this.availableRewardTypes = [];
@@ -689,7 +717,8 @@ export default {
           type: this.skill.type || 'skill',
           action: this.learningType === 'learn' ? 'learn' : 'improve',
           target_level: 0, // Wird vom Backend automatisch bis Level 18 berechnet
-          use_pp: this.selectedRewardType === 'mixed' ? this.ppUsed : 0,
+          use_pp: this.ppUsed || 0,
+          use_gold: this.goldUsed || 0,
           reward: this.selectedRewardType
         };
         
@@ -831,6 +860,22 @@ export default {
       }
     },
     
+    updateGoldUsage() {
+      // Stelle sicher, dass Gold-Verwendung die verfügbaren GS nicht überschreitet
+      const maxGold = this.character.vermoegen?.goldstücke || 0;
+      if (this.goldUsed > maxGold) {
+        this.goldUsed = maxGold;
+      }
+      if (this.goldUsed < 0) {
+        this.goldUsed = 0;
+      }
+      
+      // Bei Belohnungsarten die Gold verwenden: Neue Kosten vom Backend laden
+      if (this.selectedRewardType === 'mixed' || this.selectedRewardType === 'gold' || this.selectedRewardType === 'default') {
+        this.loadLearningCosts();
+      }
+    },
+    
     updateMixedCosts() {
       // Diese Methode ist jetzt redundant, da updatePPUsage() alles übernimmt
       this.updatePPUsage();
@@ -861,8 +906,8 @@ export default {
           target_level: this.selectedLevel,
           reward_type: this.selectedRewardType,
           learning_type: this.learningType,
-          use_pp: this.selectedRewardType === 'mixed' ? this.ppUsed : 
-                  this.selectedRewardType === 'pp' ? selectedLevelData.ppCost : 0,
+          use_pp: this.ppUsed || 0,
+          use_gold: this.goldUsed || 0,
           notes: this.notes || `${this.learningType === 'spell' ? 'Zauber' : 'Fertigkeit'} ${this.skill.name} von ${this.skill.fertigkeitswert} auf ${this.selectedLevel} ${this.learningType === 'learn' ? 'gelernt' : 'verbessert'}`
         };
         

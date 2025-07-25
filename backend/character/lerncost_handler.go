@@ -543,7 +543,7 @@ func getSpellInfo(spellName string) skillInfo {
 
 func canCharacterAfford(character *Char, cost *gsmaster.LearnCost) bool {
 	// Check if character has enough EP
-	if character.Erfahrungsschatz.Value < cost.Ep {
+	if character.Erfahrungsschatz.EP < cost.Ep {
 		return false
 	}
 

@@ -190,7 +190,8 @@ func createChar() *Char {
 		},
 	}
 	char.Erfahrungsschatz = Erfahrungsschatz{
-		Value: 325,
+		ES: 325,
+		EP: 300,
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: "",
@@ -658,7 +659,7 @@ func charTests(t *testing.T, char *Char) {
 	assert.Equal(t, 0, char.Bennies.Gp)
 	assert.LessOrEqual(t, 0, int(char.Bennies.CharacterID))
 	assert.Equal(t, 1, int(char.Bennies.ID))
-	assert.Equal(t, 325, char.Erfahrungsschatz.Value)
+	assert.Equal(t, 300, char.Erfahrungsschatz.EP)
 	assert.LessOrEqual(t, 0, int(char.Erfahrungsschatz.CharacterID))
 	assert.Equal(t, 1, int(char.Erfahrungsschatz.ID))
 

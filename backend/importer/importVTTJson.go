@@ -147,7 +147,7 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 	char.Ap.Value = imp.Ap.Value
 	char.B.Max = imp.B.Max
 	char.B.Value = imp.B.Value
-	char.Erfahrungsschatz.Value = imp.Erfahrungsschatz.Value
+	char.Erfahrungsschatz.ES = imp.Erfahrungsschatz.Value
 	for i := range imp.Transportmittel {
 		char.Transportmittel = append(char.Transportmittel, equipment.Container{
 			BamortCharTrait: models.BamortCharTrait{

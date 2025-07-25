@@ -359,7 +359,7 @@ func GetCharacterExperienceAndWealth(c *gin.Context) {
 	totalInSS := (gs * 10) + ss + (ks / 10)
 
 	response := ExperienceAndWealthResponse{
-		ExperiencePoints: character.Erfahrungsschatz.Value,
+		ExperiencePoints: character.Erfahrungsschatz.EP,
 	}
 	response.Wealth.Goldstücke = gs
 	response.Wealth.Silberstücke = ss
@@ -405,7 +405,7 @@ func UpdateCharacterExperience(c *gin.Context) {
 	// Alten Wert für Audit-Log speichern
 	oldValue := 0
 	if character.Erfahrungsschatz.ID != 0 {
-		oldValue = character.Erfahrungsschatz.Value
+		oldValue = character.Erfahrungsschatz.EP
 	}
 
 	// Aktualisiere oder erstelle Erfahrungsschatz
@@ -415,7 +415,7 @@ func UpdateCharacterExperience(c *gin.Context) {
 			BamortCharTrait: models.BamortCharTrait{
 				CharacterID: character.ID,
 			},
-			Value: req.ExperiencePoints,
+			EP: req.ExperiencePoints,
 		}
 		if err := database.DB.Create(&character.Erfahrungsschatz).Error; err != nil {
 			respondWithError(c, http.StatusInternalServerError, "Failed to create experience record")
@@ -423,7 +423,7 @@ func UpdateCharacterExperience(c *gin.Context) {
 		}
 	} else {
 		// Aktualisiere existierenden Erfahrungsschatz
-		character.Erfahrungsschatz.Value = req.ExperiencePoints
+		character.Erfahrungsschatz.EP = req.ExperiencePoints
 		if err := database.DB.Save(&character.Erfahrungsschatz).Error; err != nil {
 			respondWithError(c, http.StatusInternalServerError, "Failed to update experience")
 			return
@@ -765,7 +765,7 @@ func LearnSkill(c *gin.Context) {
 	}
 
 	// Prüfe, ob genügend EP vorhanden sind
-	currentEP := character.Erfahrungsschatz.Value
+	currentEP := character.Erfahrungsschatz.EP
 	if currentEP < totalEP {
 		respondWithError(c, http.StatusBadRequest, "Nicht genügend Erfahrungspunkte vorhanden")
 		return
@@ -793,7 +793,7 @@ func LearnSkill(c *gin.Context) {
 			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
 			return
 		}
-		character.Erfahrungsschatz.Value = newEP
+		character.Erfahrungsschatz.EP = newEP
 	}
 
 	// Gold abziehen und Audit-Log erstellen
@@ -919,7 +919,7 @@ func ImproveSkill(c *gin.Context) {
 	}
 
 	// Prüfe, ob genügend EP vorhanden sind
-	currentEP := character.Erfahrungsschatz.Value
+	currentEP := character.Erfahrungsschatz.EP
 	if currentEP < totalEP {
 		respondWithError(c, http.StatusBadRequest, "Nicht genügend Erfahrungspunkte vorhanden")
 		return
@@ -949,7 +949,7 @@ func ImproveSkill(c *gin.Context) {
 			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
 			return
 		}
-		character.Erfahrungsschatz.Value = newEP
+		character.Erfahrungsschatz.EP = newEP
 	}
 
 	// Gold abziehen und Audit-Log erstellen
@@ -1032,7 +1032,7 @@ func LearnSpell(c *gin.Context) {
 	}
 
 	// Prüfe, ob genügend EP vorhanden sind
-	currentEP := character.Erfahrungsschatz.Value
+	currentEP := character.Erfahrungsschatz.EP
 	if currentEP < cost.Ep {
 		respondWithError(c, http.StatusBadRequest, "Nicht genügend Erfahrungspunkte vorhanden")
 		return
@@ -1051,7 +1051,7 @@ func LearnSpell(c *gin.Context) {
 			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
 			return
 		}
-		character.Erfahrungsschatz.Value = newEP
+		character.Erfahrungsschatz.EP = newEP
 	}
 
 	// TODO: Hier sollte der Zauber dem Charakter hinzugefügt werden

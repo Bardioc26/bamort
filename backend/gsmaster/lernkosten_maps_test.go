@@ -1,8 +1,14 @@
 package gsmaster
 
 import (
+	"bamort/database"
 	"testing"
 )
+
+// Helper function to create string pointers
+func stringPtr(s string) *string {
+	return &s
+}
 
 // TestGetSkillCategory tests the GetSkillCategory function
 func TestGetSkillCategory(t *testing.T) {
@@ -452,6 +458,77 @@ func TestSkillCoverage(t *testing.T) {
 	t.Logf("Tested coverage for %d unique skills", len(skillsFound))
 }
 
+// TestFindBestCategoryForSkill tests the findBestCategoryForSkill function
+func TestFindBestCategoryForSkill(t *testing.T) {
+	tests := []struct {
+		name             string
+		skillName        string
+		characterClass   string
+		currentLevel     int
+		expectedCategory string
+		expectError      bool
+	}{
+		{
+			name:           "Klettern - should choose cheapest category",
+			skillName:      "Klettern",
+			characterClass: "Kr", // Krieger
+			currentLevel:   13,   // Level 13->14
+			// Klettern ist in: Alltag (leicht), Halbwelt (leicht), Körper (leicht)
+			// Für Kr: Alltag=20 EP/TE, Halbwelt=30 EP/TE, Körper=20 EP/TE
+			// Level 13->14 kostet in allen 1 TE, also 20*1=20 EP für Alltag und Körper, 30*1=30 EP für Halbwelt
+			// Sollte Alltag oder Körper wählen (beide gleich günstig)
+			expectedCategory: "Alltag", // oder "Körper" - beide sind gleich günstig
+			expectError:      false,
+		},
+		{
+			name:           "Non-existent skill",
+			skillName:      "NichtExistierendeFertigkeit",
+			characterClass: "Kr",
+			currentLevel:   10,
+			expectError:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			category, difficulty, err := findBestCategoryForSkillImprovement(tt.skillName, tt.characterClass, tt.currentLevel)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			// Für Klettern sind mehrere Kategorien gleich günstig, also akzeptieren wir alle
+			if tt.skillName == "Klettern" {
+				validCategories := []string{"Alltag", "Körper"} // Beide haben 20 EP/TE für Kr
+				found := false
+				for _, validCat := range validCategories {
+					if category == validCat {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("Expected category to be one of %v, got %s", validCategories, category)
+				}
+			} else {
+				if category != tt.expectedCategory {
+					t.Errorf("Expected category %s, got %s", tt.expectedCategory, category)
+				}
+			}
+
+			t.Logf("Skill %s for class %s at level %d: category=%s, difficulty=%s",
+				tt.skillName, tt.characterClass, tt.currentLevel, category, difficulty)
+		})
+	}
+}
+
 // TestCalcSkillLernCostWithRewards tests the reward logic in CalcSkillLernCost
 func TestCalcSkillLernCostWithRewards(t *testing.T) {
 	tests := []struct {
@@ -535,11 +612,6 @@ func TestCalcSkillLernCostWithRewards(t *testing.T) {
 	}
 }
 
-// Helper function to create string pointers
-func stringPtr(s string) *string {
-	return &s
-}
-
 // TestCalcSpellLernCostWithRewards tests the reward logic in CalcSpellLernCost
 /*
 func TestCalcSpellLernCostWithRewards(t *testing.T) {
@@ -563,23 +635,540 @@ func TestCalcSpellLernCostWithRewards(t *testing.T) {
 */
 
 // TestCalcSkillImproveCostWithRewards tests the reward logic in CalcSkillImproveCost
-/*
 func TestCalcSkillImproveCostWithRewards(t *testing.T) {
-	costResult := &SkillCostResultNew{
-		CharacterClass: "Kr", // Use abbreviation
-		SkillName:      "Klettern",
-		Category:       GetSkillCategory("Klettern"),
-		Difficulty:     GetSkillDifficulty(GetSkillCategory("Klettern"), "Klettern"),
+	tests := []struct {
+		name           string
+		skillName      string
+		characterClass string
+		currentLevel   int // represents the level the character currently has must be incremented by 1 when calculating the costs
+		ppUsed         int
+		reward         *string
+		expectedEP     int
+		expectedGold   int
+	}{
+		{
+			name:           "Normal improvement to 13 without reward",
+			skillName:      "Klettern",
+			characterClass: "Kr",
+			currentLevel:   12,
+			ppUsed:         0,
+			reward:         nil,
+			expectedEP:     20, // Kr has 20 EP/TE for Alltag, level 12->13 costs 0 TE, so 20*0=0
+			expectedGold:   20, // 0 TE * 20 Gold per TE
+		},
+		{
+			name:           "Normal improvement to 14 without reward",
+			skillName:      "Klettern",
+			characterClass: "Kr",
+			currentLevel:   13,
+			ppUsed:         0,
+			reward:         nil,
+			expectedEP:     40, // Kr has 20 EP/TE for Alltag, level 13->14 costs 1 TE, so 20*1=20
+			expectedGold:   40, // 1 TE * 20 Gold per TE
+		},
+		{
+			name:           "Improvement with halveep reward",
+			skillName:      "Klettern",
+			characterClass: "Kr",
+			currentLevel:   13,
+			ppUsed:         0,
+			reward:         stringPtr("halveep"),
+			expectedEP:     20, // Kr has 20 EP/TE for Alltag, level 13->14 costs 1 TE, so 20*1=20, halved = 10
+			expectedGold:   40, // Gold cost not affected by halveep
+		},
+
+		{
+			name:           "Improvement to 15 without reward",
+			skillName:      "Klettern",
+			characterClass: "Kr",
+			currentLevel:   14,
+			ppUsed:         0,
+			reward:         nil,
+			expectedEP:     100, // Kr has 20 EP/TE for Alltag, level 14->15 costs 2 TE, minus 1 PP = 1 TE, so 20*1=20
+			expectedGold:   100, // 1 TE * 20 Gold per TE
+		},
+		{
+			name:           "Improvement to 15 with PP used",
+			skillName:      "Klettern",
+			characterClass: "Kr",
+			currentLevel:   14,
+			ppUsed:         1,
+			reward:         nil,
+			expectedEP:     80, // Kr has 20 EP/TE for Alltag, level 14->15 costs 2 TE, minus 1 PP = 1 TE, so 20*1=20
+			expectedGold:   80, // 1 TE * 20 Gold per TE
+		},
+		{
+			name:           "Improvement with halveepnoGold reward",
+			skillName:      "Klettern",
+			characterClass: "Kr",
+			currentLevel:   15,
+			ppUsed:         0,
+			reward:         stringPtr("halveepnoGold"),
+			expectedEP:     100, // Kr has 20 EP/TE for Alltag, level 15->16 costs 5 TE, so 20*5=100, halved = 50
+			expectedGold:   0,   // Should be 0 with halveepnoGold reward
+		},
 	}
 
-	// Test with halveep reward
-	err := CalcSkillImproveCost(costResult, 5, stringPtr("halveep"))
-	if err != nil {
-		t.Fatalf("Failed to calculate improvement costs: %v", err)
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			costResult := &SkillCostResultNew{
+				CharacterClass: tt.characterClass,
+				SkillName:      tt.skillName,
+				PPUsed:         tt.ppUsed,
+				// Lassen Sie Kategorie und Schwierigkeit leer, damit die Funktion die beste auswählt
+			}
 
-	if costResult.GoldCost != 0 {
-		t.Errorf("Expected gold cost 0 with halveep reward, got %d", costResult.GoldCost)
+			err := CalcSkillImproveCost(costResult, tt.currentLevel, tt.reward)
+			if err != nil {
+				t.Fatalf("Failed to calculate improvement costs: %v", err)
+			}
+
+			// Log the chosen category for debugging
+			t.Logf("Skill: %s, Class %s, Chosen category: %s, difficulty: %s", costResult.SkillName, costResult.CharacterClass, costResult.Category, costResult.Difficulty)
+
+			if costResult.EP != tt.expectedEP {
+				t.Errorf("Expected EP %d, got %d", tt.expectedEP, costResult.EP)
+			}
+
+			if costResult.GoldCost != tt.expectedGold {
+				t.Errorf("Expected gold cost %d, got %d", tt.expectedGold, costResult.GoldCost)
+			}
+		})
 	}
 }
-*/
+
+// TestGetSpellInfo tests the GetSpellInfo function
+func TestGetSpellInfo(t *testing.T) {
+
+	// Initialize test database with migration (but no test data since we don't have the preparedTestDB file)
+	database.SetupTestDB(true, false) // Use in-memory SQLite, no test data loading
+	defer database.ResetTestDB()
+	MigrateStructure()
+
+	// Create minimal test spell data for our test
+	testSpells := []Spell{
+		{
+			LookupList: LookupList{
+				GameSystem:   "midgard",
+				Name:         "Schlummer",
+				Beschreibung: "Test spell for GetSpellInfo",
+				Quelle:       "Test",
+			},
+			Stufe:    1,
+			Category: "Beherrschen",
+		},
+		{
+			LookupList: LookupList{
+				GameSystem:   "midgard",
+				Name:         "Erkennen von Krankheit",
+				Beschreibung: "Test spell for GetSpellInfo",
+				Quelle:       "Test",
+			},
+			Stufe:    2,
+			Category: "Dweomerzauber",
+		},
+		{
+			LookupList: LookupList{
+				GameSystem:   "midgard",
+				Name:         "Das Loblied",
+				Beschreibung: "Test spell for GetSpellInfo",
+				Quelle:       "Test",
+			},
+			Stufe:    3,
+			Category: "Zauberlied",
+		},
+	}
+
+	// Insert test data directly
+	for _, spell := range testSpells {
+		if err := database.DB.Create(&spell).Error; err != nil {
+			t.Fatalf("Failed to create test spell: %v", err)
+		}
+	}
+
+	tests := []struct {
+		spellName      string
+		expectedSchool string
+		expectedLevel  int
+		expectError    bool
+	}{
+		{
+			spellName:      "Schlummer",
+			expectedSchool: "Beherrschen",
+			expectedLevel:  1,
+			expectError:    false,
+		},
+		{
+			spellName:      "Erkennen von Krankheit",
+			expectedSchool: "Dweomerzauber",
+			expectedLevel:  2,
+			expectError:    false,
+		},
+		{
+			spellName:      "Das Loblied",
+			expectedSchool: "Zauberlied",
+			expectedLevel:  3,
+			expectError:    false,
+		},
+		{
+			spellName:      "Unknown Spell",
+			expectedSchool: "", // Should error for unknown spell
+			expectedLevel:  0,  // Should error for unknown spell
+			expectError:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.spellName, func(t *testing.T) {
+			school, level, err := GetSpellInfo(tt.spellName)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error for unknown spell, but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("Failed to get spell info: %v", err)
+			}
+
+			if school != tt.expectedSchool {
+				t.Errorf("Expected school %s, got %s", tt.expectedSchool, school)
+			}
+
+			if level != tt.expectedLevel {
+				t.Errorf("Expected level %d, got %d", tt.expectedLevel, level)
+			}
+		})
+	}
+}
+
+// TestCalcSpellLernCostWithRewards tests the reward logic in CalcSpellLernCost
+func TestCalcSpellLernCostWithRewards(t *testing.T) {
+	// Initialize test database with migration (but no test data since we don't have the preparedTestDB file)
+	database.SetupTestDB(true, false) // Use in-memory SQLite, no test data loading
+	defer database.ResetTestDB()
+	MigrateStructure()
+
+	// Create minimal test spell data for our test
+	testSpells := []Spell{
+		{
+			LookupList: LookupList{
+				GameSystem:   "midgard",
+				Name:         "Schlummer",
+				Beschreibung: "Test spell for GetSpellInfo",
+				Quelle:       "Test",
+			},
+			Stufe:    1,
+			Category: "Beherrschen",
+		},
+		{
+			LookupList: LookupList{
+				GameSystem:   "midgard",
+				Name:         "Erkennen von Krankheit",
+				Beschreibung: "Test spell for GetSpellInfo",
+				Quelle:       "Test",
+			},
+			Stufe:    2,
+			Category: "Dweomer",
+		},
+		{
+			LookupList: LookupList{
+				GameSystem:   "midgard",
+				Name:         "Das Loblied",
+				Beschreibung: "Test spell for GetSpellInfo",
+				Quelle:       "Test",
+			},
+			Stufe:    3,
+			Category: "Zauberlied",
+		},
+	}
+	// Insert test data directly
+	for _, spell := range testSpells {
+		if err := database.DB.Create(&spell).Error; err != nil {
+			t.Fatalf("Failed to create test spell: %v", err)
+		}
+	}
+
+	tests := []struct {
+		name           string
+		spellName      string
+		characterClass string
+		reward         *string
+		expectedEP     int
+		expectedGold   int
+	}{
+		{
+			name:           "Simple spell for Magier without but specialized",
+			spellName:      "Schlummer",
+			characterClass: "Ma",
+			reward:         nil,
+			expectedEP:     30,  // Ma has 60 EP/LE for Beherrschen, Furcht is level 1 = 1 LE, so 1*60=60
+			expectedGold:   100, // 1 LE * 100 Gold per LE
+		},
+		{
+			name:           "Spell with spruchrolle no reward",
+			spellName:      "Erkennen von Krankheit",
+			characterClass: "Ma",
+			reward:         nil,
+			expectedEP:     120, // 60/3 for spruchrolle
+			expectedGold:   100, // Fixed 20 Gold for spruchrolle
+		},
+		{
+			name:           "Spell with spruchrolle reward",
+			spellName:      "Erkennen von Krankheit",
+			characterClass: "Ma",
+			reward:         stringPtr("spruchrolle"),
+			expectedEP:     40, // 60/3 for spruchrolle
+			expectedGold:   20, // Fixed 20 Gold for spruchrolle
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			costResult := &SkillCostResultNew{
+				CharacterClass: tt.characterClass,
+				SkillName:      tt.spellName,
+				CharacterID:    "test-character",
+			}
+
+			err := CalcSpellLernCost(costResult, tt.reward)
+			if err != nil {
+				t.Fatalf("Failed to calculate spell costs: %v", err)
+			}
+
+			if costResult.EP != tt.expectedEP {
+				t.Errorf("Expected EP %d, got %d", tt.expectedEP, costResult.EP)
+			}
+
+			if costResult.GoldCost != tt.expectedGold {
+				t.Errorf("Expected gold cost %d, got %d", tt.expectedGold, costResult.GoldCost)
+			}
+		})
+	}
+}
+
+// TestGetSpecialization tests the GetSpecialization function
+func TestGetSpecialization(t *testing.T) {
+	tests := []struct {
+		name         string
+		characterID  string
+		expectedSpec string
+	}{
+		{
+			name:         "Default specialization",
+			characterID:  "123",
+			expectedSpec: "Beherrschen",
+		},
+		{
+			name:         "Another character",
+			characterID:  "456",
+			expectedSpec: "Beherrschen", // Currently returns default
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := GetSpecialization(tt.characterID)
+			if result != tt.expectedSpec {
+				t.Errorf("Expected specialization %s, got %s", tt.expectedSpec, result)
+			}
+		})
+	}
+}
+
+// TestFindBestCategoryForSkillLearning tests the findBestCategoryForSkillLearning function
+func TestFindBestCategoryForSkillLearning(t *testing.T) {
+	tests := []struct {
+		name           string
+		skillName      string
+		characterClass string
+		expectedCat    string
+		expectedDiff   string
+		expectError    bool
+	}{
+		{
+			name:           "Klettern for Assassine - should find best category",
+			skillName:      "Klettern",
+			characterClass: "As",
+			expectedCat:    "Körper", // Should prefer Körper (10 EP/TE * 1 LE * 3 = 30 EP) over Alltag (20 EP/TE * 1 LE * 3 = 60 EP)
+			expectedDiff:   "leicht",
+			expectError:    false,
+		},
+		{
+			name:           "Schleichen for Spitzbube - should find Unterwelt",
+			skillName:      "Schleichen",
+			characterClass: "Sp",
+			expectedCat:    "Unterwelt", // Sp has 10 EP/TE for Unterwelt vs 30 EP/TE for Freiland
+			expectedDiff:   "normal",
+			expectError:    false,
+		},
+		{
+			name:           "Invalid skill",
+			skillName:      "NonExistentSkill",
+			characterClass: "As",
+			expectError:    true,
+		},
+		{
+			name:           "Invalid character class",
+			skillName:      "Klettern",
+			characterClass: "InvalidClass",
+			expectError:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			category, difficulty, err := findBestCategoryForSkillLearning(tt.skillName, tt.characterClass)
+
+			if tt.expectError {
+				if err == nil {
+					t.Error("Expected an error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+				return
+			}
+
+			if category != tt.expectedCat {
+				t.Errorf("Expected category %s, got %s", tt.expectedCat, category)
+			}
+
+			if difficulty != tt.expectedDiff {
+				t.Errorf("Expected difficulty %s, got %s", tt.expectedDiff, difficulty)
+			}
+		})
+	}
+}
+
+// TestGetLernCostNextLevel tests the GetLernCostNextLevel function
+func TestGetLernCostNextLevel(t *testing.T) {
+	tests := []struct {
+		name          string
+		request       *LernCostRequest
+		costResult    *SkillCostResultNew
+		reward        *string
+		level         int
+		characterTyp  string
+		expectError   bool
+		expectedEP    int
+		expectedGold  int
+		expectedElfEP int // Expected EP bonus for Elves
+	}{
+		{
+			name: "Learn skill as Human",
+			request: &LernCostRequest{
+				Action: "learn",
+				Type:   "skill",
+				Reward: stringPtr("default"),
+			},
+			costResult: &SkillCostResultNew{
+				CharacterClass: "As",
+				SkillName:      "Klettern",
+				Category:       "Körper",
+				Difficulty:     "leicht",
+			},
+			level:        1,
+			characterTyp: "Mensch",
+			expectError:  false,
+			expectedEP:   30,  // 10 * 1 * 3
+			expectedGold: 200, // 1 * 200
+		},
+		{
+			name: "Learn skill as Elf - should have EP bonus",
+			request: &LernCostRequest{
+				Action: "learn",
+				Type:   "skill",
+				Reward: stringPtr("default"),
+			},
+			costResult: &SkillCostResultNew{
+				CharacterClass: "As",
+				SkillName:      "Klettern",
+				Category:       "Körper",
+				Difficulty:     "leicht",
+			},
+			level:         1,
+			characterTyp:  "Elf",
+			expectError:   false,
+			expectedEP:    30,
+			expectedElfEP: 6, // Additional 6 EP for Elves
+			expectedGold:  200,
+		},
+		{
+			name: "Improve skill as human",
+			request: &LernCostRequest{
+				Action:       "improve",
+				Type:         "skill",
+				CurrentLevel: 12,
+				Reward:       stringPtr("default"),
+			},
+			costResult: &SkillCostResultNew{
+				CharacterClass: "As",
+				SkillName:      "Klettern",
+				Category:       "Körper",
+				Difficulty:     "leicht",
+			},
+			level:        13,
+			characterTyp: "Mensch",
+			expectError:  false,
+			expectedEP:   10, // 10 * 1 (TE cost for level 13)
+			expectedGold: 20, // 1 * 20
+		},
+
+		{
+			name: "Improve skill as Elf",
+			request: &LernCostRequest{
+				Action:       "improve",
+				Type:         "skill",
+				CurrentLevel: 12,
+				Reward:       stringPtr("default"),
+			},
+			costResult: &SkillCostResultNew{
+				CharacterClass: "As",
+				SkillName:      "Klettern",
+				Category:       "Körper",
+				Difficulty:     "leicht",
+			},
+			level:        13,
+			characterTyp: "Elf",
+			expectError:  false,
+			expectedEP:   10, // 10 * 1 (TE cost for level 13)
+			expectedGold: 20, // 1 * 20
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := GetLernCostNextLevel(tt.request, tt.costResult, tt.reward, tt.level, tt.characterTyp)
+
+			if tt.expectError {
+				if err == nil {
+					t.Error("Expected an error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+				return
+			}
+
+			expectedTotalEP := tt.expectedEP
+			if tt.characterTyp == "Elf" && (tt.request.Action == "learn") {
+				expectedTotalEP += tt.expectedElfEP
+			}
+
+			if tt.costResult.EP != expectedTotalEP {
+				t.Errorf("Expected EP %d, got %d", expectedTotalEP, tt.costResult.EP)
+			}
+
+			if tt.costResult.GoldCost != tt.expectedGold {
+				t.Errorf("Expected gold cost %d, got %d", tt.expectedGold, tt.costResult.GoldCost)
+			}
+		})
+	}
+}

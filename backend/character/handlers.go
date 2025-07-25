@@ -237,6 +237,7 @@ func GetLearnSpellCost(c *gin.Context) {
 	c.JSON(http.StatusOK, sd)
 }
 
+/*
 func GetSkillNextLevelCosts(c *gin.Context) {
 	// Get the character ID from the request
 	charID := c.Param("id")
@@ -267,7 +268,8 @@ func GetSkillNextLevelCosts(c *gin.Context) {
 	// Return the updated character
 	c.JSON(http.StatusOK, character.Fertigkeiten)
 }
-
+*/
+/*
 func GetSkillAllLevelCosts(c *gin.Context) {
 	// Get the character ID from the request
 	charID := c.Param("id")
@@ -322,7 +324,7 @@ func GetSkillAllLevelCosts(c *gin.Context) {
 	// Return the updated character
 	c.JSON(http.StatusOK, costArr)
 }
-
+*/
 // ExperienceAndWealthResponse repräsentiert die Antwort für EP und Vermögen
 type ExperienceAndWealthResponse struct {
 	ExperiencePoints int `json:"experience_points"`
@@ -892,6 +894,8 @@ func LearnSpell(c *gin.Context) {
 }
 
 // ImproveSpell verbessert einen bestehenden Zauber und erstellt Audit-Log-Einträge
+// Zauber können nicht verbessert werden
+/*
 func ImproveSpell(c *gin.Context) {
 	charID := c.Param("id")
 	var character Char
@@ -971,7 +975,7 @@ func ImproveSpell(c *gin.Context) {
 		"remaining_ep": newEP,
 	})
 }
-
+*/
 // GetRewardTypes liefert verfügbare Belohnungsarten für ein bestimmtes Lernszenario
 func GetRewardTypes(c *gin.Context) {
 	characterID := c.Param("id")
@@ -985,28 +989,24 @@ func GetRewardTypes(c *gin.Context) {
 	// Je nach Lerntyp verschiedene Belohnungsarten anbieten
 	switch learningType {
 	case "learn":
-		// Neue Fertigkeit lernen - meist nur EP oder Gold
+		// Neue Fertigkeit lernen - noGold Belohnung verfügbar
 		rewardTypes = append(rewardTypes,
-			gin.H{"value": "ep", "label": "Erfahrungspunkte verwenden", "description": "Verwende EP zum Lernen"},
-			gin.H{"value": "gold", "label": "Gold verwenden", "description": "Bezahle einen Lehrer mit Gold"},
+			gin.H{"value": "default", "label": "Standard (EP + Gold)", "description": "Normale EP- und Goldkosten"},
+			gin.H{"value": "noGold", "label": "Ohne Gold (nur EP)", "description": "Keine Goldkosten, nur EP als Belohnung"},
 		)
 
 	case "spell":
-		// Zauber - mehr Optionen including Ritual
+		// Zauber lernen - halveepnoGold verfügbar
 		rewardTypes = append(rewardTypes,
-			gin.H{"value": "ep", "label": "Erfahrungspunkte verwenden", "description": "Verwende EP zum Verbessern"},
-			gin.H{"value": "gold", "label": "Gold verwenden", "description": "Bezahle einen Zauberlehrer"},
-			gin.H{"value": "pp", "label": "Praxispunkte verwenden", "description": "Nutze gesammelte Praxis"},
-			gin.H{"value": "mixed", "label": "Gemischt (EP + PP)", "description": "Kombiniere EP und PP für reduzierten Aufwand"},
+			gin.H{"value": "default", "label": "Standard (EP)", "description": "Normale EP-Kosten"},
+			gin.H{"value": "halveepnoGold", "label": "Halbe EP ohne Gold", "description": "Halbe EP-Kosten, kein Gold als Belohnung"},
 		)
 
 	case "improve":
-		// Fertigkeit verbessern - Standard-Optionen
+		// Fertigkeit verbessern - halveepnoGold verfügbar
 		rewardTypes = append(rewardTypes,
-			gin.H{"value": "ep", "label": "Erfahrungspunkte verwenden", "description": "Verwende EP zum Verbessern"},
-			gin.H{"value": "gold", "label": "Gold verwenden", "description": "Bezahle einen Lehrer"},
-			gin.H{"value": "pp", "label": "Praxispunkte verwenden", "description": "Nutze gesammelte Praxis"},
-			gin.H{"value": "mixed", "label": "Gemischt (EP + PP)", "description": "Kombiniere EP und PP für reduzierten Aufwand"},
+			gin.H{"value": "default", "label": "Standard (EP + Gold)", "description": "Normale EP- und Goldkosten"},
+			gin.H{"value": "halveepnoGold", "label": "Halbe EP ohne Gold", "description": "Halbe EP-Kosten, kein Gold als Belohnung"},
 		)
 
 		// Spezielle Optionen für bestimmte Fertigkeiten

@@ -65,25 +65,10 @@ type MultiLevelCostResponse struct {
 	CanAffordTotal bool                `json:"can_afford_total"`
 }
 
-type LernCostRequest struct {
-	CharId       uint   `json:"char_id" binding:"required"`                       // Charakter-ID
-	Name         string `json:"name" binding:"required"`                          // Name der Fertigkeit / des Zaubers
-	CurrentLevel int    `json:"current_level,omitempty"`                          // Aktueller Wert (nur für Verbesserung)
-	Type         string `json:"type" binding:"required,oneof=skill spell weapon"` // 'skill', 'spell' oder 'weapon' Waffenfertigkeiten sind normale Fertigkeiten (evtl. kann hier später der Name der Waffe angegeben werden )
-	Action       string `json:"action" binding:"required,oneof=learn improve"`    // 'learn' oder 'improve'
-	TargetLevel  int    `json:"target_level,omitempty"`                           // Zielwert (optional, für Kostenberechnung bis zu einem bestimmten Level)
-	UsePP        int    `json:"use_pp,omitempty"`                                 // Anzahl der zu verwendenden Praxispunkte
-	// Belohnungsoptionen
-	Reward *string `json:"reward" binding:"required,oneof=default noGold halveep"` // Belohnungsoptionen Lernen als Belohnung
-	// default
-	// learn: ohne Gold
-	// improve/spell: halbe EP kein Gold
-}
-
 // GetLernCost
 func GetLernCost(c *gin.Context) {
 	// Request-Parameter abrufen
-	var request LernCostRequest
+	var request gsmaster.LernCostRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
 		return
@@ -96,44 +81,37 @@ func GetLernCost(c *gin.Context) {
 	}
 	var costResult gsmaster.SkillCostResultNew
 	costResult.CharacterID = charID
-	costResult.CharacterClass = character.Typ
+
+	// Verwende Klassenabkürzung wenn der Typ länger als 3 Zeichen ist
+	if len(character.Typ) > 3 {
+		costResult.CharacterClass = gsmaster.GetClassAbbreviation(character.Typ)
+	} else {
+		costResult.CharacterClass = character.Typ
+	}
 
 	// Normalize skill name (trim whitespace, proper case)
 	costResult.SkillName = strings.TrimSpace(request.Name)
 	costResult.Category = gsmaster.GetSkillCategory(request.Name)
 	costResult.Difficulty = gsmaster.GetSkillDifficulty(costResult.Category, costResult.SkillName)
-
-	switch {
-	case request.Action == "learn" && request.Type == "skill":
-		err := gsmaster.CalcSkillLernCost(&costResult, request.Reward)
+	var response []gsmaster.SkillCostResultNew
+	for i := request.CurrentLevel + 1; i <= 18; i++ {
+		levelResult := gsmaster.SkillCostResultNew{
+			CharacterID:    costResult.CharacterID,
+			CharacterClass: costResult.CharacterClass,
+			SkillName:      costResult.SkillName,
+			Category:       costResult.Category,
+			Difficulty:     costResult.Difficulty,
+			TargetLevel:    i,
+		}
+		err := gsmaster.GetLernCostNextLevel(&request, &levelResult, request.Reward, i, character.Typ)
 		if err != nil {
 			respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
 			return
 		}
-		// extrakosten für elfen
-		if character.Typ == "Elf" {
-			costResult.EP += 6
-		}
-	case request.Action == "learn" && request.Type == "spell":
-		err := gsmaster.CalcSpellLernCost(&costResult, request.Reward)
-		if err != nil {
-			respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
-			return
-		}
-		// extrakosten für elfen
-		if character.Typ == "Elf" {
-			costResult.EP += 6
-		}
-	case request.Action == "improve" && request.Type == "skill":
-		err := gsmaster.CalcSkillImproveCost(&costResult, request.CurrentLevel, request.Reward)
-		if err != nil {
-			respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
-			return
-		}
-
-	default:
+		response = append(response, levelResult)
 	}
-	c.JSON(http.StatusOK, costResult)
+
+	c.JSON(http.StatusOK, response)
 }
 
 // GetSkillCost berechnet die Kosten zum Erlernen oder Verbessern einer Fertigkeit
@@ -645,7 +623,7 @@ func applyPPReduction(request *SkillCostRequest, cost *gsmaster.LearnCost, avail
 	return finalEP, finalLE, reduction
 }
 
-func CalcSkillLearnCost(req *LernCostRequest, skillCostInfo *gsmaster.SkillCostResultNew) error {
+func CalcSkillLearnCost(req *gsmaster.LernCostRequest, skillCostInfo *gsmaster.SkillCostResultNew) error {
 	// Fallback-Werte für Skills ohne definierte Kategorie/Schwierigkeit
 
 	result, err := gsmaster.CalculateSkillLearningCosts(skillCostInfo.CharacterClass, skillCostInfo.Category, skillCostInfo.Difficulty)

@@ -566,12 +566,11 @@ export default {
       // Prüfe ob Token vorhanden ist
       const token = localStorage.getItem('token');
       if (!token) {
-        console.warn('No authentication token available, using fallback reward types');
-        this.availableRewardTypes = this.getDefaultRewardTypes();
-        if (this.availableRewardTypes.length > 0 && !this.selectedRewardType) {
-          this.selectedRewardType = this.availableRewardTypes[0].value;
-          // loadLearningCosts wird automatisch durch selectedRewardType watcher ausgelöst
-        }
+        console.error('No authentication token available - cannot load reward types');
+        this.availableRewardTypes = [{
+          value: 'error',
+          label: 'Anmeldung erforderlich'
+        }];
         return;
       }
       
@@ -607,12 +606,12 @@ export default {
           console.log('Set default reward type to:', this.selectedRewardType);
           // loadLearningCosts wird automatisch durch selectedRewardType watcher ausgelöst
         } else if (this.availableRewardTypes.length === 0) {
-          console.warn('No reward types received from API, using fallback');
-          this.availableRewardTypes = this.getDefaultRewardTypes();
-          if (this.availableRewardTypes.length > 0 && !this.selectedRewardType) {
-            this.selectedRewardType = this.availableRewardTypes[0].value;
-            // loadLearningCosts wird automatisch durch selectedRewardType watcher ausgelöst
-          }
+          console.error('No reward types received from API - cannot proceed without proper reward types');
+          // Zeige Fehlermeldung statt Fallback zu verwenden
+          this.availableRewardTypes = [{
+            value: 'error',
+            label: 'Fehler beim Laden der Belohnungsarten'
+          }];
         }
         
       } catch (error) {
@@ -641,53 +640,15 @@ export default {
           console.error('Access forbidden - insufficient permissions');
         }
         
-        // Fallback auf Standard-Belohnungsarten bei Fehler
-        this.availableRewardTypes = this.getDefaultRewardTypes();
-        if (this.availableRewardTypes.length > 0 && !this.selectedRewardType) {
-          this.selectedRewardType = this.availableRewardTypes[0].value;
-          // loadLearningCosts wird automatisch durch selectedRewardType watcher ausgelöst
-        }
-        console.log('Using fallback reward types:', this.availableRewardTypes);
+        // Bei Fehlern klare Fehlermeldung statt Fallback
+        this.availableRewardTypes = [{
+          value: 'error',
+          label: 'Fehler beim Laden der Belohnungsarten'
+        }];
+        console.error('Could not load reward types from API, showing error state');
       } finally {
         this.isLoadingRewardTypes = false;
       }
-    },
-    
-    getDefaultRewardTypes() {
-      // Fallback-Belohnungsarten je nach Lerntyp
-      console.log('Generating default reward types for learning type:', this.learningType);
-      
-      let rewardTypes = [];
-      
-      switch (this.learningType) {
-        case 'learn':
-          rewardTypes = [
-            { value: 'default', label: 'Erfahrungspunkte verwenden' },
-            { value: 'gold', label: 'Gold verwenden' }
-          ];
-          break;
-        case 'spell':
-          rewardTypes = [
-            { value: 'default', label: 'Erfahrungspunkte verwenden' },
-            { value: 'gold', label: 'Gold verwenden' },
-            { value: 'pp', label: 'Praxispunkte verwenden' },
-            { value: 'mixed', label: 'Gemischt (EP + PP)' },
-            { value: 'ritual', label: 'Ritual durchführen' }
-          ];
-          break;
-        case 'improve':
-        default:
-          rewardTypes = [
-            { value: 'default', label: 'Erfahrungspunkte verwenden' },
-            { value: 'gold', label: 'Gold verwenden' },
-            { value: 'pp', label: 'Praxispunkte verwenden' },
-            { value: 'mixed', label: 'Gemischt (EP + PP)' }
-          ];
-          break;
-      }
-      
-      console.log('Generated default reward types:', rewardTypes);
-      return rewardTypes;
     },
     
     calculateAvailableLevels() {

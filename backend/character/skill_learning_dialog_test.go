@@ -177,16 +177,18 @@ func TestSkillLearningDialogWorkflow(t *testing.T) {
 		t.Skip("Skipping DB-dependent test - testing request structure only")
 
 		// Request wie das Frontend ihn für executeDetailedLearning sendet
-		requestData := ImproveSkillRequest{
+		requestData := gsmaster.LernCostRequest{
 			Name:         "Menschenkenntnis",
 			CurrentLevel: 10,
-			Notes:        "Fertigkeit Menschenkenntnis von 10 auf 11 verbessert",
+			Type:         "skill",
+			Action:       "improve",
 		}
 
 		// Verify the request structure is correct
 		assert.Equal(t, "Menschenkenntnis", requestData.Name)
 		assert.Equal(t, 10, requestData.CurrentLevel)
-		assert.NotEmpty(t, requestData.Notes)
+		assert.Equal(t, "skill", requestData.Type)
+		assert.Equal(t, "improve", requestData.Action)
 
 		// Das Frontend erwartet nach erfolgreichem Lernen diese Response-Felder:
 		expectedResponseFields := []string{"message", "skill_name", "ep_cost", "remaining_ep"}

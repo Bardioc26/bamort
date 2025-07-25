@@ -727,6 +727,11 @@ export default {
       try {
         const response = await this.$api.post(`/api/characters/${this.character.id}/learn-skill`, {
           name: this.newSkillName.trim(),
+          current_level: 0,
+          target_level: 1,
+          type: 'fertigkeit',
+          action: 'lernen',
+          reward: 'ep',
           notes: this.learnNotes || `Fertigkeit ${this.newSkillName} über Frontend gelernt`
         });
         
@@ -751,9 +756,14 @@ export default {
       
       this.isLoading = true;
       try {
-        const response = await this.$api.post(`/api/characters/${this.character.id}/improve-skill`, {
+        const response = await this.$api.post(`/api/characters/improve-skill`, {
+          char_id: this.character.id,
           name: this.selectedSkillToImprove.name,
           current_level: this.selectedSkillToImprove.fertigkeitswert,
+          target_level: this.selectedSkillToImprove.fertigkeitswert + 1,
+          type: 'skill',
+          action: 'improve',
+          reward: 'default',
           use_pp: this.usePP || 0,
           notes: this.improveNotes || `Fertigkeit ${this.selectedSkillToImprove.name} über Frontend verbessert`
         });
@@ -782,9 +792,14 @@ export default {
       // Waffenfertigkeit verbessern
       this.isLoading = true;
       try {
-        const response = await this.$api.post(`/api/characters/${this.character.id}/improve-skill`, {
+        const response = await this.$api.post(`/api/characters/improve-skill`, {
+          char_id: this.character.id,
           name: skill.name,
           current_level: skill.fertigkeitswert,
+          target_level: skill.fertigkeitswert + 1,
+          type: 'skill',
+          action: 'improve',
+          reward: 'default',
           use_pp: 0,
           notes: `Waffenfertigkeit ${skill.name} direkt aus Tabelle verbessert`
         });

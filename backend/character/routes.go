@@ -21,7 +21,8 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.GET("/:id/audit-log", GetCharacterAuditLog)   // Alle Änderungen oder gefiltert nach Feld (?field=experience_points)
 	charGrp.GET("/:id/audit-log/stats", GetAuditLogStats) // Statistiken über Änderungen
 
-	charGrp.POST("/lerncost", GetLernCost) // neuer Hauptendpunkt für alle Kostenberechnungen
+	charGrp.POST("/lerncost", GetLernCost)       // neuer Hauptendpunkt für alle Kostenberechnungen
+	charGrp.POST("/improve-skill", ImproveSkill) // Fertigkeit verbessern
 
 	// Kostenberechnung (konsolidiert)
 	//charGrp.POST("/:id/skill-cost", GetSkillCost)            // Hauptendpunkt für alle Kostenberechnungen
@@ -29,10 +30,8 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	//charGrp.GET("/:id/improve/skill", GetSkillAllLevelCosts) // Legacy - für alle Stufen
 
 	// Lernen und Verbessern (mit automatischem Audit-Log)
-	charGrp.POST("/:id/learn-skill", LearnSkill)     // Fertigkeit lernen
-	charGrp.POST("/:id/improve-skill", ImproveSkill) // Fertigkeit verbessern
-	charGrp.POST("/:id/learn-spell", LearnSpell)     // Zauber lernen
-	//charGrp.POST("/:id/improve-spell", ImproveSpell) // Zauber verbessern
+	charGrp.POST("/:id/learn-skill", LearnSkill) // Fertigkeit lernen
+	charGrp.POST("/:id/learn-spell", LearnSpell) // Zauber lernen
 
 	// Belohnungsarten für verschiedene Lernszenarien
 	charGrp.GET("/:id/reward-types", GetRewardTypes) // Verfügbare Belohnungsarten je nach Kontext

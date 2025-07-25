@@ -594,32 +594,107 @@ func getValueOrDefault(value *int, defaultValue int) int {
 
 // Learn and Improve handlers with automatic audit logging
 
-// LearnSkillRequest definiert die Struktur für das Lernen einer Fertigkeit
-type LearnSkillRequest struct {
-	Name  string `json:"name" binding:"required"`
-	Notes string `json:"notes,omitempty"`
-	UsePP int    `json:"use_pp,omitempty"`
-}
-
-// ImproveSkillRequest definiert die Struktur für das Verbessern einer Fertigkeit
-type ImproveSkillRequest struct {
-	Name         string `json:"name" binding:"required"`
-	CurrentLevel int    `json:"current_level,omitempty"`
-	Notes        string `json:"notes,omitempty"`
-	UsePP        int    `json:"use_pp,omitempty"`
-}
-
 // LearnSpellRequest definiert die Struktur für das Lernen eines Zaubers
 type LearnSpellRequest struct {
 	Name  string `json:"name" binding:"required"`
 	Notes string `json:"notes,omitempty"`
 }
 
-// ImproveSpellRequest definiert die Struktur für das Verbessern eines Zaubers
-type ImproveSpellRequest struct {
-	Name         string `json:"name" binding:"required"`
-	CurrentLevel int    `json:"current_level,omitempty"`
-	Notes        string `json:"notes,omitempty"`
+// calculateMultiLevelCosts berechnet die Kosten für mehrere Level-Verbesserungen mit gsmaster.GetLernCostNextLevel
+func calculateMultiLevelCosts(character *Char, skillName string, currentLevel int, levelsToLearn []int, rewardType string, usePP, useGold int) (*gsmaster.LearnCost, error) {
+	if len(levelsToLearn) == 0 {
+		return nil, fmt.Errorf("keine Level zum Lernen angegeben")
+	}
+
+	// Sortiere die Level aufsteigend
+	sortedLevels := make([]int, len(levelsToLearn))
+	copy(sortedLevels, levelsToLearn)
+	for i := 0; i < len(sortedLevels)-1; i++ {
+		for j := i + 1; j < len(sortedLevels); j++ {
+			if sortedLevels[i] > sortedLevels[j] {
+				sortedLevels[i], sortedLevels[j] = sortedLevels[j], sortedLevels[i]
+			}
+		}
+	}
+
+	// Erstelle LernCostRequest
+	var rewardTypePtr *string
+	if rewardType != "" {
+		rewardTypePtr = &rewardType
+	}
+
+	request := gsmaster.LernCostRequest{
+		CharId:       uint(character.ID),
+		Name:         skillName,
+		CurrentLevel: currentLevel,
+		Type:         "skill",
+		Action:       "improve",
+		TargetLevel:  sortedLevels[len(sortedLevels)-1], // Höchstes Level als Ziel
+		UsePP:        usePP,
+		UseGold:      useGold,
+		Reward:       rewardTypePtr,
+	}
+
+	totalCost := &gsmaster.LearnCost{
+		Stufe: sortedLevels[len(sortedLevels)-1],
+		LE:    0,
+		Ep:    0,
+		Money: 0,
+	}
+
+	remainingPP := usePP
+	remainingGold := useGold
+
+	// Berechne Kosten für jedes Level
+	for _, targetLevel := range sortedLevels {
+		levelResult := gsmaster.SkillCostResultNew{
+			CharacterID:    fmt.Sprintf("%d", character.ID),
+			CharacterClass: getCharacterClass(character),
+			SkillName:      skillName,
+			Category:       gsmaster.GetSkillCategory(skillName),
+			Difficulty:     gsmaster.GetSkillDifficulty(gsmaster.GetSkillCategory(skillName), skillName),
+			TargetLevel:    targetLevel,
+		}
+
+		// Temporäre Request für dieses Level
+		tempRequest := request
+		tempRequest.CurrentLevel = targetLevel - 1
+		tempRequest.UsePP = remainingPP
+		tempRequest.UseGold = remainingGold
+
+		err := gsmaster.GetLernCostNextLevel(&tempRequest, &levelResult, rewardTypePtr, targetLevel, character.Typ)
+		if err != nil {
+			return nil, fmt.Errorf("fehler bei Level %d: %v", targetLevel, err)
+		}
+
+		// Aktualisiere verbleibende Ressourcen
+		if levelResult.PPUsed > 0 {
+			remainingPP -= levelResult.PPUsed
+			if remainingPP < 0 {
+				remainingPP = 0
+			}
+		}
+		if levelResult.GoldUsed > 0 {
+			remainingGold -= levelResult.GoldUsed
+			if remainingGold < 0 {
+				remainingGold = 0
+			}
+		}
+
+		totalCost.Ep += levelResult.EP
+		totalCost.Money += levelResult.GoldCost
+		totalCost.LE += levelResult.LE
+	}
+
+	return totalCost, nil
+}
+
+// getCharacterClass gibt die Charakterklassen-Abkürzung zurück
+func getCharacterClass(character *Char) string {
+	if len(character.Typ) > 3 {
+		return gsmaster.GetClassAbbreviation(character.Typ)
+	}
+	return character.Typ
 }
 
 // LearnSkill lernt eine neue Fertigkeit und erstellt Audit-Log-Einträge
@@ -632,46 +707,85 @@ func LearnSkill(c *gin.Context) {
 		return
 	}
 
-	var request LearnSkillRequest
+	// Verwende gsmaster.LernCostRequest direkt
+	var request gsmaster.LernCostRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
 		return
 	}
 
-	// Berechne Kosten mit GetSkillCost
-	costRequest := SkillCostRequest{
-		Name:   request.Name,
-		Type:   "skill",
-		Action: "learn",
-		UsePP:  request.UsePP,
+	// Setze Charakter-ID und Action für learning
+	request.CharId = character.ID
+	request.Action = "learn"
+	if request.Type == "" {
+		request.Type = "skill" // Default zu skill für Learning
 	}
 
-	cost, _, _, err := calculateSingleCost(&character, &costRequest)
-	if err != nil {
-		respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
-		return
+	// Bestimme das finale Level
+	finalLevel := request.TargetLevel
+	if finalLevel <= 0 {
+		finalLevel = 1 // Standard für neue Fertigkeit
+	}
+
+	// Für Learning müssen wir von Level 0 (nicht gelernt) auf finalLevel lernen
+	var totalEP, totalGold int
+	var err error
+
+	// Loop für jeden Level von 0 bis finalLevel (für neue Fertigkeiten)
+	for tempLevel := 0; tempLevel < finalLevel; tempLevel++ {
+		nextLevel := tempLevel + 1
+
+		// Erstelle temporären Request für diesen Level
+		tempRequest := request
+		tempRequest.CurrentLevel = tempLevel
+		tempRequest.TargetLevel = nextLevel
+
+		// Für das erste Level (0->1) ist es ein "learn", für weitere Level "improve"
+		if tempLevel == 0 {
+			tempRequest.Action = "learn"
+		} else {
+			tempRequest.Action = "improve"
+		}
+
+		// Berechne Kosten für diesen einen Level
+		var costResult gsmaster.SkillCostResultNew
+		costResult.CharacterID = fmt.Sprintf("%d", character.ID)
+		costResult.CharacterClass = character.Typ
+		costResult.SkillName = request.Name
+
+		err = gsmaster.GetLernCostNextLevel(&tempRequest, &costResult, request.Reward, nextLevel, character.Typ)
+		if err != nil {
+			respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fehler bei Level %d: %v", nextLevel, err))
+			return
+		}
+
+		// Addiere die Kosten
+		totalEP += costResult.EP
+		totalGold += costResult.GoldCost
 	}
 
 	// Prüfe, ob genügend EP vorhanden sind
 	currentEP := character.Erfahrungsschatz.Value
-	if currentEP < cost.Ep {
+	if currentEP < totalEP {
 		respondWithError(c, http.StatusBadRequest, "Nicht genügend Erfahrungspunkte vorhanden")
 		return
 	}
 
 	// Prüfe, ob genügend Gold vorhanden ist
 	currentGold := character.Vermoegen.Goldstücke
-	if currentGold < cost.Money {
+	if currentGold < totalGold {
 		respondWithError(c, http.StatusBadRequest, "Nicht genügend Gold vorhanden")
 		return
 	}
 
 	// EP abziehen und Audit-Log erstellen
-	newEP := currentEP - cost.Ep
-	if cost.Ep > 0 {
-		notes := fmt.Sprintf("Fertigkeit '%s' gelernt", request.Name)
-		if request.Notes != "" {
-			notes += " - " + request.Notes
+	newEP := currentEP - totalEP
+	if totalEP > 0 {
+		var notes string
+		if finalLevel > 1 {
+			notes = fmt.Sprintf("Fertigkeit '%s' bis Level %d gelernt", request.Name, finalLevel)
+		} else {
+			notes = fmt.Sprintf("Fertigkeit '%s' gelernt", request.Name)
 		}
 
 		err = CreateAuditLogEntry(character.ID, "experience_points", currentEP, newEP, ReasonSkillLearning, 0, notes)
@@ -683,12 +797,9 @@ func LearnSkill(c *gin.Context) {
 	}
 
 	// Gold abziehen und Audit-Log erstellen
-	newGold := currentGold - cost.Money
-	if cost.Money > 0 {
+	newGold := currentGold - totalGold
+	if totalGold > 0 {
 		notes := fmt.Sprintf("Gold für Fertigkeit '%s' ausgegeben", request.Name)
-		if request.Notes != "" {
-			notes += " - " + request.Notes
-		}
 
 		err = CreateAuditLogEntry(character.ID, "gold", currentGold, newGold, ReasonSkillLearning, 0, notes)
 		if err != nil {
@@ -707,30 +818,54 @@ func LearnSkill(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	// Response für Multi-Level oder Single-Level
+	response := gin.H{
 		"message":        "Fertigkeit erfolgreich gelernt",
 		"skill_name":     request.Name,
-		"ep_cost":        cost.Ep,
-		"gold_cost":      cost.Money,
+		"final_level":    finalLevel,
+		"ep_cost":        totalEP,
+		"gold_cost":      totalGold,
 		"remaining_ep":   newEP,
 		"remaining_gold": newGold,
-	})
+	}
+
+	// Füge Multi-Level-spezifische Informationen hinzu
+	if finalLevel > 1 {
+		// Erstelle Array der gelernten Level für Kompatibilität
+		var levelsLearned []int
+		for i := 1; i <= finalLevel; i++ {
+			levelsLearned = append(levelsLearned, i)
+		}
+		response["levels_learned"] = levelsLearned
+		response["level_count"] = finalLevel
+		response["multi_level"] = true
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // ImproveSkill verbessert eine bestehende Fertigkeit und erstellt Audit-Log-Einträge
 func ImproveSkill(c *gin.Context) {
-	charID := c.Param("id")
-	var character Char
+	// Verwende gsmaster.LernCostRequest direkt
+	var request gsmaster.LernCostRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
+		return
+	}
 
-	if err := character.FirstID(charID); err != nil {
+	// Hole Charakter über die ID aus dem Request
+	var character Char
+	if err := character.FirstID(fmt.Sprintf("%d", request.CharId)); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
 	}
 
-	var request ImproveSkillRequest
-	if err := c.ShouldBindJSON(&request); err != nil {
-		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
-		return
+	// Verwende Klassenabkürzung wenn der Typ länger als 3 Zeichen ist
+	var characterClass string
+	if len(character.Typ) > 3 {
+		characterClass = gsmaster.GetClassAbbreviation(character.Typ)
+	} else {
+		characterClass = character.Typ
 	}
 
 	// Aktuellen Level ermitteln, falls nicht angegeben
@@ -741,43 +876,72 @@ func ImproveSkill(c *gin.Context) {
 			respondWithError(c, http.StatusBadRequest, "Fertigkeit nicht bei diesem Charakter vorhanden")
 			return
 		}
+		request.CurrentLevel = currentLevel
 	}
 
-	// Berechne Kosten mit GetSkillCost
-	costRequest := SkillCostRequest{
-		Name:         request.Name,
-		Type:         "skill",
-		Action:       "improve",
-		CurrentLevel: currentLevel,
-		UsePP:        request.UsePP,
+	// Bestimme das finale Level
+	finalLevel := request.TargetLevel
+	if finalLevel <= 0 {
+		finalLevel = currentLevel + 1
 	}
 
-	cost, _, _, err := calculateSingleCost(&character, &costRequest)
-	if err != nil {
-		respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
-		return
+	// Initialisiere Gesamtkosten
+	var totalEP, totalGold int
+	var err error
+
+	// Loop für jeden Level von currentLevel bis finalLevel
+	tempLevel := currentLevel
+	for tempLevel < finalLevel {
+		nextLevel := tempLevel + 1
+
+		// Erstelle temporären Request für diesen Level
+		tempRequest := request
+		tempRequest.CurrentLevel = tempLevel
+		tempRequest.TargetLevel = nextLevel
+
+		// Berechne Kosten für diesen einen Level
+		var costResult gsmaster.SkillCostResultNew
+		costResult.CharacterID = fmt.Sprintf("%d", character.ID)
+		costResult.CharacterClass = characterClass
+		costResult.SkillName = request.Name
+
+		err = gsmaster.GetLernCostNextLevel(&tempRequest, &costResult, request.Reward, nextLevel, character.Typ)
+		if err != nil {
+			respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fehler bei Level %d: %v", nextLevel, err))
+			return
+		}
+
+		// Addiere die Kosten
+		totalEP += costResult.EP
+		totalGold += costResult.GoldCost
+
+		tempLevel++
 	}
 
 	// Prüfe, ob genügend EP vorhanden sind
 	currentEP := character.Erfahrungsschatz.Value
-	if currentEP < cost.Ep {
+	if currentEP < totalEP {
 		respondWithError(c, http.StatusBadRequest, "Nicht genügend Erfahrungspunkte vorhanden")
 		return
 	}
 
 	// Prüfe, ob genügend Gold vorhanden ist
 	currentGold := character.Vermoegen.Goldstücke
-	if currentGold < cost.Money {
+	if currentGold < totalGold {
 		respondWithError(c, http.StatusBadRequest, "Nicht genügend Gold vorhanden")
 		return
 	}
 
 	// EP abziehen und Audit-Log erstellen
-	newEP := currentEP - cost.Ep
-	if cost.Ep > 0 {
-		notes := fmt.Sprintf("Fertigkeit '%s' von %d auf %d verbessert", request.Name, currentLevel, currentLevel+1)
-		if request.Notes != "" {
-			notes += " - " + request.Notes
+	newEP := currentEP - totalEP
+	if totalEP > 0 {
+		// Erstelle Notiz für Multi-Level Improvement
+		levelCount := finalLevel - currentLevel
+		var notes string
+		if levelCount > 1 {
+			notes = fmt.Sprintf("Fertigkeit '%s' von %d auf %d verbessert (%d Level)", request.Name, currentLevel, finalLevel, levelCount)
+		} else {
+			notes = fmt.Sprintf("Fertigkeit '%s' von %d auf %d verbessert", request.Name, currentLevel, finalLevel)
 		}
 
 		err = CreateAuditLogEntry(character.ID, "experience_points", currentEP, newEP, ReasonSkillImprovement, 0, notes)
@@ -789,12 +953,9 @@ func ImproveSkill(c *gin.Context) {
 	}
 
 	// Gold abziehen und Audit-Log erstellen
-	newGold := currentGold - cost.Money
-	if cost.Money > 0 {
+	newGold := currentGold - totalGold
+	if totalGold > 0 {
 		notes := fmt.Sprintf("Gold für Verbesserung von '%s' ausgegeben", request.Name)
-		if request.Notes != "" {
-			notes += " - " + request.Notes
-		}
 
 		err = CreateAuditLogEntry(character.ID, "gold", currentGold, newGold, ReasonSkillImprovement, 0, notes)
 		if err != nil {
@@ -813,16 +974,32 @@ func ImproveSkill(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	// Response für Multi-Level oder Single-Level
+	response := gin.H{
 		"message":        "Fertigkeit erfolgreich verbessert",
 		"skill_name":     request.Name,
 		"from_level":     currentLevel,
-		"to_level":       currentLevel + 1,
-		"ep_cost":        cost.Ep,
-		"gold_cost":      cost.Money,
+		"to_level":       finalLevel,
+		"ep_cost":        totalEP,
+		"gold_cost":      totalGold,
 		"remaining_ep":   newEP,
 		"remaining_gold": newGold,
-	})
+	}
+
+	// Füge Multi-Level-spezifische Informationen hinzu
+	levelCount := finalLevel - currentLevel
+	if levelCount > 1 {
+		// Erstelle Array der gelernten Level für Kompatibilität
+		var levelsLearned []int
+		for i := currentLevel + 1; i <= finalLevel; i++ {
+			levelsLearned = append(levelsLearned, i)
+		}
+		response["levels_learned"] = levelsLearned
+		response["level_count"] = levelCount
+		response["multi_level"] = true
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // LearnSpell lernt einen neuen Zauber und erstellt Audit-Log-Einträge
@@ -893,89 +1070,6 @@ func LearnSpell(c *gin.Context) {
 	})
 }
 
-// ImproveSpell verbessert einen bestehenden Zauber und erstellt Audit-Log-Einträge
-// Zauber können nicht verbessert werden
-/*
-func ImproveSpell(c *gin.Context) {
-	charID := c.Param("id")
-	var character Char
-
-	if err := character.FirstID(charID); err != nil {
-		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
-		return
-	}
-
-	var request ImproveSpellRequest
-	if err := c.ShouldBindJSON(&request); err != nil {
-		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
-		return
-	}
-
-	// Aktuellen Level ermitteln, falls nicht angegeben
-	currentLevel := request.CurrentLevel
-	if currentLevel <= 0 {
-		currentLevel = getCurrentSkillLevel(&character, request.Name, "spell")
-		if currentLevel == -1 {
-			respondWithError(c, http.StatusBadRequest, "Zauber nicht bei diesem Charakter vorhanden")
-			return
-		}
-	}
-
-	// Berechne Kosten mit GetSkillCost
-	costRequest := SkillCostRequest{
-		Name:         request.Name,
-		Type:         "spell",
-		Action:       "improve",
-		CurrentLevel: currentLevel,
-	}
-
-	cost, _, _, err := calculateSingleCost(&character, &costRequest)
-	if err != nil {
-		respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
-		return
-	}
-
-	// Prüfe, ob genügend EP vorhanden sind
-	currentEP := character.Erfahrungsschatz.Value
-	if currentEP < cost.Ep {
-		respondWithError(c, http.StatusBadRequest, "Nicht genügend Erfahrungspunkte vorhanden")
-		return
-	}
-
-	// EP abziehen und Audit-Log erstellen
-	newEP := currentEP - cost.Ep
-	if cost.Ep > 0 {
-		notes := fmt.Sprintf("Zauber '%s' von %d auf %d verbessert", request.Name, currentLevel, currentLevel+1)
-		if request.Notes != "" {
-			notes += " - " + request.Notes
-		}
-
-		err = CreateAuditLogEntry(character.ID, "experience_points", currentEP, newEP, ReasonSpellImprovement, 0, notes)
-		if err != nil {
-			respondWithError(c, http.StatusInternalServerError, "Fehler beim Erstellen des Audit-Log-Eintrags")
-			return
-		}
-		character.Erfahrungsschatz.Value = newEP
-	}
-
-	// TODO: Hier sollte der Zauber des Charakters verbessert werden
-
-	// Charakter speichern
-	if err := database.DB.Save(&character).Error; err != nil {
-		respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern des Charakters")
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message":      "Zauber erfolgreich verbessert",
-		"spell_name":   request.Name,
-		"from_level":   currentLevel,
-		"to_level":     currentLevel + 1,
-		"ep_cost":      cost.Ep,
-		"remaining_ep": newEP,
-	})
-}
-*/
 // GetRewardTypes liefert verfügbare Belohnungsarten für ein bestimmtes Lernszenario
 func GetRewardTypes(c *gin.Context) {
 	characterID := c.Param("id")

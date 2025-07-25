@@ -27,7 +27,6 @@ const (
 	ReasonSkillLearning    AuditLogReason = "skill_learning"
 	ReasonSkillImprovement AuditLogReason = "skill_improvement"
 	ReasonSpellLearning    AuditLogReason = "spell_learning"
-	ReasonSpellImprovement AuditLogReason = "spell_improvement"
 	ReasonEquipment        AuditLogReason = "equipment"
 	ReasonReward           AuditLogReason = "reward"
 	ReasonCorrection       AuditLogReason = "correction"

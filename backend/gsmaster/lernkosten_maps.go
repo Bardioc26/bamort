@@ -757,9 +757,15 @@ func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, rewa
 		costResult.EP = costResult.EP / 2 // Halbiere die EP-Kosten für diese Belohnung
 	}
 	if costResult.GoldUsed > 0 {
-		if costResult.EP < (costResult.GoldUsed / 10) {
-			costResult.GoldUsed = costResult.EP * 10 //maximal so viele Gold verwenden wie EP benötigt werden
+		// 10 Gold = 1 EP
+		epFromGold := costResult.GoldUsed / 10
+		if epFromGold > costResult.EP {
+			// Maximal so viel Gold verwenden wie EP benötigt werden
+			costResult.GoldUsed = costResult.EP * 10
 			costResult.EP = 0
+		} else {
+			// Reduziere EP um die Menge, die durch Gold ersetzt wird
+			costResult.EP -= epFromGold
 		}
 	}
 
@@ -788,10 +794,14 @@ func CalcSpellLernCost(costResult *SkillCostResultNew, reward *string) error {
 
 	trainCost := learningCostsData.SpellLEPerLevel[spellLevel] // LE pro Stufe des Zaubers
 	if costResult.PPUsed > 0 {
-		trainCost -= costResult.PPUsed // Wenn PP verwendet werden, setze die Kosten auf die PP
+		trainCost -= costResult.PPUsed // Wenn PP verwendet werden, reduziere die LE-Kosten
+		if trainCost < 0 {
+			trainCost = 0 // Verhindere negative LE-Kosten
+		}
 	}
+	costResult.LE = trainCost                // Setze die LE-Kosten
 	costResult.EP = trainCost * SpellEPPerLE // EP-Kosten für das Lernen des Zaubers
-	costResult.GoldCost = trainCost * 100    // Beispiel: 200 Gold pro LE
+	costResult.GoldCost = trainCost * 100    // Beispiel: 100 Gold pro LE
 	costResult.Category = spellCategory
 	costResult.Difficulty = fmt.Sprintf("Stufe %d", spellLevel) // Zauber haben keine Schwierigkeit, sondern eine Stufe
 	if reward != nil && *reward == "spruchrolle" {
@@ -816,6 +826,11 @@ func GetLernCostNextLevel(request *LernCostRequest, costResult *SkillCostResultN
 	// abhängig von der Aktion (learn/improve) und der Belohnung.
 	// die Berechnung erfolgt immer für genau 1 Level
 	// Diese Funktion wird in GetLernCost aufgerufen.
+
+	// Übertrage PP und Gold aus dem Request für die Kostenberechnung
+	costResult.PPUsed = request.UsePP
+	costResult.GoldUsed = request.UseGold
+
 	switch {
 	case request.Action == "learn" && request.Type == "skill":
 		err := CalcSkillLernCost(costResult, request.Reward)

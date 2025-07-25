@@ -645,13 +645,14 @@ func TestGetLernCostEndpoint(t *testing.T) {
 	t.Run("GetLernCost with Athletik for Krieger character", func(t *testing.T) {
 		// Create request body using gsmaster.LernCostRequest structure
 		requestData := gsmaster.LernCostRequest{
-			CharId:       20,                      // CharacterID = 20
-			Name:         "Athletik",              // SkillName = Athletik
-			CurrentLevel: 9,                       // CurrentLevel = 9
-			Type:         "skill",                 // Type = skill
-			Action:       "improve",               // Action = improve (since we have current level)
-			TargetLevel:  0,                       // TargetLevel = 0 (will calculate up to level 18)
-			UsePP:        0,                       // No practice points used
+			CharId:       20,         // CharacterID = 20
+			Name:         "Athletik", // SkillName = Athletik
+			CurrentLevel: 9,          // CurrentLevel = 9
+			Type:         "skill",    // Type = skill
+			Action:       "improve",  // Action = improve (since we have current level)
+			TargetLevel:  0,          // TargetLevel = 0 (will calculate up to level 18)
+			UsePP:        0,          // No practice points used
+			UseGold:      0,
 			Reward:       &[]string{"default"}[0], // Default reward type
 		}
 		requestBody, _ := json.Marshal(requestData)
@@ -750,6 +751,367 @@ func TestGetLernCostEndpoint(t *testing.T) {
 			assert.Equal(t, "Athletik", cost.SkillName, "All entries should have correct skill name")
 			assert.Equal(t, "Kr", cost.CharacterClass, "All entries should have correct character class")
 			expectedLevel++
+		}
+	})
+
+	t.Run("GetLernCost Athletik - Detailed Cost Analysis for Each Level", func(t *testing.T) {
+		requestData := gsmaster.LernCostRequest{
+			CharId:       20,
+			Name:         "Athletik",
+			CurrentLevel: 9,
+			Type:         "skill",
+			Action:       "improve",
+			TargetLevel:  0, // Calculate all levels
+			UsePP:        0,
+			UseGold:      0,
+			Reward:       &[]string{"default"}[0],
+		}
+		requestBody, _ := json.Marshal(requestData)
+
+		req, _ := http.NewRequest("POST", "/api/characters/lerncost", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+
+		GetLernCost(c)
+
+		assert.Equal(t, http.StatusOK, w.Code, "Request should succeed")
+
+		var response []gsmaster.SkillCostResultNew
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err, "Response should be valid JSON")
+
+		fmt.Printf("\n=== Detailed Cost Analysis for Athletik (Levels 10-18) ===\n")
+		fmt.Printf("Level | EP Cost | Gold Cost | LE Cost | PP Used | Gold Used\n")
+		fmt.Printf("------|---------|-----------|---------|---------|----------\n")
+
+		for _, cost := range response {
+			fmt.Printf("%5d | %7d | %9d | %7d | %7d | %9d\n",
+				cost.TargetLevel, cost.EP, cost.GoldCost, cost.LE, cost.PPUsed, cost.GoldUsed)
+
+			// Validate each level's costs
+			assert.Greater(t, cost.EP, 0, "EP cost should be positive for level %d", cost.TargetLevel)
+			assert.GreaterOrEqual(t, cost.GoldCost, 0, "Gold cost should be non-negative for level %d", cost.TargetLevel)
+			assert.GreaterOrEqual(t, cost.LE, 0, "LE cost should be non-negative for level %d", cost.TargetLevel)
+			assert.Equal(t, 0, cost.PPUsed, "PP Used should be 0 when UsePP=0 for level %d", cost.TargetLevel)
+			assert.Equal(t, 0, cost.GoldUsed, "Gold Used should be 0 when UseGold=0 for level %d", cost.TargetLevel)
+
+			// Verify cost progression (higher levels should generally cost more)
+			if cost.TargetLevel > 10 {
+				prevLevel := cost.TargetLevel - 1
+				var prevCost *gsmaster.SkillCostResultNew
+				for i := range response {
+					if response[i].TargetLevel == prevLevel {
+						prevCost = &response[i]
+						break
+					}
+				}
+				if prevCost != nil {
+					assert.GreaterOrEqual(t, cost.EP, prevCost.EP,
+						"EP cost should not decrease from level %d to %d", prevLevel, cost.TargetLevel)
+				}
+			}
+		}
+	})
+
+	t.Run("GetLernCost Athletik - With Practice Points Usage", func(t *testing.T) {
+		testCases := []struct {
+			usePP       int
+			description string
+		}{
+			{5, "Using 5 Practice Points"},
+			{10, "Using 10 Practice Points"},
+			{20, "Using 20 Practice Points"},
+		}
+
+		for _, tc := range testCases {
+			t.Run(tc.description, func(t *testing.T) {
+				requestData := gsmaster.LernCostRequest{
+					CharId:       20,
+					Name:         "Athletik",
+					CurrentLevel: 9,
+					Type:         "skill",
+					Action:       "improve",
+					TargetLevel:  0,
+					UsePP:        tc.usePP,
+					UseGold:      0,
+					Reward:       &[]string{"default"}[0],
+				}
+				requestBody, _ := json.Marshal(requestData)
+
+				req, _ := http.NewRequest("POST", "/api/characters/lerncost", bytes.NewBuffer(requestBody))
+				req.Header.Set("Content-Type", "application/json")
+
+				w := httptest.NewRecorder()
+				c, _ := gin.CreateTestContext(w)
+				c.Request = req
+
+				GetLernCost(c)
+
+				assert.Equal(t, http.StatusOK, w.Code, "Request should succeed for UsePP=%d", tc.usePP)
+
+				var response []gsmaster.SkillCostResultNew
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				assert.NoError(t, err, "Response should be valid JSON")
+
+				fmt.Printf("\n=== Cost Analysis with %d Practice Points ===\n", tc.usePP)
+				fmt.Printf("Level | EP Cost | Gold Cost | LE Cost | PP Used | Gold Used\n")
+				fmt.Printf("------|---------|-----------|---------|---------|----------\n")
+
+				for i, cost := range response {
+					fmt.Printf("%5d | %7d | %9d | %7d | %7d | %9d\n",
+						cost.TargetLevel, cost.EP, cost.GoldCost, cost.LE, cost.PPUsed, cost.GoldUsed)
+
+					// Simple validation: PP should be reasonable and Gold should be 0
+					assert.LessOrEqual(t, cost.PPUsed, 50, "PP Used should be reasonable for level %d", cost.TargetLevel)
+					assert.Equal(t, 0, cost.GoldUsed, "Gold Used should be 0 when UseGold=0 for level %d", cost.TargetLevel)
+
+					// EP cost should be non-negative
+					assert.GreaterOrEqual(t, cost.EP, 0, "EP cost should be non-negative for level %d", cost.TargetLevel)
+
+					// When enough PP are available, early levels should have 0 EP cost
+					if i == 0 && tc.usePP >= 2 {
+						assert.Equal(t, 0, cost.EP, "Level 10 should have 0 EP cost when enough PP available")
+					}
+
+					// EP cost validation
+					if cost.PPUsed > 0 {
+						// When PP are used, EP should be reduced or zero
+						assert.GreaterOrEqual(t, cost.EP, 0, "EP cost should be non-negative for level %d", cost.TargetLevel)
+					} else {
+						// When no PP are used, EP should be positive
+						assert.Greater(t, cost.EP, 0, "EP cost should be positive when no PP used for level %d", cost.TargetLevel)
+					}
+				}
+			})
+		}
+	})
+
+	t.Run("GetLernCost Athletik - With Gold Usage", func(t *testing.T) {
+		testCases := []struct {
+			useGold     int
+			description string
+		}{
+			{50, "Using 50 Gold"},
+			{100, "Using 100 Gold"},
+			{200, "Using 200 Gold"},
+		}
+
+		for _, tc := range testCases {
+			t.Run(tc.description, func(t *testing.T) {
+				requestData := gsmaster.LernCostRequest{
+					CharId:       20,
+					Name:         "Athletik",
+					CurrentLevel: 9,
+					Type:         "skill",
+					Action:       "improve",
+					TargetLevel:  0,
+					UsePP:        0,
+					UseGold:      tc.useGold,
+					Reward:       &[]string{"default"}[0],
+				}
+				requestBody, _ := json.Marshal(requestData)
+
+				req, _ := http.NewRequest("POST", "/api/characters/lerncost", bytes.NewBuffer(requestBody))
+				req.Header.Set("Content-Type", "application/json")
+
+				w := httptest.NewRecorder()
+				c, _ := gin.CreateTestContext(w)
+				c.Request = req
+
+				GetLernCost(c)
+
+				assert.Equal(t, http.StatusOK, w.Code, "Request should succeed for UseGold=%d", tc.useGold)
+
+				var response []gsmaster.SkillCostResultNew
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				assert.NoError(t, err, "Response should be valid JSON")
+
+				fmt.Printf("\n=== Cost Analysis with %d Gold ===\n", tc.useGold)
+				fmt.Printf("Level | EP Cost | Gold Cost | LE Cost | PP Used | Gold Used\n")
+				fmt.Printf("------|---------|-----------|---------|---------|----------\n")
+
+				for i, cost := range response {
+					fmt.Printf("%5d | %7d | %9d | %7d | %7d | %9d\n",
+						cost.TargetLevel, cost.EP, cost.GoldCost, cost.LE, cost.PPUsed, cost.GoldUsed)
+
+					// Validate Gold usage based on EP needs and cumulative usage
+					remainingGold := tc.useGold
+
+					// Calculate cumulative Gold usage for previous levels
+					for j := 0; j < i; j++ {
+						if j < len(response) {
+							remainingGold -= response[j].GoldUsed
+						}
+					}
+
+					// Current level's expected Gold usage
+					epCostWithoutGold := cost.EP + (cost.GoldUsed / 10) // Reverse calculate original EP
+					maxGoldUsable := epCostWithoutGold * 10             // Max gold that can be used (10 gold = 1 EP)
+
+					expectedGoldUsed := 0
+					if remainingGold > 0 {
+						if remainingGold >= maxGoldUsable {
+							expectedGoldUsed = maxGoldUsable
+						} else {
+							expectedGoldUsed = remainingGold
+						}
+					}
+
+					assert.Equal(t, expectedGoldUsed, cost.GoldUsed, "Gold Used should match calculated value for level %d (remaining Gold: %d, max usable: %d)", cost.TargetLevel, remainingGold, maxGoldUsable)
+					assert.Equal(t, 0, cost.PPUsed, "PP Used should be 0 when UsePP=0 for level %d", cost.TargetLevel)
+
+					// EP cost validation
+					assert.GreaterOrEqual(t, cost.EP, 0, "EP cost should be non-negative for level %d", cost.TargetLevel)
+				}
+			})
+		}
+	})
+
+	t.Run("GetLernCost Athletik - Combined PP and Gold Usage", func(t *testing.T) {
+		testCases := []struct {
+			usePP       int
+			useGold     int
+			description string
+		}{
+			{10, 50, "Using 10 PP and 50 Gold"},
+			{15, 100, "Using 15 PP and 100 Gold"},
+			{25, 200, "Using 25 PP and 200 Gold"},
+		}
+
+		for _, tc := range testCases {
+			t.Run(tc.description, func(t *testing.T) {
+				requestData := gsmaster.LernCostRequest{
+					CharId:       20,
+					Name:         "Athletik",
+					CurrentLevel: 9,
+					Type:         "skill",
+					Action:       "improve",
+					TargetLevel:  0,
+					UsePP:        tc.usePP,
+					UseGold:      tc.useGold,
+					Reward:       &[]string{"default"}[0],
+				}
+				requestBody, _ := json.Marshal(requestData)
+
+				req, _ := http.NewRequest("POST", "/api/characters/lerncost", bytes.NewBuffer(requestBody))
+				req.Header.Set("Content-Type", "application/json")
+
+				w := httptest.NewRecorder()
+				c, _ := gin.CreateTestContext(w)
+				c.Request = req
+
+				GetLernCost(c)
+
+				assert.Equal(t, http.StatusOK, w.Code, "Request should succeed for UsePP=%d, UseGold=%d", tc.usePP, tc.useGold)
+
+				var response []gsmaster.SkillCostResultNew
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				assert.NoError(t, err, "Response should be valid JSON")
+
+				fmt.Printf("\n=== Cost Analysis with %d PP and %d Gold ===\n", tc.usePP, tc.useGold)
+				fmt.Printf("Level | EP Cost | Gold Cost | LE Cost | PP Used | Gold Used\n")
+				fmt.Printf("------|---------|-----------|---------|---------|----------\n")
+
+				for _, cost := range response {
+					fmt.Printf("%5d | %7d | %9d | %7d | %7d | %9d\n",
+						cost.TargetLevel, cost.EP, cost.GoldCost, cost.LE, cost.PPUsed, cost.GoldUsed)
+
+					// Calculate original TE needed (LE + PP Used = original TE)
+					teNeeded := cost.LE + cost.PPUsed
+
+					// Calculate original EP before gold usage (EP + Gold/10 = original EP)
+					epAfterPP := cost.EP + (cost.GoldUsed / 10)
+					maxGoldUsable := epAfterPP * 10
+
+					// Validate that resources are used reasonably
+					assert.LessOrEqual(t, cost.PPUsed, teNeeded, "PP Used should not exceed TE needed for level %d", cost.TargetLevel)
+					assert.LessOrEqual(t, cost.GoldUsed, maxGoldUsable, "Gold Used should not exceed max usable for level %d", cost.TargetLevel)
+
+					// EP cost should be non-negative
+					assert.GreaterOrEqual(t, cost.EP, 0, "EP cost should be non-negative for level %d", cost.TargetLevel)
+				}
+			})
+		}
+	})
+
+	t.Run("GetLernCost Athletik - Cost Comparison Baseline vs Resources", func(t *testing.T) {
+		// First get baseline costs (no resources used)
+		baselineRequest := gsmaster.LernCostRequest{
+			CharId:       20,
+			Name:         "Athletik",
+			CurrentLevel: 9,
+			Type:         "skill",
+			Action:       "improve",
+			TargetLevel:  0,
+			UsePP:        0,
+			UseGold:      0,
+			Reward:       &[]string{"default"}[0],
+		}
+		baselineBody, _ := json.Marshal(baselineRequest)
+
+		req, _ := http.NewRequest("POST", "/api/characters/lerncost", bytes.NewBuffer(baselineBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+
+		GetLernCost(c)
+
+		var baselineResponse []gsmaster.SkillCostResultNew
+		err := json.Unmarshal(w.Body.Bytes(), &baselineResponse)
+		assert.NoError(t, err, "Baseline response should be valid JSON")
+
+		// Now get costs with resources
+		resourceRequest := gsmaster.LernCostRequest{
+			CharId:       20,
+			Name:         "Athletik",
+			CurrentLevel: 9,
+			Type:         "skill",
+			Action:       "improve",
+			TargetLevel:  0,
+			UsePP:        15,
+			UseGold:      100,
+			Reward:       &[]string{"default"}[0],
+		}
+		resourceBody, _ := json.Marshal(resourceRequest)
+
+		req2, _ := http.NewRequest("POST", "/api/characters/lerncost", bytes.NewBuffer(resourceBody))
+		req2.Header.Set("Content-Type", "application/json")
+
+		w2 := httptest.NewRecorder()
+		c2, _ := gin.CreateTestContext(w2)
+		c2.Request = req2
+
+		GetLernCost(c2)
+
+		var resourceResponse []gsmaster.SkillCostResultNew
+		err = json.Unmarshal(w2.Body.Bytes(), &resourceResponse)
+		assert.NoError(t, err, "Resource response should be valid JSON")
+
+		// Compare the results
+		fmt.Printf("\n=== Cost Comparison: Baseline vs Using Resources ===\n")
+		fmt.Printf("Level | Baseline EP | Resource EP | EP Saved | PP Used | Gold Used\n")
+		fmt.Printf("------|-------------|-------------|----------|---------|----------\n")
+
+		assert.Equal(t, len(baselineResponse), len(resourceResponse), "Both responses should have same number of levels")
+
+		for i, baseline := range baselineResponse {
+			if i < len(resourceResponse) {
+				resource := resourceResponse[i]
+				assert.Equal(t, baseline.TargetLevel, resource.TargetLevel, "Target levels should match")
+
+				epSaved := baseline.EP - resource.EP
+				fmt.Printf("%5d | %11d | %11d | %8d | %7d | %9d\n",
+					baseline.TargetLevel, baseline.EP, resource.EP, epSaved, resource.PPUsed, resource.GoldUsed)
+
+				// Validate that using resources reduces EP cost (or at least doesn't increase it)
+				assert.LessOrEqual(t, resource.EP, baseline.EP,
+					"EP cost should not increase when using resources for level %d", baseline.TargetLevel)
+			}
 		}
 	})
 

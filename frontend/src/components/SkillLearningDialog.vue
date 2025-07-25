@@ -478,7 +478,17 @@ export default {
       if (!this.selectedLevel) return 0;
       
       const level = this.availableLevels.find(l => l.targetLevel === this.selectedLevel);
-      return level ? (level.ppUsed || level.ppCost) : 0;
+      if (!level) return 0;
+      
+      // PP werden nur bei bestimmten Belohnungstypen tatsächlich verwendet
+      switch (this.selectedRewardType) {
+        case 'pp':
+          return level.ppCost || 0;
+        case 'mixed':
+          return level.ppUsed || 0;
+        default:
+          return 0; // Bei anderen Belohnungstypen werden keine PP verwendet
+      }
     },
     
     remainingEP() {
@@ -854,8 +864,8 @@ export default {
         this.ppUsed = 0;
       }
       
-      // Bei gemischten Kosten oder PP-Belohnung: Neue Kosten vom Backend laden
-      if (this.selectedRewardType === 'mixed' || this.selectedRewardType === 'pp') {
+      // Lernkosten immer neu laden, da PP-Verwendung die Kosten beeinflussen kann
+      if (this.selectedRewardType && this.skill) {
         this.loadLearningCosts();
       }
     },
@@ -870,8 +880,8 @@ export default {
         this.goldUsed = 0;
       }
       
-      // Bei Belohnungsarten die Gold verwenden: Neue Kosten vom Backend laden
-      if (this.selectedRewardType === 'mixed' || this.selectedRewardType === 'gold' || this.selectedRewardType === 'default') {
+      // Lernkosten immer neu laden, da Gold-Verwendung die Kosten beeinflussen kann
+      if (this.selectedRewardType && this.skill) {
         this.loadLearningCosts();
       }
     },

@@ -111,9 +111,17 @@ func GetLernCost(c *gin.Context) {
 		// für die nächste Runde die PP und Gold reduzieren die zum Lernen genutzt werden sollen
 		if levelResult.PPUsed > 0 {
 			request.UsePP -= levelResult.PPUsed
+			// Sicherstellen, dass PP nicht unter 0 fallen
+			if request.UsePP < 0 {
+				request.UsePP = 0
+			}
 		}
 		if levelResult.GoldUsed > 0 {
 			request.UseGold -= levelResult.GoldUsed
+			// Sicherstellen, dass Gold nicht unter 0 fällt
+			if request.UseGold < 0 {
+				request.UseGold = 0
+			}
 		}
 		response = append(response, levelResult)
 	}

@@ -237,6 +237,7 @@ func GetLearnSpellCost(c *gin.Context) {
 	c.JSON(http.StatusOK, sd)
 }
 
+/*
 func GetSkillNextLevelCosts(c *gin.Context) {
 	// Get the character ID from the request
 	charID := c.Param("id")
@@ -267,7 +268,8 @@ func GetSkillNextLevelCosts(c *gin.Context) {
 	// Return the updated character
 	c.JSON(http.StatusOK, character.Fertigkeiten)
 }
-
+*/
+/*
 func GetSkillAllLevelCosts(c *gin.Context) {
 	// Get the character ID from the request
 	charID := c.Param("id")
@@ -322,7 +324,7 @@ func GetSkillAllLevelCosts(c *gin.Context) {
 	// Return the updated character
 	c.JSON(http.StatusOK, costArr)
 }
-
+*/
 // ExperienceAndWealthResponse repräsentiert die Antwort für EP und Vermögen
 type ExperienceAndWealthResponse struct {
 	ExperiencePoints int `json:"experience_points"`
@@ -892,6 +894,8 @@ func LearnSpell(c *gin.Context) {
 }
 
 // ImproveSpell verbessert einen bestehenden Zauber und erstellt Audit-Log-Einträge
+// Zauber können nicht verbessert werden
+/*
 func ImproveSpell(c *gin.Context) {
 	charID := c.Param("id")
 	var character Char
@@ -971,7 +975,7 @@ func ImproveSpell(c *gin.Context) {
 		"remaining_ep": newEP,
 	})
 }
-
+*/
 // GetRewardTypes liefert verfügbare Belohnungsarten für ein bestimmtes Lernszenario
 func GetRewardTypes(c *gin.Context) {
 	characterID := c.Param("id")

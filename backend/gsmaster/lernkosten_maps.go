@@ -738,7 +738,10 @@ func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, rewa
 	diffData := learningCostsData.ImprovementCost[costResult.Category][costResult.Difficulty]
 
 	trainCost := diffData.TrainCosts[currentLevel+1]
-	if costResult.PPUsed > 0 {
+	if trainCost < costResult.PPUsed {
+		costResult.PPUsed = trainCost //maximal so viele PP verwenden wie TE benötigt werden
+		trainCost = 0                 // Wenn PP verwendet werden, setze die Kosten auf
+	} else if costResult.PPUsed > 0 {
 		trainCost -= costResult.PPUsed // Wenn PP verwendet werden, setze die Kosten auf die PP
 	}
 	// Apply reward logic
@@ -752,6 +755,12 @@ func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, rewa
 	if reward != nil && *reward == "halveepnoGold" {
 		costResult.GoldCost = 0           // Keine Goldkosten für diese Belohnung
 		costResult.EP = costResult.EP / 2 // Halbiere die EP-Kosten für diese Belohnung
+	}
+	if costResult.GoldUsed > 0 {
+		if costResult.EP < (costResult.GoldUsed / 10) {
+			costResult.GoldUsed = costResult.EP * 10 //maximal so viele Gold verwenden wie EP benötigt werden
+			costResult.EP = 0
+		}
 	}
 
 	return nil

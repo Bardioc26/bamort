@@ -108,6 +108,13 @@ func GetLernCost(c *gin.Context) {
 			respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
 			return
 		}
+		// für die nächste Runde die PP und Gold reduzieren die zum Lernen genutzt werden sollen
+		if levelResult.PPUsed > 0 {
+			request.UsePP -= levelResult.PPUsed
+		}
+		if levelResult.GoldUsed > 0 {
+			request.UseGold -= levelResult.GoldUsed
+		}
 		response = append(response, levelResult)
 	}
 

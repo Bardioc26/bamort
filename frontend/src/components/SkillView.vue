@@ -12,7 +12,7 @@
               <div v-if="learningMode" class="resources-display">
                 <div class="resource-item">
                   <span class="resource-icon">⚡</span>
-                  <span class="resource-value">{{ character.erfahrungsschatz?.value || 0 }} EP</span>
+                  <span class="resource-value">{{ character.erfahrungsschatz?.ep || 0 }} EP</span>
                 </div>
                 <div class="resource-item">
                   <span class="resource-icon">💰</span>

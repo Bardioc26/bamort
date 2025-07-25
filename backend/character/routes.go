@@ -24,11 +24,6 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.POST("/lerncost", GetLernCost)       // neuer Hauptendpunkt für alle Kostenberechnungen
 	charGrp.POST("/improve-skill", ImproveSkill) // Fertigkeit verbessern
 
-	// Kostenberechnung (konsolidiert)
-	//charGrp.POST("/:id/skill-cost", GetSkillCost)            // Hauptendpunkt für alle Kostenberechnungen
-	//charGrp.GET("/:id/improve", GetSkillNextLevelCosts)      // Legacy - für nächste Stufe
-	//charGrp.GET("/:id/improve/skill", GetSkillAllLevelCosts) // Legacy - für alle Stufen
-
 	// Lernen und Verbessern (mit automatischem Audit-Log)
 	charGrp.POST("/:id/learn-skill", LearnSkill) // Fertigkeit lernen
 	charGrp.POST("/:id/learn-spell", LearnSpell) // Zauber lernen

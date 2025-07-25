@@ -59,8 +59,8 @@ type Merkmale struct {
 
 type Erfahrungsschatz struct {
 	models.BamortCharTrait
-	ES int `json:"value"`
-	EP int `json:"value"`
+	ES int `json:"es"` // Erfahrungsschatz
+	EP int `json:"ep"` // Erfahrungspunkte
 }
 
 type Bennies struct {

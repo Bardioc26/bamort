@@ -715,6 +715,10 @@ func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, rewa
 	//classKey := getClassAbbreviation(costResult.CharacterClass)
 	classKey := costResult.CharacterClass
 
+	if costResult.TargetLevel > 0 {
+		currentLevel = costResult.TargetLevel - 1 // Wenn ein Ziellevel angegeben ist, verwende dieses
+	}
+
 	// Wenn Kategorie und Schwierigkeit noch nicht gesetzt sind, finde die beste Option
 	if costResult.Category == "" || costResult.Difficulty == "" {
 		bestCategory, bestDifficulty, err := findBestCategoryForSkillImprovement(costResult.SkillName, classKey, currentLevel+1)

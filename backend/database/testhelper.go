@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -45,6 +46,25 @@ func copyFile(src, dst string) error {
 
 	_, err = io.Copy(destFile, sourceFile)
 	return err
+}
+
+// LoadCopyOfPredefinedTestData loads predefined test data from a specific file into the provided database
+func LoadCopyOfPredefinedTestData(targetDB *gorm.DB, dataFile string) error {
+	// Check if file exists
+	if _, err := os.Stat(dataFile); os.IsNotExist(err) {
+		return fmt.Errorf("predefined test data file not found: %s", dataFile)
+	}
+	testpath := filepath.Join(filepath.Dir(dataFile), "tmp_test_data.db")
+	if _, err := os.Stat(testpath); os.IsExist(err) {
+		os.Remove(testpath) // delete existing test data file
+	}
+	copyFile(dataFile, testpath)
+	targetDB, err := gorm.Open(sqlite.Open(testpath), &gorm.Config{})
+	if err != nil {
+		return fmt.Errorf("failed to open temporary test database: %w", err)
+	}
+	DB = targetDB
+	return nil
 }
 
 // SetupTestDB creates an in-memory SQLite database for testing
@@ -133,6 +153,12 @@ func SetupTestDB(opts ...bool) {
 			err := testDataLoader(DB)
 			if err != nil {
 				panic("failed to load test data: " + err.Error())
+			}
+		} else if isTestDb {
+			// If no test data loader is set, we can still use the default test data loading
+			err := LoadCopyOfPredefinedTestData(DB, "../testdata/prepared_test_data.db")
+			if err != nil {
+				panic("failed to load predefined test data: " + err.Error())
 			}
 		}
 		migrationDone = true

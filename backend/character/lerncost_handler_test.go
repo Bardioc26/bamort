@@ -598,7 +598,7 @@ func TestGetSkillAllLevelCostsEndpoint(t *testing.T) {
 // Test GetLernCost endpoint specifically with gsmaster.LernCostRequest structure
 func TestGetLernCostEndpoint(t *testing.T) {
 	// Setup test database
-	database.SetupTestDB()
+	database.SetupTestDB(true, true)
 	defer database.ResetTestDB()
 
 	// Migrate the schema
@@ -612,32 +612,32 @@ func TestGetLernCostEndpoint(t *testing.T) {
 	assert.NoError(t, err)
 	err = gsmaster.MigrateStructure()
 	assert.NoError(t, err)
+	/*
+		// Create test skill data
+		err = createTestSkillData()
+		assert.NoError(t, err)
+		defer cleanupTestSkillData()
+		// Create test character with ID 20 and class "Krieger"
+		testChar := createChar()
+		testChar.ID = 20
+		testChar.Typ = "Krieger" // Set character class to "Krieger"
 
-	// Create test skill data
-	err = createTestSkillData()
-	assert.NoError(t, err)
-	defer cleanupTestSkillData()
-
-	// Create test character with ID 20 and class "Krieger"
-	testChar := createChar()
-	testChar.ID = 20
-	testChar.Typ = "Krieger" // Set character class to "Krieger"
-
-	// Add Athletik skill at level 9
-	skillName := "Athletik"
-	skill := skills.Fertigkeit{
-		BamortCharTrait: models.BamortCharTrait{
-			BamortBase: models.BamortBase{
-				Name: skillName,
+		// Add Athletik skill at level 9
+		skillName := "Athletik"
+		skill := skills.Fertigkeit{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: skillName,
+				},
+				CharacterID: 20,
 			},
-			CharacterID: 20,
-		},
-		Fertigkeitswert: 9,
-	}
-	testChar.Fertigkeiten = append(testChar.Fertigkeiten, skill)
+			Fertigkeitswert: 9,
+		}
+		testChar.Fertigkeiten = append(testChar.Fertigkeiten, skill)
 
-	err = testChar.Create()
-	assert.NoError(t, err)
+		err = testChar.Create()
+		assert.NoError(t, err)
+	*/
 
 	// Setup Gin in test mode
 	gin.SetMode(gin.TestMode)

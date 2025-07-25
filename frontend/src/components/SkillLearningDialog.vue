@@ -34,28 +34,50 @@
             <div class="resource-info">
               <div class="resource-label">Praxispunkte</div>
               <div class="resource-amount">{{ skill?.pp || 0 }} PP</div>
+              <div class="resource-remaining">
+                <small>
+                  Verwendet: {{ ppUsed || 0 }} PP | 
+                  Verbleibend: {{ Math.max(0, (skill?.pp || 0) - (ppUsed || 0)) }} PP
+                </small>
+              </div>
               <div v-if="selectedLevel && selectedPPCost > 0" class="resource-remaining">
                 <small :class="{ 'text-warning': remainingPP < 5, 'text-danger': remainingPP <= 0 }">
-                  Verbleibend: {{ remainingPP }} PP
+                  Nach Lernen: {{ remainingPP }} PP
                 </small>
               </div>
             </div>
           </div>
-        </div>      <!-- Belohnungsart auswählen -->
-      <div class="form-group">
-        <label>Belohnungsart:</label>
-        <select v-model="selectedRewardType" :disabled="isLoadingRewardTypes">
-          <option value="" disabled>
-            {{ isLoadingRewardTypes ? 'Lade Belohnungsarten...' : 'Belohnungsart wählen' }}
-          </option>
-          <option 
-            v-for="rewardType in availableRewardTypes" 
-            :key="rewardType.value" 
-            :value="rewardType.value"
-          >
-            {{ rewardType.label }}
-          </option>
-        </select>
+        </div>      <!-- Belohnungsart und PP-Eingabe nebeneinander -->
+      <div class="form-group form-row">
+        <div class="form-col">
+          <label>Lernen als Belohnung:</label>
+          <select v-model="selectedRewardType" :disabled="isLoadingRewardTypes">
+            <option value="" disabled>
+              {{ isLoadingRewardTypes ? 'Lade Belohnungsarten...' : 'Belohnungsart wählen' }}
+            </option>
+            <option 
+              v-for="rewardType in availableRewardTypes" 
+              :key="rewardType.value" 
+              :value="rewardType.value"
+            >
+              {{ rewardType.label }}
+            </option>
+          </select>
+        </div>
+        <div class="form-col">
+          <label>Praxispunkte verwenden:</label>
+          <input 
+            v-model.number="ppUsed" 
+            type="number" 
+            min="0" 
+            :max="skill?.pp || 0"
+            placeholder="PP verwenden"
+            @input="updatePPUsage"
+          />
+          <small class="help-text">
+            {{ ppUsed || 0 }} / {{ skill?.pp || 0 }} PP
+          </small>
+        </div>
       </div>
 
       <!-- Lernbare Stufen -->
@@ -83,19 +105,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- PP Eingabe für gemischte Belohnung -->
-      <div v-if="selectedRewardType === 'mixed'" class="form-group">
-        <label>Praxispunkte verwenden (optional):</label>
-        <input 
-          v-model.number="ppUsed" 
-          type="number" 
-          min="0" 
-          :max="skill?.pp || 0"
-          placeholder="Anzahl PP verwenden"
-          @input="updateMixedCosts"
-        />
       </div>
 
       <!-- Notizen -->
@@ -288,6 +297,21 @@
   margin-bottom: 15px;
 }
 
+.form-row {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+.form-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-col:last-child {
+  flex: 0 0 180px;
+}
+
 .form-group label {
   display: block;
   margin-bottom: 5px;
@@ -309,6 +333,14 @@
 .form-group textarea {
   height: 80px;
   resize: vertical;
+}
+
+.help-text {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #6c757d;
+  font-style: italic;
 }
 
 .modal-actions {
@@ -783,11 +815,25 @@ export default {
       }
     },
     
-    updateMixedCosts() {
-      // Bei gemischten Kosten: Neue Kosten vom Backend laden
-      if (this.selectedRewardType === 'mixed') {
+    updatePPUsage() {
+      // Stelle sicher, dass PP-Verwendung die verfügbaren PP nicht überschreitet
+      const maxPP = this.skill?.pp || 0;
+      if (this.ppUsed > maxPP) {
+        this.ppUsed = maxPP;
+      }
+      if (this.ppUsed < 0) {
+        this.ppUsed = 0;
+      }
+      
+      // Bei gemischten Kosten oder PP-Belohnung: Neue Kosten vom Backend laden
+      if (this.selectedRewardType === 'mixed' || this.selectedRewardType === 'pp') {
         this.loadLearningCosts();
       }
+    },
+    
+    updateMixedCosts() {
+      // Diese Methode ist jetzt redundant, da updatePPUsage() alles übernimmt
+      this.updatePPUsage();
     },
     
     async executeDetailedLearning() {

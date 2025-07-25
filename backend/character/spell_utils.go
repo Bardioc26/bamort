@@ -19,3 +19,10 @@ func getSpellCategory(name string) string {
 	// Die Kategorien sind bereits die vollen Namen wie "Beherrschen", "Verändern", etc.
 	return spell.Category
 }
+
+// isSpell prüft, ob der gegebene Name ein Zauber ist
+func isSpell(name string) bool {
+	var spell gsmaster.Spell
+	err := database.DB.Where("name = ?", name).First(&spell).Error
+	return err == nil
+}

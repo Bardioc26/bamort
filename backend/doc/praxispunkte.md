@@ -94,9 +94,9 @@ Response:
 ### Praxispunkt
 ```go
 type Praxispunkt struct {
-    models.BamortCharTrait
-    Kategorie string `json:"kategorie"` // z.B. "Alltag", "Sozial", "Beherr", "Beweg", etc.
-    Anzahl    int    `json:"anzahl"`
+    CharacterID uint   `json:"character_id"`
+    SkillName   string `json:"skill_name"` // Name der spezifischen Fertigkeit
+    Anzahl      int    `json:"anzahl"`     // Anzahl der verfügbaren PP
 }
 ```
 

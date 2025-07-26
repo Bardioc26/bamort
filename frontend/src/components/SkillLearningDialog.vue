@@ -9,7 +9,7 @@
             <span class="resource-icon">⚡</span>
             <div class="resource-info">
               <div class="resource-label">Erfahrungspunkte</div>
-              <div class="resource-amount">{{ character.erfahrungsschatz?.value || 0 }} EP</div>
+              <div class="resource-amount">{{ character.erfahrungsschatz?.ep || 0 }} EP</div>
               <div class="resource-remaining">
                 <small :class="{ 'text-warning': remainingEP < 50, 'text-danger': remainingEP <= 0 }">
                   Verbleibend: {{ remainingEP }} EP
@@ -496,7 +496,7 @@ export default {
       return this.selectedLevels.every(levelNum => {
         const level = this.availableLevels.find(l => l.targetLevel === levelNum);
         return level && level.canAfford;
-      }) && this.totalCost <= (this.character.erfahrungsschatz?.value || 0) &&
+      }) && this.totalCost <= (this.character.erfahrungsschatz?.ep || 0) &&
              this.totalGoldCost <= (this.character.vermoegen?.goldstücke || 0) &&
              this.totalPPCost <= (this.skill?.pp || 0);
     },
@@ -550,7 +550,7 @@ export default {
     },
     
     remainingEP() {
-      const current = this.character.erfahrungsschatz?.value || 0;
+      const current = this.character.erfahrungsschatz?.ep || 0;
       return Math.max(0, current - this.totalCost);
     },
     
@@ -757,7 +757,7 @@ export default {
         
         if (response.data && Array.isArray(response.data) && response.data.length > 0) {
           // Konvertiere gsmaster.SkillCostResultNew Array zu unserem internen Format
-          const availableEP = this.character.erfahrungsschatz?.value || 0;
+          const availableEP = this.character.erfahrungsschatz?.ep || 0;
           const availableGold = this.character.vermoegen?.goldstücke || 0;
           const availablePP = this.skill?.pp || 0;
           
@@ -823,7 +823,7 @@ export default {
       // Einfache Fallback-Methode für Kostenberechnung (nur für Notfälle)
       const currentLevel = this.skill.fertigkeitswert || 0;
       const maxLevel = 20;
-      const availableEP = this.character.erfahrungsschatz?.value || 0;
+      const availableEP = this.character.erfahrungsschatz?.ep || 0;
       const availableGold = this.character.vermoegen?.goldstücke || 0;
       const availablePP = this.skill?.pp || 0;
       

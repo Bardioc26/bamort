@@ -6,7 +6,7 @@
     </div>
     <!-- Submenu Content -->
     <!-- <div class="character-aspect"> -->
-      <component :is="currentView"  :character="character"/>
+      <component :is="currentView" :character="character" @character-updated="refreshCharacter"/>
     <!-- </div> -->
 
     <!-- Submenu -->
@@ -81,6 +81,22 @@ export default {
     changeView(view) {
       this.lastView = this.currentView;
       this.currentView = view;
+    },
+    
+    async refreshCharacter() {
+      // Lade die Charakterdaten neu nach einer Aktualisierung
+      try {
+        const token = localStorage.getItem('token');
+        const response = await API.get(`/api/characters/${this.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        this.character = response.data;
+        console.log('Character data refreshed after skill update');
+      } catch (error) {
+        console.error('Failed to refresh character data:', error);
+        // Optional: Zeige eine Fehlermeldung an
+        alert('Fehler beim Aktualisieren der Charakterdaten: ' + (error.response?.data?.error || error.message));
+      }
     },
   },
 };

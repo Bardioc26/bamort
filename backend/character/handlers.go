@@ -592,6 +592,74 @@ func getValueOrDefault(value *int, defaultValue int) int {
 	return defaultValue
 }
 
+// updateOrCreateSkill aktualisiert eine vorhandene Fertigkeit oder erstellt eine neue
+func updateOrCreateSkill(character *Char, skillName string, newLevel int) error {
+	// Suche erst in normalen Fertigkeiten
+	for i := range character.Fertigkeiten {
+		if character.Fertigkeiten[i].Name == skillName {
+			character.Fertigkeiten[i].Fertigkeitswert = newLevel
+			return database.DB.Save(&character.Fertigkeiten[i]).Error
+		}
+	}
+
+	// Suche in Waffenfertigkeiten
+	for i := range character.Waffenfertigkeiten {
+		if character.Waffenfertigkeiten[i].Name == skillName {
+			character.Waffenfertigkeiten[i].Fertigkeitswert = newLevel
+			return database.DB.Save(&character.Waffenfertigkeiten[i]).Error
+		}
+	}
+
+	// Fertigkeit nicht gefunden - erstelle neue normale Fertigkeit
+	newSkill := skills.Fertigkeit{
+		BamortCharTrait: models.BamortCharTrait{
+			BamortBase: models.BamortBase{
+				Name: skillName,
+			},
+			CharacterID: character.ID,
+		},
+		Fertigkeitswert: newLevel,
+		Improvable:      true,
+	}
+
+	if err := database.DB.Create(&newSkill).Error; err != nil {
+		return err
+	}
+
+	// Füge zur Charakter-Liste hinzu
+	character.Fertigkeiten = append(character.Fertigkeiten, newSkill)
+	return nil
+}
+
+// addSpellToCharacter fügt einen neuen Zauber zum Charakter hinzu
+func addSpellToCharacter(character *Char, spellName string) error {
+	// Prüfe, ob Zauber bereits existiert
+	for _, spell := range character.Zauber {
+		if spell.Name == spellName {
+			// Zauber bereits vorhanden, nichts zu tun
+			return nil
+		}
+	}
+
+	// Erstelle neuen Zauber
+	newSpell := skills.Zauber{
+		BamortCharTrait: models.BamortCharTrait{
+			BamortBase: models.BamortBase{
+				Name: spellName,
+			},
+			CharacterID: character.ID,
+		},
+	}
+
+	if err := database.DB.Create(&newSpell).Error; err != nil {
+		return err
+	}
+
+	// Füge zur Charakter-Liste hinzu
+	character.Zauber = append(character.Zauber, newSpell)
+	return nil
+}
+
 // Learn and Improve handlers with automatic audit logging
 
 // LearnSpellRequest definiert die Struktur für das Lernen eines Zaubers
@@ -728,7 +796,7 @@ func LearnSkill(c *gin.Context) {
 	}
 
 	// Für Learning müssen wir von Level 0 (nicht gelernt) auf finalLevel lernen
-	var totalEP, totalGold int
+	var totalEP, totalGold, totalPP int
 	var err error
 
 	// Loop für jeden Level von 0 bis finalLevel (für neue Fertigkeiten)
@@ -762,6 +830,7 @@ func LearnSkill(c *gin.Context) {
 		// Addiere die Kosten
 		totalEP += costResult.EP
 		totalGold += costResult.GoldCost
+		totalPP += costResult.PPUsed
 	}
 
 	// Prüfe, ob genügend EP vorhanden sind
@@ -775,6 +844,28 @@ func LearnSkill(c *gin.Context) {
 	currentGold := character.Vermoegen.Goldstücke
 	if currentGold < totalGold {
 		respondWithError(c, http.StatusBadRequest, "Nicht genügend Gold vorhanden")
+		return
+	}
+
+	// Prüfe, ob genügend PP vorhanden sind (PP der jeweiligen Fertigkeit) - für neue Fertigkeiten normalerweise 0
+	currentPP := 0
+	for _, skill := range character.Fertigkeiten {
+		if skill.Name == request.Name {
+			currentPP = skill.Pp
+			break
+		}
+	}
+	// Falls nicht in normalen Fertigkeiten gefunden, prüfe Waffenfertigkeiten
+	if currentPP == 0 {
+		for _, skill := range character.Waffenfertigkeiten {
+			if skill.Name == request.Name {
+				currentPP = skill.Pp
+				break
+			}
+		}
+	}
+	if totalPP > 0 && currentPP < totalPP {
+		respondWithError(c, http.StatusBadRequest, "Nicht genügend Praxispunkte vorhanden")
 		return
 	}
 
@@ -794,6 +885,10 @@ func LearnSkill(c *gin.Context) {
 			return
 		}
 		character.Erfahrungsschatz.EP = newEP
+		if err := database.DB.Save(&character.Erfahrungsschatz).Error; err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern der Erfahrungspunkte")
+			return
+		}
 	}
 
 	// Gold abziehen und Audit-Log erstellen
@@ -807,10 +902,35 @@ func LearnSkill(c *gin.Context) {
 			return
 		}
 		character.Vermoegen.Goldstücke = newGold
+		if err := database.DB.Save(&character.Vermoegen).Error; err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern des Vermögens")
+			return
+		}
 	}
 
-	// TODO: Hier sollte die Fertigkeit dem Charakter hinzugefügt werden
-	// Das hängt davon ab, wie Fertigkeiten in der Datenbank gespeichert werden
+	// PP abziehen (falls vorhanden und erforderlich)
+	if totalPP > 0 {
+		// Suche die richtige Fertigkeit und ziehe PP ab
+		for i, skill := range character.Fertigkeiten {
+			if skill.Name == request.Name {
+				character.Fertigkeiten[i].Pp -= totalPP
+				break
+			}
+		}
+		// Falls nicht in normalen Fertigkeiten gefunden, prüfe Waffenfertigkeiten
+		for i, skill := range character.Waffenfertigkeiten {
+			if skill.Name == request.Name {
+				character.Waffenfertigkeiten[i].Pp -= totalPP
+				break
+			}
+		}
+	}
+
+	// Erstelle die neue Fertigkeit mit dem finalen Level
+	if err := updateOrCreateSkill(&character, request.Name, finalLevel); err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Hinzufügen der Fertigkeit: "+err.Error())
+		return
+	}
 
 	// Charakter speichern
 	if err := database.DB.Save(&character).Error; err != nil {
@@ -855,7 +975,13 @@ func ImproveSkill(c *gin.Context) {
 
 	// Hole Charakter über die ID aus dem Request
 	var character Char
-	if err := character.FirstID(fmt.Sprintf("%d", request.CharId)); err != nil {
+	err := database.DB.
+		Preload("Fertigkeiten").
+		Preload("Waffenfertigkeiten").
+		Preload("Erfahrungsschatz").
+		Preload("Vermoegen").
+		First(&character, request.CharId).Error
+	if err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
 	}
@@ -886,8 +1012,7 @@ func ImproveSkill(c *gin.Context) {
 	}
 
 	// Initialisiere Gesamtkosten
-	var totalEP, totalGold int
-	var err error
+	var totalEP, totalGold, totalPP int
 
 	// Loop für jeden Level von currentLevel bis finalLevel
 	tempLevel := currentLevel
@@ -914,6 +1039,7 @@ func ImproveSkill(c *gin.Context) {
 		// Addiere die Kosten
 		totalEP += costResult.EP
 		totalGold += costResult.GoldCost
+		totalPP += costResult.PPUsed
 
 		tempLevel++
 	}
@@ -929,6 +1055,28 @@ func ImproveSkill(c *gin.Context) {
 	currentGold := character.Vermoegen.Goldstücke
 	if currentGold < totalGold {
 		respondWithError(c, http.StatusBadRequest, "Nicht genügend Gold vorhanden")
+		return
+	}
+
+	// Prüfe, ob genügend PP vorhanden sind (PP der jeweiligen Fertigkeit)
+	currentPP := 0
+	for _, skill := range character.Fertigkeiten {
+		if skill.Name == request.Name {
+			currentPP = skill.Pp
+			break
+		}
+	}
+	// Falls nicht in normalen Fertigkeiten gefunden, prüfe Waffenfertigkeiten
+	if currentPP == 0 {
+		for _, skill := range character.Waffenfertigkeiten {
+			if skill.Name == request.Name {
+				currentPP = skill.Pp
+				break
+			}
+		}
+	}
+	if totalPP > 0 && currentPP < totalPP {
+		respondWithError(c, http.StatusBadRequest, "Nicht genügend Praxispunkte vorhanden")
 		return
 	}
 
@@ -950,6 +1098,10 @@ func ImproveSkill(c *gin.Context) {
 			return
 		}
 		character.Erfahrungsschatz.EP = newEP
+		if err := database.DB.Save(&character.Erfahrungsschatz).Error; err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern der Erfahrungspunkte")
+			return
+		}
 	}
 
 	// Gold abziehen und Audit-Log erstellen
@@ -963,10 +1115,43 @@ func ImproveSkill(c *gin.Context) {
 			return
 		}
 		character.Vermoegen.Goldstücke = newGold
+		if err := database.DB.Save(&character.Vermoegen).Error; err != nil {
+			respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern des Vermögens")
+			return
+		}
 	}
 
-	// TODO: Hier sollte die Fertigkeit des Charakters verbessert werden
-	// Das hängt davon ab, wie Fertigkeiten in der Datenbank gespeichert werden
+	// PP abziehen wenn verwendet (PP der jeweiligen Fertigkeit)
+	if totalPP > 0 {
+		// Finde die richtige Fertigkeit und ziehe PP ab
+		for i := range character.Fertigkeiten {
+			if character.Fertigkeiten[i].Name == request.Name {
+				character.Fertigkeiten[i].Pp -= totalPP
+				if err := database.DB.Save(&character.Fertigkeiten[i]).Error; err != nil {
+					respondWithError(c, http.StatusInternalServerError, "Fehler beim Aktualisieren der Praxispunkte")
+					return
+				}
+				break
+			}
+		}
+		// Falls nicht in normalen Fertigkeiten gefunden, prüfe Waffenfertigkeiten
+		for i := range character.Waffenfertigkeiten {
+			if character.Waffenfertigkeiten[i].Name == request.Name {
+				character.Waffenfertigkeiten[i].Pp -= totalPP
+				if err := database.DB.Save(&character.Waffenfertigkeiten[i]).Error; err != nil {
+					respondWithError(c, http.StatusInternalServerError, "Fehler beim Aktualisieren der Praxispunkte")
+					return
+				}
+				break
+			}
+		}
+	}
+
+	// Aktualisiere die Fertigkeit mit dem neuen Level
+	if err := updateOrCreateSkill(&character, request.Name, finalLevel); err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Aktualisieren der Fertigkeit: "+err.Error())
+		return
+	}
 
 	// Charakter speichern
 	if err := database.DB.Save(&character).Error; err != nil {
@@ -1054,7 +1239,11 @@ func LearnSpell(c *gin.Context) {
 		character.Erfahrungsschatz.EP = newEP
 	}
 
-	// TODO: Hier sollte der Zauber dem Charakter hinzugefügt werden
+	// Füge den Zauber zum Charakter hinzu
+	if err := addSpellToCharacter(&character, request.Name); err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Hinzufügen des Zaubers: "+err.Error())
+		return
+	}
 
 	// Charakter speichern
 	if err := database.DB.Save(&character).Error; err != nil {

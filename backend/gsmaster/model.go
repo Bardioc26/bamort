@@ -98,7 +98,7 @@ func (object *LookupList) Create() error {
 
 func (object *LookupList) First(value string) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "game_system=? AND name = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "game_system=? AND name!='Placeholder' AND name = ?", gameSystem, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -108,7 +108,7 @@ func (object *LookupList) First(value string) error {
 
 func (object *LookupList) FirstId(value uint) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "game_system=? AND name!='Placeholder' AND id = ?", gameSystem, value).Error
 	if err != nil {
 		// zauber found
 		return err

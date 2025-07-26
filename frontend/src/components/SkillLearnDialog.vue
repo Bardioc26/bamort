@@ -9,16 +9,47 @@
       <!-- Ressourcen-Anzeige -->
       <div class="resources-section">
         <h4>Verfügbare Ressourcen</h4>
-        <div class="resources-display">
-          <div class="resource-item">
+        <div class="current-resources">
+          <div class="resource-display-card">
             <span class="resource-icon">⚡</span>
-            <span class="resource-label">Erfahrungspunkte:</span>
-            <span class="resource-value">{{ character.erfahrungsschatz?.ep || 0 }} EP</span>
+            <div class="resource-info">
+              <div class="resource-label">Erfahrungspunkte</div>
+              <div class="resource-amount">{{ character.erfahrungsschatz?.ep || 0 }} EP</div>
+              <div class="resource-remaining" v-if="totalSelectedEP > 0">
+                <small>
+                  Verwendet: {{ totalSelectedEP }} EP | 
+                  Verbleibend: {{ remainingEP }} EP
+                </small>
+              </div>
+              <div class="resource-remaining" v-if="totalSelectedEP > 0">
+                <small :class="{ 'text-warning': remainingEP < 50, 'text-danger': remainingEP <= 0 }">
+                  Nach Lernen: {{ remainingEP }} EP
+                </small>
+              </div>
+            </div>
           </div>
-          <div class="resource-item">
+          <div class="resource-display-card">
             <span class="resource-icon">💰</span>
-            <span class="resource-label">Gold:</span>
-            <span class="resource-value">{{ character.vermoegen?.goldstücke || 0 }} GS</span>
+            <div class="resource-info">
+              <div class="resource-label">Gold</div>
+              <div class="resource-amount">{{ character.vermoegen?.goldstücke || 0 }} GS</div>
+              <div class="resource-remaining" v-if="totalSelectedGold > 0 && rewardType === 'default'">
+                <small>
+                  Verwendet: {{ totalSelectedGold }} GS | 
+                  Verbleibend: {{ remainingGold }} GS
+                </small>
+              </div>
+              <div class="resource-remaining" v-if="totalSelectedGold > 0 && rewardType === 'default'">
+                <small :class="{ 'text-warning': remainingGold < 20, 'text-danger': remainingGold <= 0 }">
+                  Nach Lernen: {{ remainingGold }} GS
+                </small>
+              </div>
+              <div class="resource-remaining" v-if="rewardType === 'noGold' && totalSelectedEP > 0">
+                <small class="text-info">
+                  Kein Gold benötigt (Belohnungslernen)
+                </small>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -46,17 +77,19 @@
                 @click="setCategoryFilter(null)"
                 class="category-filter-btn"
                 :class="{ 'active': selectedCategoryFilter === null }"
+                title="Alle Kategorien anzeigen"
               >
                 Alle
               </button>
               <button 
                 v-for="category in availableCategories" 
-                :key="category"
-                @click="setCategoryFilter(category)"
+                :key="category.key || category.name"
+                @click="setCategoryFilter(category.name)"
                 class="category-filter-btn"
-                :class="{ 'active': selectedCategoryFilter === category }"
+                :class="{ 'active': selectedCategoryFilter === category.name }"
+                :title="category.description"
               >
-                {{ category }}
+                {{ category.name }}
               </button>
             </div>
             
@@ -264,7 +297,6 @@ export default {
       skillSearchFilter: '',
       isDragOver: false,
       isLoadingSkills: false,
-      learnedSkillNames: [], // Namen der bereits gelernten Fertigkeiten
       
       // Kategorie-Filter
       availableCategories: [],
@@ -318,15 +350,11 @@ export default {
         this.availableSkillsByCategory[category].forEach(skill => {
           allSkills.push({
             ...skill,
-            category: category
+            category: category,
+            canAfford: this.canAffordSkill(skill) // Berechne canAfford im Frontend
           })
         })
       })
-      
-      // Entferne bereits gelernte Fertigkeiten
-      allSkills = allSkills.filter(skill => 
-        !this.learnedSkillNames.includes(skill.name)
-      )
       
       // Entferne bereits ausgewählte Fertigkeiten
       const selectedSkillNames = this.selectedSkills.map(s => s.name)
@@ -368,6 +396,16 @@ export default {
         return availableEP >= this.totalSelectedEP
       }
       return false
+    },
+    
+    remainingEP() {
+      const current = this.character.erfahrungsschatz?.ep || 0
+      return Math.max(0, current - this.totalSelectedEP)
+    },
+    
+    remainingGold() {
+      const current = this.character.vermoegen?.goldstücke || 0
+      return Math.max(0, current - this.totalSelectedGold)
     }
   },
   watch: {
@@ -398,6 +436,18 @@ export default {
       this.$emit('close')
     },
 
+    canAffordSkill(skill) {
+      const availableEP = this.character.erfahrungsschatz?.ep || 0
+      const availableGold = this.character.vermoegen?.goldstücke || 0
+      
+      if (this.rewardType === 'default' || this.rewardType === '') {
+        return availableEP >= (skill.epCost || 0) && availableGold >= (skill.goldCost || 0)
+      } else if (this.rewardType === 'noGold') {
+        return availableEP >= (skill.epCost || 0)
+      }
+      return false
+    },
+
     resetForm() {
       this.skillName = ''
       this.rewardType = 'default'
@@ -409,7 +459,6 @@ export default {
       this.isDragOver = false
       this.selectedCategoryFilter = null
       this.availableSkillsByCategory = null
-      this.learnedSkillNames = []
     },
 
     async loadAvailableSkills() {
@@ -418,10 +467,7 @@ export default {
         // Lade verfügbare Kategorien
         await this.loadAvailableCategories()
         
-        // Lade bereits gelernte Fertigkeiten des Charakters
-        await this.loadLearnedSkills()
-        
-        // Lade alle verfügbaren Fertigkeiten mit Kosten
+        // Lade alle verfügbaren Fertigkeiten mit Kosten (bereits ohne gelernte gefiltert)
         const response = await this.$api.get(`/api/characters/${this.character.id}/available-skills`, {
           params: {
             reward_type: this.rewardType
@@ -431,7 +477,6 @@ export default {
         if (response.data && response.data.skills_by_category) {
           this.availableSkillsByCategory = response.data.skills_by_category
           console.log('Loaded skills by category:', this.availableSkillsByCategory)
-          console.log('Learned skills to exclude:', this.learnedSkillNames)
         } else {
           // Fallback: Generiere Beispiel-Fertigkeiten
           this.generateSampleSkills()
@@ -446,52 +491,37 @@ export default {
       }
     },
 
-    async loadLearnedSkills() {
-      try {
-        // Lade bereits gelernte Fertigkeiten des Charakters
-        const response = await this.$api.get(`/api/characters/${this.character.id}/skills`)
-        if (response.data && response.data.skills) {
-          // Extrahiere die Namen aller bereits gelernten Fertigkeiten
-          this.learnedSkillNames = response.data.skills.map(skill => skill.name)
-          console.log('Already learned skills:', this.learnedSkillNames)
-        } else if (this.character.fertigkeiten && Array.isArray(this.character.fertigkeiten)) {
-          // Fallback: Verwende Fertigkeiten aus dem Character-Objekt
-          this.learnedSkillNames = this.character.fertigkeiten.map(skill => skill.name)
-          console.log('Already learned skills (from character):', this.learnedSkillNames)
-        }
-      } catch (error) {
-        console.error('Fehler beim Laden der gelernten Fertigkeiten:', error)
-        // Fallback: Verwende Fertigkeiten aus dem Character-Objekt falls verfügbar
-        if (this.character.fertigkeiten && Array.isArray(this.character.fertigkeiten)) {
-          this.learnedSkillNames = this.character.fertigkeiten.map(skill => skill.name)
-        }
-      }
-    },
-
     async loadAvailableCategories() {
       try {
-        const response = await this.$api.get('/skill-categories')
-        if (response.data && response.data.categories) {
-          this.availableCategories = response.data.categories
+        const response = await this.$api.get('/api/characters/skill-categories')
+        if (response.data && response.data.skill_categories) {
+          // Extrahiere die Namen und Beschreibungen der Kategorien
+          const categories = response.data.skill_categories
+          this.availableCategories = Object.keys(categories).map(key => ({
+            name: categories[key].name,
+            description: categories[key].description,
+            key: key
+          }))
+          console.log('Loaded categories:', this.availableCategories)
         } else {
           // Fallback: Standard-Kategorien
           this.availableCategories = [
-            'Körperliche Fertigkeiten',
-            'Geistige Fertigkeiten', 
-            'Handwerkliche Fertigkeiten',
-            'Magische Fertigkeiten',
-            'Soziale Fertigkeiten'
+            { name: 'Körperliche Fertigkeiten', description: 'Körperliche Fertigkeiten', key: 'körper' },
+            { name: 'Geistige Fertigkeiten', description: 'Geistige Fertigkeiten', key: 'geist' }, 
+            { name: 'Handwerkliche Fertigkeiten', description: 'Handwerkliche Fertigkeiten', key: 'handwerk' },
+            { name: 'Magische Fertigkeiten', description: 'Magische Fertigkeiten', key: 'magie' },
+            { name: 'Soziale Fertigkeiten', description: 'Soziale Fertigkeiten', key: 'sozial' }
           ]
         }
       } catch (error) {
         console.error('Fehler beim Laden der Kategorien:', error)
         // Fallback: Standard-Kategorien
         this.availableCategories = [
-          'Körperliche Fertigkeiten',
-          'Geistige Fertigkeiten', 
-          'Handwerkliche Fertigkeiten',
-          'Magische Fertigkeiten',
-          'Soziale Fertigkeiten'
+          { name: 'Körperliche Fertigkeiten', description: 'Körperliche Fertigkeiten', key: 'körper' },
+          { name: 'Geistige Fertigkeiten', description: 'Geistige Fertigkeiten', key: 'geist' }, 
+          { name: 'Handwerkliche Fertigkeiten', description: 'Handwerkliche Fertigkeiten', key: 'handwerk' },
+          { name: 'Magische Fertigkeiten', description: 'Magische Fertigkeiten', key: 'magie' },
+          { name: 'Soziale Fertigkeiten', description: 'Soziale Fertigkeiten', key: 'sozial' }
         ]
       }
     },
@@ -519,13 +549,18 @@ export default {
       }
       
       // Setze verfügbare Kategorien aus den Beispieldaten
-      this.availableCategories = Object.keys(this.availableSkillsByCategory)
+      this.availableCategories = Object.keys(this.availableSkillsByCategory).map(key => ({
+        name: key,
+        description: key,
+        key: key.toLowerCase().replace(/\s+/g, '_')
+      }))
       
       console.log('Generated sample skills:', this.availableSkillsByCategory)
     },
 
-    setCategoryFilter(category) {
-      this.selectedCategoryFilter = category
+    setCategoryFilter(categoryName) {
+      this.selectedCategoryFilter = categoryName
+      console.log('Category filter set to:', categoryName)
     },
 
     onDragStart(event, skill) {
@@ -732,36 +767,65 @@ export default {
   font-size: 1.1rem;
 }
 
-.resources-display {
+.current-resources {
   display: flex;
-  gap: 20px;
+  gap: 15px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 
-.resource-item {
+.resource-display-card {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 10px;
+  padding: 12px 16px;
   background: white;
   border: 1px solid #dee2e6;
   border-radius: 8px;
+  flex: 1;
+  min-width: 200px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.resource-icon {
-  font-size: 18px;
+.resource-display-card .resource-icon {
+  font-size: 20px;
+}
+
+.resource-info {
+  flex: 1;
 }
 
 .resource-label {
-  font-weight: 600;
-  color: #495057;
+  font-size: 12px;
+  color: #6c757d;
+  font-weight: 500;
 }
 
-.resource-value {
+.resource-amount {
+  font-size: 16px;
   font-weight: bold;
   color: #1da766;
-  font-size: 1.1rem;
+}
+
+.resource-remaining {
+  margin-top: 4px;
+}
+
+.resource-remaining small {
+  color: #6c757d;
+  font-weight: normal;
+}
+
+.text-warning {
+  color: #f0ad4e !important;
+}
+
+.text-danger {
+  color: #d9534f !important;
+}
+
+.text-info {
+  color: #17a2b8 !important;
 }
 
 .reward-method-section {
@@ -1357,6 +1421,15 @@ export default {
   .resources-display {
     flex-direction: column;
     gap: 10px;
+  }
+  
+  .current-resources {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .resource-display-card {
+    min-width: auto;
   }
   
   .cost-breakdown {

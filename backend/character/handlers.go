@@ -1310,3 +1310,106 @@ func GetRewardTypes(c *gin.Context) {
 		"character_id":  characterID,
 	})
 }
+
+// GetAvailableSkills gibt alle verfügbaren Fertigkeiten mit Lernkosten zurück
+func GetAvailableSkills(c *gin.Context) {
+	characterID := c.Param("id")
+	rewardType := c.Query("reward_type")
+
+	var character Char
+	if err := database.DB.Preload("Fertigkeiten").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, characterID).Error; err != nil {
+		respondWithError(c, http.StatusNotFound, "Character not found")
+		return
+	}
+
+	// Hole alle verfügbaren Fertigkeiten aus der gsmaster Datenbank, aber filtere Placeholder aus
+	var allSkills []gsmaster.Skill
+	if err := database.DB.Where("name != ?", "Placeholder").Find(&allSkills).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve skills")
+		return
+	}
+
+	// Erstelle eine Map der bereits gelernten Fertigkeiten
+	learnedSkills := make(map[string]bool)
+	for _, skill := range character.Fertigkeiten {
+		learnedSkills[skill.Name] = true
+	}
+
+	// Organisiere Fertigkeiten nach Kategorien
+	skillsByCategory := make(map[string][]gin.H)
+
+	for _, skill := range allSkills {
+		// Überspringe bereits gelernte Fertigkeiten
+		if learnedSkills[skill.Name] {
+			continue
+		}
+
+		// Überspringe Placeholder-Fertigkeiten (zusätzliche Sicherheit)
+		if skill.Name == "Placeholder" {
+			continue
+		}
+
+		// Berechne Lernkosten mit GetLernCostNextLevel
+		epCost, goldCost := calculateSkillLearningCosts(skill, character, rewardType)
+
+		skillInfo := gin.H{
+			"name":     skill.Name,
+			"epCost":   epCost,
+			"goldCost": goldCost,
+		}
+
+		category := skill.Category
+		if category == "" {
+			category = "Sonstige"
+		}
+
+		skillsByCategory[category] = append(skillsByCategory[category], skillInfo)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"skills_by_category": skillsByCategory,
+	})
+}
+
+// calculateSkillLearningCosts berechnet die EP- und Goldkosten für das Lernen einer Fertigkeit mit GetLernCostNextLevel
+func calculateSkillLearningCosts(skill gsmaster.Skill, character Char, rewardType string) (int, int) {
+	// Erstelle LernCostRequest für das Lernen (Level 0 -> 1)
+	var rewardTypePtr *string
+	if rewardType != "" && rewardType != "default" {
+		rewardTypePtr = &rewardType
+	}
+
+	request := gsmaster.LernCostRequest{
+		CharId:       character.ID,
+		Name:         skill.Name,
+		CurrentLevel: 0, // Nicht gelernt
+		TargetLevel:  1, // Auf Level 1 lernen
+		Type:         "skill",
+		Action:       "learn",
+		UsePP:        0,
+		UseGold:      0,
+		Reward:       rewardTypePtr,
+	}
+
+	// Erstelle SkillCostResultNew
+	costResult := gsmaster.SkillCostResultNew{
+		CharacterID:    fmt.Sprintf("%d", character.ID),
+		CharacterClass: getCharacterClass(&character),
+		SkillName:      skill.Name,
+		Category:       skill.Category,
+		Difficulty:     skill.Difficulty,
+		TargetLevel:    1,
+	}
+
+	// Berechne Kosten mit GetLernCostNextLevel
+	err := gsmaster.GetLernCostNextLevel(&request, &costResult, rewardTypePtr, 1, character.Typ)
+	if err != nil {
+		// Fallback zu Standard-Kosten bei Fehler
+		epCost := 100
+		goldCost := 50
+
+		return epCost, goldCost
+	}
+
+	return costResult.EP, costResult.GoldCost
+}

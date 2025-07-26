@@ -251,7 +251,7 @@
     </div>
 
     <!-- Neue Dialog-Komponente für detailliertes Fertigkeiten-Lernen -->
-    <SkillLearningDialog 
+    <SkillImproveDialog 
       :character="character"
       :skill="selectedSkillToLearn"
       :isVisible="showDetailedLearnDialog"
@@ -630,12 +630,12 @@
 
 <script>
 import API from '@/utils/api'
-import SkillLearningDialog from './SkillLearningDialog.vue'
+import SkillImproveDialog from './SkillImproveDialog.vue'
 
 export default {
   name: "SkillView",
   components: {
-    SkillLearningDialog
+    SkillImproveDialog
   },
   props: {
     character: {

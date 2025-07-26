@@ -453,7 +453,7 @@
 import API from '@/utils/api'
 
 export default {
-  name: 'SkillLearningDialog',
+  name: 'SkillImproveDialog',
   props: {
     character: {
       type: Object,

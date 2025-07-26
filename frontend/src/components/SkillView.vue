@@ -168,23 +168,12 @@
     </div> <!--- end cd-list-->
     
     <!-- Dialog für neue Fertigkeit lernen -->
-    <div v-if="showLearnDialog" class="modal-overlay" @click.self="closeDialogs">
-      <div class="modal-content">
-        <h3>Neue Fertigkeit lernen</h3>
-        <div class="form-group">
-          <label>Fertigkeitsname:</label>
-          <input v-model="newSkillName" type="text" placeholder="Name der Fertigkeit" />
-        </div>
-        <div class="form-group">
-          <label>Notizen (optional):</label>
-          <textarea v-model="learnNotes" placeholder="Zusätzliche Notizen..."></textarea>
-        </div>
-        <div class="modal-actions">
-          <button @click="learnNewSkill" class="btn-confirm">Lernen</button>
-          <button @click="closeDialogs" class="btn-cancel">Abbrechen</button>
-        </div>
-      </div>
-    </div>
+    <SkillLearnDialog 
+      :character="character"
+      :isVisible="showLearnDialog"
+      @close="closeDialogs"
+      @skill-learned="handleSkillLearned"
+    />
 
     <!-- Dialog für Fertigkeit verbessern -->
     <div v-if="showImproveSelectionDialog" class="modal-overlay" @click.self="closeDialogs">
@@ -631,11 +620,13 @@
 <script>
 import API from '@/utils/api'
 import SkillImproveDialog from './SkillImproveDialog.vue'
+import SkillLearnDialog from './SkillLearnDialog.vue'
 
 export default {
   name: "SkillView",
   components: {
-    SkillImproveDialog
+    SkillImproveDialog,
+    SkillLearnDialog
   },
   props: {
     character: {
@@ -651,9 +642,7 @@ export default {
       showAddDialog: false,
       showDetailedLearnDialog: false,
       
-      // Formulardaten
-      newSkillName: '',
-      learnNotes: '',
+      // Formulardaten für Verbesserungs-Dialog (vereinfacht)
       selectedSkillToImprove: null,
       usePP: 0,
       improveNotes: '',
@@ -703,8 +692,6 @@ export default {
     },
     
     clearFormData() {
-      this.newSkillName = '';
-      this.learnNotes = '';
       this.selectedSkillToImprove = null;
       this.usePP = 0;
       this.improveNotes = '';
@@ -717,35 +704,10 @@ export default {
       this.selectedLearningType = 'improve';
     },
     
-    async learnNewSkill() {
-      if (!this.newSkillName.trim()) {
-        alert('Bitte geben Sie einen Fertigkeitsnamen ein.');
-        return;
-      }
-      
-      this.isLoading = true;
-      try {
-        const response = await this.$api.post(`/api/characters/${this.character.id}/learn-skill`, {
-          name: this.newSkillName.trim(),
-          current_level: 0,
-          target_level: 1,
-          type: 'fertigkeit',
-          action: 'lernen',
-          reward: 'ep',
-          notes: this.learnNotes || `Fertigkeit ${this.newSkillName} über Frontend gelernt`
-        });
-        
-        console.log('Fertigkeit erfolgreich gelernt:', response.data);
-        alert(`Fertigkeit "${this.newSkillName}" erfolgreich gelernt!`);
-        this.closeDialogs();
-        this.$emit('character-updated');
-        
-      } catch (error) {
-        console.error('Fehler beim Lernen der Fertigkeit:', error);
-        alert('Fehler beim Lernen der Fertigkeit: ' + (error.response?.data?.error || error.message));
-      } finally {
-        this.isLoading = false;
-      }
+    handleSkillLearned(eventData) {
+      // Event-Handler für die neue SkillLearnDialog-Komponente
+      console.log('Fertigkeit gelernt:', eventData);
+      this.$emit('character-updated');
     },
     
     async improveSelectedSkill() {

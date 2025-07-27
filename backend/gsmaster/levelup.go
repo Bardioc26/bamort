@@ -95,7 +95,7 @@ func CalculateSpellLearnCost(spell string, class string) (int, error) {
 		loadLevelingConfig()
 	}
 
-	var spl Spell
+	var spl models.Spell
 	if err := spl.First(spell); err != nil {
 		return 0, errors.New("unbekannter Zauberspruch")
 	}

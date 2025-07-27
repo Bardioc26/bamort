@@ -2,7 +2,6 @@ package character
 
 import (
 	"bamort/database"
-	"bamort/gsmaster"
 	"bamort/models"
 	"bamort/skills"
 )
@@ -59,7 +58,7 @@ func createTestSkillData() error {
 	}
 
 	// GSM Test-Spell erstellen
-	gsmSpell := gsmaster.Spell{
+	gsmSpell := models.Spell{
 		LookupList: models.LookupList{
 			GameSystem:   "midgard",
 			Name:         "Macht über das Selbst",
@@ -82,5 +81,5 @@ func cleanupTestSkillData() {
 	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&skills.Fertigkeit{})
 	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&skills.Zauber{})
 	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&models.Skill{})
-	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&gsmaster.Spell{})
+	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&models.Spell{})
 }

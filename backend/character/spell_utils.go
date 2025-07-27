@@ -2,14 +2,14 @@ package character
 
 import (
 	"bamort/database"
-	"bamort/gsmaster"
+	"bamort/models"
 )
 
 // getSpellCategory ermittelt die Zaubergruppe für einen gegebenen Zaubernamen
 // Wenn es sich um einen Zauber handelt, wird die Kategorie zurückgegeben
 // Andernfalls wird der ursprüngliche Name zurückgegeben
 func getSpellCategory(name string) string {
-	var spell gsmaster.Spell
+	var spell models.Spell
 	if err := database.DB.Where("name = ?", name).First(&spell).Error; err != nil {
 		// Kein Zauber gefunden, ursprünglichen Namen verwenden
 		return name
@@ -22,7 +22,7 @@ func getSpellCategory(name string) string {
 
 // isSpell prüft, ob der gegebene Name ein Zauber ist
 func isSpell(name string) bool {
-	var spell gsmaster.Spell
+	var spell models.Spell
 	err := database.DB.Where("name = ?", name).First(&spell).Error
 	return err == nil
 }

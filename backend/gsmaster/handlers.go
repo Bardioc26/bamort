@@ -156,7 +156,7 @@ func GetMasterData(c *gin.Context) {
 	type dtaStruct struct {
 		Skills          []models.Skill       `json:"skills"`
 		Weaponskills    []models.WeaponSkill `json:"weaponskills"`
-		Spell           []Spell              `json:"spells"`
+		Spell           []models.Spell       `json:"spells"`
 		Equipment       []Equipment          `json:"equipment"`
 		Weapons         []Weapon             `json:"weapons"`
 		SkillCategories []string             `json:"skillcategories"`
@@ -165,7 +165,7 @@ func GetMasterData(c *gin.Context) {
 	var dta dtaStruct
 	var err error
 	var ski models.Skill
-	var spe Spell
+	var spe models.Spell
 	if err := database.DB.Find(&dta.Skills).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Skills"})
 		return
@@ -283,23 +283,23 @@ func GetMDSkillCategories(c *gin.Context) {
 }
 
 func GetMDSpells(c *gin.Context) {
-	getMDItems[Spell](c)
+	getMDItems[models.Spell](c)
 }
 
 func GetMDSpell(c *gin.Context) {
-	getMDItem[Spell](c)
+	getMDItem[models.Spell](c)
 }
 
 func UpdateMDSpell(c *gin.Context) {
-	updateMDItem[Spell](c)
+	updateMDItem[models.Spell](c)
 }
 
 func AddSpell(c *gin.Context) {
-	addMDItem[Spell](c)
+	addMDItem[models.Spell](c)
 }
 
 func DeleteMDSpell(c *gin.Context) {
-	deleteMDItem[Spell](c)
+	deleteMDItem[models.Spell](c)
 }
 
 func GetMDEquipments(c *gin.Context) {

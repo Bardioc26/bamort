@@ -1,6 +1,7 @@
 package gsmaster
 
 import (
+	"bamort/models"
 	"fmt"
 )
 
@@ -543,7 +544,7 @@ func contains(slice []string, item string) bool {
 // GetSpellInfo returns the school and level of a spell from the database
 func GetSpellInfo(spellName string) (string, int, error) {
 	// Create a Spell instance to search in the database
-	var spell Spell
+	var spell models.Spell
 
 	// Search for the spell in the database
 	err := spell.First(spellName)

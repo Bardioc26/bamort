@@ -215,7 +215,7 @@ func GetLearnSpellCost(c *gin.Context) {
 		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	var spell gsmaster.Spell
+	var spell models.Spell
 	if err := spell.First(s.Name); err != nil {
 		respondWithError(c, http.StatusBadRequest, "can not find speel in gsmaster: "+err.Error())
 		return

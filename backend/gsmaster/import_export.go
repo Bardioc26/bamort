@@ -14,7 +14,7 @@ import (
 type exportData struct {
 	Skills          []models.Skill       `json:"skills"`
 	WeaponSkills    []models.WeaponSkill `json:"weapon_skills"`
-	Spells          []Spell              `json:"spells"`
+	Spells          []models.Spell       `json:"spells"`
 	Equipments      []Equipment          `json:"equipments"`
 	Weapons         []Weapon             `json:"weapons"`
 	Containers      []Container          `json:"containers"`
@@ -25,7 +25,7 @@ type exportData struct {
 func Export(filePath string) error {
 	var skills []models.Skill
 	var weaponSkills []models.WeaponSkill
-	var spells []Spell
+	var spells []models.Spell
 	var equipments []Equipment
 	var weapons []Weapon
 	var containers []Container

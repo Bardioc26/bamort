@@ -302,12 +302,12 @@ func TestImportSpell2GSMaster(t *testing.T) {
 	assert.Equal(t, "", skill.Wirkungsziel)
 	assert.Equal(t, 0, skill.Reichweite)
 	//}
-	skill2 := gsmaster.Spell{}
+	skill2 := models.Spell{}
 	erro = skill2.First("Angst")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
-	skill3 := gsmaster.Spell{}
+	skill3 := models.Spell{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Angst", skill3.Name)

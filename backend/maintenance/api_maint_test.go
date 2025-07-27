@@ -73,7 +73,7 @@ func TestGetMasterData(t *testing.T) {
 	type dtaStruct struct {
 		Skills       []models.Skill       `json:"skills"`
 		Weaponskills []models.WeaponSkill `json:"weaponskills"`
-		Spell        []gsmaster.Spell     `json:"spells"`
+		Spell        []models.Spell       `json:"spells"`
 		Equipment    []gsmaster.Equipment `json:"equipment"`
 		Weapons      []gsmaster.Weapon    `json:"weapons"`
 	}

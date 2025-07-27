@@ -535,7 +535,7 @@ func getSkillInfo(skillName, skillType string) skillInfo {
 }
 
 func getSpellInfo(spellName string) skillInfo {
-	var spell gsmaster.Spell
+	var spell models.Spell
 	if err := spell.First(spellName); err != nil {
 		return skillInfo{Category: "unknown", Difficulty: "unknown"}
 	}

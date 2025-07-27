@@ -747,7 +747,7 @@ func TestGetSpellInfo(t *testing.T) {
 	MigrateStructure()
 
 	// Create minimal test spell data for our test
-	testSpells := []Spell{
+	testSpells := []models.Spell{
 		{
 			LookupList: models.LookupList{
 				GameSystem:   "midgard",
@@ -853,7 +853,7 @@ func TestCalcSpellLernCostWithRewards(t *testing.T) {
 	MigrateStructure()
 
 	// Create minimal test spell data for our test
-	testSpells := []Spell{
+	testSpells := []models.Spell{
 		{
 			LookupList: models.LookupList{
 				GameSystem:   "midgard",

@@ -264,8 +264,8 @@ func TransformImportWaffenFertigkeit2GSDMaster(object *Waffenfertigkeit) (*model
 	return &gsmobj, nil
 }
 
-func TransformImportSpell2GSDMaster(object *Zauber) (*gsmaster.Spell, error) {
-	gsmobj := gsmaster.Spell{}
+func TransformImportSpell2GSDMaster(object *Zauber) (*models.Spell, error) {
+	gsmobj := models.Spell{}
 
 	err := gsmobj.First(object.Name)
 	// if found check if we need to adjust masterdata

@@ -54,6 +54,21 @@ type WeaponSkill struct {
 	Skill
 }
 
+type Spell struct {
+	LookupList
+	Bonus           int    `json:"bonus"`
+	Stufe           int    `json:"level"`
+	AP              string `gorm:"default:1"  json:"ap"`
+	Art             string `gorm:"default:Gestenzauber" json:"art"`
+	Zauberdauer     string `gorm:"default:10 sec" json:"zauberdauer"`
+	Reichweite      string `json:"reichweite"` // in m
+	Wirkungsziel    string `json:"wirkungsziel"`
+	Wirkungsbereich string `json:"wirkungsbereich"`
+	Wirkungsdauer   string `json:"wirkungsdauer"`
+	Ursprung        string `json:"ursprung"`
+	Category        string `gorm:"default:normal" json:"category"`
+}
+
 func (object *LookupList) Create() error {
 	gameSystem := "midgard"
 	object.GameSystem = gameSystem
@@ -245,4 +260,68 @@ func (object *WeaponSkill) Save() error {
 		return err
 	}
 	return nil
+}
+
+func (object *Spell) TableName() string {
+	var dbPrefix = "gsm"
+	return dbPrefix + "_" + "spells"
+}
+
+func (stamm *Spell) Create() error {
+	gameSystem := "midgard"
+	stamm.GameSystem = gameSystem
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		// Save the main character record
+		if err := tx.Create(&stamm).Error; err != nil {
+			return fmt.Errorf("failed to save LookupSpell: %w", err)
+		}
+		return nil
+	})
+
+	return err
+}
+
+func (stamm *Spell) First(name string) error {
+	gameSystem := "midgard"
+	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
+}
+
+func (object *Spell) FirstId(value uint) error {
+	gameSystem := "midgard"
+	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
+}
+
+func (object *Spell) Save() error {
+	err := database.DB.Save(&object).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
+}
+
+func (object *Spell) GetSpellCategories() ([]string, error) {
+	var categories []string
+	gameSystem := "midgard"
+
+	result := database.DB.Model(&Spell{}).
+		Where("game_system=? and category is not null", gameSystem).
+		Distinct().
+		Pluck("category", &categories)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return categories, nil
 }

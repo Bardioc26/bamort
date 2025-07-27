@@ -10,6 +10,7 @@ import (
 
 var dbPrefix = "gsm"
 
+/*
 type Spell struct {
 	models.LookupList
 	Bonus           int    `json:"bonus"`
@@ -24,6 +25,7 @@ type Spell struct {
 	Ursprung        string `json:"ursprung"`
 	Category        string `gorm:"default:normal" json:"category"`
 }
+*/
 
 type Equipment struct {
 	models.LookupList
@@ -50,69 +52,6 @@ type Transportation struct {
 
 type Believe struct {
 	models.LookupList
-}
-
-func (object *Spell) TableName() string {
-	return dbPrefix + "_" + "spells"
-}
-
-func (stamm *Spell) Create() error {
-	gameSystem := "midgard"
-	stamm.GameSystem = gameSystem
-	err := database.DB.Transaction(func(tx *gorm.DB) error {
-		// Save the main character record
-		if err := tx.Create(&stamm).Error; err != nil {
-			return fmt.Errorf("failed to save LookupSpell: %w", err)
-		}
-		return nil
-	})
-
-	return err
-}
-
-func (stamm *Spell) First(name string) error {
-	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
-	if err != nil {
-		// zauber found
-		return err
-	}
-	return nil
-}
-
-func (object *Spell) FirstId(value uint) error {
-	gameSystem := "midgard"
-	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
-	if err != nil {
-		// zauber found
-		return err
-	}
-	return nil
-}
-
-func (object *Spell) Save() error {
-	err := database.DB.Save(&object).Error
-	if err != nil {
-		// zauber found
-		return err
-	}
-	return nil
-}
-
-func (object *Spell) GetSpellCategories() ([]string, error) {
-	var categories []string
-	gameSystem := "midgard"
-
-	result := database.DB.Model(&Spell{}).
-		Where("game_system=? and category is not null", gameSystem).
-		Distinct().
-		Pluck("category", &categories)
-
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	return categories, nil
 }
 
 func (object *Equipment) TableName() string {

@@ -2,7 +2,6 @@ package importer
 
 import (
 	"bamort/character"
-	"bamort/gsmaster"
 	"bamort/models"
 	"fmt"
 )
@@ -51,8 +50,8 @@ func CheckSkill(fertigkeit *Fertigkeit, autocreate bool) (*models.Skill, error) 
 	return &stammF, nil
 }
 
-func CheckSpell(zauber *Zauber, autocreate bool) (*gsmaster.Spell, error) {
-	stammF := gsmaster.Spell{}
+func CheckSpell(zauber *Zauber, autocreate bool) (*models.Spell, error) {
+	stammF := models.Spell{}
 
 	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, zauber.Name).Error
 	err := stammF.First(zauber.Name)

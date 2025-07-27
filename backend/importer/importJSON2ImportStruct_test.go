@@ -260,12 +260,12 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, true, skill.Improvable)
 	assert.Equal(t, "midgard", skill.GameSystem)
 	//}
-	skill2 := gsmaster.WeaponSkill{}
+	skill2 := models.WeaponSkill{}
 	erro = skill2.First("Armbrüste")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
-	skill3 := gsmaster.WeaponSkill{}
+	skill3 := models.WeaponSkill{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Armbrüste", skill3.Name)

@@ -17,8 +17,8 @@ func MigrateStructure(db ...*gorm.DB) error {
 
 	err := targetDB.AutoMigrate(
 		&Skill{},
+		&WeaponSkill{},
 		/*
-			&WeaponSkill{},
 			&Spell{},
 			&Equipment{},
 			&Weapon{},

@@ -50,6 +50,10 @@ type Skill struct {
 	Difficulty       string `json:"difficulty"`
 }
 
+type WeaponSkill struct {
+	Skill
+}
+
 func (object *LookupList) Create() error {
 	gameSystem := "midgard"
 	object.GameSystem = gameSystem
@@ -193,4 +197,52 @@ func (object *Skill) GetSkillCategories() ([]string, error) {
 	}
 
 	return categories, nil
+}
+
+func (object *WeaponSkill) TableName() string {
+	var dbPrefix = "gsm"
+	return dbPrefix + "_" + "weaponskills"
+}
+
+func (stamm *WeaponSkill) Create() error {
+	gameSystem := "midgard"
+	stamm.GameSystem = gameSystem
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		// Save the main character record
+		if err := tx.Create(&stamm).Error; err != nil {
+			return fmt.Errorf("failed to save LookupWeaponSkill: %w", err)
+		}
+		return nil
+	})
+
+	return err
+}
+
+func (stamm *WeaponSkill) First(name string) error {
+	gameSystem := "midgard"
+	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
+	if err != nil {
+		// Fertigkeit found
+		return err
+	}
+	return nil
+}
+
+func (object *WeaponSkill) FirstId(value uint) error {
+	gameSystem := "midgard"
+	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
+}
+
+func (object *WeaponSkill) Save() error {
+	err := database.DB.Save(&object).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
 }

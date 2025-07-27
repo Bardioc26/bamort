@@ -154,13 +154,13 @@ func deleteMDItem[T any](c *gin.Context) {
 
 func GetMasterData(c *gin.Context) {
 	type dtaStruct struct {
-		Skills          []models.Skill `json:"skills"`
-		Weaponskills    []WeaponSkill  `json:"weaponskills"`
-		Spell           []Spell        `json:"spells"`
-		Equipment       []Equipment    `json:"equipment"`
-		Weapons         []Weapon       `json:"weapons"`
-		SkillCategories []string       `json:"skillcategories"`
-		SpellCategories []string       `json:"spellcategories"`
+		Skills          []models.Skill       `json:"skills"`
+		Weaponskills    []models.WeaponSkill `json:"weaponskills"`
+		Spell           []Spell              `json:"spells"`
+		Equipment       []Equipment          `json:"equipment"`
+		Weapons         []Weapon             `json:"weapons"`
+		SkillCategories []string             `json:"skillcategories"`
+		SpellCategories []string             `json:"spellcategories"`
 	}
 	var dta dtaStruct
 	var err error
@@ -201,9 +201,9 @@ func GetMasterData(c *gin.Context) {
 
 func GetMDSkills(c *gin.Context) {
 	type dtaStruct struct {
-		Skills          []models.Skill `json:"skills"`
-		Weaponskills    []WeaponSkill  `json:"weaponskills"`
-		SkillCategories []string       `json:"skillcategories"`
+		Skills          []models.Skill       `json:"skills"`
+		Weaponskills    []models.WeaponSkill `json:"weaponskills"`
+		SkillCategories []string             `json:"skillcategories"`
 	}
 	var dta dtaStruct
 	var err error
@@ -244,7 +244,7 @@ func DeleteMDSkill(c *gin.Context) {
 
 func GetMDWeaponSkills(c *gin.Context) {
 	type dtaStruct struct {
-		Weaponskills []WeaponSkill `json:"weaponskills"`
+		Weaponskills []models.WeaponSkill `json:"weaponskills"`
 	}
 	var dta dtaStruct
 	if err := database.DB.Find(&dta.Weaponskills).Error; err != nil {
@@ -255,19 +255,19 @@ func GetMDWeaponSkills(c *gin.Context) {
 }
 
 func GetMDWeaponSkill(c *gin.Context) {
-	getMDItem[WeaponSkill](c)
+	getMDItem[models.WeaponSkill](c)
 }
 
 func UpdateMDWeaponSkill(c *gin.Context) {
-	updateMDItem[WeaponSkill](c)
+	updateMDItem[models.WeaponSkill](c)
 }
 
 func AddWeaponSkill(c *gin.Context) {
-	addMDItem[WeaponSkill](c)
+	addMDItem[models.WeaponSkill](c)
 }
 
 func DeleteMDWeaponSkill(c *gin.Context) {
-	deleteMDItem[WeaponSkill](c)
+	deleteMDItem[models.WeaponSkill](c)
 }
 
 //

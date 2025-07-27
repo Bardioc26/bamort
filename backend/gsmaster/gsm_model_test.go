@@ -57,12 +57,12 @@ func TestWeaponSkill_Create(t *testing.T) {
 	database.SetupTestDB()
 	testDefinition := []struct {
 		name        string
-		weaponSkill *WeaponSkill
+		weaponSkill *models.WeaponSkill
 		wantErr     bool
 	}{
 		{
 			name: "valid weapon skill",
-			weaponSkill: &WeaponSkill{
+			weaponSkill: &models.WeaponSkill{
 				Skill: models.Skill{
 					LookupList: models.LookupList{
 						Name:         "Test Weapon Skill",

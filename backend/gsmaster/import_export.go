@@ -12,19 +12,19 @@ import (
 
 // ExportData represents the combined data to be exported
 type exportData struct {
-	Skills          []models.Skill `json:"skills"`
-	WeaponSkills    []WeaponSkill  `json:"weapon_skills"`
-	Spells          []Spell        `json:"spells"`
-	Equipments      []Equipment    `json:"equipments"`
-	Weapons         []Weapon       `json:"weapons"`
-	Containers      []Container    `json:"containers"`
-	Transportations []Container    `json:"transportations"`
-	Believes        []Believe      `json:"believes"`
+	Skills          []models.Skill       `json:"skills"`
+	WeaponSkills    []models.WeaponSkill `json:"weapon_skills"`
+	Spells          []Spell              `json:"spells"`
+	Equipments      []Equipment          `json:"equipments"`
+	Weapons         []Weapon             `json:"weapons"`
+	Containers      []Container          `json:"containers"`
+	Transportations []Container          `json:"transportations"`
+	Believes        []Believe            `json:"believes"`
 }
 
 func Export(filePath string) error {
 	var skills []models.Skill
-	var weaponSkills []WeaponSkill
+	var weaponSkills []models.WeaponSkill
 	var spells []Spell
 	var equipments []Equipment
 	var weapons []Weapon

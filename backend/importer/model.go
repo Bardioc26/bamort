@@ -241,8 +241,8 @@ func TransformImportFertigkeit2GSDMaster(object *Fertigkeit) (*models.Skill, err
 	return &gsmobj, nil
 }
 
-func TransformImportWaffenFertigkeit2GSDMaster(object *Waffenfertigkeit) (*gsmaster.WeaponSkill, error) {
-	gsmobj := gsmaster.WeaponSkill{}
+func TransformImportWaffenFertigkeit2GSDMaster(object *Waffenfertigkeit) (*models.WeaponSkill, error) {
+	gsmobj := models.WeaponSkill{}
 
 	err := gsmobj.First(object.Name)
 	// if found check if we need to adjust masterdata

@@ -71,11 +71,11 @@ func TestGetMasterData(t *testing.T) {
 
 	// Assert the response body
 	type dtaStruct struct {
-		Skills       []models.Skill         `json:"skills"`
-		Weaponskills []gsmaster.WeaponSkill `json:"weaponskills"`
-		Spell        []gsmaster.Spell       `json:"spells"`
-		Equipment    []gsmaster.Equipment   `json:"equipment"`
-		Weapons      []gsmaster.Weapon      `json:"weapons"`
+		Skills       []models.Skill       `json:"skills"`
+		Weaponskills []models.WeaponSkill `json:"weaponskills"`
+		Spell        []gsmaster.Spell     `json:"spells"`
+		Equipment    []gsmaster.Equipment `json:"equipment"`
+		Weapons      []gsmaster.Weapon    `json:"weapons"`
 	}
 	var dta dtaStruct
 	err := json.Unmarshal(respRecorder.Body.Bytes(), &dta)

@@ -43,7 +43,7 @@ func createTestSkillData() error {
 
 	// GSM Test-Skill erstellen
 	gsmSkill := gsmaster.Skill{
-		LookupList: gsmaster.LookupList{
+		LookupList: models.LookupList{
 			GameSystem:   "midgard",
 			Name:         "Menschenkenntnis",
 			Beschreibung: "Test Skill",
@@ -60,7 +60,7 @@ func createTestSkillData() error {
 
 	// GSM Test-Spell erstellen
 	gsmSpell := gsmaster.Spell{
-		LookupList: gsmaster.LookupList{
+		LookupList: models.LookupList{
 			GameSystem:   "midgard",
 			Name:         "Macht über das Selbst",
 			Beschreibung: "Test Spell",

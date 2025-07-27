@@ -2,6 +2,7 @@ package gsmaster
 
 import (
 	"bamort/database"
+	"bamort/models"
 	"testing"
 )
 
@@ -748,7 +749,7 @@ func TestGetSpellInfo(t *testing.T) {
 	// Create minimal test spell data for our test
 	testSpells := []Spell{
 		{
-			LookupList: LookupList{
+			LookupList: models.LookupList{
 				GameSystem:   "midgard",
 				Name:         "Schlummer",
 				Beschreibung: "Test spell for GetSpellInfo",
@@ -758,7 +759,7 @@ func TestGetSpellInfo(t *testing.T) {
 			Category: "Beherrschen",
 		},
 		{
-			LookupList: LookupList{
+			LookupList: models.LookupList{
 				GameSystem:   "midgard",
 				Name:         "Erkennen von Krankheit",
 				Beschreibung: "Test spell for GetSpellInfo",
@@ -768,7 +769,7 @@ func TestGetSpellInfo(t *testing.T) {
 			Category: "Dweomerzauber",
 		},
 		{
-			LookupList: LookupList{
+			LookupList: models.LookupList{
 				GameSystem:   "midgard",
 				Name:         "Das Loblied",
 				Beschreibung: "Test spell for GetSpellInfo",
@@ -854,7 +855,7 @@ func TestCalcSpellLernCostWithRewards(t *testing.T) {
 	// Create minimal test spell data for our test
 	testSpells := []Spell{
 		{
-			LookupList: LookupList{
+			LookupList: models.LookupList{
 				GameSystem:   "midgard",
 				Name:         "Schlummer",
 				Beschreibung: "Test spell for GetSpellInfo",
@@ -864,7 +865,7 @@ func TestCalcSpellLernCostWithRewards(t *testing.T) {
 			Category: "Beherrschen",
 		},
 		{
-			LookupList: LookupList{
+			LookupList: models.LookupList{
 				GameSystem:   "midgard",
 				Name:         "Erkennen von Krankheit",
 				Beschreibung: "Test spell for GetSpellInfo",
@@ -874,7 +875,7 @@ func TestCalcSpellLernCostWithRewards(t *testing.T) {
 			Category: "Dweomer",
 		},
 		{
-			LookupList: LookupList{
+			LookupList: models.LookupList{
 				GameSystem:   "midgard",
 				Name:         "Das Loblied",
 				Beschreibung: "Test spell for GetSpellInfo",

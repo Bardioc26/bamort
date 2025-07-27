@@ -2,20 +2,13 @@ package gsmaster
 
 import (
 	"bamort/database"
+	"bamort/models"
 	"fmt"
 
 	"gorm.io/gorm"
 )
 
 var dbPrefix = "gsm"
-
-type LookupList struct {
-	ID           uint   `gorm:"primaryKey" json:"id"` //`gorm:"default:uuid_generate_v3()"` // db func
-	GameSystem   string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
-	Name         string `json:"name"`
-	Beschreibung string `json:"beschreibung"`
-	Quelle       string `json:"quelle"`
-}
 
 type LearnCost struct {
 	Stufe int `json:"stufe"`
@@ -27,7 +20,7 @@ type LearnCost struct {
 }
 
 type Skill struct {
-	LookupList
+	models.LookupList
 	Initialwert      int    `gorm:"default:5" json:"initialwert"`
 	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
 	Improvable       bool   `gorm:"default:true" json:"improvable"`
@@ -41,7 +34,7 @@ type WeaponSkill struct {
 }
 
 type Spell struct {
-	LookupList
+	models.LookupList
 	Bonus           int    `json:"bonus"`
 	Stufe           int    `json:"level"`
 	AP              string `gorm:"default:1"  json:"ap"`
@@ -56,7 +49,7 @@ type Spell struct {
 }
 
 type Equipment struct {
-	LookupList
+	models.LookupList
 	Gewicht      float64 `json:"gewicht"` // in kg
 	Wert         float64 `json:"wert"`    // in Gold
 	PersonalItem bool    `gorm:"default:false" json:"personal_item"`
@@ -79,9 +72,10 @@ type Transportation struct {
 }
 
 type Believe struct {
-	LookupList
+	models.LookupList
 }
 
+/*
 func (object *LookupList) Create() error {
 	gameSystem := "midgard"
 	object.GameSystem = gameSystem
@@ -124,6 +118,7 @@ func (object *LookupList) Save() error {
 	}
 	return nil
 }
+*/
 
 func (object *Skill) TableName() string {
 	return dbPrefix + "_" + "skills"

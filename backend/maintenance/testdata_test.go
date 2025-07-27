@@ -56,7 +56,7 @@ func createTestDataInLiveDB(t *testing.T, liveDB *gorm.DB) {
 
 	// Create test skill
 	testSkill := &gsmaster.Skill{
-		LookupList: gsmaster.LookupList{
+		LookupList: models.LookupList{
 			Name:         "Test Skill",
 			Beschreibung: "A test skill",
 		},

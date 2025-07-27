@@ -2,6 +2,7 @@ package gsmaster
 
 import (
 	"bamort/database"
+	"bamort/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,7 @@ func TestSkill_Create(t *testing.T) {
 		{
 			name: "valid skill",
 			skill: &Skill{
-				LookupList: LookupList{
+				LookupList: models.LookupList{
 					Name:         "Test Skill",
 					Beschreibung: "Test Description",
 					Quelle:       "Test Source",
@@ -63,7 +64,7 @@ func TestWeaponSkill_Create(t *testing.T) {
 			name: "valid weapon skill",
 			weaponSkill: &WeaponSkill{
 				Skill: Skill{
-					LookupList: LookupList{
+					LookupList: models.LookupList{
 						Name:         "Test Weapon Skill",
 						Beschreibung: "Test Description",
 						Quelle:       "Test Source",
@@ -118,7 +119,7 @@ func TestSkill_First(t *testing.T) {
 		{
 			name: "existing skill",
 			skill: &Skill{
-				LookupList: LookupList{
+				LookupList: models.LookupList{
 					Name:       "Test Skill",
 					GameSystem: "midgard",
 				},
@@ -175,7 +176,7 @@ func TestSkill_FirstId(t *testing.T) {
 		{
 			name: "existing skill",
 			skill: &Skill{
-				LookupList: LookupList{
+				LookupList: models.LookupList{
 					Name:       "Test Skill",
 					GameSystem: "midgard",
 				},
@@ -233,7 +234,7 @@ func TestSkill_Save(t *testing.T) {
 		{
 			name: "update existing skill",
 			skill: &Skill{
-				LookupList: LookupList{
+				LookupList: models.LookupList{
 					Name:         "Test Skill",
 					Beschreibung: "Original Description",
 					GameSystem:   "midgard",
@@ -289,7 +290,7 @@ func TestSkill_Delete(t *testing.T) {
 		{
 			name: "delete existing skill",
 			skill: &Skill{
-				LookupList: LookupList{
+				LookupList: models.LookupList{
 					Name:       "Test Skill",
 					GameSystem: "midgard",
 				},
@@ -299,7 +300,7 @@ func TestSkill_Delete(t *testing.T) {
 		{
 			name: "delete non-existing skill",
 			skill: &Skill{
-				LookupList: LookupList{
+				LookupList: models.LookupList{
 					ID: 9999,
 				},
 			},
@@ -346,28 +347,28 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 	// Create test skills with different categories
 	testSkills := []*Skill{
 		{
-			LookupList: LookupList{
+			LookupList: models.LookupList{
 				Name:       "Skill1",
 				GameSystem: "midgard",
 			},
 			Category: "Category1",
 		},
 		{
-			LookupList: LookupList{
+			LookupList: models.LookupList{
 				Name:       "Skill2",
 				GameSystem: "midgard",
 			},
 			Category: "Category2",
 		},
 		{
-			LookupList: LookupList{
+			LookupList: models.LookupList{
 				Name:       "Skill3",
 				GameSystem: "midgard",
 			},
 			Category: "Category1", // Duplicate category
 		},
 		{
-			LookupList: LookupList{
+			LookupList: models.LookupList{
 				Name:       "Skill4",
 				GameSystem: "midgard",
 			},

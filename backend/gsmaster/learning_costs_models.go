@@ -10,7 +10,7 @@ import (
 type CharacterClass struct {
 	ID          uint   `gorm:"primaryKey" json:"id"`
 	Code        string `gorm:"index:idx_character_class_code,unique,length:2;size:2;not null" json:"code"`
-	Name        string `gorm:"size:50;not null" json:"name"`
+	Name        string `gorm:"index:idx_character_class_name,unique,length:50;not null" json:"name"`
 	Description string `json:"description"`
 	GameSystem  string `gorm:"column:game_system;index;size:50;default:midgard" json:"game_system"`
 	Quelle      string `json:"quelle"`
@@ -32,7 +32,7 @@ type SkillCategory struct {
 // SkillDifficulty represents difficulty levels within a category
 type SkillDifficulty struct {
 	ID         uint          `gorm:"primaryKey" json:"id"`
-	Name       string        `gorm:"size:50;not null" json:"name"`
+	Name       string        `gorm:"index:idx_skill_difficulty_name;not null" json:"name"`
 	CategoryID uint          `gorm:"not null" json:"category_id"`
 	Category   SkillCategory `gorm:"foreignKey:CategoryID" json:"category"`
 	LearnCost  int           `gorm:"not null" json:"learn_cost"`
@@ -55,7 +55,7 @@ type ClassCategoryEPCost struct {
 // SkillDefinitionNew represents individual skills and their category/difficulty
 type SkillDefinitionNew struct {
 	ID               uint            `gorm:"primaryKey" json:"id"`
-	Name             string          `gorm:"size:100;not null" json:"name"`
+	Name             string          `gorm:"index:idx_skill_definition_name;not null" json:"name"`
 	GameSystem       string          `gorm:"column:game_system;index;size:50;default:midgard" json:"game_system"`
 	Quelle           string          `json:"quelle"`
 	CategoryID       uint            `gorm:"not null" json:"category_id"`

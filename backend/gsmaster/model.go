@@ -12,7 +12,7 @@ var dbPrefix = "gsm"
 type LookupList struct {
 	ID           uint   `gorm:"primaryKey" json:"id"` //`gorm:"default:uuid_generate_v3()"` // db func
 	GameSystem   string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
-	Name         string `json:"name"`
+	Name         string `gorm:"index:idx_lookup_list_name;not null" json:"name"`
 	Beschreibung string `json:"beschreibung"`
 	Quelle       string `json:"quelle"`
 }

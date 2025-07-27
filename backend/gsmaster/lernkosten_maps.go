@@ -658,17 +658,12 @@ func findBestCategoryForSkillLearning(skillName, characterClass string) (string,
 	return bestOption.category, bestOption.difficulty, nil
 }
 
-func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
-	// Berechne die Lernkosten basierend auf den aktuellen Werten im costResult
-	// Hier sollte die Logik zur Berechnung der Lernkosten implementiert werden
-	//Finde EP kosten für die Kategorie für die Charakterklasse aus learningCostsData.EPPerTE
-	// Konvertiere Vollnamen der Charakterklasse zu Abkürzungen falls nötig
-	//classKey := getClassAbbreviation(costResult.CharacterClass)
+func CalcSkillLernCostNew(costResult *SkillCostResultNew, reward *string) error {
 	classKey := costResult.CharacterClass
 
 	// Wenn Kategorie und Schwierigkeit noch nicht gesetzt sind, finde die beste Option
 	if costResult.Category == "" || costResult.Difficulty == "" {
-		bestCategory, bestDifficulty, err := findBestCategoryForSkillLearning(costResult.SkillName, classKey)
+		bestCategory, bestDifficulty, err := FindBestCategoryForSkillLearningNew(costResult.SkillName, classKey)
 		if err != nil {
 			return err
 		}
@@ -676,18 +671,19 @@ func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
 		costResult.Difficulty = bestDifficulty
 	}
 
-	epPerTE, ok := learningCostsData.EPPerTE[classKey][costResult.Category]
-	if !ok {
-		return fmt.Errorf("EP-Kosten für Kategorie '%s' und Klasse '%s' nicht gefunden", costResult.Category, costResult.CharacterClass)
+	epPerTE, err := GetEPCostForClassCategoryNew(classKey, costResult.Category)
+	if err != nil {
+		return fmt.Errorf("EP-Kosten für Kategorie '%s' und Klasse '%s' nicht gefunden: %w", costResult.Category, costResult.CharacterClass, err)
 	}
-	// finde LE für den Skill aufgrund der Kategorie und schwierigkeit aus DifficultyData
-	learnCost, ok := learningCostsData.ImprovementCost[costResult.Category][costResult.Difficulty]
-	if !ok {
-		return fmt.Errorf("Lernkosten für Kategorie '%s' und Schwierigkeit '%s' nicht gefunden", costResult.Category, costResult.Difficulty)
+
+	learnCost, err := GetLearnCostForSkillNew(costResult.SkillName, costResult.Category)
+	if err != nil {
+		return fmt.Errorf("Lernkosten für Skill '%s' in Kategorie '%s' nicht gefunden: %w", costResult.SkillName, costResult.Category, err)
 	}
-	costResult.LE = learnCost.LearnCost
+
+	costResult.LE = learnCost
 	costResult.EP = epPerTE * costResult.LE * 3
-	costResult.GoldCost = costResult.LE * 200 // Beispiel: 200 Gold pro LE
+	costResult.GoldCost = costResult.LE * 200 // beispiel: 200 Gold pro LE
 
 	// Apply reward logic
 	if reward != nil {
@@ -702,6 +698,123 @@ func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
 			costResult.EP = costResult.EP / 2 // Halbe EP-Kosten
 		case "default":
 			// Keine Änderungen, normale Kosten
+		}
+	}
+
+	return nil
+}
+
+// CalcSpellLernCostNew berechnet die Kosten für das Erlernen eines Zaubers (new version)
+func CalcSpellLernCostNew(costResult *SkillCostResultNew, reward *string) error {
+	classKey := costResult.CharacterClass
+	spellCategory, spellLevel, err := GetSpellInfo(costResult.SkillName)
+	if err != nil {
+		return fmt.Errorf("failed to get spell info: %w", err)
+	}
+
+	spellEPPerLE, err := GetSpellEPCostNew(classKey, spellCategory)
+	if err != nil {
+		return fmt.Errorf("EP-Kosten für Zauber '%s' und Klasse '%s' nicht gefunden: %w", costResult.SkillName, classKey, err)
+	}
+
+	if classKey == "Ma" {
+		spezialgebiet := GetSpecialization(costResult.CharacterID)
+		if spellCategory == spezialgebiet {
+			spellEPPerLE = 30 // Spezialgebiet für Magier
+		}
+	}
+
+	trainCost, err := GetSpellLevelCostNew(spellLevel)
+	if err != nil {
+		return fmt.Errorf("LE-Kosten für Zauber-Level %d nicht gefunden: %w", spellLevel, err)
+	}
+
+	if costResult.PPUsed > 0 {
+		trainCost -= costResult.PPUsed // Wenn PP verwendet werden, reduziere die LE-Kosten
+		if trainCost < 0 {
+			trainCost = 0 // Verhindere negative LE-Kosten
+		}
+	}
+
+	costResult.LE = trainCost                // Setze die LE-Kosten
+	costResult.EP = trainCost * spellEPPerLE // EP-Kosten für das Lernen des Zaubers
+	costResult.GoldCost = trainCost * 100    // Beispiel: 100 Gold pro LE
+	costResult.Category = spellCategory
+	costResult.Difficulty = fmt.Sprintf("Stufe %d", spellLevel) // Zauber haben keine Schwierigkeit, sondern eine Stufe
+
+	if reward != nil && *reward == "spruchrolle" {
+		costResult.GoldCost = 20          // 20 Gold für Jeden Versuch
+		costResult.EP = costResult.EP / 3 // 1/3 EP-Kosten bei Erfolg
+	} else {
+		if reward != nil && *reward == "halveep" {
+			costResult.EP = costResult.EP / 2 // Halbiere die EP-Kosten für diese Belohnung
+		}
+		if reward != nil && *reward == "halveepnoGold" {
+			costResult.EP = costResult.EP / 2 // Halbiere die EP-Kosten für diese Belohnung
+			costResult.GoldCost = 0           // Keine Goldkosten für diese Belohnung
+		}
+	}
+
+	return nil
+}
+
+// CalcSkillImproveCostNew berechnet die Kosten für die Verbesserung einer Fertigkeit (new version)
+func CalcSkillImproveCostNew(costResult *SkillCostResultNew, currentLevel int, reward *string) error {
+	classKey := costResult.CharacterClass
+
+	if costResult.TargetLevel > 0 {
+		currentLevel = costResult.TargetLevel - 1 // Wenn ein Ziellevel angegeben ist, verwende dieses
+	}
+
+	// Wenn Kategorie und Schwierigkeit noch nicht gesetzt sind, finde die beste Option
+	if costResult.Category == "" || costResult.Difficulty == "" {
+		bestCategory, bestDifficulty, err := FindBestCategoryForSkillImprovementNew(costResult.SkillName, classKey, currentLevel+1)
+		if err != nil {
+			return err
+		}
+		costResult.Category = bestCategory
+		costResult.Difficulty = bestDifficulty
+	}
+
+	epPerTE, err := GetEPCostForClassCategoryNew(classKey, costResult.Category)
+	if err != nil {
+		return fmt.Errorf("EP-Kosten für Kategorie '%s' und Klasse '%s' nicht gefunden: %w", costResult.Category, costResult.CharacterClass, err)
+	}
+
+	trainCost, err := GetImprovementCostNew(costResult.SkillName, costResult.Category, currentLevel)
+	if err != nil {
+		return fmt.Errorf("Verbesserungskosten für Skill '%s' auf Level %d nicht gefunden: %w", costResult.SkillName, currentLevel+1, err)
+	}
+
+	if trainCost < costResult.PPUsed {
+		costResult.PPUsed = trainCost //maximal so viele PP verwenden wie TE benötigt werden
+		trainCost = 0                 // Wenn PP verwendet werden, setze die Kosten auf
+	} else if costResult.PPUsed > 0 {
+		trainCost -= costResult.PPUsed // Wenn PP verwendet werden, setze die Kosten auf die PP
+	}
+
+	// Apply reward logic
+	costResult.LE = trainCost
+	costResult.EP = epPerTE * trainCost
+	costResult.GoldCost = trainCost * 20 // Beispiel: 20 Gold pro TE
+
+	if reward != nil && *reward == "halveep" {
+		costResult.EP = costResult.EP / 2 // Halbiere die EP-Kosten für diese Belohnung
+	}
+	if reward != nil && *reward == "halveepnoGold" {
+		costResult.GoldCost = 0           // Keine Goldkosten für diese Belohnung
+		costResult.EP = costResult.EP / 2 // Halbiere die EP-Kosten für diese Belohnung
+	}
+	if costResult.GoldUsed > 0 {
+		// 10 Gold = 1 EP
+		epFromGold := costResult.GoldUsed / 10
+		if epFromGold > costResult.EP {
+			// Maximal so viel Gold verwenden wie EP benötigt werden
+			costResult.GoldUsed = costResult.EP * 10
+			costResult.EP = 0
+		} else {
+			// Reduziere EP um die Menge, die durch Gold ersetzt wird
+			costResult.EP -= epFromGold
 		}
 	}
 
@@ -833,7 +946,7 @@ func GetLernCostNextLevel(request *LernCostRequest, costResult *SkillCostResultN
 
 	switch {
 	case request.Action == "learn" && request.Type == "skill":
-		err := CalcSkillLernCost(costResult, request.Reward)
+		err := CalcSkillLernCostNew(costResult, request.Reward)
 		if err != nil {
 			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)
 		}
@@ -842,7 +955,7 @@ func GetLernCostNextLevel(request *LernCostRequest, costResult *SkillCostResultN
 			costResult.EP += 6
 		}
 	case request.Action == "learn" && request.Type == "spell":
-		err := CalcSpellLernCost(costResult, request.Reward)
+		err := CalcSpellLernCostNew(costResult, request.Reward)
 		if err != nil {
 			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)
 		}
@@ -851,7 +964,7 @@ func GetLernCostNextLevel(request *LernCostRequest, costResult *SkillCostResultN
 			costResult.EP += 6
 		}
 	case request.Action == "improve" && request.Type == "skill":
-		err := CalcSkillImproveCost(costResult, request.CurrentLevel, request.Reward)
+		err := CalcSkillImproveCostNew(costResult, request.CurrentLevel, request.Reward)
 		if err != nil {
 			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)
 		}

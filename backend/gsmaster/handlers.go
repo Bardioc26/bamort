@@ -2,6 +2,7 @@ package gsmaster
 
 import (
 	"bamort/database"
+	"bamort/models"
 	"net/http"
 	"strconv"
 
@@ -153,17 +154,17 @@ func deleteMDItem[T any](c *gin.Context) {
 
 func GetMasterData(c *gin.Context) {
 	type dtaStruct struct {
-		Skills          []Skill       `json:"skills"`
-		Weaponskills    []WeaponSkill `json:"weaponskills"`
-		Spell           []Spell       `json:"spells"`
-		Equipment       []Equipment   `json:"equipment"`
-		Weapons         []Weapon      `json:"weapons"`
-		SkillCategories []string      `json:"skillcategories"`
-		SpellCategories []string      `json:"spellcategories"`
+		Skills          []models.Skill `json:"skills"`
+		Weaponskills    []WeaponSkill  `json:"weaponskills"`
+		Spell           []Spell        `json:"spells"`
+		Equipment       []Equipment    `json:"equipment"`
+		Weapons         []Weapon       `json:"weapons"`
+		SkillCategories []string       `json:"skillcategories"`
+		SpellCategories []string       `json:"spellcategories"`
 	}
 	var dta dtaStruct
 	var err error
-	var ski Skill
+	var ski models.Skill
 	var spe Spell
 	if err := database.DB.Find(&dta.Skills).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Skills"})
@@ -200,13 +201,13 @@ func GetMasterData(c *gin.Context) {
 
 func GetMDSkills(c *gin.Context) {
 	type dtaStruct struct {
-		Skills          []Skill       `json:"skills"`
-		Weaponskills    []WeaponSkill `json:"weaponskills"`
-		SkillCategories []string      `json:"skillcategories"`
+		Skills          []models.Skill `json:"skills"`
+		Weaponskills    []WeaponSkill  `json:"weaponskills"`
+		SkillCategories []string       `json:"skillcategories"`
 	}
 	var dta dtaStruct
 	var err error
-	var ski Skill
+	var ski models.Skill
 	if err := database.DB.Find(&dta.Skills).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Skills"})
 		return
@@ -224,19 +225,19 @@ func GetMDSkills(c *gin.Context) {
 }
 
 func GetMDSkill(c *gin.Context) {
-	getMDItem[Skill](c)
+	getMDItem[models.Skill](c)
 }
 
 func UpdateMDSkill(c *gin.Context) {
-	updateMDItem[Skill](c)
+	updateMDItem[models.Skill](c)
 }
 
 func AddSkill(c *gin.Context) {
-	addMDItem[Skill](c)
+	addMDItem[models.Skill](c)
 }
 
 func DeleteMDSkill(c *gin.Context) {
-	deleteMDItem[Skill](c)
+	deleteMDItem[models.Skill](c)
 }
 
 //
@@ -272,7 +273,7 @@ func DeleteMDWeaponSkill(c *gin.Context) {
 //
 
 func GetMDSkillCategories(c *gin.Context) {
-	var ski Skill
+	var ski models.Skill
 	skillCategories, err := ski.GetSkillCategories()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve SkillCategories" + err.Error()})

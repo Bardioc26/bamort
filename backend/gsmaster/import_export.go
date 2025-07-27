@@ -2,6 +2,7 @@ package gsmaster
 
 import (
 	"bamort/database"
+	"bamort/models"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -11,18 +12,18 @@ import (
 
 // ExportData represents the combined data to be exported
 type exportData struct {
-	Skills          []Skill       `json:"skills"`
-	WeaponSkills    []WeaponSkill `json:"weapon_skills"`
-	Spells          []Spell       `json:"spells"`
-	Equipments      []Equipment   `json:"equipments"`
-	Weapons         []Weapon      `json:"weapons"`
-	Containers      []Container   `json:"containers"`
-	Transportations []Container   `json:"transportations"`
-	Believes        []Believe     `json:"believes"`
+	Skills          []models.Skill `json:"skills"`
+	WeaponSkills    []WeaponSkill  `json:"weapon_skills"`
+	Spells          []Spell        `json:"spells"`
+	Equipments      []Equipment    `json:"equipments"`
+	Weapons         []Weapon       `json:"weapons"`
+	Containers      []Container    `json:"containers"`
+	Transportations []Container    `json:"transportations"`
+	Believes        []Believe      `json:"believes"`
 }
 
 func Export(filePath string) error {
-	var skills []Skill
+	var skills []models.Skill
 	var weaponSkills []WeaponSkill
 	var spells []Spell
 	var equipments []Equipment

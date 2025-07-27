@@ -2,6 +2,7 @@ package importer
 
 import (
 	"bamort/gsmaster"
+	"bamort/models"
 	"fmt"
 	"regexp"
 )
@@ -210,8 +211,8 @@ func isImprovableSkill(name string) bool {
 	}
 	return true
 }
-func TransformImportFertigkeit2GSDMaster(object *Fertigkeit) (*gsmaster.Skill, error) {
-	gsmobj := gsmaster.Skill{}
+func TransformImportFertigkeit2GSDMaster(object *Fertigkeit) (*models.Skill, error) {
+	gsmobj := models.Skill{}
 
 	err := gsmobj.First(object.Name)
 	// if found check if we need to adjust masterdata

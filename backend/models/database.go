@@ -1,4 +1,4 @@
-package gsmaster
+package models
 
 import (
 	"bamort/database"
@@ -16,13 +16,16 @@ func MigrateStructure(db ...*gorm.DB) error {
 	}
 
 	err := targetDB.AutoMigrate(
-		&WeaponSkill{},
-		&Spell{},
-		&Equipment{},
-		&Weapon{},
-		&Container{},
-		&Transportation{},
-		&Believe{},
+		&Skill{},
+		/*
+			&WeaponSkill{},
+			&Spell{},
+			&Equipment{},
+			&Weapon{},
+			&Container{},
+			&Transportation{},
+			&Believe{},
+		*/
 	)
 	if err != nil {
 		return err

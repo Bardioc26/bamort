@@ -55,7 +55,7 @@ func createTestDataInLiveDB(t *testing.T, liveDB *gorm.DB) {
 	require.NoError(t, err)
 
 	// Create test skill
-	testSkill := &gsmaster.Skill{
+	testSkill := &models.Skill{
 		LookupList: models.LookupList{
 			Name:         "Test Skill",
 			Beschreibung: "A test skill",
@@ -239,7 +239,7 @@ func TestLoadPredefinedTestDataFromFile(t *testing.T) {
 	assert.Greater(t, charCount, int64(0), "Should have loaded characters")
 
 	var skillCount int64
-	err = targetDB.Model(&gsmaster.Skill{}).Count(&skillCount).Error
+	err = targetDB.Model(&models.Skill{}).Count(&skillCount).Error
 	require.NoError(t, err)
 	assert.Greater(t, skillCount, int64(0), "Should have loaded skills")
 

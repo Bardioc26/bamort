@@ -6,6 +6,7 @@ import (
 	"bamort/equipment"
 	"bamort/gsmaster"
 	"bamort/importer"
+	"bamort/models"
 	"bamort/skills"
 	"bamort/user"
 	"fmt"
@@ -132,7 +133,7 @@ func copyAllDataToTestDB(liveDB, testDB *gorm.DB) (map[string]int, error) {
 	}
 	stats["users"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.Skill{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Skill{})
 	if err != nil {
 		return stats, err
 	}
@@ -470,7 +471,7 @@ func getTestDataStatistics(db *gorm.DB) (map[string]int64, error) {
 	tables := map[string]interface{}{
 		"users":                     &user.User{},
 		"characters":                &character.Char{},
-		"gsmaster_skills":           &gsmaster.Skill{},
+		"gsmaster_skills":           &models.Skill{},
 		"gsmaster_spells":           &gsmaster.Spell{},
 		"gsmaster_equipment":        &gsmaster.Equipment{},
 		"skills_fertigkeiten":       &skills.Fertigkeit{},

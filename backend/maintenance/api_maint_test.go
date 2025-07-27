@@ -4,6 +4,7 @@ import (
 	"bamort/character"
 	"bamort/database"
 	"bamort/gsmaster"
+	"bamort/models"
 	"bamort/router"
 	"bamort/user"
 	"encoding/json"
@@ -70,7 +71,7 @@ func TestGetMasterData(t *testing.T) {
 
 	// Assert the response body
 	type dtaStruct struct {
-		Skills       []gsmaster.Skill       `json:"skills"`
+		Skills       []models.Skill         `json:"skills"`
 		Weaponskills []gsmaster.WeaponSkill `json:"weaponskills"`
 		Spell        []gsmaster.Spell       `json:"spells"`
 		Equipment    []gsmaster.Equipment   `json:"equipment"`
@@ -84,7 +85,7 @@ func TestGetMasterData(t *testing.T) {
 func TestGetMDSkillCategories(t *testing.T) {
 	database.SetupTestDB(false)
 	//gsmaster.MigrateStructure()
-	ski := gsmaster.Skill{}
+	ski := models.Skill{}
 	categories, err := ski.GetSkillCategories()
 	assert.NoError(t, err)
 	assert.LessOrEqual(t, 1, len(categories))
@@ -157,7 +158,7 @@ func TestUpdateMDSkill(t *testing.T) {
 	u.FirstId(1)
 
 	// Define the test case input
-	sk := gsmaster.Skill{}
+	sk := models.Skill{}
 	sk.Name = "Geländekunde"
 	sk.ID = 64
 	jsonData, err := json.Marshal(sk)

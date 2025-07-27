@@ -182,7 +182,7 @@ func GetLearnSkillCost(c *gin.Context) {
 		return
 	}
 
-	var skill gsmaster.Skill
+	var skill models.Skill
 	if err := skill.First(s.Name); err != nil {
 		respondWithError(c, http.StatusBadRequest, "can not find speel in gsmaster: "+err.Error())
 		return
@@ -1330,9 +1330,9 @@ func GetAvailableSkills(c *gin.Context) {
 	}
 
 	// Hole alle verfügbaren Fertigkeiten aus der gsmaster Datenbank, aber filtere Placeholder aus
-	var allSkills []gsmaster.Skill
+	var allSkills []models.Skill
 
-	allSkills, err := gsmaster.SelectSkills("", "")
+	allSkills, err := models.SelectSkills("", "")
 	if err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve skills from gsmaster")
 		return
@@ -1386,7 +1386,7 @@ func GetAvailableSkills(c *gin.Context) {
 }
 
 // calculateSkillLearningCosts berechnet die EP- und Goldkosten für das Lernen einer Fertigkeit mit GetLernCostNextLevel
-func calculateSkillLearningCosts(skill gsmaster.Skill, character Char, rewardType string) (int, int) {
+func calculateSkillLearningCosts(skill models.Skill, character Char, rewardType string) (int, int) {
 	// Erstelle LernCostRequest für das Lernen (Level 0 -> 1)
 	var rewardTypePtr *string
 	if rewardType != "" && rewardType != "default" {

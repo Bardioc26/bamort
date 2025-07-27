@@ -1,6 +1,7 @@
 package gsmaster
 
 import (
+	"bamort/models"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -135,7 +136,7 @@ func CalculateSkillLearnCost(skill string, class string) (int, error) {
 			return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
 		}
 	*/
-	var skl Skill
+	var skl models.Skill
 	if err := skl.First(skill); err != nil {
 		return 0, errors.New("unbekannte Fertigkeit")
 	}
@@ -174,7 +175,7 @@ func CalculateImprovementCost(skill string, class string, currentSkillLevel int)
 		}
 	*/
 	lCost := LearnCost{}
-	var skl Skill
+	var skl models.Skill
 	if err := skl.First(skill); err != nil {
 		return nil, errors.New("unbekannte Fertigkeit")
 	}

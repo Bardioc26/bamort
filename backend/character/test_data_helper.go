@@ -42,7 +42,7 @@ func createTestSkillData() error {
 	}
 
 	// GSM Test-Skill erstellen
-	gsmSkill := gsmaster.Skill{
+	gsmSkill := models.Skill{
 		LookupList: models.LookupList{
 			GameSystem:   "midgard",
 			Name:         "Menschenkenntnis",
@@ -81,6 +81,6 @@ func createTestSkillData() error {
 func cleanupTestSkillData() {
 	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&skills.Fertigkeit{})
 	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&skills.Zauber{})
-	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&gsmaster.Skill{})
+	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&models.Skill{})
 	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&gsmaster.Spell{})
 }

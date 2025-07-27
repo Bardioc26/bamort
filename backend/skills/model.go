@@ -44,8 +44,8 @@ func (object *Zauber) TableName() string {
 	return dbPrefix + "_" + "spells"
 }
 
-func (object *Fertigkeit) GetGsm() *gsmaster.Skill {
-	var gsmsk gsmaster.Skill
+func (object *Fertigkeit) GetGsm() *models.Skill {
+	var gsmsk models.Skill
 	gsmsk.First(object.Name)
 	if gsmsk.ID == 0 {
 		return nil
@@ -57,7 +57,7 @@ func (object *Fertigkeit) GetCategory() string {
 	if object.Category != "" {
 		return object.Category
 	}
-	var gsmsk gsmaster.Skill
+	var gsmsk models.Skill
 	gsmsk.First(object.Name)
 	if gsmsk.ID == 0 {
 		return "Unkategorisiert"

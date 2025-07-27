@@ -2,6 +2,7 @@ package character
 
 import (
 	"bamort/gsmaster"
+	"bamort/models"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -511,7 +512,7 @@ type skillInfo struct {
 }
 
 func getSkillInfo(skillName, skillType string) skillInfo {
-	var skill gsmaster.Skill
+	var skill models.Skill
 	if err := skill.First(skillName); err != nil {
 		return skillInfo{Category: "unknown", Difficulty: "unknown"}
 	}

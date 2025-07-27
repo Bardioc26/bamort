@@ -3,6 +3,7 @@ package importer
 import (
 	"bamort/character"
 	"bamort/gsmaster"
+	"bamort/models"
 	"fmt"
 )
 
@@ -10,8 +11,8 @@ func ImportChar(char CharacterImport) (*character.Char, error) {
 	return nil, fmt.Errorf("char could not be imported %s", "Weil Wegen Kommt noch")
 }
 
-func CheckSkill(fertigkeit *Fertigkeit, autocreate bool) (*gsmaster.Skill, error) {
-	stammF := gsmaster.Skill{}
+func CheckSkill(fertigkeit *Fertigkeit, autocreate bool) (*models.Skill, error) {
+	stammF := models.Skill{}
 	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, fertigkeit.Name).Error
 	err := stammF.First(fertigkeit.Name)
 	if err == nil {

@@ -3,6 +3,7 @@ package importer
 import (
 	"bamort/database"
 	"bamort/gsmaster"
+	"bamort/models"
 	"fmt"
 	"testing"
 
@@ -218,12 +219,12 @@ func TestImportSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, false, skill.Improvable)
 	assert.Equal(t, "midgard", skill.GameSystem)
 	//}
-	skill2 := gsmaster.Skill{}
+	skill2 := models.Skill{}
 	erro = skill2.First("Hören")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
-	skill3 := gsmaster.Skill{}
+	skill3 := models.Skill{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Hören", skill3.Name)

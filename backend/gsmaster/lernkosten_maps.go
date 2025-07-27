@@ -821,7 +821,7 @@ func CalcSpellLernCost(costResult *SkillCostResultNew, reward *string) error {
 	return nil
 }
 
-func GetLernCostNextLevel(request *LernCostRequest, costResult *SkillCostResultNew, reward *string, level int, characterTyp string) error {
+func GetLernCostNextLevel(request *LernCostRequest, costResult *SkillCostResultNew, reward *string, level int, characterRasse string) error {
 	// Diese Funktion berechnet die Kosten für das Erlernen oder Verbessern einer Fertigkeit oder eines Zaubers
 	// abhängig von der Aktion (learn/improve) und der Belohnung.
 	// die Berechnung erfolgt immer für genau 1 Level
@@ -838,7 +838,7 @@ func GetLernCostNextLevel(request *LernCostRequest, costResult *SkillCostResultN
 			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)
 		}
 		// extrakosten für elfen
-		if characterTyp == "Elf" {
+		if characterRasse == "Elf" {
 			costResult.EP += 6
 		}
 	case request.Action == "learn" && request.Type == "spell":
@@ -847,7 +847,7 @@ func GetLernCostNextLevel(request *LernCostRequest, costResult *SkillCostResultN
 			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)
 		}
 		// extrakosten für elfen
-		if characterTyp == "Elf" {
+		if characterRasse == "Elf" {
 			costResult.EP += 6
 		}
 	case request.Action == "improve" && request.Type == "skill":

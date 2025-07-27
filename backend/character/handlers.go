@@ -788,6 +788,13 @@ func LearnSkill(c *gin.Context) {
 	if request.Type == "" {
 		request.Type = "skill" // Default zu skill für Learning
 	}
+	// Verwende Klassenabkürzung wenn der Typ länger als 3 Zeichen ist
+	var characterClass string
+	if len(character.Typ) > 3 {
+		characterClass = gsmaster.GetClassAbbreviation(character.Typ)
+	} else {
+		characterClass = character.Typ
+	}
 
 	// Bestimme das finale Level
 	finalLevel := request.TargetLevel
@@ -818,10 +825,10 @@ func LearnSkill(c *gin.Context) {
 		// Berechne Kosten für diesen einen Level
 		var costResult gsmaster.SkillCostResultNew
 		costResult.CharacterID = fmt.Sprintf("%d", character.ID)
-		costResult.CharacterClass = character.Typ
+		costResult.CharacterClass = characterClass
 		costResult.SkillName = request.Name
 
-		err = gsmaster.GetLernCostNextLevel(&tempRequest, &costResult, request.Reward, nextLevel, character.Typ)
+		err = gsmaster.GetLernCostNextLevel(&tempRequest, &costResult, request.Reward, nextLevel, character.Rasse)
 		if err != nil {
 			respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fehler bei Level %d: %v", nextLevel, err))
 			return
@@ -1030,7 +1037,7 @@ func ImproveSkill(c *gin.Context) {
 		costResult.CharacterClass = characterClass
 		costResult.SkillName = request.Name
 
-		err = gsmaster.GetLernCostNextLevel(&tempRequest, &costResult, request.Reward, nextLevel, character.Typ)
+		err = gsmaster.GetLernCostNextLevel(&tempRequest, &costResult, request.Reward, nextLevel, character.Rasse)
 		if err != nil {
 			respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fehler bei Level %d: %v", nextLevel, err))
 			return

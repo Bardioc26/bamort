@@ -1079,6 +1079,25 @@ func TestGetLernCostNextLevel(t *testing.T) {
 			expectedGold: 200, // 1 * 200
 		},
 		{
+			name: "Learn skill as Human Kr",
+			request: &LernCostRequest{
+				Action: "learn",
+				Type:   "skill",
+				Reward: stringPtr("default"),
+			},
+			costResult: &SkillCostResultNew{
+				CharacterClass: "Kr",
+				SkillName:      "Abrichten",
+				Category:       "Körper",
+				Difficulty:     "leicht",
+			},
+			level:        1,
+			characterTyp: "Mensch",
+			expectError:  true, // TODO Abrichten kommt im Mysterium mit dem Tiermeister
+			expectedEP:   30,   // 10 * 1 * 3
+			expectedGold: 200,  // 1 * 200
+		},
+		{
 			name: "Learn skill as Elf - should have EP bonus",
 			request: &LernCostRequest{
 				Action: "learn",

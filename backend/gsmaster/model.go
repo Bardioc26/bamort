@@ -163,6 +163,33 @@ func (object *Skill) FirstId(value uint) error {
 	return nil
 }
 
+func (object *Skill) Select(fieldName string, value string) ([]Skill, error) {
+	gameSystem := "midgard"
+	var skills []Skill
+	err := database.DB.Find(&skills, "game_system=? AND name != 'Placeholder' AND "+fieldName+" = ?", gameSystem, value).Error
+	if err != nil {
+		return nil, err
+	}
+	return skills, nil
+}
+
+func SelectSkills(fieldName string, value string) ([]Skill, error) {
+	gameSystem := "midgard"
+	var skills []Skill
+	if fieldName == "" {
+		err := database.DB.Find(&skills, "game_system=? AND name != 'Placeholder'", gameSystem).Error
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := database.DB.Find(&skills, "game_system=? AND name != 'Placeholder' AND "+fieldName+" = ?", gameSystem, value).Error
+		if err != nil {
+			return nil, err
+		}
+	}
+	return skills, nil
+}
+
 func (object *Skill) Save() error {
 	err := database.DB.Save(&object).Error
 	if err != nil {

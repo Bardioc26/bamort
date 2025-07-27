@@ -93,13 +93,42 @@
               </button>
             </div>
             
-            <div class="skills-search">
-              <input 
-                v-model="skillSearchFilter"
-                type="text" 
-                placeholder="Fertigkeiten filtern..." 
-                class="form-input search-input"
-              />
+            <!-- Sortier- und Suchbereich -->
+            <div class="sort-and-search-controls">
+              <div class="sort-controls">
+                <span class="sort-label">Sortieren nach:</span>
+                <button 
+                  @click="setSortBy('name')"
+                  class="sort-btn"
+                  :class="{ 'active': sortBy === 'name' }"
+                  title="Nach Name sortieren"
+                >
+                  Name 
+                  <span v-if="sortBy === 'name'" class="sort-icon">
+                    {{ sortOrder === 'asc' ? '↑' : '↓' }}
+                  </span>
+                </button>
+                <button 
+                  @click="setSortBy('epCost')"
+                  class="sort-btn"
+                  :class="{ 'active': sortBy === 'epCost' }"
+                  title="Nach EP-Kosten sortieren"
+                >
+                  EP-Kosten 
+                  <span v-if="sortBy === 'epCost'" class="sort-icon">
+                    {{ sortOrder === 'asc' ? '↑' : '↓' }}
+                  </span>
+                </button>
+              </div>
+              
+              <div class="skills-search">
+                <input 
+                  v-model="skillSearchFilter"
+                  type="text" 
+                  placeholder="Fertigkeiten filtern..." 
+                  class="form-input search-input"
+                />
+              </div>
             </div>
             <div class="skills-list" v-if="availableSkillsByCategory">
               <div 
@@ -300,7 +329,11 @@ export default {
       
       // Kategorie-Filter
       availableCategories: [],
-      selectedCategoryFilter: null
+      selectedCategoryFilter: null,
+      
+      // Sortierung
+      sortBy: 'name', // 'name', 'epCost'
+      sortOrder: 'asc' // 'asc', 'desc'
     }
   },
   computed: {
@@ -374,8 +407,20 @@ export default {
         )
       }
       
-      // Sortiere nach Namen
-      return allSkills.sort((a, b) => a.name.localeCompare(b.name))
+      // Sortiere nach dem gewählten Kriterium
+      if (this.sortBy === 'name') {
+        allSkills.sort((a, b) => {
+          const comparison = a.name.localeCompare(b.name)
+          return this.sortOrder === 'asc' ? comparison : -comparison
+        })
+      } else if (this.sortBy === 'epCost') {
+        allSkills.sort((a, b) => {
+          const comparison = (a.epCost || 0) - (b.epCost || 0)
+          return this.sortOrder === 'asc' ? comparison : -comparison
+        })
+      }
+      
+      return allSkills
     },
     
     totalSelectedEP() {
@@ -459,6 +504,8 @@ export default {
       this.isDragOver = false
       this.selectedCategoryFilter = null
       this.availableSkillsByCategory = null
+      this.sortBy = 'name'
+      this.sortOrder = 'asc'
     },
 
     async loadAvailableSkills() {
@@ -563,6 +610,18 @@ export default {
       console.log('Category filter set to:', categoryName)
     },
 
+    setSortBy(sortBy) {
+      if (this.sortBy === sortBy) {
+        // Gleicher Sortiertyp - Reihenfolge umkehren
+        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'
+      } else {
+        // Neuer Sortiertyp - standardmäßig aufsteigend
+        this.sortBy = sortBy
+        this.sortOrder = 'asc'
+      }
+      console.log('Sort set to:', this.sortBy, this.sortOrder)
+    },
+
     onDragStart(event, skill) {
       event.dataTransfer.setData('application/json', JSON.stringify(skill))
       event.dataTransfer.effectAllowed = 'copy'
@@ -627,11 +686,8 @@ export default {
             current_level: 0,
             target_level: 1,
             type: 'skill',
-            action: 'learn'
-          }
-
-          if (this.rewardType !== 'default') {
-            requestData.reward = this.rewardType
+            action: 'learn',
+            reward: this.rewardType || 'default'  // Immer das reward-Feld setzen
           }
 
           return this.$api.post(`/api/characters/${this.character.id}/learn-skill`, requestData)
@@ -1074,11 +1130,6 @@ export default {
   color: #495057;
 }
 
-.skills-search {
-  padding: 12px 16px;
-  border-bottom: 1px solid #dee2e6;
-}
-
 .category-filters {
   padding: 12px 16px;
   border-bottom: 1px solid #dee2e6;
@@ -1128,6 +1179,67 @@ export default {
 .search-input {
   margin: 0;
   font-size: 13px;
+}
+
+.sort-and-search-controls {
+  padding: 12px 16px;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #f8f9fa;
+  flex-wrap: wrap;
+}
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.skills-search {
+  flex: 1;
+  min-width: 200px;
+}
+
+.sort-label {
+  font-size: 0.9rem;
+  color: #495057;
+  font-weight: 500;
+}
+
+.sort-btn {
+  padding: 6px 12px;
+  background: white;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-weight: 500;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sort-btn:hover {
+  border-color: #1da766;
+  color: #1da766;
+}
+
+.sort-btn.active {
+  background: #1da766;
+  border-color: #1da766;
+  color: white;
+  font-weight: 600;
+}
+
+.sort-icon {
+  font-size: 0.8rem;
+  font-weight: bold;
 }
 
 .skills-list {
@@ -1459,6 +1571,20 @@ export default {
   .category-filters {
     flex-direction: column;
     gap: 6px;
+  }
+  
+  .sort-and-search-controls {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .sort-controls {
+    justify-content: center;
+  }
+  
+  .skills-search {
+    min-width: auto;
   }
   
   .category-filter-btn {

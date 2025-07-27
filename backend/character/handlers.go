@@ -1324,10 +1324,17 @@ func GetAvailableSkills(c *gin.Context) {
 
 	// Hole alle verfügbaren Fertigkeiten aus der gsmaster Datenbank, aber filtere Placeholder aus
 	var allSkills []gsmaster.Skill
-	if err := database.DB.Where("name != ?", "Placeholder").Find(&allSkills).Error; err != nil {
+
+	allSkills, err := gsmaster.SelectSkills("", "")
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve skills from gsmaster")
+		return
+	}
+	/*if err := database.DB.Where("name != ?", "Placeholder").Find(&allSkills).Error; err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve skills")
 		return
 	}
+	*/
 
 	// Erstelle eine Map der bereits gelernten Fertigkeiten
 	learnedSkills := make(map[string]bool)

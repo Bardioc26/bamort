@@ -31,7 +31,7 @@ type RewardOptions struct {
 }
 
 type SkillCostResponse struct {
-	*gsmaster.LearnCost
+	*models.LearnCost
 	SkillName    string `json:"skill_name"`
 	SkillType    string `json:"skill_type"`
 	Action       string `json:"action"`
@@ -46,13 +46,13 @@ type SkillCostResponse struct {
 	PPAvailable  int    `json:"pp_available,omitempty"` // Verfügbare Praxispunkte für diese Kategorie
 
 	// Belohnungsdetails
-	RewardApplied      string              `json:"reward_applied,omitempty"`       // Art der angewendeten Belohnung
-	OriginalCostStruct *gsmaster.LearnCost `json:"original_cost_struct,omitempty"` // Ursprüngliche Kosten ohne Belohnung
-	Savings            *gsmaster.LearnCost `json:"savings,omitempty"`              // Ersparnisse durch Belohnung
-	GoldUsedForEP      int                 `json:"gold_used_for_ep,omitempty"`     // Gold das für EP verwendet wurde
-	PPReduction        int                 `json:"pp_reduction,omitempty"`         // Reduktion der Kosten durch PP
-	OriginalCost       int                 `json:"original_cost,omitempty"`        // Ursprüngliche Kosten (vor PP-Reduktion)
-	FinalCost          int                 `json:"final_cost,omitempty"`           // Endgültige Kosten (nach PP-Reduktion)
+	RewardApplied      string            `json:"reward_applied,omitempty"`       // Art der angewendeten Belohnung
+	OriginalCostStruct *models.LearnCost `json:"original_cost_struct,omitempty"` // Ursprüngliche Kosten ohne Belohnung
+	Savings            *models.LearnCost `json:"savings,omitempty"`              // Ersparnisse durch Belohnung
+	GoldUsedForEP      int               `json:"gold_used_for_ep,omitempty"`     // Gold das für EP verwendet wurde
+	PPReduction        int               `json:"pp_reduction,omitempty"`         // Reduktion der Kosten durch PP
+	OriginalCost       int               `json:"original_cost,omitempty"`        // Ursprüngliche Kosten (vor PP-Reduktion)
+	FinalCost          int               `json:"final_cost,omitempty"`           // Endgültige Kosten (nach PP-Reduktion)
 }
 
 type MultiLevelCostResponse struct {
@@ -62,7 +62,7 @@ type MultiLevelCostResponse struct {
 	CurrentLevel   int                 `json:"current_level"`
 	TargetLevel    int                 `json:"target_level"`
 	LevelCosts     []SkillCostResponse `json:"level_costs"`
-	TotalCost      *gsmaster.LearnCost `json:"total_cost"`
+	TotalCost      *models.LearnCost   `json:"total_cost"`
 	CanAffordTotal bool                `json:"can_afford_total"`
 }
 
@@ -212,14 +212,14 @@ func GetSkillCost(c *gin.Context) {
 
 	// Belohnungsinformationen berechnen
 	var rewardApplied string
-	var savings *gsmaster.LearnCost
+	var savings *models.LearnCost
 	var goldUsedForEP int
 
 	if request.Reward != nil && request.Reward.Type != "" {
 		rewardApplied = request.Reward.Type
 
 		// Ersparnisse berechnen
-		savings = &gsmaster.LearnCost{
+		savings = &models.LearnCost{
 			Ep:    originalCost.Ep - cost.Ep,
 			LE:    originalCost.LE - cost.LE,
 			Money: originalCost.Money - cost.Money,
@@ -281,8 +281,8 @@ func getCurrentSkillLevel(character *Char, skillName, skillType string) int {
 }
 
 // Helper function to calculate single cost
-func calculateSingleCost(character *Char, request *SkillCostRequest) (*gsmaster.LearnCost, *gsmaster.LearnCost, *skillInfo, error) {
-	var cost *gsmaster.LearnCost
+func calculateSingleCost(character *Char, request *SkillCostRequest) (*models.LearnCost, *models.LearnCost, *skillInfo, error) {
+	var cost *models.LearnCost
 	var err error
 	var info skillInfo
 
@@ -331,7 +331,7 @@ func calculateSingleCost(character *Char, request *SkillCostRequest) (*gsmaster.
 		finalEP, finalLE, _ := applyPPReduction(request, cost, availablePP)
 
 		// Erstelle eine neue LearnCost mit den reduzierten Werten
-		cost = &gsmaster.LearnCost{
+		cost = &models.LearnCost{
 			Stufe: cost.Stufe,
 			LE:    finalLE,
 			Ep:    finalEP,
@@ -343,7 +343,7 @@ func calculateSingleCost(character *Char, request *SkillCostRequest) (*gsmaster.
 }
 
 // applyReward wendet Belohnungen auf die Kosten an
-func applyReward(cost *gsmaster.LearnCost, request *SkillCostRequest) *gsmaster.LearnCost {
+func applyReward(cost *models.LearnCost, request *SkillCostRequest) *models.LearnCost {
 	if request.Reward == nil || request.Reward.Type == "" {
 		return cost
 	}
@@ -440,14 +440,14 @@ func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiL
 
 		// Belohnungsinformationen für Level berechnen
 		var rewardApplied string
-		var savings *gsmaster.LearnCost
+		var savings *models.LearnCost
 		var goldUsedForEP int
 
 		if tempRequest.Reward != nil && tempRequest.Reward.Type != "" {
 			rewardApplied = tempRequest.Reward.Type
 
 			// Ersparnisse berechnen
-			savings = &gsmaster.LearnCost{
+			savings = &models.LearnCost{
 				Ep:    originalCost.Ep - cost.Ep,
 				LE:    originalCost.LE - cost.LE,
 				Money: originalCost.Money - cost.Money,
@@ -486,7 +486,7 @@ func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiL
 		totalMoney += cost.Money
 	}
 
-	totalCost := &gsmaster.LearnCost{
+	totalCost := &models.LearnCost{
 		Stufe: request.TargetLevel,
 		LE:    0,
 		Ep:    totalEP,
@@ -542,7 +542,7 @@ func getSpellInfo(spellName string) skillInfo {
 	return skillInfo{Category: spell.Category, Difficulty: strconv.Itoa(spell.Stufe)}
 }
 
-func canCharacterAfford(character *Char, cost *gsmaster.LearnCost) bool {
+func canCharacterAfford(character *Char, cost *models.LearnCost) bool {
 	// Check if character has enough EP
 	if character.Erfahrungsschatz.EP < cost.Ep {
 		return false
@@ -554,7 +554,7 @@ func canCharacterAfford(character *Char, cost *gsmaster.LearnCost) bool {
 	return totalMoney >= cost.Money
 }
 
-func generateNotes(character *Char, request *SkillCostRequest, cost *gsmaster.LearnCost) string {
+func generateNotes(character *Char, request *SkillCostRequest, cost *models.LearnCost) string {
 	var notes []string
 
 	if request.Action == "learn" {
@@ -595,7 +595,7 @@ func getPPForSkill(character *Char, skillName string) int {
 }
 
 // applyPPReduction reduziert die Kosten entsprechend der verwendeten Praxispunkte
-func applyPPReduction(request *SkillCostRequest, cost *gsmaster.LearnCost, availablePP int) (int, int, int) {
+func applyPPReduction(request *SkillCostRequest, cost *models.LearnCost, availablePP int) (int, int, int) {
 	if request.UsePP <= 0 {
 		return cost.Ep, cost.LE, 0
 	}

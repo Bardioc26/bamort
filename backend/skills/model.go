@@ -1,7 +1,6 @@
 package skills
 
 import (
-	"bamort/gsmaster"
 	"bamort/models"
 )
 
@@ -9,14 +8,14 @@ var dbPrefix = "skill"
 
 type Fertigkeit struct {
 	models.BamortCharTrait
-	Beschreibung    string             `json:"beschreibung"`
-	Fertigkeitswert int                `json:"fertigkeitswert"`
-	Bonus           int                `json:"bonus,omitempty"`
-	Pp              int                `json:"pp,omitempty"` //Praxispunkte
-	Bemerkung       string             `json:"bemerkung"`
-	Improvable      bool               `json:"improvable"`
-	Category        string             `json:"category"`
-	LearningCost    gsmaster.LearnCost `gorm:"-" json:"learncost"`
+	Beschreibung    string           `json:"beschreibung"`
+	Fertigkeitswert int              `json:"fertigkeitswert"`
+	Bonus           int              `json:"bonus,omitempty"`
+	Pp              int              `json:"pp,omitempty"` //Praxispunkte
+	Bemerkung       string           `json:"bemerkung"`
+	Improvable      bool             `json:"improvable"`
+	Category        string           `json:"category"`
+	LearningCost    models.LearnCost `gorm:"-" json:"learncost"`
 }
 
 type Waffenfertigkeit struct {

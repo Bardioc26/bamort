@@ -10,15 +10,6 @@ import (
 
 var dbPrefix = "gsm"
 
-type LearnCost struct {
-	Stufe int `json:"stufe"`
-	LE    int `json:"le"`
-	TE    int `json:"te"`
-	Ep    int `json:"ep"`
-	Money int `json:"money"`
-	PP    int `json:"pp"`
-}
-
 type WeaponSkill struct {
 	models.Skill
 }

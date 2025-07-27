@@ -669,7 +669,7 @@ type LearnSpellRequest struct {
 }
 
 // calculateMultiLevelCosts berechnet die Kosten für mehrere Level-Verbesserungen mit gsmaster.GetLernCostNextLevel
-func calculateMultiLevelCosts(character *Char, skillName string, currentLevel int, levelsToLearn []int, rewardType string, usePP, useGold int) (*gsmaster.LearnCost, error) {
+func calculateMultiLevelCosts(character *Char, skillName string, currentLevel int, levelsToLearn []int, rewardType string, usePP, useGold int) (*models.LearnCost, error) {
 	if len(levelsToLearn) == 0 {
 		return nil, fmt.Errorf("keine Level zum Lernen angegeben")
 	}
@@ -703,7 +703,7 @@ func calculateMultiLevelCosts(character *Char, skillName string, currentLevel in
 		Reward:       rewardTypePtr,
 	}
 
-	totalCost := &gsmaster.LearnCost{
+	totalCost := &models.LearnCost{
 		Stufe: sortedLevels[len(sortedLevels)-1],
 		LE:    0,
 		Ep:    0,

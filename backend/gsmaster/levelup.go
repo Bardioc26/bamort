@@ -164,17 +164,17 @@ func CalculateSkillLearnCost(skill string, class string) (int, error) {
 }
 
 // CalculateImprovementCost: Kosten zum Steigern von +X auf +X+1
-func CalculateSkillImprovementCost(skill string, class string, currentSkillLevel int) (*LearnCost, error) {
+func CalculateSkillImprovementCost(skill string, class string, currentSkillLevel int) (*models.LearnCost, error) {
 	return CalculateImprovementCost(skill, class, currentSkillLevel)
 }
 
-func CalculateImprovementCost(skill string, class string, currentSkillLevel int) (*LearnCost, error) {
+func CalculateImprovementCost(skill string, class string, currentSkillLevel int) (*models.LearnCost, error) {
 	/*
 		if !Config.AllowedGroups[class][skill.Group] {
 			return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
 		}
 	*/
-	lCost := LearnCost{}
+	lCost := models.LearnCost{}
 	var skl models.Skill
 	if err := skl.First(skill); err != nil {
 		return nil, errors.New("unbekannte Fertigkeit")

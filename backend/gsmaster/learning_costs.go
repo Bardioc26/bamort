@@ -1,6 +1,7 @@
 package gsmaster
 
 import (
+	"bamort/models"
 	"errors"
 	"fmt"
 )
@@ -437,7 +438,7 @@ type SkillCostResultNew struct {
 }
 
 // CalculateDetailedSkillLearningCost berechnet die Kosten für das Lernen einer Fertigkeit mit Details
-func CalculateDetailedSkillLearningCost(skillName, characterClass string) (*LearnCost, error) {
+func CalculateDetailedSkillLearningCost(skillName, characterClass string) (*models.LearnCost, error) {
 	// Fallback-Werte für Skills ohne definierte Kategorie/Schwierigkeit
 	category := GetDefaultCategory(skillName)
 	difficulty := GetDefaultDifficulty(skillName)
@@ -448,7 +449,7 @@ func CalculateDetailedSkillLearningCost(skillName, characterClass string) (*Lear
 	}
 
 	// Konvertiere SkillCostResult zu LearnCost
-	return &LearnCost{
+	return &models.LearnCost{
 		Stufe: 0, // Lernen startet bei Stufe 0
 		LE:    result.LE,
 		Ep:    result.EP,
@@ -457,7 +458,7 @@ func CalculateDetailedSkillLearningCost(skillName, characterClass string) (*Lear
 }
 
 // CalculateDetailedSkillImprovementCost berechnet die Kosten für die Verbesserung einer Fertigkeit
-func CalculateDetailedSkillImprovementCost(skillName, characterClass string, currentLevel int) (*LearnCost, error) {
+func CalculateDetailedSkillImprovementCost(skillName, characterClass string, currentLevel int) (*models.LearnCost, error) {
 	// Fallback-Werte für Skills ohne definierte Kategorie/Schwierigkeit
 	category := GetDefaultCategory(skillName)
 	difficulty := GetDefaultDifficulty(skillName)
@@ -480,7 +481,7 @@ func CalculateDetailedSkillImprovementCost(skillName, characterClass string, cur
 	improvedEP := int(float64(baseCost.EP) * improvementFactor)
 
 	// Konvertiere zu LearnCost
-	return &LearnCost{
+	return &models.LearnCost{
 		Stufe: currentLevel + 1, // Ziel-Stufe
 		LE:    1,                // TE für Verbesserung (meist 1)
 		Ep:    improvedEP,
@@ -489,7 +490,7 @@ func CalculateDetailedSkillImprovementCost(skillName, characterClass string, cur
 }
 
 // CalculateDetailedSpellLearningCost berechnet die Kosten für das Lernen eines Zaubers
-func CalculateDetailedSpellLearningCost(spellName, characterClass string) (*LearnCost, error) {
+func CalculateDetailedSpellLearningCost(spellName, characterClass string) (*models.LearnCost, error) {
 	// Standard-Zauberschule bestimmen
 	spellSchool := getDefaultSpellSchool(spellName)
 
@@ -502,7 +503,7 @@ func CalculateDetailedSpellLearningCost(spellName, characterClass string) (*Lear
 	}
 
 	// Konvertiere SkillCostResult zu LearnCost
-	return &LearnCost{
+	return &models.LearnCost{
 		Stufe: 0, // Lernen startet bei Stufe 0
 		LE:    result.LE,
 		Ep:    result.EP,

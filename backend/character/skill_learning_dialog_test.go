@@ -2,6 +2,7 @@ package character
 
 import (
 	"bamort/gsmaster"
+	"bamort/models"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -92,14 +93,14 @@ func TestSkillLearningDialogWorkflow(t *testing.T) {
 		assert.Equal(t, 10, parsedRequest.Stufe)
 
 		// Teste erwartete Response-Struktur (ohne DB-Aufruf)
-		expectedResponse := []gsmaster.LearnCost{
+		expectedResponse := []models.LearnCost{
 			{Stufe: 11, Ep: 120, Money: 60, LE: 2},
 			{Stufe: 12, Ep: 140, Money: 70, LE: 2},
 		}
 
 		// Überprüfe Response-Format wie das Frontend es erwartet
 		responseBody, _ := json.Marshal(expectedResponse)
-		var response []gsmaster.LearnCost
+		var response []models.LearnCost
 		err = json.Unmarshal(responseBody, &response)
 		require.NoError(t, err)
 
@@ -114,7 +115,7 @@ func TestSkillLearningDialogWorkflow(t *testing.T) {
 
 	t.Run("Frontend Conversion Logic Test", func(t *testing.T) {
 		// Simuliere die Konvertierung wie sie das Frontend durchführt
-		mockApiResponse := []gsmaster.LearnCost{
+		mockApiResponse := []models.LearnCost{
 			{Stufe: 11, Ep: 120, Money: 60, LE: 2},
 			{Stufe: 12, Ep: 140, Money: 70, LE: 2},
 			{Stufe: 13, Ep: 160, Money: 80, LE: 3},

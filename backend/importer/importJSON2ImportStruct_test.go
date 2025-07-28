@@ -388,12 +388,12 @@ func TestImportContainer2GSMaster(t *testing.T) {
 	assert.Equal(t, 25.0, container.Volumen)
 	assert.Equal(t, 25.0, container.Tragkraft)
 	//}
-	container2 := gsmaster.Container{}
+	container2 := models.Container{}
 	erro = container2.First("Lederrucksack")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(container.ID))
 
-	container3 := gsmaster.Container{}
+	container3 := models.Container{}
 	erro = container3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Lederrucksack", container3.Name)
@@ -431,12 +431,12 @@ func TestImportTransportation2GSMaster(t *testing.T) {
 	assert.Equal(t, 0.0, skill.Volumen)
 	assert.Equal(t, 250.0, skill.Tragkraft)
 	//}
-	skill2 := gsmaster.Transportation{}
+	skill2 := models.Transportation{}
 	erro = skill2.First("Karren")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
-	skill3 := gsmaster.Transportation{}
+	skill3 := models.Transportation{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Karren", skill3.Name)

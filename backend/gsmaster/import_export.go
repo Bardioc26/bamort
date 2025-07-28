@@ -17,8 +17,8 @@ type exportData struct {
 	Spells          []models.Spell       `json:"spells"`
 	Equipments      []models.Equipment   `json:"equipments"`
 	Weapons         []models.Weapon      `json:"weapons"`
-	Containers      []Container          `json:"containers"`
-	Transportations []Container          `json:"transportations"`
+	Containers      []models.Container   `json:"containers"`
+	Transportations []models.Container   `json:"transportations"`
 	Believes        []Believe            `json:"believes"`
 }
 
@@ -28,8 +28,8 @@ func Export(filePath string) error {
 	var spells []models.Spell
 	var equipments []models.Equipment
 	var weapons []models.Weapon
-	var containers []Container
-	var transportations []Container
+	var containers []models.Container
+	var transportations []models.Container
 	var believes []Believe
 
 	// Fetch all data from the respective tables

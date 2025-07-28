@@ -20,10 +20,10 @@ func MigrateStructure(db ...*gorm.DB) error {
 		&WeaponSkill{},
 		&Spell{},
 		&Equipment{},
+		&Weapon{},
+		&Container{},
+		&Transportation{},
 		/*
-			&Weapon{},
-			&Container{},
-			&Transportation{},
 			&Believe{},
 		*/
 	)

@@ -163,13 +163,13 @@ func copyAllDataToTestDB(liveDB, testDB *gorm.DB) (map[string]int, error) {
 	}
 	stats["gsmaster_weapons"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.Container{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Container{})
 	if err != nil {
 		return stats, err
 	}
 	stats["gsmaster_containers"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.Transportation{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Transportation{})
 	if err != nil {
 		return stats, err
 	}

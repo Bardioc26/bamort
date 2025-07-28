@@ -82,6 +82,16 @@ type Weapon struct {
 	Damage        string `json:"damage"`
 }
 
+type Container struct {
+	Equipment
+	Tragkraft float64 `json:"tragkraft"` // in kg
+	Volumen   float64 `json:"volumen"`   // in Liter
+}
+
+type Transportation struct {
+	Container
+}
+
 func (object *LookupList) Create() error {
 	gameSystem := "midgard"
 	object.GameSystem = gameSystem
@@ -426,6 +436,102 @@ func (object *Weapon) FirstId(id uint) error {
 }
 
 func (object *Weapon) Save() error {
+	err := database.DB.Save(&object).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
+}
+
+func (object *Container) TableName() string {
+	dbPrefix := "gsm"
+	return dbPrefix + "_" + "containers"
+}
+
+func (stamm *Container) Create() error {
+	gameSystem := "midgard"
+	stamm.GameSystem = gameSystem
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		// Save the main character record
+		if err := tx.Create(&stamm).Error; err != nil {
+			return fmt.Errorf("failed to save LookupContainer: %w", err)
+		}
+		return nil
+	})
+
+	return err
+}
+
+func (stamm *Container) First(name string) error {
+	gameSystem := "midgard"
+	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
+}
+
+func (object *Container) FirstId(value uint) error {
+	gameSystem := "midgard"
+	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
+}
+
+func (object *Container) Save() error {
+	err := database.DB.Save(&object).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
+}
+
+func (object *Transportation) TableName() string {
+	dbPrefix := "gsm"
+	return dbPrefix + "_" + "transportations"
+}
+
+func (stamm *Transportation) Create() error {
+	gameSystem := "midgard"
+	stamm.GameSystem = gameSystem
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		// Save the main character record
+		if err := tx.Create(&stamm).Error; err != nil {
+			return fmt.Errorf("failed to save Lookup: %w", err)
+		}
+		return nil
+	})
+
+	return err
+}
+
+func (object *Transportation) FirstId(value uint) error {
+	gameSystem := "midgard"
+	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
+}
+
+func (stamm *Transportation) First(name string) error {
+	gameSystem := "midgard"
+	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
+}
+
+func (object *Transportation) Save() error {
 	err := database.DB.Save(&object).Error
 	if err != nil {
 		// zauber found

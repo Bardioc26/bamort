@@ -21,13 +21,11 @@ func TestImproveSkillUpdatesLevel(t *testing.T) {
 	defer database.ResetTestDB()
 
 	// Migrate the schema
-	err := MigrateStructure()
+	err := models.MigrateStructure()
 	assert.NoError(t, err)
 
 	// Also migrate skills and equipment to avoid preload errors
 	err = skills.MigrateStructure()
-	assert.NoError(t, err)
-	err = models.MigrateStructure()
 	assert.NoError(t, err)
 
 	// Try to migrate equipment if it exists
@@ -56,7 +54,7 @@ func TestImproveSkillUpdatesLevel(t *testing.T) {
 	database.DB.Exec("CREATE TABLE IF NOT EXISTS equi_equipments (id INTEGER PRIMARY KEY, character_id INTEGER)")
 
 	// Create test character with ID 20
-	testChar := Char{
+	testChar := models.Char{
 		BamortBase: models.BamortBase{
 			ID:   20,
 			Name: "Test Krieger",
@@ -64,13 +62,13 @@ func TestImproveSkillUpdatesLevel(t *testing.T) {
 		Typ:   "Krieger",
 		Rasse: "Mensch",
 		Grad:  1,
-		Erfahrungsschatz: Erfahrungsschatz{
+		Erfahrungsschatz: models.Erfahrungsschatz{
 			BamortCharTrait: models.BamortCharTrait{
 				CharacterID: 20,
 			},
 			EP: 326, // Starting EP
 		},
-		Vermoegen: Vermoegen{
+		Vermoegen: models.Vermoegen{
 			BamortCharTrait: models.BamortCharTrait{
 				CharacterID: 20,
 			},
@@ -95,7 +93,7 @@ func TestImproveSkillUpdatesLevel(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Verify character was created correctly
-	var verifyChar Char
+	var verifyChar models.Char
 	err = database.DB.Preload("Fertigkeiten").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&verifyChar, 20).Error
 	assert.NoError(t, err)
 	t.Logf("Character created with ID: %d, EP: %d, Skills: %d", verifyChar.ID, verifyChar.Erfahrungsschatz.EP, len(verifyChar.Fertigkeiten))
@@ -141,7 +139,7 @@ func TestImproveSkillUpdatesLevel(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code, "Status code should be 200 OK")
 
 		// Verify that the skill level was actually updated in the database
-		var updatedChar Char
+		var updatedChar models.Char
 		err = database.DB.Preload("Fertigkeiten").First(&updatedChar, 20).Error
 		assert.NoError(t, err)
 
@@ -193,7 +191,7 @@ func TestImproveSkillUpdatesLevel(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code, "Status code should be 200 OK")
 
 		// Verify that the new skill was created in the database
-		var updatedChar Char
+		var updatedChar models.Char
 		err = updatedChar.FirstID("20")
 		assert.NoError(t, err)
 

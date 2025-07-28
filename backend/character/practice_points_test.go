@@ -22,15 +22,13 @@ func TestPracticePointsAPI(t *testing.T) {
 	defer database.ResetTestDB()
 
 	// Migrate the schema
-	err := MigrateStructure()
+	err := models.MigrateStructure()
 	assert.NoError(t, err)
 
 	// Also migrate skills and equipment to avoid preload errors
 	err = skills.MigrateStructure()
 	assert.NoError(t, err)
 	err = equipment.MigrateStructure()
-	assert.NoError(t, err)
-	err = models.MigrateStructure()
 	assert.NoError(t, err)
 
 	// Create test skill data
@@ -39,7 +37,7 @@ func TestPracticePointsAPI(t *testing.T) {
 	defer cleanupTestSkillData()
 
 	// Create a test character
-	character := &Char{
+	character := &models.Char{
 		BamortBase: models.BamortBase{
 			Name: "Test Character",
 		},

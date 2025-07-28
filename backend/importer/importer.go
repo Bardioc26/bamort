@@ -1,12 +1,11 @@
 package importer
 
 import (
-	"bamort/character"
 	"bamort/models"
 	"fmt"
 )
 
-func ImportChar(char CharacterImport) (*character.Char, error) {
+func ImportChar(char CharacterImport) (*models.Char, error) {
 	return nil, fmt.Errorf("char could not be imported %s", "Weil Wegen Kommt noch")
 }
 

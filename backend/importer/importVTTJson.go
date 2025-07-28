@@ -1,7 +1,6 @@
 package importer
 
 import (
-	"bamort/character"
 	"bamort/equipment"
 	"bamort/models"
 	"bamort/skills"
@@ -20,7 +19,7 @@ func readImportChar(fileName string) (*CharacterImport, error) {
 	return &character, err
 }
 
-func ImportVTTJSON(fileName string) (*character.Char, error) {
+func ImportVTTJSON(fileName string) (*models.Char, error) {
 	//fileName = fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	imp, err := readImportChar(fileName)
 	if err != nil {
@@ -59,7 +58,7 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 		return nil, err
 	}
 
-	char := character.Char{}
+	char := models.Char{}
 	char.Name = imp.Name
 	char.Rasse = imp.Rasse
 	char.Typ = imp.Typ
@@ -94,46 +93,46 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 	}
 	char.Lp.Max = imp.Lp.Max
 	char.Lp.Value = imp.Lp.Value
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "Au",
 		Value: imp.Eigenschaften.Au,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "Gs",
 		Value: imp.Eigenschaften.Gs,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "Gw",
 		Value: imp.Eigenschaften.Gw,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "In",
 		Value: imp.Eigenschaften.In,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "Ko",
 		Value: imp.Eigenschaften.Ko,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "PA",
 		Value: imp.Eigenschaften.Pa,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "St",
 		Value: imp.Eigenschaften.St,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "Wk",
 		Value: imp.Eigenschaften.Wk,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "Zt",
 		Value: imp.Eigenschaften.Zt,
 	})
 	char.Merkmale.Augenfarbe = imp.Merkmale.Augenfarbe
 	char.Merkmale.Haarfarbe = imp.Merkmale.Haarfarbe
 	char.Merkmale.Sonstige = imp.Merkmale.Sonstige
-	char.Bennies = character.Bennies{
+	char.Bennies = models.Bennies{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{Name: "bennies"},
 		},

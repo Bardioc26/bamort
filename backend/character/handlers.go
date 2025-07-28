@@ -25,14 +25,14 @@ func respondWithError(c *gin.Context, status int, message string) {
 }
 
 func ListCharacters(c *gin.Context) {
-	var characters []Char
-	var listOfChars []CharList
+	var characters []models.Char
+	var listOfChars []models.CharList
 	if err := database.DB.Find(&characters).Error; err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve characters")
 		return
 	}
 	for i := range characters {
-		listOfChars = append(listOfChars, CharList{
+		listOfChars = append(listOfChars, models.CharList{
 			BamortBase: models.BamortBase{
 				ID:   characters[i].ID,
 				Name: characters[i].Name,
@@ -47,7 +47,7 @@ func ListCharacters(c *gin.Context) {
 }
 
 func CreateCharacter(c *gin.Context) {
-	var character Char
+	var character models.Char
 	if err := c.ShouldBindJSON(&character); err != nil {
 		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
@@ -62,7 +62,7 @@ func CreateCharacter(c *gin.Context) {
 }
 func GetCharacter(c *gin.Context) {
 	id := c.Param("id")
-	var character Char
+	var character models.Char
 	err := character.FirstID(id)
 	if err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
@@ -73,7 +73,7 @@ func GetCharacter(c *gin.Context) {
 }
 func UpdateCharacter(c *gin.Context) {
 	id := c.Param("id")
-	var character Char
+	var character models.Char
 
 	// First, find the existing character
 	err := character.FirstID(id)
@@ -98,7 +98,7 @@ func UpdateCharacter(c *gin.Context) {
 }
 func DeleteCharacter(c *gin.Context) {
 	id := c.Param("id")
-	var character Char
+	var character models.Char
 	err := character.FirstID(id)
 	if err != nil {
 		respondWithError(c, http.StatusNotFound, "Character not found")
@@ -128,8 +128,8 @@ func AddFertigkeit(charID uint, fertigkeit *skills.Fertigkeit) error {
 // Append the new Fertigkeit to the slice of the characters property
 //character.Fertigkeiten = append(character.Fertigkeiten, fertigkeit)
 
-func ToFeChar(object *Char) *FeChar {
-	feC := &FeChar{
+func ToFeChar(object *models.Char) *models.FeChar {
+	feC := &models.FeChar{
 		Char: *object,
 	}
 	skills, innateSkills, categories := splitSkills(object.Fertigkeiten)
@@ -169,7 +169,7 @@ func GetLearnSkillCost(c *gin.Context) {
 	charID := c.Param("id")
 
 	// Load the character from the database
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
 		return
@@ -203,7 +203,7 @@ func GetLearnSpellCost(c *gin.Context) {
 	charID := c.Param("id")
 
 	// Load the character from the database
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
 		return
@@ -339,7 +339,7 @@ type ExperienceAndWealthResponse struct {
 // GetCharacterExperienceAndWealth gibt nur die EP und Vermögensdaten eines Charakters zurück
 func GetCharacterExperienceAndWealth(c *gin.Context) {
 	id := c.Param("id")
-	var character Char
+	var character models.Char
 
 	// Lade nur die benötigten Felder
 	err := database.DB.
@@ -379,7 +379,7 @@ type UpdateExperienceRequest struct {
 // UpdateCharacterExperience aktualisiert die Erfahrungspunkte eines Charakters
 func UpdateCharacterExperience(c *gin.Context) {
 	id := c.Param("id")
-	var character Char
+	var character models.Char
 
 	// Lade den Charakter
 	err := database.DB.
@@ -411,7 +411,7 @@ func UpdateCharacterExperience(c *gin.Context) {
 	// Aktualisiere oder erstelle Erfahrungsschatz
 	if character.Erfahrungsschatz.ID == 0 {
 		// Erstelle neuen Erfahrungsschatz
-		character.Erfahrungsschatz = Erfahrungsschatz{
+		character.Erfahrungsschatz = models.Erfahrungsschatz{
 			BamortCharTrait: models.BamortCharTrait{
 				CharacterID: character.ID,
 			},
@@ -469,7 +469,7 @@ type UpdateWealthRequest struct {
 // UpdateCharacterWealth aktualisiert das Vermögen eines Charakters
 func UpdateCharacterWealth(c *gin.Context) {
 	id := c.Param("id")
-	var character Char
+	var character models.Char
 
 	// Lade den Charakter
 	err := database.DB.
@@ -505,7 +505,7 @@ func UpdateCharacterWealth(c *gin.Context) {
 	// Aktualisiere oder erstelle Vermögen
 	if character.Vermoegen.ID == 0 {
 		// Erstelle neues Vermögen
-		character.Vermoegen = Vermoegen{
+		character.Vermoegen = models.Vermoegen{
 			BamortCharTrait: models.BamortCharTrait{
 				CharacterID: character.ID,
 			},
@@ -593,7 +593,7 @@ func getValueOrDefault(value *int, defaultValue int) int {
 }
 
 // updateOrCreateSkill aktualisiert eine vorhandene Fertigkeit oder erstellt eine neue
-func updateOrCreateSkill(character *Char, skillName string, newLevel int) error {
+func updateOrCreateSkill(character *models.Char, skillName string, newLevel int) error {
 	// Suche erst in normalen Fertigkeiten
 	for i := range character.Fertigkeiten {
 		if character.Fertigkeiten[i].Name == skillName {
@@ -669,7 +669,7 @@ type LearnSpellRequest struct {
 }
 
 // calculateMultiLevelCosts berechnet die Kosten für mehrere Level-Verbesserungen mit gsmaster.GetLernCostNextLevel
-func calculateMultiLevelCosts(character *Char, skillName string, currentLevel int, levelsToLearn []int, rewardType string, usePP, useGold int) (*models.LearnCost, error) {
+func calculateMultiLevelCosts(character *models.Char, skillName string, currentLevel int, levelsToLearn []int, rewardType string, usePP, useGold int) (*models.LearnCost, error) {
 	if len(levelsToLearn) == 0 {
 		return nil, fmt.Errorf("keine Level zum Lernen angegeben")
 	}
@@ -758,7 +758,7 @@ func calculateMultiLevelCosts(character *Char, skillName string, currentLevel in
 }
 
 // getCharacterClass gibt die Charakterklassen-Abkürzung zurück
-func getCharacterClass(character *Char) string {
+func getCharacterClass(character *models.Char) string {
 	if len(character.Typ) > 3 {
 		return gsmaster.GetClassAbbreviation(character.Typ)
 	}
@@ -768,7 +768,7 @@ func getCharacterClass(character *Char) string {
 // LearnSkill lernt eine neue Fertigkeit und erstellt Audit-Log-Einträge
 func LearnSkill(c *gin.Context) {
 	charID := c.Param("id")
-	var character Char
+	var character models.Char
 
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
@@ -981,7 +981,7 @@ func ImproveSkill(c *gin.Context) {
 	}
 
 	// Hole Charakter über die ID aus dem Request
-	var character Char
+	var character models.Char
 	err := database.DB.
 		Preload("Fertigkeiten").
 		Preload("Waffenfertigkeiten").
@@ -1197,7 +1197,7 @@ func ImproveSkill(c *gin.Context) {
 // LearnSpell lernt einen neuen Zauber und erstellt Audit-Log-Einträge
 func LearnSpell(c *gin.Context) {
 	charID := c.Param("id")
-	var character Char
+	var character models.Char
 
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
@@ -1323,7 +1323,7 @@ func GetAvailableSkills(c *gin.Context) {
 	characterID := c.Param("id")
 	rewardType := c.Query("reward_type")
 
-	var character Char
+	var character models.Char
 	if err := database.DB.Preload("Fertigkeiten").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, characterID).Error; err != nil {
 		respondWithError(c, http.StatusNotFound, "Character not found")
 		return
@@ -1386,7 +1386,7 @@ func GetAvailableSkills(c *gin.Context) {
 }
 
 // calculateSkillLearningCosts berechnet die EP- und Goldkosten für das Lernen einer Fertigkeit mit GetLernCostNextLevel
-func calculateSkillLearningCosts(skill models.Skill, character Char, rewardType string) (int, int) {
+func calculateSkillLearningCosts(skill models.Skill, character models.Char, rewardType string) (int, int) {
 	// Erstelle LernCostRequest für das Lernen (Level 0 -> 1)
 	var rewardTypePtr *string
 	if rewardType != "" && rewardType != "default" {

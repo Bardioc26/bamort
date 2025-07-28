@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"bamort/database"
+	"bamort/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +24,7 @@ func TestGetAvailableSkills(t *testing.T) {
 
 	t.Run("Get available skills for existing character - default reward type", func(t *testing.T) {
 		// Get a character ID from the test data
-		var testChar Char
+		var testChar models.Char
 		err := database.DB.Preload("Fertigkeiten").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&testChar).Error
 		assert.NoError(t, err, "Should find a test character")
 
@@ -117,7 +118,7 @@ func TestGetAvailableSkills(t *testing.T) {
 
 	t.Run("Get available skills for existing character - noGold reward type", func(t *testing.T) {
 		// Get a character ID from the test data
-		var testChar Char
+		var testChar models.Char
 		err := database.DB.Preload("Fertigkeiten").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&testChar).Error
 		assert.NoError(t, err, "Should find a test character")
 
@@ -205,7 +206,7 @@ func TestGetAvailableSkills(t *testing.T) {
 
 	t.Run("Check that learned skills are excluded", func(t *testing.T) {
 		// Get a character with some skills
-		var testChar Char
+		var testChar models.Char
 		err := database.DB.Preload("Fertigkeiten").First(&testChar).Error
 		assert.NoError(t, err, "Should find a test character")
 

@@ -2,6 +2,7 @@ package character
 
 import (
 	"bamort/database"
+	"bamort/models"
 	"fmt"
 	"net/http"
 
@@ -30,7 +31,7 @@ func GetPracticePoints(c *gin.Context) {
 	charID := c.Param("id")
 
 	// Charakter aus der Datenbank laden
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -56,7 +57,7 @@ func UpdatePracticePoints(c *gin.Context) {
 	charID := c.Param("id")
 
 	// Charakter aus der Datenbank laden
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -110,7 +111,7 @@ func AddPracticePoint(c *gin.Context) {
 	charID := c.Param("id")
 
 	// Charakter aus der Datenbank laden
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -208,7 +209,7 @@ func UsePracticePoint(c *gin.Context) {
 	charID := c.Param("id")
 
 	// Charakter aus der Datenbank laden
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return

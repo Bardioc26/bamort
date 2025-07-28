@@ -1,7 +1,6 @@
 package maintenance
 
 import (
-	"bamort/character"
 	"bamort/database"
 	"bamort/equipment"
 	"bamort/importer"
@@ -46,9 +45,11 @@ func migrateAllStructures(db *gorm.DB) error {
 	if err := user.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate user structures: %w", err)
 	}
-	if err := character.MigrateStructure(db); err != nil {
-		return fmt.Errorf("failed to migrate character structures: %w", err)
-	}
+	/*
+		if err := character.MigrateStructure(db); err != nil {
+			return fmt.Errorf("failed to migrate character structures: %w", err)
+		}
+	*/
 	if err := models.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate gsmaster structures: %w", err)
 	}
@@ -181,56 +182,56 @@ func copyAllDataToTestDB(liveDB, testDB *gorm.DB) (map[string]int, error) {
 	stats["gsmaster_believes"] = count
 
 	// Step 2: Copy character data (depends on nothing)
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Char{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Char{})
 	if err != nil {
 		return stats, err
 	}
 	stats["characters"] = count
 
 	// Step 3: Copy character-dependent data
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Eigenschaft{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Eigenschaft{})
 	if err != nil {
 		return stats, err
 	}
 	stats["character_eigenschaften"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Lp{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Lp{})
 	if err != nil {
 		return stats, err
 	}
 	stats["character_lp"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Ap{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Ap{})
 	if err != nil {
 		return stats, err
 	}
 	stats["character_ap"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.B{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.B{})
 	if err != nil {
 		return stats, err
 	}
 	stats["character_b"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Merkmale{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Merkmale{})
 	if err != nil {
 		return stats, err
 	}
 	stats["character_merkmale"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Erfahrungsschatz{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Erfahrungsschatz{})
 	if err != nil {
 		return stats, err
 	}
 	stats["character_erfahrungsschatz"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Bennies{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Bennies{})
 	if err != nil {
 		return stats, err
 	}
 	stats["character_bennies"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Vermoegen{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Vermoegen{})
 	if err != nil {
 		return stats, err
 	}
@@ -469,7 +470,7 @@ func getTestDataStatistics(db *gorm.DB) (map[string]int64, error) {
 	// Count records in each table
 	tables := map[string]interface{}{
 		"users":                     &user.User{},
-		"characters":                &character.Char{},
+		"characters":                &models.Char{},
 		"gsmaster_skills":           &models.Skill{},
 		"gsmaster_spells":           &models.Spell{},
 		"gsmaster_equipment":        &models.Equipment{},

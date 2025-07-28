@@ -2,7 +2,6 @@ package equipment
 
 import (
 	"bamort/database"
-	"bamort/models"
 
 	"gorm.io/gorm"
 )
@@ -19,8 +18,8 @@ func MigrateStructure(db ...*gorm.DB) error {
 	err := targetDB.AutoMigrate(
 		&Ausruestung{},
 		&Waffe{},
-		&models.Container{},
-		//&models.Transportation{},
+		&Container{},
+		//Transportation{},
 	)
 	if err != nil {
 		return err

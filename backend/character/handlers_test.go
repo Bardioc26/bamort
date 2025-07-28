@@ -20,14 +20,11 @@ func TestImproveSkillHandler(t *testing.T) {
 	database.SetupTestDB(true, true)
 	defer database.ResetTestDB()
 
-	// Migrate the schema
-	err := MigrateStructure()
+	err := models.MigrateStructure()
 	assert.NoError(t, err)
 
 	// Also migrate skills and equipment to avoid preload errors
 	err = skills.MigrateStructure()
-	assert.NoError(t, err)
-	err = models.MigrateStructure()
 	assert.NoError(t, err)
 
 	// Create test character with ID 20
@@ -140,7 +137,7 @@ func TestImproveSkillHandler(t *testing.T) {
 		assert.Equal(t, "Fertigkeit erfolgreich verbessert", response["message"])
 
 		// Verify character state was updated correctly
-		var updatedChar Char
+		var updatedChar models.Char
 		err = updatedChar.FirstID("20")
 		assert.NoError(t, err)
 
@@ -157,7 +154,7 @@ func TestImproveSkillHandler(t *testing.T) {
 
 	t.Run("ImproveSkill with insufficient EP", func(t *testing.T) {
 		// Create character with insufficient EP
-		poorChar := Char{
+		poorChar := models.Char{
 			BamortBase: models.BamortBase{
 				ID:   21,
 				Name: "Poor Test Character",
@@ -165,13 +162,13 @@ func TestImproveSkillHandler(t *testing.T) {
 			Typ:   "Krieger",
 			Rasse: "Mensch",
 			Grad:  1,
-			Erfahrungsschatz: Erfahrungsschatz{
+			Erfahrungsschatz: models.Erfahrungsschatz{
 				BamortCharTrait: models.BamortCharTrait{
 					CharacterID: 21,
 				},
 				ES: 5, // Insufficient EP
 			},
-			Vermoegen: Vermoegen{
+			Vermoegen: models.Vermoegen{
 				BamortCharTrait: models.BamortCharTrait{
 					CharacterID: 21,
 				},

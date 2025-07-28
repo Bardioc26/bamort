@@ -127,7 +127,7 @@ func TestGetMDSkills(t *testing.T) {
 	assert.Equal(t, http.StatusOK, respRecorder.Code)
 
 	// Assert the response body
-	var listOfCharacter *character.Char
+	var listOfCharacter *models.Char
 	err := json.Unmarshal(respRecorder.Body.Bytes(), &listOfCharacter)
 	assert.NoError(t, err)
 	assert.Equal(t, "Harsk Hammerhuter, Zen", listOfCharacter.Name)
@@ -182,7 +182,7 @@ func TestUpdateMDSkill(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, respRecorder.Code)
 
 	// Assert the response body
-	var createdCharacter character.Char
+	var createdCharacter models.Char
 	err = json.Unmarshal(respRecorder.Body.Bytes(), &createdCharacter)
 	assert.NoError(t, err)
 	assert.Equal(t, "Aragorn", createdCharacter.Name)

@@ -75,7 +75,7 @@ func GetLernCost(c *gin.Context) {
 		return
 	}
 	charID := fmt.Sprintf("%d", request.CharId)
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -136,7 +136,7 @@ func GetSkillCost(c *gin.Context) {
 	charID := c.Param("id")
 
 	// Charakter aus der Datenbank laden
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -259,7 +259,7 @@ func GetSkillCost(c *gin.Context) {
 }
 
 // Helper function to get current skill level from character
-func getCurrentSkillLevel(character *Char, skillName, skillType string) int {
+func getCurrentSkillLevel(character *models.Char, skillName, skillType string) int {
 	switch skillType {
 	case "skill":
 		for _, skill := range character.Fertigkeiten {
@@ -281,7 +281,7 @@ func getCurrentSkillLevel(character *Char, skillName, skillType string) int {
 }
 
 // Helper function to calculate single cost
-func calculateSingleCost(character *Char, request *SkillCostRequest) (*models.LearnCost, *models.LearnCost, *skillInfo, error) {
+func calculateSingleCost(character *models.Char, request *SkillCostRequest) (*models.LearnCost, *models.LearnCost, *skillInfo, error) {
 	var cost *models.LearnCost
 	var err error
 	var info skillInfo
@@ -393,7 +393,7 @@ func applyReward(cost *models.LearnCost, request *SkillCostRequest) *models.Lear
 }
 
 // Helper function to calculate multi-level costs
-func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiLevelCostResponse {
+func calculateMultiLevelCost(character *models.Char, request *SkillCostRequest) *MultiLevelCostResponse {
 	if request.TargetLevel <= request.CurrentLevel {
 		return nil
 	}
@@ -542,7 +542,7 @@ func getSpellInfo(spellName string) skillInfo {
 	return skillInfo{Category: spell.Category, Difficulty: strconv.Itoa(spell.Stufe)}
 }
 
-func canCharacterAfford(character *Char, cost *models.LearnCost) bool {
+func canCharacterAfford(character *models.Char, cost *models.LearnCost) bool {
 	// Check if character has enough EP
 	if character.Erfahrungsschatz.EP < cost.Ep {
 		return false
@@ -554,7 +554,7 @@ func canCharacterAfford(character *Char, cost *models.LearnCost) bool {
 	return totalMoney >= cost.Money
 }
 
-func generateNotes(character *Char, request *SkillCostRequest, cost *models.LearnCost) string {
+func generateNotes(character *models.Char, request *SkillCostRequest, cost *models.LearnCost) string {
 	var notes []string
 
 	if request.Action == "learn" {
@@ -582,7 +582,7 @@ func generateNotes(character *Char, request *SkillCostRequest, cost *models.Lear
 }
 
 // getPPForSkill ermittelt die verfügbaren Praxispunkte für eine spezifische Fertigkeit
-func getPPForSkill(character *Char, skillName string) int {
+func getPPForSkill(character *models.Char, skillName string) int {
 	// Ermittle die tatsächliche Fertigkeit (bei Zaubern die Zaubergruppe)
 	targetSkillName := getSpellCategory(skillName)
 

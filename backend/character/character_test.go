@@ -50,9 +50,9 @@ func ReadImageAsBase64(filePath string) (string, error) {
 	return fullBase64String, nil
 }
 
-func createChar() *Char {
+func createChar() *models.Char {
 
-	char := Char{}
+	char := models.Char{}
 	char.Name = "Harsk Hammerhuter, Zen"
 	char.Rasse = "Zwerg"
 	char.Typ = "Krieger"
@@ -72,7 +72,7 @@ func createChar() *Char {
 	char.Merkmale.Augenfarbe = "blau"
 	char.Merkmale.Haarfarbe = "sandfarben"
 	char.Merkmale.Sonstige = ""
-	char.Eigenschaften = []Eigenschaft{
+	char.Eigenschaften = []models.Eigenschaft{
 		{Name: "Au", Value: 74},
 		{Name: "Gs", Value: 96},
 		{Name: "Gw", Value: 70},
@@ -179,7 +179,7 @@ func createChar() *Char {
 	char.Spezialisierung = database.StringArray{
 		"Kriegshammer", "Armbrust:schwer", "Stielhammer",
 	}
-	char.Bennies = Bennies{
+	char.Bennies = models.Bennies{
 		Sg: 1,
 		Gg: 0,
 		Gp: 0,
@@ -189,7 +189,7 @@ func createChar() *Char {
 			},
 		},
 	}
-	char.Erfahrungsschatz = Erfahrungsschatz{
+	char.Erfahrungsschatz = models.Erfahrungsschatz{
 		ES: 325,
 		EP: 300,
 		BamortCharTrait: models.BamortCharTrait{
@@ -535,7 +535,7 @@ func setSpezialisierung(liste  *database.StringArray, pos int,name string) {
 }
 */
 
-func charTests(t *testing.T, char *Char) {
+func charTests(t *testing.T, char *models.Char) {
 	assert.LessOrEqual(t, 0, int(char.ID))
 	assert.Equal(t, "Harsk Hammerhuter, Zen", char.Name)
 	assert.Equal(t, "Zwerg", char.Rasse)
@@ -744,7 +744,7 @@ func charTests(t *testing.T, char *Char) {
 
 func TestCreateChar(t *testing.T) {
 	database.SetupTestDB()
-	err := MigrateStructure()
+	err := models.MigrateStructure()
 	if err == nil {
 		err = skills.MigrateStructure()
 		if err == nil {
@@ -762,7 +762,7 @@ func TestCreateChar(t *testing.T) {
 		assert.NoError(t, err, "expected no error finding existing char")
 	}
 
-	char2 := Char{}
+	char2 := models.Char{}
 	char2.Name = "Harsk Hammerhuter, Zen"
 	err = char2.First(char2.Name)
 	assert.NoError(t, err, "expected no error finding the char")
@@ -772,7 +772,7 @@ func TestCreateChar(t *testing.T) {
 func TestReadChar(t *testing.T) {
 	database.SetupTestDB()
 	TestCreateChar(t)
-	char := Char{}
+	char := models.Char{}
 	char.Name = "Harsk Hammerhuter, Zen"
 	err := char.First(char.Name)
 	assert.NoError(t, err, "expected NO error character not found")

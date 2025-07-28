@@ -1,16 +1,13 @@
-package character
+package models
 
 import (
 	"bamort/database"
 	"bamort/equipment"
-	"bamort/models"
 	"bamort/skills"
 	"fmt"
 
 	"gorm.io/gorm"
 )
-
-var dbPrefix = "char"
 
 // Au, Gs, Gw ,In, Ko, Pa, St, Wk, Zt
 type Eigenschaft struct {
@@ -49,7 +46,7 @@ type B struct {
 */
 
 type Merkmale struct {
-	models.BamortCharTrait
+	BamortCharTrait
 	Augenfarbe string `json:"augenfarbe"`
 	Haarfarbe  string `json:"haarfarbe"`
 	Sonstige   string `json:"sonstige"`
@@ -58,27 +55,27 @@ type Merkmale struct {
 }
 
 type Erfahrungsschatz struct {
-	models.BamortCharTrait
+	BamortCharTrait
 	ES int `json:"es"` // Erfahrungsschatz
 	EP int `json:"ep"` // Erfahrungspunkte
 }
 
 type Bennies struct {
-	models.BamortCharTrait
+	BamortCharTrait
 	Gg int `json:"gg"` // Göttliche Gnade
 	Gp int `json:"gp"` // Glückspunkte
 	Sg int `json:"sg"` // Schicksalsgunst
 }
 
 type Vermoegen struct {
-	models.BamortCharTrait
+	BamortCharTrait
 	Goldstücke   int `json:"goldstücke"`   // GS
 	Silberstücke int `json:"silberstücke"` // SS
 	Kupferstücke int `json:"kupferstücke"` // KS
 }
 
 type Char struct {
-	models.BamortBase
+	BamortBase
 	Rasse              string                    `json:"rasse"`
 	Typ                string                    `json:"typ"`
 	Alter              int                       `json:"alter"`
@@ -107,7 +104,7 @@ type Char struct {
 	Image              string                    `json:"image,omitempty"`
 }
 type CharList struct {
-	models.BamortBase
+	BamortBase
 	Rasse  string `json:"rasse"`
 	Typ    string `json:"typ"`
 	Grad   int    `json:"grad"`
@@ -122,6 +119,7 @@ type FeChar struct {
 }
 
 func (object *Char) TableName() string {
+	dbPrefix := "char"
 	return dbPrefix + "_" + "chars"
 }
 
@@ -200,26 +198,34 @@ func (object *Char) Delete() error {
 	return err
 }
 func (object *Eigenschaft) TableName() string {
+	dbPrefix := "char"
 	return dbPrefix + "_" + "eigenschaften"
 }
 func (object *Lp) TableName() string {
+	dbPrefix := "char"
 	return dbPrefix + "_" + "health"
 }
 func (object *Ap) TableName() string {
+	dbPrefix := "char"
 	return dbPrefix + "_" + "endurances"
 }
 func (object *B) TableName() string {
+	dbPrefix := "char"
 	return dbPrefix + "_" + "motionranges"
 }
 func (object *Merkmale) TableName() string {
+	dbPrefix := "char"
 	return dbPrefix + "_" + "characteristics"
 }
 func (object *Erfahrungsschatz) TableName() string {
+	dbPrefix := "char"
 	return dbPrefix + "_" + "experiances"
 }
 func (object *Bennies) TableName() string {
+	dbPrefix := "char"
 	return dbPrefix + "_" + "bennies"
 }
 func (object *Vermoegen) TableName() string {
+	dbPrefix := "char"
 	return dbPrefix + "_" + "wealth"
 }

@@ -55,14 +55,14 @@ func TestSetupCheck(t *testing.T) {
 	err := database.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating database tables")
 
-	err = character.MigrateStructure()
-	assert.NoError(t, err, "No error expected when migrating character tables")
+	err = models.MigrateStructure()
+	assert.NoError(t, err, "No error expected when migrating gsmaster tables")
+
+	/*err = character.MigrateStructure()
+	assert.NoError(t, err, "No error expected when migrating character tables")*/
 
 	err = user.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating user tables")
-
-	err = models.MigrateStructure()
-	assert.NoError(t, err, "No error expected when migrating gsmaster tables")
 
 	err = equipment.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating equipment tables")
@@ -104,7 +104,7 @@ func TestListCharacters(t *testing.T) {
 	assert.Equal(t, http.StatusOK, respRecorder.Code)
 
 	// Assert the response body
-	var listOfCharacter []*character.CharList
+	var listOfCharacter []*models.CharList
 	err := json.Unmarshal(respRecorder.Body.Bytes(), &listOfCharacter)
 	assert.NoError(t, err)
 	assert.Equal(t, "Harsk Hammerhuter, Zen", listOfCharacter[0].Name)
@@ -148,7 +148,7 @@ func TestGetCharacters(t *testing.T) {
 	assert.Equal(t, http.StatusOK, respRecorder.Code)
 
 	// Assert the response body
-	var listOfCharacter *character.Char
+	var listOfCharacter *models.Char
 	err := json.Unmarshal(respRecorder.Body.Bytes(), &listOfCharacter)
 	assert.NoError(t, err)
 	assert.Equal(t, "Harsk Hammerhuter, Zen", listOfCharacter.Name)

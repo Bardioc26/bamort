@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bamort/character"
 	"bamort/database"
 	"bamort/equipment"
 	"bamort/models"
@@ -46,11 +45,11 @@ func main() {
 		return
 	}
 
-	err = character.MigrateStructure(secondDB)
+	/*err = character.MigrateStructure(secondDB)
 	if err != nil {
 		fmt.Printf("Fehler bei character Migration: %v\n", err)
 		return
-	}
+	}*/
 
 	err = models.MigrateStructure(secondDB)
 	if err != nil {
@@ -87,7 +86,7 @@ func migrateAllToSecondDB(db *gorm.DB) error {
 	migrators := []func(db ...*gorm.DB) error{
 		database.MigrateStructure,
 		user.MigrateStructure,
-		character.MigrateStructure,
+		//character.MigrateStructure,
 		models.MigrateStructure,
 		equipment.MigrateStructure,
 		skills.MigrateStructure,

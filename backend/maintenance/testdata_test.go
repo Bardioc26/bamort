@@ -1,7 +1,6 @@
 package maintenance
 
 import (
-	"bamort/character"
 	"bamort/database"
 	"bamort/equipment"
 	"bamort/models"
@@ -43,7 +42,7 @@ func createTestDataInLiveDB(t *testing.T, liveDB *gorm.DB) {
 	require.NoError(t, err)
 
 	// Create test character
-	testChar := &character.Char{
+	testChar := &models.Char{
 		BamortBase: models.BamortBase{
 			Name: "Test Character",
 		},
@@ -93,8 +92,10 @@ func TestMakeTestdataFromLiveRewrite(t *testing.T) {
 	require.NoError(t, err)
 	err = user.MigrateStructure(liveDB)
 	require.NoError(t, err)
-	err = character.MigrateStructure(liveDB)
-	require.NoError(t, err)
+	/*
+		err = character.MigrateStructure(liveDB)
+		require.NoError(t, err)
+	*/
 	err = models.MigrateStructure(liveDB)
 	require.NoError(t, err)
 	err = skills.MigrateStructure(liveDB)
@@ -115,8 +116,8 @@ func TestMakeTestdataFromLiveRewrite(t *testing.T) {
 	require.NoError(t, err)
 	err = user.MigrateStructure(testDb)
 	require.NoError(t, err)
-	err = character.MigrateStructure(testDb)
-	require.NoError(t, err)
+	/*err = character.MigrateStructure(testDb)
+	require.NoError(t, err)*/
 	err = models.MigrateStructure(testDb)
 	require.NoError(t, err)
 	err = skills.MigrateStructure(testDb)
@@ -178,8 +179,8 @@ func TestLoadPredefinedTestDataFromFile(t *testing.T) {
 	require.NoError(t, err)
 	err = user.MigrateStructure(sourceDB)
 	require.NoError(t, err)
-	err = character.MigrateStructure(sourceDB)
-	require.NoError(t, err)
+	/*err = character.MigrateStructure(sourceDB)
+	require.NoError(t, err)*/
 	err = models.MigrateStructure(sourceDB)
 	require.NoError(t, err)
 	err = skills.MigrateStructure(sourceDB)
@@ -213,8 +214,8 @@ func TestLoadPredefinedTestDataFromFile(t *testing.T) {
 	require.NoError(t, err)
 	err = user.MigrateStructure(targetDB)
 	require.NoError(t, err)
-	err = character.MigrateStructure(targetDB)
-	require.NoError(t, err)
+	/*err = character.MigrateStructure(targetDB)
+	require.NoError(t, err)*/
 	err = models.MigrateStructure(targetDB)
 	require.NoError(t, err)
 	err = skills.MigrateStructure(targetDB)
@@ -233,7 +234,7 @@ func TestLoadPredefinedTestDataFromFile(t *testing.T) {
 	assert.Greater(t, userCount, int64(0), "Should have loaded users")
 
 	var charCount int64
-	err = targetDB.Model(&character.Char{}).Count(&charCount).Error
+	err = targetDB.Model(&models.Char{}).Count(&charCount).Error
 	require.NoError(t, err)
 	assert.Greater(t, charCount, int64(0), "Should have loaded characters")
 
@@ -249,7 +250,7 @@ func TestLoadPredefinedTestDataFromFile(t *testing.T) {
 	assert.Equal(t, "testuser", loadedUser.Username)
 	assert.Equal(t, "test@example.com", loadedUser.Email)
 
-	var loadedChar character.Char
+	var loadedChar models.Char
 	err = targetDB.Where("name = ?", "Test Character").First(&loadedChar).Error
 	require.NoError(t, err)
 	assert.Equal(t, "Test Character", loadedChar.Name)
@@ -291,8 +292,8 @@ func TestSetupTestDBWithTestData(t *testing.T) {
 	require.NoError(t, err)
 	err = user.MigrateStructure(sourceDB)
 	require.NoError(t, err)
-	err = character.MigrateStructure(sourceDB)
-	require.NoError(t, err)
+	/*err = character.MigrateStructure(sourceDB)
+	require.NoError(t, err)*/
 	err = models.MigrateStructure(sourceDB)
 	require.NoError(t, err)
 	err = skills.MigrateStructure(sourceDB)

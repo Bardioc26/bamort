@@ -23,15 +23,13 @@ func TestImprovedSkillCostAPI(t *testing.T) {
 	defer database.ResetTestDB()
 
 	// Migrate the schema
-	err := MigrateStructure()
+	err := models.MigrateStructure()
 	assert.NoError(t, err)
 
 	// Also migrate skills and equipment to avoid preload errors
 	err = skills.MigrateStructure()
 	assert.NoError(t, err)
 	err = equipment.MigrateStructure()
-	assert.NoError(t, err)
-	err = models.MigrateStructure()
 	assert.NoError(t, err)
 
 	// Create test skill data
@@ -258,7 +256,7 @@ func TestHelperFunctions(t *testing.T) {
 		// This would need a proper character setup to test fully
 		// For now, we're just testing the function exists and doesn't panic
 
-		var character Char
+		var character models.Char
 		level := getCurrentSkillLevel(&character, "Test", "skill")
 		assert.Equal(t, -1, level, "Should return -1 for non-existent skill")
 	})
@@ -603,15 +601,13 @@ func TestGetLernCostEndpoint(t *testing.T) {
 	defer database.ResetTestDB()
 
 	// Migrate the schema
-	err := MigrateStructure()
+	err := models.MigrateStructure()
 	assert.NoError(t, err)
 
 	// Also migrate skills and equipment to avoid preload errors
 	err = skills.MigrateStructure()
 	assert.NoError(t, err)
 	err = equipment.MigrateStructure()
-	assert.NoError(t, err)
-	err = models.MigrateStructure()
 	assert.NoError(t, err)
 	/*
 		// Create test skill data

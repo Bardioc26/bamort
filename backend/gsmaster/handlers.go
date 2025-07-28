@@ -157,8 +157,8 @@ func GetMasterData(c *gin.Context) {
 		Skills          []models.Skill       `json:"skills"`
 		Weaponskills    []models.WeaponSkill `json:"weaponskills"`
 		Spell           []models.Spell       `json:"spells"`
-		Equipment       []Equipment          `json:"equipment"`
-		Weapons         []Weapon             `json:"weapons"`
+		Equipment       []models.Equipment   `json:"equipment"`
+		Weapons         []models.Weapon      `json:"weapons"`
 		SkillCategories []string             `json:"skillcategories"`
 		SpellCategories []string             `json:"spellcategories"`
 	}
@@ -303,42 +303,42 @@ func DeleteMDSpell(c *gin.Context) {
 }
 
 func GetMDEquipments(c *gin.Context) {
-	getMDItems[Equipment](c)
+	getMDItems[models.Equipment](c)
 }
 
 func GetMDEquipment(c *gin.Context) {
-	getMDItem[Equipment](c)
+	getMDItem[models.Equipment](c)
 }
 
 func UpdateMDEquipment(c *gin.Context) {
-	updateMDItem[Equipment](c)
+	updateMDItem[models.Equipment](c)
 }
 
 func AddEquipment(c *gin.Context) {
-	addMDItem[Equipment](c)
+	addMDItem[models.Equipment](c)
 }
 
 func DeleteMDEquipment(c *gin.Context) {
-	deleteMDItem[Equipment](c)
+	deleteMDItem[models.Equipment](c)
 }
 
 // Refactored handler functions
 func GetMDWeapons(c *gin.Context) {
-	getMDItems[Weapon](c)
+	getMDItems[models.Weapon](c)
 }
 
 func GetMDWeapon(c *gin.Context) {
-	getMDItem[Weapon](c)
+	getMDItem[models.Weapon](c)
 }
 
 func UpdateMDWeapon(c *gin.Context) {
-	updateMDItem[Weapon](c)
+	updateMDItem[models.Weapon](c)
 }
 
 func AddWeapon(c *gin.Context) {
-	addMDItem[Weapon](c)
+	addMDItem[models.Weapon](c)
 }
 
 func DeleteMDWeapon(c *gin.Context) {
-	deleteMDItem[Weapon](c)
+	deleteMDItem[models.Weapon](c)
 }

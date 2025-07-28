@@ -15,8 +15,8 @@ type exportData struct {
 	Skills          []models.Skill       `json:"skills"`
 	WeaponSkills    []models.WeaponSkill `json:"weapon_skills"`
 	Spells          []models.Spell       `json:"spells"`
-	Equipments      []Equipment          `json:"equipments"`
-	Weapons         []Weapon             `json:"weapons"`
+	Equipments      []models.Equipment   `json:"equipments"`
+	Weapons         []models.Weapon      `json:"weapons"`
 	Containers      []Container          `json:"containers"`
 	Transportations []Container          `json:"transportations"`
 	Believes        []Believe            `json:"believes"`
@@ -26,8 +26,8 @@ func Export(filePath string) error {
 	var skills []models.Skill
 	var weaponSkills []models.WeaponSkill
 	var spells []models.Spell
-	var equipments []Equipment
-	var weapons []Weapon
+	var equipments []models.Equipment
+	var weapons []models.Weapon
 	var containers []Container
 	var transportations []Container
 	var believes []Believe

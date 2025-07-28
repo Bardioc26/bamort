@@ -288,8 +288,8 @@ func TransformImportSpell2GSDMaster(object *Zauber) (*models.Spell, error) {
 	return &gsmobj, nil
 }
 
-func TransformImportWeapon2GSDMaster(object *Waffe) (*gsmaster.Weapon, error) {
-	gsmobj := gsmaster.Weapon{}
+func TransformImportWeapon2GSDMaster(object *Waffe) (*models.Weapon, error) {
+	gsmobj := models.Weapon{}
 
 	err := gsmobj.First(object.Name)
 	// if found check if we need to adjust masterdata
@@ -359,8 +359,8 @@ func TransformImportTransportation2GSDMaster(object *Transportation) (*gsmaster.
 	return &gsmobj, nil
 }
 
-func TransformImportEquipment2GSDMaster(object *Ausruestung) (*gsmaster.Equipment, error) {
-	gsmobj := gsmaster.Equipment{}
+func TransformImportEquipment2GSDMaster(object *Ausruestung) (*models.Equipment, error) {
+	gsmobj := models.Equipment{}
 
 	err := gsmobj.First(object.Name)
 	// if found check if we need to adjust masterdata

@@ -74,8 +74,8 @@ func TestGetMasterData(t *testing.T) {
 		Skills       []models.Skill       `json:"skills"`
 		Weaponskills []models.WeaponSkill `json:"weaponskills"`
 		Spell        []models.Spell       `json:"spells"`
-		Equipment    []gsmaster.Equipment `json:"equipment"`
-		Weapons      []gsmaster.Weapon    `json:"weapons"`
+		Equipment    []models.Equipment   `json:"equipment"`
+		Weapons      []models.Weapon      `json:"weapons"`
 	}
 	var dta dtaStruct
 	err := json.Unmarshal(respRecorder.Body.Bytes(), &dta)

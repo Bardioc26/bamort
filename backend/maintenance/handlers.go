@@ -151,13 +151,13 @@ func copyAllDataToTestDB(liveDB, testDB *gorm.DB) (map[string]int, error) {
 	}
 	stats["gsmaster_spells"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.Equipment{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Equipment{})
 	if err != nil {
 		return stats, err
 	}
 	stats["gsmaster_equipment"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.Weapon{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Weapon{})
 	if err != nil {
 		return stats, err
 	}
@@ -473,7 +473,7 @@ func getTestDataStatistics(db *gorm.DB) (map[string]int64, error) {
 		"characters":                &character.Char{},
 		"gsmaster_skills":           &models.Skill{},
 		"gsmaster_spells":           &models.Spell{},
-		"gsmaster_equipment":        &gsmaster.Equipment{},
+		"gsmaster_equipment":        &models.Equipment{},
 		"skills_fertigkeiten":       &skills.Fertigkeit{},
 		"skills_waffenfertigkeiten": &skills.Waffenfertigkeit{},
 		"skills_zauber":             &skills.Zauber{},

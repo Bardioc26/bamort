@@ -55,20 +55,8 @@ func TestSetupCheck(t *testing.T) {
 
 	err = models.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating gsmaster tables")
-
-	/*err = character.MigrateStructure()
-	assert.NoError(t, err, "No error expected when migrating character tables")*/
-
 	err = user.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating user tables")
-
-	/*err = equipment.MigrateStructure()
-	assert.NoError(t, err, "No error expected when migrating equipment tables")
-
-	err = skills.MigrateStructure()
-	assert.NoError(t, err, "No error expected when migrating skill tables")
-	*/
-
 	err = importer.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating importer tables")
 }

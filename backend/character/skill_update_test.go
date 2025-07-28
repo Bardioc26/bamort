@@ -23,12 +23,6 @@ func TestImproveSkillUpdatesLevel(t *testing.T) {
 	err := models.MigrateStructure()
 	assert.NoError(t, err)
 
-	// Also migrate skills and equipment to avoid preload errors
-	/*
-		err = skills.MigrateStructure()
-		assert.NoError(t, err)
-	*/
-
 	// Try to migrate equipment if it exists
 	if equipmentDB := database.DB.Exec("CREATE TABLE IF NOT EXISTS equi_equipments (id INTEGER PRIMARY KEY, character_id INTEGER, name TEXT)"); equipmentDB.Error != nil {
 		t.Logf("Warning: Could not create equipment table: %v", equipmentDB.Error)

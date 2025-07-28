@@ -21,13 +21,6 @@ func TestDebugPracticePoints(t *testing.T) {
 	err := models.MigrateStructure()
 	assert.NoError(t, err)
 
-	// Also migrate skills and equipment to avoid errors
-	/*
-		err = skills.MigrateStructure()
-		assert.NoError(t, err)
-		err = equipment.MigrateStructure()
-		assert.NoError(t, err)*/
-
 	// Create a test character manually using GORM
 	character := &models.Char{
 		BamortBase: models.BamortBase{

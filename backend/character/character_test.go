@@ -743,14 +743,7 @@ func charTests(t *testing.T, char *models.Char) {
 func TestCreateChar(t *testing.T) {
 	database.SetupTestDB()
 	err := models.MigrateStructure()
-	/*
-		if err == nil {
-			err = skills.MigrateStructure()
-			if err == nil {
-				err = equipment.MigrateStructure()
-			}
-		}
-	*/
+
 	assert.NoError(t, err, "expected no error MigrateStructure")
 	char := createChar()
 

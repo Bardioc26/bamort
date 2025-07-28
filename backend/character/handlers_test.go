@@ -22,12 +22,6 @@ func TestImproveSkillHandler(t *testing.T) {
 	err := models.MigrateStructure()
 	assert.NoError(t, err)
 
-	// Also migrate skills and equipment to avoid preload errors
-	/*
-		err = skills.MigrateStructure()
-		assert.NoError(t, err)
-	*/
-
 	// Create test character with ID 20
 	/*
 		testChar := Char{

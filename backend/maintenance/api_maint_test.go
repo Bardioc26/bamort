@@ -84,7 +84,7 @@ func TestGetMasterData(t *testing.T) {
 
 func TestGetMDSkillCategories(t *testing.T) {
 	database.SetupTestDB(false)
-	//gsmaster.MigrateStructure()
+
 	ski := models.Skill{}
 	categories, err := ski.GetSkillCategories()
 	assert.NoError(t, err)

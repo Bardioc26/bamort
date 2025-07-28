@@ -22,11 +22,6 @@ func TestSpellCategoryMapping(t *testing.T) {
 	// Migrate the schema
 	err := models.MigrateStructure()
 	assert.NoError(t, err)
-	/*
-		err = skills.MigrateStructure()
-		assert.NoError(t, err)
-		err = equipment.MigrateStructure()
-		assert.NoError(t, err)*/
 
 	// Create test skill data
 	err = createTestSkillData()

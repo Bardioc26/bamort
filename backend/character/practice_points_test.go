@@ -23,13 +23,6 @@ func TestPracticePointsAPI(t *testing.T) {
 	err := models.MigrateStructure()
 	assert.NoError(t, err)
 
-	// Also migrate skills and equipment to avoid preload errors
-	/*
-		err = skills.MigrateStructure()
-		assert.NoError(t, err)
-		err = equipment.MigrateStructure()
-		assert.NoError(t, err)*/
-
 	// Create test skill data
 	err = createTestSkillData()
 	assert.NoError(t, err)

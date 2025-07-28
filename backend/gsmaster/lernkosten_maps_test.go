@@ -744,7 +744,7 @@ func TestGetSpellInfo(t *testing.T) {
 	// Initialize test database with migration (but no test data since we don't have the preparedTestDB file)
 	database.SetupTestDB(true, false) // Use in-memory SQLite, no test data loading
 	defer database.ResetTestDB()
-	MigrateStructure()
+	models.MigrateStructure()
 
 	// Create minimal test spell data for our test
 	testSpells := []models.Spell{
@@ -850,7 +850,7 @@ func TestCalcSpellLernCostWithRewards(t *testing.T) {
 	// Initialize test database with migration (but no test data since we don't have the preparedTestDB file)
 	database.SetupTestDB(true, false) // Use in-memory SQLite, no test data loading
 	defer database.ResetTestDB()
-	MigrateStructure()
+	models.MigrateStructure()
 
 	// Create minimal test spell data for our test
 	testSpells := []models.Spell{

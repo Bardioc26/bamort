@@ -2,6 +2,7 @@ package gsmaster
 
 import (
 	"bamort/database"
+	"bamort/models"
 	"os"
 	"strings"
 	"testing"
@@ -47,7 +48,7 @@ func setupTestDB(opts ...bool) {
 		database.DB = db
 	}
 	if !migrationDone {
-		err := MigrateStructure()
+		err := models.MigrateStructure()
 		if err != nil {
 			panic("failed to MigrateStructure")
 		}

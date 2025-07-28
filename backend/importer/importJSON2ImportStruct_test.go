@@ -2,7 +2,6 @@ package importer
 
 import (
 	"bamort/database"
-	"bamort/gsmaster"
 	"bamort/models"
 	"fmt"
 	"testing"
@@ -508,12 +507,12 @@ func TestImportBelieve2GSMaster(t *testing.T) {
 	assert.Equal(t, "", skill.Beschreibung)
 	assert.Equal(t, "", skill.Quelle)
 	//}
-	skill2 := gsmaster.Believe{}
+	skill2 := models.Believe{}
 	erro = skill2.First("Torkin")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
-	skill3 := gsmaster.Believe{}
+	skill3 := models.Believe{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Torkin", skill3.Name)

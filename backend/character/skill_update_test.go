@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"bamort/database"
-	"bamort/gsmaster"
 	"bamort/models"
 	"bamort/skills"
 
@@ -28,7 +27,7 @@ func TestImproveSkillUpdatesLevel(t *testing.T) {
 	// Also migrate skills and equipment to avoid preload errors
 	err = skills.MigrateStructure()
 	assert.NoError(t, err)
-	err = gsmaster.MigrateStructure()
+	err = models.MigrateStructure()
 	assert.NoError(t, err)
 
 	// Try to migrate equipment if it exists

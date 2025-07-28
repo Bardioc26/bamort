@@ -4,6 +4,7 @@ import (
 	"bamort/database"
 	"bamort/equipment"
 	"bamort/gsmaster"
+	"bamort/models"
 	"bamort/skills"
 	"bytes"
 	"encoding/json"
@@ -30,7 +31,7 @@ func TestImprovedSkillCostAPI(t *testing.T) {
 	assert.NoError(t, err)
 	err = equipment.MigrateStructure()
 	assert.NoError(t, err)
-	err = gsmaster.MigrateStructure()
+	err = models.MigrateStructure()
 	assert.NoError(t, err)
 
 	// Create test skill data
@@ -610,7 +611,7 @@ func TestGetLernCostEndpoint(t *testing.T) {
 	assert.NoError(t, err)
 	err = equipment.MigrateStructure()
 	assert.NoError(t, err)
-	err = gsmaster.MigrateStructure()
+	err = models.MigrateStructure()
 	assert.NoError(t, err)
 	/*
 		// Create test skill data

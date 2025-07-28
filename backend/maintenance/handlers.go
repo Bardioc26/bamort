@@ -4,7 +4,6 @@ import (
 	"bamort/character"
 	"bamort/database"
 	"bamort/equipment"
-	"bamort/gsmaster"
 	"bamort/importer"
 	"bamort/models"
 	"bamort/skills"
@@ -50,7 +49,7 @@ func migrateAllStructures(db *gorm.DB) error {
 	if err := character.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate character structures: %w", err)
 	}
-	if err := gsmaster.MigrateStructure(db); err != nil {
+	if err := models.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate gsmaster structures: %w", err)
 	}
 	if err := equipment.MigrateStructure(db); err != nil {
@@ -175,7 +174,7 @@ func copyAllDataToTestDB(liveDB, testDB *gorm.DB) (map[string]int, error) {
 	}
 	stats["gsmaster_transportation"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.Believe{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.Believe{})
 	if err != nil {
 		return stats, err
 	}

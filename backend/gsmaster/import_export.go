@@ -19,7 +19,7 @@ type exportData struct {
 	Weapons         []models.Weapon      `json:"weapons"`
 	Containers      []models.Container   `json:"containers"`
 	Transportations []models.Container   `json:"transportations"`
-	Believes        []Believe            `json:"believes"`
+	Believes        []models.Believe     `json:"believes"`
 }
 
 func Export(filePath string) error {
@@ -30,7 +30,7 @@ func Export(filePath string) error {
 	var weapons []models.Weapon
 	var containers []models.Container
 	var transportations []models.Container
-	var believes []Believe
+	var believes []models.Believe
 
 	// Fetch all data from the respective tables
 	if err := database.DB.Find(&skills).Error; err != nil {

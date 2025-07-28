@@ -1,7 +1,6 @@
 package importer
 
 import (
-	"bamort/gsmaster"
 	"bamort/models"
 	"fmt"
 	"regexp"
@@ -382,8 +381,8 @@ func TransformImportEquipment2GSDMaster(object *Ausruestung) (*models.Equipment,
 	return &gsmobj, nil
 }
 
-func TransformImportBelieve2GSDMaster(object string) (*gsmaster.Believe, error) {
-	gsmobj := gsmaster.Believe{}
+func TransformImportBelieve2GSDMaster(object string) (*models.Believe, error) {
+	gsmobj := models.Believe{}
 
 	err := gsmobj.First(object)
 	// if found check if we need to adjust masterdata

@@ -23,9 +23,7 @@ func MigrateStructure(db ...*gorm.DB) error {
 		&Weapon{},
 		&Container{},
 		&Transportation{},
-		/*
-			&Believe{},
-		*/
+		&Believe{},
 	)
 	if err != nil {
 		return err

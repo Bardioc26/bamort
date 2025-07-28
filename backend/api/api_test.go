@@ -7,6 +7,7 @@ import (
 	"bamort/gsmaster"
 	"bamort/importer"
 	_ "bamort/maintenance" // Anonymous import to ensure init() is called
+	"bamort/models"
 	"bamort/router"
 	"bamort/skills"
 	"bamort/user"
@@ -60,7 +61,7 @@ func TestSetupCheck(t *testing.T) {
 	err = user.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating user tables")
 
-	err = gsmaster.MigrateStructure()
+	err = models.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating gsmaster tables")
 
 	err = equipment.MigrateStructure()

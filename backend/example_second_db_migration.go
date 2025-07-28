@@ -4,7 +4,7 @@ import (
 	"bamort/character"
 	"bamort/database"
 	"bamort/equipment"
-	"bamort/gsmaster"
+	"bamort/models"
 	"bamort/skills"
 	"bamort/user"
 	"fmt"
@@ -52,9 +52,9 @@ func main() {
 		return
 	}
 
-	err = gsmaster.MigrateStructure(secondDB)
+	err = models.MigrateStructure(secondDB)
 	if err != nil {
-		fmt.Printf("Fehler bei gsmaster Migration: %v\n", err)
+		fmt.Printf("Fehler bei models Migration: %v\n", err)
 		return
 	}
 
@@ -88,7 +88,7 @@ func migrateAllToSecondDB(db *gorm.DB) error {
 		database.MigrateStructure,
 		user.MigrateStructure,
 		character.MigrateStructure,
-		gsmaster.MigrateStructure,
+		models.MigrateStructure,
 		equipment.MigrateStructure,
 		skills.MigrateStructure,
 	}

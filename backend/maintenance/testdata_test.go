@@ -4,7 +4,6 @@ import (
 	"bamort/character"
 	"bamort/database"
 	"bamort/equipment"
-	"bamort/gsmaster"
 	"bamort/models"
 	"bamort/skills"
 	"bamort/user"
@@ -96,7 +95,7 @@ func TestMakeTestdataFromLiveRewrite(t *testing.T) {
 	require.NoError(t, err)
 	err = character.MigrateStructure(liveDB)
 	require.NoError(t, err)
-	err = gsmaster.MigrateStructure(liveDB)
+	err = models.MigrateStructure(liveDB)
 	require.NoError(t, err)
 	err = skills.MigrateStructure(liveDB)
 	require.NoError(t, err)
@@ -118,7 +117,7 @@ func TestMakeTestdataFromLiveRewrite(t *testing.T) {
 	require.NoError(t, err)
 	err = character.MigrateStructure(testDb)
 	require.NoError(t, err)
-	err = gsmaster.MigrateStructure(testDb)
+	err = models.MigrateStructure(testDb)
 	require.NoError(t, err)
 	err = skills.MigrateStructure(testDb)
 	require.NoError(t, err)
@@ -181,7 +180,7 @@ func TestLoadPredefinedTestDataFromFile(t *testing.T) {
 	require.NoError(t, err)
 	err = character.MigrateStructure(sourceDB)
 	require.NoError(t, err)
-	err = gsmaster.MigrateStructure(sourceDB)
+	err = models.MigrateStructure(sourceDB)
 	require.NoError(t, err)
 	err = skills.MigrateStructure(sourceDB)
 	require.NoError(t, err)
@@ -216,7 +215,7 @@ func TestLoadPredefinedTestDataFromFile(t *testing.T) {
 	require.NoError(t, err)
 	err = character.MigrateStructure(targetDB)
 	require.NoError(t, err)
-	err = gsmaster.MigrateStructure(targetDB)
+	err = models.MigrateStructure(targetDB)
 	require.NoError(t, err)
 	err = skills.MigrateStructure(targetDB)
 	require.NoError(t, err)
@@ -294,7 +293,7 @@ func TestSetupTestDBWithTestData(t *testing.T) {
 	require.NoError(t, err)
 	err = character.MigrateStructure(sourceDB)
 	require.NoError(t, err)
-	err = gsmaster.MigrateStructure(sourceDB)
+	err = models.MigrateStructure(sourceDB)
 	require.NoError(t, err)
 	err = skills.MigrateStructure(sourceDB)
 	require.NoError(t, err)

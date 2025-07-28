@@ -2,9 +2,7 @@ package character
 
 import (
 	"bamort/database"
-	"bamort/equipment"
 	"bamort/models"
-	"bamort/skills"
 	"bytes"
 	"encoding/json"
 	"net/http"
@@ -24,10 +22,11 @@ func TestSpellCategoryMapping(t *testing.T) {
 	// Migrate the schema
 	err := models.MigrateStructure()
 	assert.NoError(t, err)
-	err = skills.MigrateStructure()
-	assert.NoError(t, err)
-	err = equipment.MigrateStructure()
-	assert.NoError(t, err)
+	/*
+		err = skills.MigrateStructure()
+		assert.NoError(t, err)
+		err = equipment.MigrateStructure()
+		assert.NoError(t, err)*/
 
 	// Create test skill data
 	err = createTestSkillData()
@@ -46,7 +45,7 @@ func TestSpellCategoryMapping(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Add the "Beherrschen" magic school as a skill
-	beherrschenSkill := &skills.Fertigkeit{
+	beherrschenSkill := &models.SkFertigkeit{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: "Beherrschen",

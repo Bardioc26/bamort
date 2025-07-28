@@ -2,9 +2,7 @@ package maintenance
 
 import (
 	"bamort/database"
-	"bamort/equipment"
 	"bamort/models"
-	"bamort/skills"
 	"bamort/user"
 	"fmt"
 	"os"
@@ -65,7 +63,7 @@ func createTestDataInLiveDB(t *testing.T, liveDB *gorm.DB) {
 	require.NoError(t, err)
 
 	// Create character skill
-	testCharSkill := &skills.Fertigkeit{
+	testCharSkill := &models.SkFertigkeit{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: "Test Skill",
@@ -98,10 +96,10 @@ func TestMakeTestdataFromLiveRewrite(t *testing.T) {
 	*/
 	err = models.MigrateStructure(liveDB)
 	require.NoError(t, err)
-	err = skills.MigrateStructure(liveDB)
+	err = models.MigrateStructure(liveDB)
 	require.NoError(t, err)
-	err = equipment.MigrateStructure(liveDB)
-	require.NoError(t, err)
+	/*err = equipment.MigrateStructure(liveDB)
+	require.NoError(t, err)*/
 
 	// Create test data in live DB
 	createTestDataInLiveDB(t, liveDB)
@@ -120,10 +118,10 @@ func TestMakeTestdataFromLiveRewrite(t *testing.T) {
 	require.NoError(t, err)*/
 	err = models.MigrateStructure(testDb)
 	require.NoError(t, err)
-	err = skills.MigrateStructure(testDb)
+	err = models.MigrateStructure(testDb)
 	require.NoError(t, err)
-	err = equipment.MigrateStructure(testDb)
-	require.NoError(t, err)
+	/*err = equipment.MigrateStructure(testDb)
+	require.NoError(t, err)*/
 
 	// Test the copyAllDataToTestDB function
 	copyStats, err := copyAllDataToTestDB(liveDB, testDb)
@@ -183,10 +181,10 @@ func TestLoadPredefinedTestDataFromFile(t *testing.T) {
 	require.NoError(t, err)*/
 	err = models.MigrateStructure(sourceDB)
 	require.NoError(t, err)
-	err = skills.MigrateStructure(sourceDB)
+	err = models.MigrateStructure(sourceDB)
 	require.NoError(t, err)
-	err = equipment.MigrateStructure(sourceDB)
-	require.NoError(t, err)
+	/*err = equipment.MigrateStructure(sourceDB)
+	require.NoError(t, err)*/
 
 	// Create test data in source DB
 	createTestDataInLiveDB(t, sourceDB)
@@ -218,10 +216,10 @@ func TestLoadPredefinedTestDataFromFile(t *testing.T) {
 	require.NoError(t, err)*/
 	err = models.MigrateStructure(targetDB)
 	require.NoError(t, err)
-	err = skills.MigrateStructure(targetDB)
+	err = models.MigrateStructure(targetDB)
 	require.NoError(t, err)
-	err = equipment.MigrateStructure(targetDB)
-	require.NoError(t, err)
+	/*err = equipment.MigrateStructure(targetDB)
+	require.NoError(t, err)*/
 
 	// Load test data from the source file
 	err = LoadPredefinedTestDataFromFile(targetDB, "testdata/test_source.db")
@@ -296,10 +294,10 @@ func TestSetupTestDBWithTestData(t *testing.T) {
 	require.NoError(t, err)*/
 	err = models.MigrateStructure(sourceDB)
 	require.NoError(t, err)
-	err = skills.MigrateStructure(sourceDB)
+	err = models.MigrateStructure(sourceDB)
 	require.NoError(t, err)
-	err = equipment.MigrateStructure(sourceDB)
-	require.NoError(t, err)
+	/*err = equipment.MigrateStructure(sourceDB)
+	require.NoError(t, err)*/
 
 	createTestDataInLiveDB(t, sourceDB)
 

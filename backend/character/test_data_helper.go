@@ -3,13 +3,12 @@ package character
 import (
 	"bamort/database"
 	"bamort/models"
-	"bamort/skills"
 )
 
 // createTestSkillData erstellt Test-Daten für Skills und Spells
 func createTestSkillData() error {
 	// Test-Fertigkeit erstellen
-	testSkill := skills.Fertigkeit{
+	testSkill := models.SkFertigkeit{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: "Menschenkenntnis",
@@ -26,7 +25,7 @@ func createTestSkillData() error {
 	}
 
 	// Test-Zauber erstellen
-	testSpell := skills.Zauber{
+	testSpell := models.SkZauber{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: "Macht über das Selbst",
@@ -78,8 +77,8 @@ func createTestSkillData() error {
 
 // cleanupTestSkillData entfernt Test-Daten
 func cleanupTestSkillData() {
-	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&skills.Fertigkeit{})
-	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&skills.Zauber{})
+	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&models.SkFertigkeit{})
+	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&models.SkZauber{})
 	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&models.Skill{})
 	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&models.Spell{})
 }

@@ -3,13 +3,11 @@ package api
 import (
 	"bamort/character"
 	"bamort/database"
-	"bamort/equipment"
 	"bamort/gsmaster"
 	"bamort/importer"
 	_ "bamort/maintenance" // Anonymous import to ensure init() is called
 	"bamort/models"
 	"bamort/router"
-	"bamort/skills"
 	"bamort/user"
 	"bytes"
 	"encoding/json"
@@ -64,11 +62,12 @@ func TestSetupCheck(t *testing.T) {
 	err = user.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating user tables")
 
-	err = equipment.MigrateStructure()
+	/*err = equipment.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating equipment tables")
 
 	err = skills.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating skill tables")
+	*/
 
 	err = importer.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating importer tables")

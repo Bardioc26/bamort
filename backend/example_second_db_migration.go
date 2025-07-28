@@ -2,9 +2,7 @@ package main
 
 import (
 	"bamort/database"
-	"bamort/equipment"
 	"bamort/models"
-	"bamort/skills"
 	"bamort/user"
 	"fmt"
 
@@ -57,7 +55,7 @@ func main() {
 		return
 	}
 
-	err = equipment.MigrateStructure(secondDB)
+	/*err = equipment.MigrateStructure(secondDB)
 	if err != nil {
 		fmt.Printf("Fehler bei equipment Migration: %v\n", err)
 		return
@@ -68,6 +66,7 @@ func main() {
 		fmt.Printf("Fehler bei skills Migration: %v\n", err)
 		return
 	}
+	*/
 
 	fmt.Println("Migration zur zweiten Datenbank erfolgreich")
 
@@ -88,8 +87,8 @@ func migrateAllToSecondDB(db *gorm.DB) error {
 		user.MigrateStructure,
 		//character.MigrateStructure,
 		models.MigrateStructure,
-		equipment.MigrateStructure,
-		skills.MigrateStructure,
+		//equipment.MigrateStructure,
+		//skills.MigrateStructure,
 	}
 
 	for _, migrate := range migrators {

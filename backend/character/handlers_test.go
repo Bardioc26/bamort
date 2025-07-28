@@ -9,7 +9,6 @@ import (
 
 	"bamort/database"
 	"bamort/models"
-	"bamort/skills"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -24,8 +23,10 @@ func TestImproveSkillHandler(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Also migrate skills and equipment to avoid preload errors
-	err = skills.MigrateStructure()
-	assert.NoError(t, err)
+	/*
+		err = skills.MigrateStructure()
+		assert.NoError(t, err)
+	*/
 
 	// Create test character with ID 20
 	/*
@@ -53,7 +54,7 @@ func TestImproveSkillHandler(t *testing.T) {
 
 
 		// Add Athletik skill at level 9
-		athletikSkill := skills.Fertigkeit{
+		athletikSkill := models.Fertigkeit{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
 					Name: "Athletik",
@@ -177,7 +178,7 @@ func TestImproveSkillHandler(t *testing.T) {
 		}
 
 		// Add skill
-		skill := skills.Fertigkeit{
+		skill := models.SkFertigkeit{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
 					Name: "Athletik",

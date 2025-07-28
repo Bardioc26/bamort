@@ -9,7 +9,6 @@ import (
 
 	"bamort/database"
 	"bamort/models"
-	"bamort/skills"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -25,8 +24,10 @@ func TestImproveSkillUpdatesLevel(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Also migrate skills and equipment to avoid preload errors
-	err = skills.MigrateStructure()
-	assert.NoError(t, err)
+	/*
+		err = skills.MigrateStructure()
+		assert.NoError(t, err)
+	*/
 
 	// Try to migrate equipment if it exists
 	if equipmentDB := database.DB.Exec("CREATE TABLE IF NOT EXISTS equi_equipments (id INTEGER PRIMARY KEY, character_id INTEGER, name TEXT)"); equipmentDB.Error != nil {
@@ -77,7 +78,7 @@ func TestImproveSkillUpdatesLevel(t *testing.T) {
 	}
 
 	// Add Athletik skill at level 9
-	athletikSkill := skills.Fertigkeit{
+	athletikSkill := models.SkFertigkeit{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: "Athletik",

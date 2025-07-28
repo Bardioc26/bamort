@@ -2,9 +2,7 @@ package character
 
 import (
 	"bamort/database"
-	"bamort/equipment"
 	"bamort/models"
-	"bamort/skills"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -83,7 +81,7 @@ func createChar() *models.Char {
 		{Name: "Wk", Value: 71},
 		{Name: "Zt", Value: 35},
 	}
-	char.Fertigkeiten = []skills.Fertigkeit{
+	char.Fertigkeiten = []models.SkFertigkeit{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -121,9 +119,9 @@ func createChar() *models.Char {
 			Bemerkung:       "",
 		},
 	}
-	char.Waffenfertigkeiten = []skills.Waffenfertigkeit{
+	char.Waffenfertigkeiten = []models.SkWaffenfertigkeit{
 		{
-			Fertigkeit: skills.Fertigkeit{
+			SkFertigkeit: models.SkFertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Armbr\u00fcste",
@@ -137,7 +135,7 @@ func createChar() *models.Char {
 			},
 		},
 		{
-			Fertigkeit: skills.Fertigkeit{
+			SkFertigkeit: models.SkFertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Einhandschlagwaffen",
@@ -151,7 +149,7 @@ func createChar() *models.Char {
 			},
 		},
 		{
-			Fertigkeit: skills.Fertigkeit{
+			SkFertigkeit: models.SkFertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Schilde",
@@ -165,7 +163,7 @@ func createChar() *models.Char {
 			},
 		},
 	}
-	char.Zauber = []skills.Zauber{
+	char.Zauber = []models.SkZauber{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -198,7 +196,7 @@ func createChar() *models.Char {
 			},
 		},
 	}
-	char.Waffen = []equipment.Waffe{
+	char.Waffen = []models.EqWaffe{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -221,7 +219,7 @@ func createChar() *models.Char {
 			BeinhaltetIn: "moam-container-47363",
 		},
 	}
-	char.Behaeltnisse = []equipment.Container{
+	char.Behaeltnisse = []models.EqContainer{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -242,7 +240,7 @@ func createChar() *models.Char {
 			BeinhaltetIn: "moam-container-47363",
 		},
 	}
-	char.Transportmittel = []equipment.Container{
+	char.Transportmittel = []models.EqContainer{
 		{
 
 			BamortCharTrait: models.BamortCharTrait{
@@ -265,7 +263,7 @@ func createChar() *models.Char {
 
 		},
 	}
-	char.Ausruestung = []equipment.Ausruestung{
+	char.Ausruestung = []models.EqAusruestung{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -291,9 +289,9 @@ func createChar() *models.Char {
 	return &char
 }
 
-func createFertigkeit(sel int) *skills.Fertigkeit {
+func createFertigkeit(sel int) *models.SkFertigkeit {
 
-	liste := []skills.Fertigkeit{
+	liste := []models.SkFertigkeit{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -338,11 +336,11 @@ func createFertigkeit(sel int) *skills.Fertigkeit {
 	return &liste[sel]
 }
 
-func createWaffenfertigkeit(sel int) *skills.Waffenfertigkeit {
+func createWaffenfertigkeit(sel int) *models.SkWaffenfertigkeit {
 
-	liste := []skills.Waffenfertigkeit{
+	liste := []models.SkWaffenfertigkeit{
 		{
-			Fertigkeit: skills.Fertigkeit{
+			SkFertigkeit: models.SkFertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Einhandschwerter",
@@ -356,7 +354,7 @@ func createWaffenfertigkeit(sel int) *skills.Waffenfertigkeit {
 			},
 		},
 		{
-			Fertigkeit: skills.Fertigkeit{
+			SkFertigkeit: models.SkFertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Zweihandschlagwaffen",
@@ -370,7 +368,7 @@ func createWaffenfertigkeit(sel int) *skills.Waffenfertigkeit {
 			},
 		},
 		{
-			Fertigkeit: skills.Fertigkeit{
+			SkFertigkeit: models.SkFertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{
 						Name: "Stichwaffen",
@@ -391,9 +389,9 @@ func createWaffenfertigkeit(sel int) *skills.Waffenfertigkeit {
 	return &liste[sel]
 }
 
-func createZauber(sel int) *skills.Zauber {
+func createZauber(sel int) *models.SkZauber {
 
-	liste := []skills.Zauber{
+	liste := []models.SkZauber{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -411,9 +409,9 @@ func createZauber(sel int) *skills.Zauber {
 	return &liste[sel]
 }
 
-func createWaffen(sel int) *equipment.Waffe {
+func createWaffen(sel int) *models.EqWaffe {
 
-	liste := []equipment.Waffe{
+	liste := []models.EqWaffe{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -442,8 +440,8 @@ func createWaffen(sel int) *equipment.Waffe {
 	return &liste[sel]
 }
 
-func createBehaeltniss(sel int) *equipment.Container {
-	liste := []equipment.Container{
+func createBehaeltniss(sel int) *models.EqContainer {
+	liste := []models.EqContainer{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -470,8 +468,8 @@ func createBehaeltniss(sel int) *equipment.Container {
 	return &liste[sel]
 }
 
-func createTransportmittel(sel int) *equipment.Container {
-	liste := []equipment.Container{
+func createTransportmittel(sel int) *models.EqContainer {
+	liste := []models.EqContainer{
 		{
 
 			BamortCharTrait: models.BamortCharTrait{
@@ -501,8 +499,8 @@ func createTransportmittel(sel int) *equipment.Container {
 	return &liste[sel]
 }
 
-func createAusruestung(sel int) *equipment.Ausruestung {
-	liste := []equipment.Ausruestung{
+func createAusruestung(sel int) *models.EqAusruestung {
+	liste := []models.EqAusruestung{
 		{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
@@ -745,12 +743,14 @@ func charTests(t *testing.T, char *models.Char) {
 func TestCreateChar(t *testing.T) {
 	database.SetupTestDB()
 	err := models.MigrateStructure()
-	if err == nil {
-		err = skills.MigrateStructure()
+	/*
 		if err == nil {
-			err = equipment.MigrateStructure()
+			err = skills.MigrateStructure()
+			if err == nil {
+				err = equipment.MigrateStructure()
+			}
 		}
-	}
+	*/
 	assert.NoError(t, err, "expected no error MigrateStructure")
 	char := createChar()
 

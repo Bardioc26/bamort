@@ -2,9 +2,7 @@ package character
 
 import (
 	"bamort/database"
-	"bamort/equipment"
 	"bamort/models"
-	"bamort/skills"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -24,10 +22,11 @@ func TestDebugPracticePoints(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Also migrate skills and equipment to avoid errors
-	err = skills.MigrateStructure()
-	assert.NoError(t, err)
-	err = equipment.MigrateStructure()
-	assert.NoError(t, err)
+	/*
+		err = skills.MigrateStructure()
+		assert.NoError(t, err)
+		err = equipment.MigrateStructure()
+		assert.NoError(t, err)*/
 
 	// Create a test character manually using GORM
 	character := &models.Char{

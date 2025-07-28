@@ -2,6 +2,7 @@ package equipment
 
 import (
 	"bamort/database"
+	"bamort/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +20,7 @@ func respondWithError(c *gin.Context, status int, message string) {
 }
 
 func CreateAusruestung(c *gin.Context) {
-	var ausruestung Ausruestung
+	var ausruestung models.EqAusruestung
 	if err := c.ShouldBindJSON(&ausruestung); err != nil {
 		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
@@ -36,7 +37,7 @@ func CreateAusruestung(c *gin.Context) {
 func ListAusruestung(c *gin.Context) {
 	characterID := c.Param("character_id")
 
-	var ausruestung []Ausruestung
+	var ausruestung []models.EqAusruestung
 	if err := database.DB.Where("character_id = ?", characterID).Find(&ausruestung).Error; err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve Ausruestung")
 		return
@@ -47,7 +48,7 @@ func ListAusruestung(c *gin.Context) {
 
 func UpdateAusruestung(c *gin.Context) {
 	ausruestungID := c.Param("ausruestung_id")
-	var ausruestung Ausruestung
+	var ausruestung models.EqAusruestung
 
 	if err := database.DB.First(&ausruestung, ausruestungID).Error; err != nil {
 		respondWithError(c, http.StatusNotFound, "Ausruestung not found")
@@ -69,7 +70,7 @@ func UpdateAusruestung(c *gin.Context) {
 
 func DeleteAusruestung(c *gin.Context) {
 	ausruestungID := c.Param("ausruestung_id")
-	if err := database.DB.Delete(&Ausruestung{}, ausruestungID).Error; err != nil {
+	if err := database.DB.Delete(&models.EqAusruestung{}, ausruestungID).Error; err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to delete Ausruestung")
 		return
 	}

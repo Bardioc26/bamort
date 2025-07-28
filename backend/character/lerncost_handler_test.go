@@ -2,10 +2,8 @@ package character
 
 import (
 	"bamort/database"
-	"bamort/equipment"
 	"bamort/gsmaster"
 	"bamort/models"
-	"bamort/skills"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -27,10 +25,11 @@ func TestImprovedSkillCostAPI(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Also migrate skills and equipment to avoid preload errors
-	err = skills.MigrateStructure()
-	assert.NoError(t, err)
-	err = equipment.MigrateStructure()
-	assert.NoError(t, err)
+	/*
+		err = skills.MigrateStructure()
+		assert.NoError(t, err)
+		err = equipment.MigrateStructure()
+		assert.NoError(t, err)*/
 
 	// Create test skill data
 	err = createTestSkillData()
@@ -381,7 +380,7 @@ func TestGetSkillAllLevelCostsEndpoint(t *testing.T) {
 
 	// Add Menschenkenntnis skill at level 8 so we can improve to level 10
 	skillName := "Menschenkenntnis"
-	skill := skills.Fertigkeit{
+	skill := models.Fertigkeit{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: skillName,
@@ -605,10 +604,11 @@ func TestGetLernCostEndpoint(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Also migrate skills and equipment to avoid preload errors
-	err = skills.MigrateStructure()
-	assert.NoError(t, err)
-	err = equipment.MigrateStructure()
-	assert.NoError(t, err)
+	/*
+		err = skills.MigrateStructure()
+		assert.NoError(t, err)
+		err = equipment.MigrateStructure()
+		assert.NoError(t, err)*/
 	/*
 		// Create test skill data
 		err = createTestSkillData()
@@ -621,7 +621,7 @@ func TestGetLernCostEndpoint(t *testing.T) {
 
 		// Add Athletik skill at level 9
 		skillName := "Athletik"
-		skill := skills.Fertigkeit{
+		skill := models.Fertigkeit{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
 					Name: skillName,

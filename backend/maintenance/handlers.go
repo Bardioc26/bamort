@@ -2,10 +2,8 @@ package maintenance
 
 import (
 	"bamort/database"
-	"bamort/equipment"
 	"bamort/importer"
 	"bamort/models"
-	"bamort/skills"
 	"bamort/user"
 	"fmt"
 	"net/http"
@@ -53,12 +51,13 @@ func migrateAllStructures(db *gorm.DB) error {
 	if err := models.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate gsmaster structures: %w", err)
 	}
-	if err := equipment.MigrateStructure(db); err != nil {
+	/*if err := equipment.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate equipment structures: %w", err)
 	}
 	if err := skills.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate skills structures: %w", err)
 	}
+	*/
 	if err := importer.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate importer structures: %w", err)
 	}
@@ -238,38 +237,38 @@ func copyAllDataToTestDB(liveDB, testDB *gorm.DB) (map[string]int, error) {
 	stats["character_vermoegen"] = count
 
 	// Step 4: Copy skills (depends on characters)
-	count, err = copyTableDataWithCount(liveDB, testDB, &skills.Fertigkeit{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.SkFertigkeit{})
 	if err != nil {
 		return stats, err
 	}
 	stats["skills_fertigkeiten"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &skills.Waffenfertigkeit{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.SkWaffenfertigkeit{})
 	if err != nil {
 		return stats, err
 	}
 	stats["skills_waffenfertigkeiten"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &skills.Zauber{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.SkZauber{})
 	if err != nil {
 		return stats, err
 	}
 	stats["skills_zauber"] = count
 
 	// Step 5: Copy equipment (depends on characters)
-	count, err = copyTableDataWithCount(liveDB, testDB, &equipment.Ausruestung{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.EqAusruestung{})
 	if err != nil {
 		return stats, err
 	}
 	stats["equipment_ausruestung"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &equipment.Waffe{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.EqWaffe{})
 	if err != nil {
 		return stats, err
 	}
 	stats["equipment_waffen"] = count
 
-	count, err = copyTableDataWithCount(liveDB, testDB, &equipment.Container{})
+	count, err = copyTableDataWithCount(liveDB, testDB, &models.EqContainer{})
 	if err != nil {
 		return stats, err
 	}
@@ -474,11 +473,11 @@ func getTestDataStatistics(db *gorm.DB) (map[string]int64, error) {
 		"gsmaster_skills":           &models.Skill{},
 		"gsmaster_spells":           &models.Spell{},
 		"gsmaster_equipment":        &models.Equipment{},
-		"skills_fertigkeiten":       &skills.Fertigkeit{},
-		"skills_waffenfertigkeiten": &skills.Waffenfertigkeit{},
-		"skills_zauber":             &skills.Zauber{},
-		"equipment_ausruestung":     &equipment.Ausruestung{},
-		"equipment_waffen":          &equipment.Waffe{},
+		"skills_fertigkeiten":       &models.SkFertigkeit{},
+		"skills_waffenfertigkeiten": &models.SkWaffenfertigkeit{},
+		"skills_zauber":             &models.SkZauber{},
+		"equipment_ausruestung":     &models.EqAusruestung{},
+		"equipment_waffen":          &models.EqWaffe{},
 	}
 
 	for name, model := range tables {

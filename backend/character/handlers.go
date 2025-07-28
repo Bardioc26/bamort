@@ -4,7 +4,6 @@ import (
 	"bamort/database"
 	"bamort/gsmaster"
 	"bamort/models"
-	"bamort/skills"
 
 	"fmt"
 	"net/http"
@@ -114,7 +113,7 @@ func DeleteCharacter(c *gin.Context) {
 }
 
 // Add Fertigkeit by putting it directly to the DB
-func AddFertigkeit(charID uint, fertigkeit *skills.Fertigkeit) error {
+func AddFertigkeit(charID uint, fertigkeit *models.SkFertigkeit) error {
 	// Set the foreign key for the new Eigenschaft
 	fertigkeit.CharacterID = charID
 
@@ -139,11 +138,11 @@ func ToFeChar(object *models.Char) *models.FeChar {
 	return feC
 }
 
-func splitSkills(object []skills.Fertigkeit) ([]skills.Fertigkeit, []skills.Fertigkeit, map[string][]skills.Fertigkeit) {
-	var normSkills []skills.Fertigkeit
-	var innateSkills []skills.Fertigkeit
-	//var categories map[string][]skills.Fertigkeit
-	categories := make(map[string][]skills.Fertigkeit)
+func splitSkills(object []models.SkFertigkeit) ([]models.SkFertigkeit, []models.SkFertigkeit, map[string][]models.SkFertigkeit) {
+	var normSkills []models.SkFertigkeit
+	var innateSkills []models.SkFertigkeit
+	//var categories map[string][]models.Fertigkeit
+	categories := make(map[string][]models.SkFertigkeit)
 	for _, skill := range object {
 		gsmsk := skill.GetGsm()
 		if gsmsk.Improvable {
@@ -153,7 +152,7 @@ func splitSkills(object []skills.Fertigkeit) ([]skills.Fertigkeit, []skills.Fert
 			}
 			normSkills = append(normSkills, skill)
 			if _, exists := categories[category]; !exists {
-				categories[category] = make([]skills.Fertigkeit, 0)
+				categories[category] = make([]models.SkFertigkeit, 0)
 			}
 			categories[category] = append(categories[category], skill)
 		} else {
@@ -176,7 +175,7 @@ func GetLearnSkillCost(c *gin.Context) {
 	}
 
 	// Load the skill from the request
-	var s skills.Fertigkeit
+	var s models.SkFertigkeit
 	if err := c.ShouldBindJSON(&s); err != nil {
 		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
@@ -210,7 +209,7 @@ func GetLearnSpellCost(c *gin.Context) {
 	}
 
 	// Load the spell from the request
-	var s skills.Zauber
+	var s models.SkZauber
 	if err := c.ShouldBindJSON(&s); err != nil {
 		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
@@ -259,7 +258,7 @@ func GetSkillNextLevelCosts(c *gin.Context) {
 	}
 
 	// Load the skill from the request
-	var s skills.Fertigkeit
+	var s models.Fertigkeit
 	if err := c.ShouldBindJSON(&s); err != nil {
 		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
@@ -611,7 +610,7 @@ func updateOrCreateSkill(character *models.Char, skillName string, newLevel int)
 	}
 
 	// Fertigkeit nicht gefunden - erstelle neue normale Fertigkeit
-	newSkill := skills.Fertigkeit{
+	newSkill := models.SkFertigkeit{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: skillName,
@@ -632,7 +631,7 @@ func updateOrCreateSkill(character *models.Char, skillName string, newLevel int)
 }
 
 // addSpellToCharacter fügt einen neuen Zauber zum Charakter hinzu
-func addSpellToCharacter(character *Char, spellName string) error {
+func addSpellToCharacter(character *models.Char, spellName string) error {
 	// Prüfe, ob Zauber bereits existiert
 	for _, spell := range character.Zauber {
 		if spell.Name == spellName {
@@ -642,7 +641,7 @@ func addSpellToCharacter(character *Char, spellName string) error {
 	}
 
 	// Erstelle neuen Zauber
-	newSpell := skills.Zauber{
+	newSpell := models.SkZauber{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: spellName,

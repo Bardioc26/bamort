@@ -2,9 +2,7 @@ package character
 
 import (
 	"bamort/database"
-	"bamort/equipment"
 	"bamort/models"
-	"bamort/skills"
 	"bytes"
 	"encoding/json"
 	"net/http"
@@ -26,10 +24,11 @@ func TestPracticePointsAPI(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Also migrate skills and equipment to avoid preload errors
-	err = skills.MigrateStructure()
-	assert.NoError(t, err)
-	err = equipment.MigrateStructure()
-	assert.NoError(t, err)
+	/*
+		err = skills.MigrateStructure()
+		assert.NoError(t, err)
+		err = equipment.MigrateStructure()
+		assert.NoError(t, err)*/
 
 	// Create test skill data
 	err = createTestSkillData()
@@ -48,7 +47,7 @@ func TestPracticePointsAPI(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Add a test skill to the character
-	testSkill := &skills.Fertigkeit{
+	testSkill := &models.SkFertigkeit{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: "Menschenkenntnis",
@@ -63,7 +62,7 @@ func TestPracticePointsAPI(t *testing.T) {
 	assert.NoError(t, result.Error)
 
 	// Add a test spell to the character
-	testSpell := &skills.Fertigkeit{
+	testSpell := &models.SkFertigkeit{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: "Macht über das Selbst",
@@ -78,7 +77,7 @@ func TestPracticePointsAPI(t *testing.T) {
 	assert.NoError(t, result.Error)
 
 	// Add the "Beherrschen" magic school as a skill since spell PP go to the magic school
-	beherrschenSkill := &skills.Fertigkeit{
+	beherrschenSkill := &models.SkFertigkeit{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: "Beherrschen",

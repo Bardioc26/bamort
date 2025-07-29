@@ -190,7 +190,7 @@ func TestCreateCharacter(t *testing.T) {
 }
 
 func TestGetSkillCost(t *testing.T) {
-	database.SetupTestDB(false)
+	database.SetupTestDB() //(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -248,8 +248,7 @@ func TestGetSkillCost(t *testing.T) {
 }
 
 func TestGetSkillAllLevelCosts(t *testing.T) {
-	database.SetupTestDB(true, true) // Use true to load test data
-	//database.SetupTestDB(false)
+	database.SetupTestDB() //(true, true) // Use true to load test data
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)

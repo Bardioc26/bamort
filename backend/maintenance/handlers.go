@@ -22,15 +22,6 @@ var (
 	preparedTestDB = database.PreparedTestDB
 )
 
-// init function to register the test data loader and migration callback
-// This callback mechanism is necessary to avoid circular imports between database and maintenance packages
-func init() {
-	database.SetTestDataLoader(func(targetDB *gorm.DB) error {
-		return LoadPredefinedTestDataFromFile(targetDB, preparedTestDB)
-	})
-	database.SetMigrationCallback(migrateAllStructures)
-}
-
 func respondWithError(c *gin.Context, status int, message string) {
 	c.JSON(status, gin.H{"error": message})
 }

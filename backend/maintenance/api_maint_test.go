@@ -39,7 +39,7 @@ func TestMaintSetupCheck(t *testing.T) {
 }
 
 func TestGetMasterData(t *testing.T) {
-	database.SetupTestDB(false)
+	database.SetupTestDB() //(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -83,7 +83,7 @@ func TestGetMasterData(t *testing.T) {
 }
 
 func TestGetMDSkillCategories(t *testing.T) {
-	database.SetupTestDB(false)
+	database.SetupTestDB() //(false)
 
 	ski := models.Skill{}
 	categories, err := ski.GetSkillCategories()
@@ -93,7 +93,7 @@ func TestGetMDSkillCategories(t *testing.T) {
 }
 
 func TestGetMDSkills(t *testing.T) {
-	database.SetupTestDB(false)
+	database.SetupTestDB() //(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)

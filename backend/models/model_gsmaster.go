@@ -26,7 +26,7 @@ type Magisch struct {
 type LookupList struct {
 	ID           uint   `gorm:"primaryKey" json:"id"` //`gorm:"default:uuid_generate_v3()"` // db func
 	GameSystem   string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
-	Name         string `json:"name"`
+	Name         string `gorm:"type:varchar(255);index" json:"name"`
 	Beschreibung string `json:"beschreibung"`
 	Quelle       string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
 	SourceID     uint   `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle

@@ -1,12 +1,7 @@
 package gsmaster
 
-import (
-	"fmt"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-)
-
+//Diese Tests hier sind SCHROTT denn sie testen statisch erzeugt Strukturen und nicht die Abfrage aus der DB wie erhofft
+/*
 // Test for exported GetAvailableSkillCategories function
 func TestGetAvailableSkillCategories(t *testing.T) {
 	testCases := []struct {
@@ -120,3 +115,4 @@ func TestCalculateDetailedSkillLearningCostForHexer(t *testing.T) {
 		assert.Equal(t, 80, result.Money, "Geldkosten sollten 80 GS sein")
 	})
 }
+*/

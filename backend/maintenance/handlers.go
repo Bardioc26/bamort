@@ -2,6 +2,7 @@ package maintenance
 
 import (
 	"bamort/database"
+	"bamort/gsmaster"
 	"bamort/models"
 	"bamort/user"
 	"fmt"
@@ -362,4 +363,32 @@ func SetupCheck(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Setup Check OK"})
+}
+
+// InitializeLearningCosts initialisiert das Lernkosten-System
+// Wird danach nicht mehr benötigt
+func InitializeLearningCosts(c *gin.Context) {
+	err := gsmaster.InitializeLearningCostsSystem()
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to initialize learning costs: %v", err))
+		return
+	}
+
+	// Validierung
+	if err := gsmaster.ValidateLearningCostsData(); err != nil {
+		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Learning costs initialized but validation failed: %v", err))
+		return
+	}
+
+	// Zusammenfassung
+	summary, err := gsmaster.GetLearningCostsSummary()
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to get summary: %v", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Learning costs system initialized successfully",
+		"summary": summary,
+	})
 }

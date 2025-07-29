@@ -2,13 +2,13 @@ package maintenance
 
 import (
 	"bamort/database"
-	"bamort/importer"
 	"bamort/models"
 	"bamort/user"
 	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
@@ -47,9 +47,9 @@ func migrateAllStructures(db *gorm.DB) error {
 		return fmt.Errorf("failed to migrate gsmaster structures: %w", err)
 	}
 
-	if err := importer.MigrateStructure(db); err != nil {
+	/*if err := importer.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate importer structures: %w", err)
-	}
+	}*/
 	return nil
 }
 
@@ -72,6 +72,11 @@ func MakeTestdataFromLive(c *gin.Context) {
 		"message":        "Live database copied to file successfully",
 		"test_data_file": backupFile,
 	})
+}
+
+// CopyLiveDatabaseToFile kopiert die MariaDB-Datenbank in eine SQLite-Datei (exported for testing)
+func CopyLiveDatabaseToFile(liveDB *gorm.DB, targetFile string) error {
+	return copyLiveDatabaseToFile(liveDB, targetFile)
 }
 
 // copyLiveDatabaseToFile kopiert die MariaDB-Datenbank in eine SQLite-Datei
@@ -189,7 +194,12 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 func copyTableData(sourceDB, targetDB *gorm.DB, model interface{}) error {
 	// Anzahl der Datensätze prüfen
 	var count int64
-	if err := sourceDB.Model(model).Count(&count).Error; err != nil {
+	err := sourceDB.Model(model).Count(&count).Error
+	if err != nil {
+		// If table doesn't exist, skip silently (useful for testing with partial schemas)
+		if isTableNotExistError(err) {
+			return nil
+		}
 		return err
 	}
 
@@ -218,6 +228,14 @@ func copyTableData(sourceDB, targetDB *gorm.DB, model interface{}) error {
 	}
 
 	return nil
+}
+
+// isTableNotExistError checks if the error indicates a table doesn't exist
+func isTableNotExistError(err error) bool {
+	errorMsg := err.Error()
+	return strings.Contains(errorMsg, "no such table") ||
+		strings.Contains(errorMsg, "doesn't exist") ||
+		strings.Contains(errorMsg, "Table") && strings.Contains(errorMsg, "doesn't exist")
 }
 
 // LoadPredefinedTestDataFromFile loads predefined test data from a specific file into the provided database

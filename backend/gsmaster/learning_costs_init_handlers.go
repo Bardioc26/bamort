@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/*
 // InitializeLearningCostsHandler HTTP-Handler zur Initialisierung des Lernkosten-Systems
 func InitializeLearningCostsHandler(c *gin.Context) {
 	c.JSON(http.StatusInternalServerError, gin.H{
@@ -47,7 +48,7 @@ func InitializeLearningCostsHandler(c *gin.Context) {
 		"summary": summary,
 	})
 }
-
+*/
 // GetLearningCostsSummaryHandler HTTP-Handler für die Zusammenfassung
 func GetLearningCostsSummaryHandler(c *gin.Context) {
 	summary, err := GetLearningCostsSummary()

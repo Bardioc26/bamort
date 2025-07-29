@@ -6,6 +6,7 @@ import (
 	"log"
 )
 
+/*
 // InitializeLearningCostsSystem initialisiert das komplette Lernkosten-System
 // Diese Funktion sollte einmalig ausgeführt werden, um die Datenbank zu migrieren
 func InitializeLearningCostsSystem() error {
@@ -29,7 +30,7 @@ func InitializeLearningCostsSystem() error {
 	log.Println("Learning costs system initialized successfully!")
 	return nil
 }
-
+*/
 // ValidateLearningCostsData validiert die Konsistenz der migrierten Daten
 func ValidateLearningCostsData() error {
 	log.Println("Validating learning costs data...")

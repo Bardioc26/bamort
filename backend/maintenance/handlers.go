@@ -2,7 +2,6 @@ package maintenance
 
 import (
 	"bamort/database"
-	"bamort/gsmaster"
 	"bamort/models"
 	"bamort/user"
 	"fmt"
@@ -365,6 +364,7 @@ func SetupCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Setup Check OK"})
 }
 
+/*
 // InitializeLearningCosts initialisiert das Lernkosten-System
 // Wird danach nicht mehr benötigt
 func InitializeLearningCosts(c *gin.Context) {
@@ -392,3 +392,4 @@ func InitializeLearningCosts(c *gin.Context) {
 		"summary": summary,
 	})
 }
+*/

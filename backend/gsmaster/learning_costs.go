@@ -1,6 +1,7 @@
 package gsmaster
 
 import (
+	"bamort/database"
 	"bamort/models"
 	"errors"
 	"fmt"
@@ -850,4 +851,17 @@ func GetClassAbbreviation(characterClass string) string {
 
 	// Fallback: originale Eingabe zurückgeben
 	return characterClass
+}
+func GetClassAbbreviationNew(characterClass string) string {
+	// Try to find by code first (e.g., "Kr" -> "Kr")
+	var charClass models.CharacterClass
+	if err := charClass.Source.FirstByName(characterClass); err == nil {
+		return charClass.Code
+	}
+
+	// Try to find by name (e.g., "Krieger" -> "Kr")
+	if err := database.DB.Where("name = ?", characterClass).First(&charClass).Error; err == nil {
+		return charClass.Code
+	}
+	return ""
 }

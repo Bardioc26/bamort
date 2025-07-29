@@ -297,7 +297,7 @@ func GetSkillCategoryAndDifficulty(skillName string, classCode string) (*SkillLe
 			cc.code as class_code,
 			cc.name as class_name,
 			ccec.ep_per_te
-		FROM lookup_lists s
+		FROM gsm_skills s
 		JOIN learning_skill_category_difficulties scd ON s.id = scd.skill_id
 		JOIN learning_skill_categories sc ON scd.skill_category_id = sc.id
 		JOIN learning_skill_difficulties sd ON scd.skill_difficulty_id = sd.id
@@ -334,7 +334,7 @@ func GetSpellLearningInfo(spellName string, classCode string) (*SpellLearningInf
 			cc.name as class_name,
 			cssec.ep_per_le,
 			sllc.le_required
-		FROM lookup_lists s
+		FROM gsm_spells s
 		JOIN learning_spell_schools ss ON s.category = ss.name
 		JOIN learning_class_spell_school_ep_costs cssec ON ss.id = cssec.spell_school_id
 		JOIN learning_character_classes cc ON cssec.character_class_id = cc.id
@@ -355,7 +355,7 @@ func GetImprovementCost(skillName string, categoryName string, difficultyName st
 
 	err := database.DB.
 		Joins("JOIN learning_skill_category_difficulties scd ON learning_skill_improvement_costs.skill_category_difficulty_id = scd.id").
-		Joins("JOIN lookup_lists s ON scd.skill_id = s.id").
+		Joins("JOIN gsm_skills s ON scd.skill_id = s.id").
 		Joins("JOIN learning_skill_categories sc ON scd.skill_category_id = sc.id").
 		Joins("JOIN learning_skill_difficulties sd ON scd.skill_difficulty_id = sd.id").
 		Where("s.name = ? AND sc.name = ? AND sd.name = ? AND learning_skill_improvement_costs.current_level = ?",

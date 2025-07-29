@@ -130,6 +130,187 @@ func GetLernCost(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// GetLernCostNewSystem verwendet das neue Datenbank-Lernkosten-System
+// und produziert die gleichen Ergebnisse wie GetLernCost.
+//
+// Unterschiede zum alten System:
+// - Verwendet Models aus models/model_learning_costs.go statt der hardkodierten learningCostsData
+// - Daten werden aus der Datenbank gelesen (learning_* Tabellen)
+// - Unterstützt die gleichen Belohnungen und Parameter wie das alte System
+// - API ist vollständig kompatibel mit GetLernCost
+//
+// Das neue System muss zuerst mit gsmaster.InitializeLearningCostsSystem() initialisiert werden.
+func GetLernCostNewSystem(c *gin.Context) {
+	// Request-Parameter abrufen
+	var request gsmaster.LernCostRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
+		return
+	}
+
+	charID := fmt.Sprintf("%d", request.CharId)
+	var character models.Char
+	if err := character.FirstID(charID); err != nil {
+		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	// Verwende Klassenabkürzung wenn der Typ länger als 3 Zeichen ist
+	var characterClass string
+	if len(character.Typ) > 3 {
+		characterClass = gsmaster.GetClassAbbreviationNew(character.Typ)
+	} else {
+		characterClass = character.Typ
+	}
+
+	// Normalize skill name (trim whitespace, proper case)
+	skillName := strings.TrimSpace(request.Name)
+
+	// Hole die beste Kategorie und Schwierigkeit für diese Fertigkeit und Klasse
+	skillInfo, err := models.GetSkillCategoryAndDifficulty(skillName, characterClass)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fertigkeit '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))
+		return
+	}
+
+	var response []gsmaster.SkillCostResultNew
+	remainingPP := request.UsePP
+	remainingGold := request.UseGold
+
+	for i := request.CurrentLevel + 1; i <= 18; i++ {
+		levelResult := gsmaster.SkillCostResultNew{
+			CharacterID:    charID,
+			CharacterClass: characterClass,
+			SkillName:      skillName,
+			Category:       skillInfo.CategoryName,
+			Difficulty:     skillInfo.DifficultyName,
+			TargetLevel:    i,
+		}
+
+		// Berechne Kosten mit dem neuen System
+		err := calculateCostNewSystem(&request, &levelResult, i, &remainingPP, &remainingGold, skillInfo)
+		if err != nil {
+			respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
+			return
+		}
+
+		response = append(response, levelResult)
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// calculateCostNewSystem berechnet die Kosten für ein Level mit dem neuen Datenbank-System
+func calculateCostNewSystem(request *gsmaster.LernCostRequest, result *gsmaster.SkillCostResultNew, targetLevel int, remainingPP *int, remainingGold *int, skillInfo *models.SkillLearningInfo) error {
+	// 1. Hole die TE-Kosten für die Verbesserung vom aktuellen Level
+	//currentLevel := targetLevel - 1
+	teRequired, err := models.GetImprovementCost(skillInfo.SkillName, skillInfo.CategoryName, skillInfo.DifficultyName, targetLevel)
+	if err != nil {
+		// Fallback: Verwende das alte System falls keine Daten in der neuen Datenbank
+		return fmt.Errorf("Verbesserungskosten nicht gefunden für %s (Level %d): %v", skillInfo.SkillName, targetLevel, err)
+	}
+
+	// 2. Hole die EP-Kosten pro TE für diese Klasse und Kategorie
+	epPerTE, err := models.GetEPPerTEForClassAndCategory(result.CharacterClass, skillInfo.CategoryName)
+	if err != nil {
+		return fmt.Errorf("EP-Kosten pro TE nicht gefunden für Klasse %s, Kategorie %s: %v", result.CharacterClass, skillInfo.CategoryName, err)
+	}
+
+	// 3. Berechne Grundkosten
+	baseEP := teRequired * epPerTE
+	result.EP = baseEP
+	result.GoldCost = baseEP // 1 EP = 1 GS
+
+	// 4. Anwenden von Praxispunkten (PP)
+	ppUsed := 0
+	if *remainingPP > 0 {
+		// Maximal 1 PP pro Level verwenden, und nur so viele wie verfügbar
+		ppUsed = 1
+		if ppUsed > *remainingPP {
+			ppUsed = *remainingPP
+		}
+
+		// PP reduzieren EP-Kosten: 1 PP = 1 TE weniger
+		teAfterPP := teRequired - ppUsed
+		if teAfterPP < 0 {
+			teAfterPP = 0
+		}
+
+		result.EP = teAfterPP * epPerTE
+		result.PPUsed = ppUsed
+		*remainingPP -= ppUsed
+
+		if *remainingPP < 0 {
+			*remainingPP = 0
+		}
+	}
+
+	// 5. Anwenden von Belohnungen
+	if request.Reward != nil {
+		applyRewardNewSystem(result, request.Reward, baseEP)
+	}
+
+	// 6. Anwenden von Gold für EP (falls in Belohnung spezifiziert)
+	goldUsed := 0
+	if request.Reward != nil && *request.Reward == "gold_for_ep" && *remainingGold > 0 {
+		// Maximal die Hälfte der EP durch Gold ersetzen (10 GS = 1 EP)
+		maxEPFromGold := result.EP / 2
+		maxGoldNeeded := maxEPFromGold * 10
+
+		goldUsed = maxGoldNeeded
+		if goldUsed > *remainingGold {
+			goldUsed = *remainingGold
+		}
+
+		epFromGold := goldUsed / 10
+		result.EP -= epFromGold
+		result.GoldCost += goldUsed
+		result.GoldUsed = goldUsed
+		*remainingGold -= goldUsed
+
+		if *remainingGold < 0 {
+			*remainingGold = 0
+		}
+	}
+
+	// 7. Finale Geldkosten anpassen
+	if result.GoldUsed == 0 {
+		result.GoldCost = result.EP // Standard: 1 EP = 1 GS
+	}
+
+	return nil
+}
+
+// applyRewardNewSystem wendet Belohnungen auf die Kosten an (neues System)
+func applyRewardNewSystem(result *gsmaster.SkillCostResultNew, reward *string, originalEP int) {
+	if reward == nil || *reward == "" {
+		return
+	}
+
+	switch *reward {
+	case "noGold":
+		// Kostenlose Fertigkeiten: Nur Geld ist 0, EP bleiben
+		result.GoldCost = 0
+
+	case "halveep":
+		// Halbe EP für Verbesserungen
+		result.EP = result.EP / 2
+
+	case "halveepnoGold":
+		// Halbe EP und kein Gold
+		result.EP = result.EP / 2
+		result.GoldCost = 0
+
+	case "default":
+		// Keine Änderungen
+		break
+
+	default:
+		// Unbekannte Belohnung - ignorieren
+		break
+	}
+}
+
 // GetSkillCost berechnet die Kosten zum Erlernen oder Verbessern einer Fertigkeit
 func GetSkillCost(c *gin.Context) {
 	// Charakter-ID aus der URL abrufen

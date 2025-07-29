@@ -28,7 +28,9 @@ type LookupList struct {
 	GameSystem   string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
 	Name         string `json:"name"`
 	Beschreibung string `json:"beschreibung"`
-	Quelle       string `json:"quelle"`
+	Quelle       string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
+	SourceID     uint   `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
+	PageNumber   int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
 }
 
 type LearnCost struct {

@@ -35,6 +35,10 @@ func MigrateStructure(db ...*gorm.DB) error {
 	if err != nil {
 		return err
 	}
+	err = learningMigrateStructure(targetDB)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -124,6 +128,33 @@ func skillsMigrateStructure(db ...*gorm.DB) error {
 		&SkFertigkeit{},
 		&SkWaffenfertigkeit{},
 		&SkZauber{},
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func learningMigrateStructure(db ...*gorm.DB) error {
+	// Use provided DB or default to database.DB
+	var targetDB *gorm.DB
+	if len(db) > 0 && db[0] != nil {
+		targetDB = db[0]
+	} else {
+		targetDB = database.DB
+	}
+
+	err := targetDB.AutoMigrate(
+		&Source{},
+		&CharacterClass{},
+		&SkillCategory{},
+		&SkillDifficulty{},
+		&SpellSchool{},
+		&ClassCategoryEPCost{},
+		&ClassSpellSchoolEPCost{},
+		&SpellLevelLECost{},
+		&SkillCategoryDifficulty{},
+		&SkillImprovementCost{},
 	)
 	if err != nil {
 		return err

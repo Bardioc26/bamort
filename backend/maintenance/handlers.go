@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // Constants for test data management
@@ -221,8 +222,11 @@ func copyTableData(sourceDB, targetDB *gorm.DB, model interface{}) error {
 			break
 		}
 
-		// Batch in SQLite einfügen
-		if err := targetDB.Model(model).Create(&records).Error; err != nil {
+		// Batch in SQLite einfügen mit Konflikt-Behandlung
+		// Verwende Clauses.OnConflict um bestehende Datensätze zu ersetzen
+		if err := targetDB.Model(model).Clauses(clause.OnConflict{
+			UpdateAll: true,
+		}).Create(&records).Error; err != nil {
 			return err
 		}
 	}

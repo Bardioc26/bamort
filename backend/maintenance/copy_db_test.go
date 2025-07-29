@@ -1,6 +1,7 @@
 package maintenance
 
 import (
+	"bamort/database"
 	"bamort/models"
 	"bamort/user"
 	"fmt"
@@ -15,7 +16,7 @@ import (
 )
 
 // TestCopyLiveDatabaseToFile_Success tests the main functionality of copyLiveDatabaseToFile
-func TestCopyLiveDatabaseToFile_Success(t *testing.T) {
+func TestCopyDatabaseToFile_Success(t *testing.T) {
 	// Setup
 	tempDir := t.TempDir()
 	targetFile := filepath.Join(tempDir, "test_backup.db")
@@ -94,7 +95,7 @@ func TestCopyLiveDatabaseToFile_Success(t *testing.T) {
 }
 
 // TestCopyLiveDatabaseToFile_BackupExisting tests file backup functionality
-func TestCopyLiveDatabaseToFile_BackupExisting(t *testing.T) {
+func TestCopyDatabaseToFile_BackupExisting(t *testing.T) {
 	// Setup
 	tempDir := t.TempDir()
 	targetFile := filepath.Join(tempDir, "test_backup.db")
@@ -143,7 +144,7 @@ func TestCopyLiveDatabaseToFile_BackupExisting(t *testing.T) {
 }
 
 // TestCopyLiveDatabaseToFile_EmptyDatabase tests with empty database
-func TestCopyLiveDatabaseToFile_EmptyDatabase(t *testing.T) {
+func TestCopyDatabaseToFile_EmptyDatabase(t *testing.T) {
 	// Setup
 	tempDir := t.TempDir()
 	targetFile := filepath.Join(tempDir, "empty_backup.db")
@@ -182,6 +183,44 @@ func TestCopyLiveDatabaseToFile_EmptyDatabase(t *testing.T) {
 	err = targetDB.Model(&user.User{}).Count(&userCount).Error
 	require.NoError(t, err, "Should be able to count users")
 	assert.Equal(t, int64(0), userCount, "User table should be empty")
+}
+
+func TestCopyLiveDatabaseToFile(t *testing.T) {
+	// Setup
+	tempDir := t.TempDir()
+	targetFile := filepath.Join(tempDir, "empty_backup.db")
+
+	// Create empty live database (only migrate structures, no data)
+	database.ConnectDatabase()
+	liveDB := database.DB
+	require.NotNil(t, liveDB, "Live database should be connected")
+	defer func() {
+		if sqlDB, err := liveDB.DB(); err == nil {
+			sqlDB.Close()
+		}
+	}()
+
+	// Execute
+	err := CopyLiveDatabaseToFile(liveDB, targetFile)
+
+	// Verify
+	require.NoError(t, err, "CopyLiveDatabaseToFile should succeed with empty database")
+	assert.FileExists(t, targetFile, "Target file should be created")
+
+	// Verify target database has structures but no data
+	targetDB, err := gorm.Open(sqlite.Open(targetFile), &gorm.Config{})
+	require.NoError(t, err, "Should be able to open target database")
+	defer func() {
+		if sqlDB, err := targetDB.DB(); err == nil {
+			sqlDB.Close()
+		}
+	}()
+
+	// Check that tables exist but are empty
+	var userCount int64
+	err = targetDB.Model(&user.User{}).Count(&userCount).Error
+	require.NoError(t, err, "Should be able to count users")
+	assert.Equal(t, int64(2), userCount, "User table should be empty")
 }
 
 // BenchmarkCopyLiveDatabaseToFile benchmarks the copy function performance

@@ -140,33 +140,29 @@ func migrateCharacterClasses() error {
 		return fmt.Errorf("KOD source not found: %w", err)
 	}
 
-	characterClasses := map[string]struct {
-		name string
-		page int
-	}{
-		"As": {"Assassine", 0}, // Seitenzahlen müssen noch eingepflegt werden
-		"Bb": {"Barbar", 0},
-		"Gl": {"Glücksritter", 0},
-		"Hä": {"Händler", 0},
-		"Kr": {"Krieger", 0},
-		"Sp": {"Spitzbube", 0},
-		"Wa": {"Waldläufer", 0},
-		"Ba": {"Barde", 0},
-		"Or": {"Ordenskrieger", 0},
-		"Dr": {"Druide", 0},
-		"Hx": {"Hexer", 0},
-		"Ma": {"Magier", 0},
-		"PB": {"Priester Beschützer", 0},
-		"PS": {"Priester Streiter", 0},
-		"Sc": {"Schamane", 0},
+	characterClasses := map[string]string{
+		"As": "Assassine",
+		"Bb": "Barbar",
+		"Gl": "Glücksritter",
+		"Hä": "Händler",
+		"Kr": "Krieger",
+		"Sp": "Spitzbube",
+		"Wa": "Waldläufer",
+		"Ba": "Barde",
+		"Or": "Ordenskrieger",
+		"Dr": "Druide",
+		"Hx": "Hexer",
+		"Ma": "Magier",
+		"PB": "Priester Beschützer",
+		"PS": "Priester Streiter",
+		"Sc": "Schamane",
 	}
 
-	for code, info := range characterClasses {
+	for code, name := range characterClasses {
 		class := models.CharacterClass{
 			Code:       code,
-			Name:       info.name,
+			Name:       name,
 			SourceID:   kodSource.ID,
-			PageNumber: info.page,
 			GameSystem: "midgard",
 		}
 
@@ -177,7 +173,7 @@ func migrateCharacterClasses() error {
 			if err := class.Create(); err != nil {
 				return fmt.Errorf("failed to create character class %s: %w", code, err)
 			}
-			log.Printf("Created character class: %s - %s (Source: %s)", code, info.name, kodSource.Code)
+			log.Printf("Created character class: %s - %s (Source: %s)", code, name, kodSource.Code)
 		}
 	}
 

@@ -29,7 +29,9 @@ func determineSkillType(skillName string) string {
 	return ""
 }
 
+/*
 // skillExists prüft, ob eine Fertigkeit mit dem gegebenen Namen existiert
 func skillExists(skillName string) bool {
 	return determineSkillType(skillName) != ""
 }
+*/

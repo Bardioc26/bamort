@@ -294,7 +294,7 @@ func calculateSkillImproveCostNewSystem(request *gsmaster.LernCostRequest, resul
 	// 1. Hole die TE-Kosten für die Verbesserung vom aktuellen Level
 	teRequired, err := models.GetImprovementCost(skillInfo.SkillName, skillInfo.CategoryName, skillInfo.DifficultyName, targetLevel)
 	if err != nil {
-		return fmt.Errorf("Verbesserungskosten nicht gefunden für %s (Level %d): %v", skillInfo.SkillName, targetLevel, err)
+		return fmt.Errorf("verbesserungskosten nicht gefunden für %s (Level %d): %v", skillInfo.SkillName, targetLevel, err)
 	}
 
 	// 2. Hole die EP-Kosten pro TE für diese Klasse und Kategorie

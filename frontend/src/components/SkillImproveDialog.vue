@@ -751,7 +751,7 @@ export default {
           reward: this.selectedRewardType
         };
         
-        const response = await this.$api.post(`/api/characters/lerncost`, requestData);
+        const response = await this.$api.post(`/api/characters/lerncost-new`, requestData);
         
         console.log('Learning costs API response:', response.data);
         

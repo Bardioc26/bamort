@@ -21,7 +21,8 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.GET("/:id/audit-log", GetCharacterAuditLog)   // Alle Änderungen oder gefiltert nach Feld (?field=experience_points)
 	charGrp.GET("/:id/audit-log/stats", GetAuditLogStats) // Statistiken über Änderungen
 
-	charGrp.POST("/lerncost", GetLernCost)              // alter Hauptendpunkt für alle Kostenberechnungen (verwendet lerningCostsData)
+	// im Frontend wir nur noch der neue Endpunkt benutzt
+	//charGrp.POST("/lerncost", GetLernCost)              // alter Hauptendpunkt für alle Kostenberechnungen (verwendet lerningCostsData)
 	charGrp.POST("/lerncost-new", GetLernCostNewSystem) // neuer Hauptendpunkt für alle Kostenberechnungen (verwendet neue Datenbank)
 	charGrp.POST("/improve-skill", ImproveSkill)        // Fertigkeit verbessern
 

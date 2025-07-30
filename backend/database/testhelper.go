@@ -60,7 +60,7 @@ func SetupTestDB(opts ...bool) {
 			if err != nil {
 				panic("failed to connect to the test database: " + err.Error())
 			}
-			defer os.RemoveAll(testdbTempDir)
+			//defer os.RemoveAll(testdbTempDir)
 		} else {
 			//* //testing with persistent MariaDB
 			db = ConnectDatabase()

@@ -855,7 +855,7 @@ func GetClassAbbreviation(characterClass string) string {
 func GetClassAbbreviationNew(characterClass string) string {
 	// Try to find by code first (e.g., "Kr" -> "Kr")
 	var charClass models.CharacterClass
-	if err := charClass.Source.FirstByName(characterClass); err == nil {
+	if err := charClass.FirstByName(characterClass); err == nil {
 		return charClass.Code
 	}
 

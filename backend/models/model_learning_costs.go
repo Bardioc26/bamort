@@ -30,16 +30,17 @@ type CharacterClass struct {
 	SourceID    uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
 	GameSystem  string `gorm:"index;default:midgard" json:"game_system"`
 	Source      Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
+	Quelle      string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
 }
 
 // SkillCategory repräsentiert eine Fertigkeitskategorie
 type SkillCategory struct {
-	ID          uint   `gorm:"primaryKey" json:"id"`
-	Name        string `gorm:"unique;not null" json:"name"`     // z.B. "Alltag", "Kampf", "Waffen"
-	Description string `json:"description,omitempty"`           // Optional: Beschreibung der Kategorie
-	SourceID    uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
-	GameSystem  string `gorm:"index;default:midgard" json:"game_system"`
-	Source      Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
+	ID         uint   `gorm:"primaryKey" json:"id"`
+	Name       string `gorm:"unique;not null" json:"name"`     // z.B. "Alltag", "Kampf", "Waffen"
+	SourceID   uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
+	GameSystem string `gorm:"index;default:midgard" json:"game_system"`
+	Source     Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
+	Quelle     string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
 }
 
 // SkillDifficulty repräsentiert Schwierigkeitsgrade
@@ -58,6 +59,7 @@ type SpellSchool struct {
 	SourceID    uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
 	GameSystem  string `gorm:"index;default:midgard" json:"game_system"`
 	Source      Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
+	Quelle      string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
 }
 
 // ClassCategoryEPCost definiert EP-Kosten für 1 Trainingseinheit (TE) pro Charakterklasse und Fertigkeitskategorie
@@ -68,6 +70,8 @@ type ClassCategoryEPCost struct {
 	EPPerTE          int            `gorm:"not null" json:"ep_per_te"` // EP-Kosten für 1 Trainingseinheit
 	CharacterClass   CharacterClass `gorm:"foreignKey:CharacterClassID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"character_class"`
 	SkillCategory    SkillCategory  `gorm:"foreignKey:SkillCategoryID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"skill_category"`
+	CCLass           string         `gorm:"column:character_class;size:3;not null;index;default:Or" json:"characterClass"`    // Abkürzung der Charakterklasse
+	SCategory        string         `gorm:"column:skill_category;size:15;not null;index;default:Alltag" json:"skillCategory"` // SkillCategory
 }
 
 // ClassSpellSchoolEPCost definiert EP-Kosten für 1 Lerneinheit (LE) für Zauber pro Charakterklasse und Zauberschule
@@ -78,6 +82,8 @@ type ClassSpellSchoolEPCost struct {
 	EPPerLE          int            `gorm:"not null" json:"ep_per_le"` // EP-Kosten für 1 Lerneinheit
 	CharacterClass   CharacterClass `gorm:"foreignKey:CharacterClassID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"character_class"`
 	SpellSchool      SpellSchool    `gorm:"foreignKey:SpellSchoolID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"spell_school"`
+	CCLass           string         `gorm:"column:character_class;size:3;not null;index;default:Or" json:"characterClass"` // Abkürzung der Charakterklasse
+	SCategory        string         `gorm:"column:spell_school;size:15;not null;index;default:Dweomer" json:"spellSchool"` // Spell School Name
 }
 
 // SpellLevelLECost definiert LE-Kosten pro Zauber-Stufe
@@ -99,6 +105,8 @@ type SkillCategoryDifficulty struct {
 	Skill             Skill           `gorm:"foreignKey:SkillID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"skill"`
 	SkillCategory     SkillCategory   `gorm:"foreignKey:SkillCategoryID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"skill_category"`
 	SkillDifficulty   SkillDifficulty `gorm:"foreignKey:SkillDifficultyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"skill_difficulty"`
+	SDifficulty       string          `gorm:"column:skill_difficulty;size:15;not null;index;default:normal" json:"skillDifficulty"` // Abkürzung der Charakterklasse
+	SCategory         string          `gorm:"column:skill_category;size:25;not null;index;default:Alltag" json:"skillCategory"`     // SkillCategory
 }
 
 // SkillImprovementCost definiert TE-Kosten für Verbesserungen basierend auf Kategorie, Schwierigkeit und aktuellem Wert
@@ -203,6 +211,9 @@ func (cc *CharacterClass) Create() error {
 func (cc *CharacterClass) FirstByCode(code string) error {
 	return database.DB.Where("code = ?", code).First(cc).Error
 }
+func (cc *CharacterClass) FirstByName(code string) error {
+	return database.DB.Where("name = ?", code).First(cc).Error
+}
 
 func (sc *SkillCategory) Create() error {
 	return database.DB.Create(sc).Error
@@ -254,9 +265,7 @@ func (sic *SkillImprovementCost) Create() error {
 func GetEPPerTEForClassAndCategory(classCode string, categoryName string) (int, error) {
 	var result ClassCategoryEPCost
 	err := database.DB.
-		Joins("JOIN learning_character_classes ON learning_character_classes.id = learning_class_category_ep_costs.character_class_id").
-		Joins("JOIN learning_skill_categories ON learning_skill_categories.id = learning_class_category_ep_costs.skill_category_id").
-		Where("learning_character_classes.code = ? AND learning_skill_categories.name = ?", classCode, categoryName).
+		Where("character_class = ? AND skill_category = ?", classCode, categoryName).
 		First(&result).Error
 
 	if err != nil {
@@ -269,9 +278,7 @@ func GetEPPerTEForClassAndCategory(classCode string, categoryName string) (int, 
 func GetEPPerLEForClassAndSpellSchool(classCode string, schoolName string) (int, error) {
 	var result ClassSpellSchoolEPCost
 	err := database.DB.
-		Joins("JOIN learning_character_classes ON learning_character_classes.id = learning_class_spell_school_ep_costs.character_class_id").
-		Joins("JOIN learning_spell_schools ON learning_spell_schools.id = learning_class_spell_school_ep_costs.spell_school_id").
-		Where("learning_character_classes.code = ? AND learning_spell_schools.name = ?", classCode, schoolName).
+		Where("character_class = ? AND spell_school = ?", classCode, schoolName).
 		First(&result).Error
 
 	if err != nil {
@@ -286,25 +293,20 @@ func GetSkillCategoryAndDifficulty(skillName string, classCode string) (*SkillLe
 
 	err := database.DB.Raw(`
 		SELECT 
-			s.id as skill_id,
+			scd.skill_id,
 			s.name as skill_name,
-			sc.id as category_id,
-			sc.name as category_name,
-			sd.id as difficulty_id,
-			sd.name as difficulty_name,
+			scd.skill_category as category_name,
+			scd.skill_difficulty as difficulty_name,
 			scd.learn_cost,
-			cc.id as character_class_id,
-			cc.code as class_code,
-			cc.name as class_name,
-			ccec.ep_per_te
-		FROM gsm_skills s
-		JOIN learning_skill_category_difficulties scd ON s.id = scd.skill_id
-		JOIN learning_skill_categories sc ON scd.skill_category_id = sc.id
-		JOIN learning_skill_difficulties sd ON scd.skill_difficulty_id = sd.id
-		JOIN learning_class_category_ep_costs ccec ON sc.id = ccec.skill_category_id
-		JOIN learning_character_classes cc ON ccec.character_class_id = cc.id
-		WHERE s.name = ? AND cc.code = ?
-		ORDER BY (scd.learn_cost * 3 * ccec.ep_per_te) ASC
+			ccec.character_class as class_code,
+			ccec.character_class as class_name,
+			ccec.ep_per_te,
+			(scd.learn_cost * ccec.ep_per_te) as total_cost
+		FROM learning_skill_category_difficulties scd
+		JOIN learning_class_category_ep_costs ccec ON scd.skill_category = ccec.skill_category
+		JOIN gsm_skills s ON scd.skill_id = s.id
+		WHERE s.name = ? AND ccec.character_class = ?
+		ORDER BY total_cost ASC
 	`, skillName, classCode).Scan(&results).Error
 
 	if err != nil {
@@ -327,19 +329,15 @@ func GetSpellLearningInfo(spellName string, classCode string) (*SpellLearningInf
 			s.id as spell_id,
 			s.name as spell_name,
 			s.stufe as spell_level,
-			ss.id as school_id,
-			ss.name as school_name,
-			cc.id as character_class_id,
-			cc.code as class_code,
-			cc.name as class_name,
+			s.spell_school as school_name,
+			cssec.character_class as class_code,
+			cssec.character_class as class_name,
 			cssec.ep_per_le,
 			sllc.le_required
 		FROM gsm_spells s
-		JOIN learning_spell_schools ss ON s.category = ss.name
-		JOIN learning_class_spell_school_ep_costs cssec ON ss.id = cssec.spell_school_id
-		JOIN learning_character_classes cc ON cssec.character_class_id = cc.id
+		JOIN learning_class_spell_school_ep_costs cssec ON s.spell_school = cssec.spell_school
 		JOIN learning_spell_level_le_costs sllc ON s.stufe = sllc.level
-		WHERE s.name = ? AND cc.code = ?
+		WHERE s.name = ? AND cssec.character_class = ?
 	`, spellName, classCode).Scan(&result).Error
 
 	if err != nil {
@@ -353,14 +351,13 @@ func GetSpellLearningInfo(spellName string, classCode string) (*SpellLearningInf
 func GetImprovementCost(skillName string, categoryName string, difficultyName string, currentLevel int) (int, error) {
 	var result SkillImprovementCost
 
-	err := database.DB.
-		Joins("JOIN learning_skill_category_difficulties scd ON learning_skill_improvement_costs.skill_category_difficulty_id = scd.id").
-		Joins("JOIN gsm_skills s ON scd.skill_id = s.id").
-		Joins("JOIN learning_skill_categories sc ON scd.skill_category_id = sc.id").
-		Joins("JOIN learning_skill_difficulties sd ON scd.skill_difficulty_id = sd.id").
-		Where("s.name = ? AND sc.name = ? AND sd.name = ? AND learning_skill_improvement_costs.current_level = ?",
-			skillName, categoryName, difficultyName, currentLevel).
-		First(&result).Error
+	err := database.DB.Raw(`
+		SELECT sic.te_required
+		FROM learning_skill_improvement_costs sic
+		JOIN learning_skill_category_difficulties scd ON sic.skill_category_difficulty_id = scd.id
+		JOIN gsm_skills s ON scd.skill_id = s.id
+		WHERE s.name = ? AND scd.skill_category = ? AND scd.skill_difficulty = ? AND sic.current_level = ?
+	`, skillName, categoryName, difficultyName, currentLevel).Scan(&result).Error
 
 	if err != nil {
 		return 0, err

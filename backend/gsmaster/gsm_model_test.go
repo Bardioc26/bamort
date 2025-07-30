@@ -18,11 +18,9 @@ func TestSkill_Create(t *testing.T) {
 		{
 			name: "valid skill",
 			skill: &models.Skill{
-				LookupList: models.LookupList{
-					Name:         "Test Skill",
-					Beschreibung: "Test Description",
-					Quelle:       "Test Source",
-				},
+				Name:             "Test Skill",
+				Beschreibung:     "Test Description",
+				Quelle:           "Test Source",
 				Initialwert:      5,
 				Bonuseigenschaft: "st",
 				Improvable:       true,
@@ -64,11 +62,9 @@ func TestWeaponSkill_Create(t *testing.T) {
 			name: "valid weapon skill",
 			weaponSkill: &models.WeaponSkill{
 				Skill: models.Skill{
-					LookupList: models.LookupList{
-						Name:         "Test Weapon Skill",
-						Beschreibung: "Test Description",
-						Quelle:       "Test Source",
-					},
+					Name:             "Test Weapon Skill",
+					Beschreibung:     "Test Description",
+					Quelle:           "Test Source",
 					Initialwert:      5,
 					Bonuseigenschaft: "st",
 					Improvable:       true,
@@ -119,10 +115,8 @@ func TestSkill_First(t *testing.T) {
 		{
 			name: "existing skill",
 			skill: &models.Skill{
-				LookupList: models.LookupList{
-					Name:       "Test Skill",
-					GameSystem: "midgard",
-				},
+				Name:       "Test Skill",
+				GameSystem: "midgard",
 			},
 			findName: "Test Skill",
 			wantErr:  false,
@@ -176,10 +170,8 @@ func TestSkill_FirstId(t *testing.T) {
 		{
 			name: "existing skill",
 			skill: &models.Skill{
-				LookupList: models.LookupList{
-					Name:       "Test Skill",
-					GameSystem: "midgard",
-				},
+				Name:       "Test Skill",
+				GameSystem: "midgard",
 			},
 			findId:  1,
 			wantErr: false,
@@ -234,11 +226,9 @@ func TestSkill_Save(t *testing.T) {
 		{
 			name: "update existing skill",
 			skill: &models.Skill{
-				LookupList: models.LookupList{
-					Name:         "Test Skill",
-					Beschreibung: "Original Description",
-					GameSystem:   "midgard",
-				},
+				Name:         "Test Skill",
+				Beschreibung: "Original Description",
+				GameSystem:   "midgard",
 			},
 			wantErr: false,
 		},
@@ -290,19 +280,15 @@ func TestSkill_Delete(t *testing.T) {
 		{
 			name: "delete existing skill",
 			skill: &models.Skill{
-				LookupList: models.LookupList{
-					Name:       "Test Skill",
-					GameSystem: "midgard",
-				},
+				Name:       "Test Skill",
+				GameSystem: "midgard",
 			},
 			wantErr: false,
 		},
 		{
 			name: "delete non-existing skill",
 			skill: &models.Skill{
-				LookupList: models.LookupList{
-					ID: 9999,
-				},
+				ID: 9999,
 			},
 			wantErr: true,
 		},
@@ -347,32 +333,24 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 	// Create test skills with different categories
 	testSkills := []*models.Skill{
 		{
-			LookupList: models.LookupList{
-				Name:       "Skill1",
-				GameSystem: "midgard",
-			},
-			Category: "Category1",
+			Name:       "Skill1",
+			GameSystem: "midgard",
+			Category:   "Category1",
 		},
 		{
-			LookupList: models.LookupList{
-				Name:       "Skill2",
-				GameSystem: "midgard",
-			},
-			Category: "Category2",
+			Name:       "Skill2",
+			GameSystem: "midgard",
+			Category:   "Category2",
 		},
 		{
-			LookupList: models.LookupList{
-				Name:       "Skill3",
-				GameSystem: "midgard",
-			},
-			Category: "Category1", // Duplicate category
+			Name:       "Skill3",
+			GameSystem: "midgard",
+			Category:   "Category1", // Duplicate category
 		},
 		{
-			LookupList: models.LookupList{
-				Name:       "Skill4",
-				GameSystem: "midgard",
-			},
-			Category: "", // Empty category
+			Name:       "Skill4",
+			GameSystem: "midgard",
+			Category:   "", // Empty category
 		},
 	}
 

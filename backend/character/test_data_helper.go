@@ -41,16 +41,14 @@ func createTestSkillData() error {
 
 	// GSM Test-Skill erstellen
 	gsmSkill := models.Skill{
-		LookupList: models.LookupList{
-			GameSystem:   "midgard",
-			Name:         "Menschenkenntnis",
-			Beschreibung: "Test Skill",
-			Quelle:       "Test",
-		},
-		Category:    "Sozial",
-		Initialwert: 5,
-		Improvable:  true,
-		Difficulty:  "normal",
+		GameSystem:   "midgard",
+		Name:         "Menschenkenntnis",
+		Beschreibung: "Test Skill",
+		Quelle:       "Test",
+		Category:     "Sozial",
+		Initialwert:  5,
+		Improvable:   true,
+		Difficulty:   "normal",
 	}
 	if err := database.DB.Create(&gsmSkill).Error; err != nil {
 		return err
@@ -58,15 +56,13 @@ func createTestSkillData() error {
 
 	// GSM Test-Spell erstellen
 	gsmSpell := models.Spell{
-		LookupList: models.LookupList{
-			GameSystem:   "midgard",
-			Name:         "Macht über das Selbst",
-			Beschreibung: "Test Spell",
-			Quelle:       "Test",
-		},
-		Stufe:    1,
-		AP:       "1",
-		Category: "Beherrschen",
+		GameSystem:   "midgard",
+		Name:         "Macht über das Selbst",
+		Beschreibung: "Test Spell",
+		Quelle:       "Test",
+		Stufe:        1,
+		AP:           "1",
+		Category:     "Beherrschen",
 	}
 	if err := database.DB.Create(&gsmSpell).Error; err != nil {
 		return err

@@ -43,7 +43,13 @@ type LearnCost struct {
 }
 
 type Skill struct {
-	LookupList
+	ID               uint   `gorm:"primaryKey" json:"id"`
+	GameSystem       string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
+	Name             string `gorm:"type:varchar(255);index" json:"name"`
+	Beschreibung     string `json:"beschreibung"`
+	Quelle           string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
+	SourceID         uint   `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
+	PageNumber       int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
 	Initialwert      int    `gorm:"default:5" json:"initialwert"`
 	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
 	Improvable       bool   `gorm:"default:true" json:"improvable"`
@@ -57,7 +63,13 @@ type WeaponSkill struct {
 }
 
 type Spell struct {
-	LookupList
+	ID              uint   `gorm:"primaryKey" json:"id"`
+	GameSystem      string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
+	Name            string `gorm:"type:varchar(255);index" json:"name"`
+	Beschreibung    string `json:"beschreibung"`
+	Quelle          string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
+	SourceID        uint   `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
+	PageNumber      int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
 	Bonus           int    `json:"bonus"`
 	Stufe           int    `json:"level"`
 	AP              string `gorm:"default:1"  json:"ap"`
@@ -72,9 +84,15 @@ type Spell struct {
 }
 
 type Equipment struct {
-	LookupList
-	Gewicht      float64 `json:"gewicht"` // in kg
-	Wert         float64 `json:"wert"`    // in Gold
+	ID           uint    `gorm:"primaryKey" json:"id"`
+	GameSystem   string  `gorm:"column:game_system;index;default:midgard" json:"game_system"`
+	Name         string  `gorm:"type:varchar(255);index" json:"name"`
+	Beschreibung string  `json:"beschreibung"`
+	Quelle       string  `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
+	SourceID     uint    `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
+	PageNumber   int     `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
+	Gewicht      float64 `json:"gewicht"`                          // in kg
+	Wert         float64 `json:"wert"`                             // in Gold
 	PersonalItem bool    `gorm:"default:false" json:"personal_item"`
 }
 
@@ -95,9 +113,16 @@ type Transportation struct {
 }
 
 type Believe struct {
-	LookupList
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	GameSystem   string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
+	Name         string `gorm:"type:varchar(255);index" json:"name"`
+	Beschreibung string `json:"beschreibung"`
+	Quelle       string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
+	SourceID     uint   `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
+	PageNumber   int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
 }
 
+/*
 func (object *LookupList) Create() error {
 	gameSystem := "midgard"
 	object.GameSystem = gameSystem
@@ -140,6 +165,7 @@ func (object *LookupList) Save() error {
 	}
 	return nil
 }
+*/
 
 func (object *Skill) TableName() string {
 	dbPrefix := "gsm"

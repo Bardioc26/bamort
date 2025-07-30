@@ -3068,7 +3068,6 @@ ALTER TABLE `equi_weapons`
 ALTER TABLE `gsm_believes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_gsm_believes_game_system` (`game_system`),
-  ADD KEY `idx_lookup_list_name` (`name`),
   ADD KEY `idx_gsm_believes_name` (`name`),
   ADD KEY `idx_gsm_believes_source_id` (`source_id`);
 
@@ -3078,7 +3077,6 @@ ALTER TABLE `gsm_believes`
 ALTER TABLE `gsm_containers`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_gsm_containers_game_system` (`game_system`),
-  ADD KEY `idx_lookup_list_name` (`name`),
   ADD KEY `idx_gsm_containers_source_id` (`source_id`),
   ADD KEY `idx_gsm_containers_name` (`name`);
 
@@ -3088,7 +3086,6 @@ ALTER TABLE `gsm_containers`
 ALTER TABLE `gsm_equipments`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_gsm_equipments_game_system` (`game_system`),
-  ADD KEY `idx_lookup_list_name` (`name`),
   ADD KEY `idx_gsm_equipments_name` (`name`),
   ADD KEY `idx_gsm_equipments_source_id` (`source_id`);
 
@@ -3098,7 +3095,6 @@ ALTER TABLE `gsm_equipments`
 ALTER TABLE `gsm_skills`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_gsm_skills_game_system` (`game_system`),
-  ADD KEY `idx_lookup_list_name` (`name`),
   ADD KEY `idx_gsm_skills_source_id` (`source_id`),
   ADD KEY `idx_gsm_skills_name` (`name`);
 
@@ -3108,7 +3104,6 @@ ALTER TABLE `gsm_skills`
 ALTER TABLE `gsm_spells`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_gsm_spells_game_system` (`game_system`),
-  ADD KEY `idx_lookup_list_name` (`name`),
   ADD KEY `idx_gsm_spells_name` (`name`),
   ADD KEY `idx_gsm_spells_source_id` (`source_id`);
 
@@ -3118,7 +3113,6 @@ ALTER TABLE `gsm_spells`
 ALTER TABLE `gsm_transportations`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_gsm_transportations_game_system` (`game_system`),
-  ADD KEY `idx_lookup_list_name` (`name`),
   ADD KEY `idx_gsm_transportations_name` (`name`),
   ADD KEY `idx_gsm_transportations_source_id` (`source_id`);
 
@@ -3128,7 +3122,6 @@ ALTER TABLE `gsm_transportations`
 ALTER TABLE `gsm_weapons`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_gsm_weapons_game_system` (`game_system`),
-  ADD KEY `idx_lookup_list_name` (`name`),
   ADD KEY `idx_gsm_weapons_name` (`name`),
   ADD KEY `idx_gsm_weapons_source_id` (`source_id`);
 
@@ -3138,7 +3131,6 @@ ALTER TABLE `gsm_weapons`
 ALTER TABLE `gsm_weaponskills`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_gsm_weaponskills_game_system` (`game_system`),
-  ADD KEY `idx_lookup_list_name` (`name`),
   ADD KEY `idx_gsm_weaponskills_name` (`name`),
   ADD KEY `idx_gsm_weaponskills_source_id` (`source_id`);
 

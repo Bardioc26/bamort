@@ -135,7 +135,7 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 		&models.SkillImprovementCost{},
 
 		// GSMaster Basis-Daten
-		&models.LookupList{}, // Basis für Skills, Spells, Equipment
+		//&models.LookupList{}, // Basis für Skills, Spells, Equipment
 		&models.Skill{},
 		&models.WeaponSkill{},
 		&models.Spell{},

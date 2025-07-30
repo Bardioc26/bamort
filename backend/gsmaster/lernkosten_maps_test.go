@@ -749,34 +749,28 @@ func TestGetSpellInfo(t *testing.T) {
 	// Create minimal test spell data for our test
 	testSpells := []models.Spell{
 		{
-			LookupList: models.LookupList{
-				GameSystem:   "midgard",
-				Name:         "Schlummer",
-				Beschreibung: "Test spell for GetSpellInfo",
-				Quelle:       "Test",
-			},
-			Stufe:    1,
-			Category: "Beherrschen",
+			GameSystem:   "midgard",
+			Name:         "Schlummer",
+			Beschreibung: "Test spell for GetSpellInfo",
+			Quelle:       "Test",
+			Stufe:        1,
+			Category:     "Beherrschen",
 		},
 		{
-			LookupList: models.LookupList{
-				GameSystem:   "midgard",
-				Name:         "Erkennen von Krankheit",
-				Beschreibung: "Test spell for GetSpellInfo",
-				Quelle:       "Test",
-			},
-			Stufe:    2,
-			Category: "Dweomerzauber",
+			GameSystem:   "midgard",
+			Name:         "Erkennen von Krankheit",
+			Beschreibung: "Test spell for GetSpellInfo",
+			Quelle:       "Test",
+			Stufe:        2,
+			Category:     "Dweomerzauber",
 		},
 		{
-			LookupList: models.LookupList{
-				GameSystem:   "midgard",
-				Name:         "Das Loblied",
-				Beschreibung: "Test spell for GetSpellInfo",
-				Quelle:       "Test",
-			},
-			Stufe:    3,
-			Category: "Zauberlied",
+			GameSystem:   "midgard",
+			Name:         "Das Loblied",
+			Beschreibung: "Test spell for GetSpellInfo",
+			Quelle:       "Test",
+			Stufe:        3,
+			Category:     "Zauberlied",
 		},
 	}
 
@@ -855,34 +849,28 @@ func TestCalcSpellLernCostWithRewards(t *testing.T) {
 	// Create minimal test spell data for our test
 	testSpells := []models.Spell{
 		{
-			LookupList: models.LookupList{
-				GameSystem:   "midgard",
-				Name:         "Schlummer",
-				Beschreibung: "Test spell for GetSpellInfo",
-				Quelle:       "Test",
-			},
-			Stufe:    1,
-			Category: "Beherrschen",
+			GameSystem:   "midgard",
+			Name:         "Schlummer",
+			Beschreibung: "Test spell for GetSpellInfo",
+			Quelle:       "Test",
+			Stufe:        1,
+			Category:     "Beherrschen",
 		},
 		{
-			LookupList: models.LookupList{
-				GameSystem:   "midgard",
-				Name:         "Erkennen von Krankheit",
-				Beschreibung: "Test spell for GetSpellInfo",
-				Quelle:       "Test",
-			},
-			Stufe:    2,
-			Category: "Dweomer",
+			GameSystem:   "midgard",
+			Name:         "Erkennen von Krankheit",
+			Beschreibung: "Test spell for GetSpellInfo",
+			Quelle:       "Test",
+			Stufe:        2,
+			Category:     "Dweomer",
 		},
 		{
-			LookupList: models.LookupList{
-				GameSystem:   "midgard",
-				Name:         "Das Loblied",
-				Beschreibung: "Test spell for GetSpellInfo",
-				Quelle:       "Test",
-			},
-			Stufe:    3,
-			Category: "Zauberlied",
+			GameSystem:   "midgard",
+			Name:         "Das Loblied",
+			Beschreibung: "Test spell for GetSpellInfo",
+			Quelle:       "Test",
+			Stufe:        3,
+			Category:     "Zauberlied",
 		},
 	}
 	// Insert test data directly

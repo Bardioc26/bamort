@@ -54,6 +54,7 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 			TargetLevel:  0, // Calculate all levels
 			Reward:       &[]string{"default"}[0],
 		},
+		//"improve Athletik with PP",
 		{
 			name:         "improve Athletik with PP",
 			charId:       20,
@@ -67,6 +68,7 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 			TargetLevel:  0, // Calculate all levels
 			Reward:       &[]string{"default"}[0],
 		},
+		//"improve Athletik with Gold",
 		{
 			name:         "improve Athletik with Gold",
 			charId:       20,
@@ -80,6 +82,7 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 			TargetLevel:  0, // Calculate all levels
 			Reward:       &[]string{"default"}[0],
 		},
+		//improve Athletik with 2000 Gold
 		{
 			name:         "improve Athletik with 2000 Gold",
 			charId:       20,
@@ -93,6 +96,7 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 			TargetLevel:  0, // Calculate all levels
 			Reward:       &[]string{"default"}[0],
 		},
+		// improve Athletik with 15 PP and 150 Gold
 		{
 			name:         "improve Athletik with PP and Gold",
 			charId:       20,
@@ -106,6 +110,7 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 			TargetLevel:  0, // Calculate all levels
 			Reward:       &[]string{"default"}[0],
 		},
+		// learn Naturkunde Basic Test
 		{
 			name:         "learn Naturkunde Basic Test",
 			charId:       20,
@@ -119,6 +124,7 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 			TargetLevel:  0, // Calculate all levels
 			Reward:       &[]string{"default"}[0],
 		},
+		// learn Naturkunde Test 100 Gold
 		{
 			name:         "learn Naturkunde Test 100 Gold",
 			charId:       20,
@@ -132,6 +138,7 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 			TargetLevel:  0, // Calculate all levels
 			Reward:       &[]string{"default"}[0],
 		},
+		// learn Naturkunde Test 2000 Gold
 		{
 			name:         "learn Naturkunde Test 2000 Gold",
 			charId:       20,
@@ -145,6 +152,7 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 			TargetLevel:  0, // Calculate all levels
 			Reward:       &[]string{"default"}[0],
 		},
+		// learn Naturkunde Test 2 PP
 		{
 			name:         "learn Naturkunde Test 2 PP",
 			charId:       20,
@@ -158,13 +166,57 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 			TargetLevel:  0, // Calculate all levels
 			Reward:       &[]string{"default"}[0],
 		},
+		// learn Beeinflussen Test Basic
+		{
+			name:         "learn Beeinflussen Test Basic",
+			charId:       18,
+			skillName:    "Beeinflussen",
+			currentLevel: 9,
+			usePP:        0,
+			useGold:      0,
+			description:  "Comparison Learn ",
+			Type:         "spell",
+			Action:       "learn",
+			TargetLevel:  0, // Calculate all levels
+			Reward:       &[]string{"default"}[0],
+		},
+
+		// learn Beeinflussen Test Basic 2 PP
+		{
+			name:         "learn Beeinflussen Test Basic 2 PP",
+			charId:       18,
+			skillName:    "Beeinflussen",
+			currentLevel: 9,
+			usePP:        2,
+			useGold:      0,
+			description:  "Comparison Learn ",
+			Type:         "spell",
+			Action:       "learn",
+			TargetLevel:  0, // Calculate all levels
+			Reward:       &[]string{"default"}[0],
+		},
+		// learn Beeinflussen Test Basic 150 Gold
+		{
+			name:         "learn Beeinflussen Test Basic",
+			charId:       18,
+			skillName:    "Beeinflussen",
+			currentLevel: 9,
+			usePP:        0,
+			useGold:      150,
+			description:  "Comparison Learn ",
+			Type:         "spell",
+			Action:       "learn",
+			TargetLevel:  0, // Calculate all levels
+			Reward:       &[]string{"default"}[0],
+		},
+		// learn Beeinflussen Test Basic 2PP and 150 Gold
 		{
 			name:         "learn Beeinflussen Test Basic",
 			charId:       18,
 			skillName:    "Beeinflussen",
 			currentLevel: 9,
 			usePP:        2,
-			useGold:      0,
+			useGold:      150,
 			description:  "Comparison Learn ",
 			Type:         "spell",
 			Action:       "learn",

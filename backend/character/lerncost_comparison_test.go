@@ -211,7 +211,7 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 		},
 		// learn Beeinflussen Test Basic 2PP and 150 Gold
 		{
-			name:         "learn Beeinflussen Test Basic",
+			name:         "learn Beeinflussen Test Basic 2PP and 150 Gold",
 			charId:       18,
 			skillName:    "Beeinflussen",
 			currentLevel: 9,

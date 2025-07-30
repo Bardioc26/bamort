@@ -185,15 +185,8 @@ func GetLernCostNewSystem(c *gin.Context) {
 		characterClass = character.Typ
 	}
 
-	// Normalize skill name (trim whitespace, proper case)
+	// Normalize skill/spell name (trim whitespace, proper case)
 	skillName := strings.TrimSpace(request.Name)
-
-	// Hole die beste Kategorie und Schwierigkeit für diese Fertigkeit und Klasse aus der neuen Datenbank
-	skillInfo, err := models.GetSkillCategoryAndDifficulty(skillName, characterClass)
-	if err != nil {
-		respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fertigkeit '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))
-		return
-	}
 
 	var response []gsmaster.SkillCostResultNew
 	remainingPP := request.UsePP
@@ -201,24 +194,64 @@ func GetLernCostNewSystem(c *gin.Context) {
 
 	// Für "learn" Aktion: nur eine Berechnung, da Lernkosten einmalig sind
 	if request.Action == "learn" {
-		levelResult := gsmaster.SkillCostResultNew{
-			CharacterID:    charID,
-			CharacterClass: characterClass,
-			SkillName:      skillName,
-			Category:       skillInfo.CategoryName,
-			Difficulty:     skillInfo.DifficultyName,
-			TargetLevel:    1, // Lernkosten sind für das Erlernen der Fertigkeit (Level 1)
-		}
+		if request.Type == "spell" {
+			// Spell learning logic
+			spellInfo, err := models.GetSpellLearningInfo(skillName, characterClass)
+			if err != nil {
+				respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Zauber '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))
+				return
+			}
 
-		err = calculateSkillLearnCostNewSystem(&request, &levelResult, &remainingPP, &remainingGold, skillInfo)
+			levelResult := gsmaster.SkillCostResultNew{
+				CharacterID:    charID,
+				CharacterClass: characterClass,
+				SkillName:      skillName,
+				Category:       spellInfo.SchoolName,
+				Difficulty:     fmt.Sprintf("Stufe %d", spellInfo.SpellLevel),
+				TargetLevel:    1, // Lernkosten sind für das Erlernen des Zaubers (Level 1)
+			}
+
+			err = calculateSpellLearnCostNewSystem(&request, &levelResult, &remainingPP, &remainingGold, spellInfo)
+			if err != nil {
+				respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
+				return
+			}
+
+			response = append(response, levelResult)
+		} else {
+			// Skill learning logic
+			skillInfo, err := models.GetSkillCategoryAndDifficulty(skillName, characterClass)
+			if err != nil {
+				respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fertigkeit '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))
+				return
+			}
+
+			levelResult := gsmaster.SkillCostResultNew{
+				CharacterID:    charID,
+				CharacterClass: characterClass,
+				SkillName:      skillName,
+				Category:       skillInfo.CategoryName,
+				Difficulty:     skillInfo.DifficultyName,
+				TargetLevel:    1, // Lernkosten sind für das Erlernen der Fertigkeit (Level 1)
+			}
+
+			err = calculateSkillLearnCostNewSystem(&request, &levelResult, &remainingPP, &remainingGold, skillInfo)
+			if err != nil {
+				respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
+				return
+			}
+
+			response = append(response, levelResult)
+		}
+	} else {
+		// Für "improve" Aktion: berechne für jedes Level von current+1 bis 18
+		// Improvement only works on skills, not spells
+		skillInfo, err := models.GetSkillCategoryAndDifficulty(skillName, characterClass)
 		if err != nil {
-			respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
+			respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fertigkeit '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))
 			return
 		}
 
-		response = append(response, levelResult)
-	} else {
-		// Für "improve" Aktion: berechne für jedes Level von current+1 bis 18
 		for i := request.CurrentLevel + 1; i <= 18; i++ {
 			levelResult := gsmaster.SkillCostResultNew{
 				CharacterID:    charID,
@@ -229,12 +262,26 @@ func GetLernCostNewSystem(c *gin.Context) {
 				TargetLevel:    i,
 			}
 
-			err = calculateSkillImproveCostNewSystem(&request, &levelResult, i, &remainingPP, &remainingGold, skillInfo)
+			err := calculateSkillImproveCostNewSystem(&request, &levelResult, i, &remainingPP, &remainingGold, skillInfo)
 			if err != nil {
 				respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
 				return
 			}
-
+			// für die nächste Runde die PP und Gold reduzieren die zum Lernen genutzt werden sollen
+			if levelResult.PPUsed > 0 {
+				request.UsePP -= levelResult.PPUsed
+				// Sicherstellen, dass PP nicht unter 0 fallen
+				if request.UsePP < 0 {
+					request.UsePP = 0
+				}
+			}
+			if levelResult.GoldUsed > 0 {
+				request.UseGold -= levelResult.GoldUsed
+				// Sicherstellen, dass Gold nicht unter 0 fällt
+				if request.UseGold < 0 {
+					request.UseGold = 0
+				}
+			}
 			response = append(response, levelResult)
 		}
 	}
@@ -317,7 +364,7 @@ func calculateSkillImproveCostNewSystem(request *gsmaster.LernCostRequest, resul
 	return nil
 }
 
-// calculateSkillLearnCostNewSystem berechnet die Kosten für das Erlernen einer Fertigkeit (Action: "learn")
+// calculateSkillLearnCostNewSystem berechnet die Kosten für das Erlernen einer Fertigkeit (Action: "learn", Type: "skill")
 func calculateSkillLearnCostNewSystem(request *gsmaster.LernCostRequest, result *gsmaster.SkillCostResultNew, remainingPP *int, remainingGold *int, skillInfo *models.SkillLearningInfo) error {
 	// 1. Hole die EP-Kosten pro TE für diese Klasse und Kategorie
 	epPerTE, err := models.GetEPPerTEForClassAndCategory(result.CharacterClass, skillInfo.CategoryName)
@@ -338,58 +385,8 @@ func calculateSkillLearnCostNewSystem(request *gsmaster.LernCostRequest, result 
 		applyRewardNewSystem(result, request.Reward, result.EP)
 	}
 
-	// 5. PP und Gold-für-EP Konvertierung beim Lernen
-	if request.Type == "spell" {
-		// PP-Anwendung für Zauber-Lernen: 1 PP = 1 LE Reduktion
-		ppUsed := 0
-		if *remainingPP > 0 {
-			if result.LE <= *remainingPP {
-				ppUsed = result.LE // Maximal so viele PP verwenden wie LE benötigt werden
-				result.LE = 0      // Wenn PP alle LE abdecken
-			} else {
-				ppUsed = *remainingPP // Verwende alle verfügbaren PP
-				result.LE -= ppUsed   // Reduziere LE um verwendete PP
-			}
-
-			result.PPUsed = ppUsed
-			*remainingPP -= ppUsed
-
-			if *remainingPP < 0 {
-				*remainingPP = 0
-			}
-
-			// EP neu berechnen basierend auf reduzierter LE
-			result.EP = epPerTE * result.LE * 3
-			result.GoldCost = result.LE * 200
-		}
-
-		// Gold-für-EP Konvertierung für Zauber-Lernen
-		goldUsed := 0
-		if *remainingGold > 0 {
-			// 10 Gold = 1 EP, aber maximal EP/2 kann durch Gold ersetzt werden
-			maxEPFromGold := result.EP / 2
-			epFromGold := *remainingGold / 10
-
-			if epFromGold > maxEPFromGold {
-				// Beschränke auf maximal EP/2
-				epFromGold = maxEPFromGold
-				goldUsed = epFromGold * 10
-			} else {
-				// Verwende das verfügbare Gold
-				goldUsed = *remainingGold
-			}
-
-			// Reduziere EP um die durch Gold ersetzte Menge
-			result.EP -= epFromGold
-			result.GoldUsed = goldUsed
-			*remainingGold -= goldUsed
-
-			if *remainingGold < 0 {
-				*remainingGold = 0
-			}
-		}
-	}
-	// Für Skill-Lernen: Keine PP oder Gold-für-EP Anwendung erlaubt
+	// 5. Für Skill-Lernen: Keine PP oder Gold-für-EP Anwendung erlaubt (im Gegensatz zu Spell-Lernen)
+	// PP und Gold bleiben unverändert, da sie bei Skill-Lernen nicht verwendet werden
 
 	return nil
 }
@@ -412,6 +409,112 @@ func applyRewardNewSystem(result *gsmaster.SkillCostResultNew, reward *string, o
 	case "halveepnoGold":
 		// Halbe EP und kein Gold
 		result.EP = result.EP / 2
+		result.GoldCost = 0
+
+	case "default":
+		// Keine Änderungen
+		break
+
+	default:
+		// Unbekannte Belohnung - ignorieren
+		break
+	}
+}
+
+// calculateSpellLearnCostNewSystem berechnet die Kosten für das Erlernen eines Zaubers (Action: "learn", Type: "spell")
+func calculateSpellLearnCostNewSystem(request *gsmaster.LernCostRequest, result *gsmaster.SkillCostResultNew, remainingPP *int, remainingGold *int, spellInfo *models.SpellLearningInfo) error {
+	// 1. Setze die grundlegenden Zauber-Informationen
+	result.Category = spellInfo.SchoolName
+	result.Difficulty = fmt.Sprintf("Stufe %d", spellInfo.SpellLevel)
+
+	// 2. Berechne die LE-Kosten basierend auf der Zaubergrad
+	leRequired := spellInfo.LERequired
+
+	// 3. Anwenden von PP (Practice Points): 1 PP = 1 LE Reduktion (bei Zauber-Lernen erlaubt)
+	ppUsed := 0
+	if *remainingPP > 0 {
+		if leRequired <= *remainingPP {
+			ppUsed = leRequired // Maximal so viele PP verwenden wie LE benötigt werden
+			leRequired = 0      // Wenn PP alle LE abdecken
+		} else {
+			ppUsed = *remainingPP // Verwende alle verfügbaren PP
+			leRequired -= ppUsed  // Reduziere LE um verwendete PP
+		}
+
+		result.PPUsed = ppUsed
+		*remainingPP -= ppUsed
+
+		if *remainingPP < 0 {
+			*remainingPP = 0
+		}
+	}
+
+	// 4. Setze die finalen LE-Kosten
+	result.LE = leRequired
+
+	// 5. Berechne EP-Kosten basierend auf LE und EP-pro-LE für diese Klasse/Schule
+	result.EP = result.LE * spellInfo.EPPerLE
+
+	// 6. Berechne Gold-Kosten (Beispiel: 100 Gold pro LE wie im alten System)
+	result.GoldCost = result.LE * 100
+
+	// 7. Anwenden von Belohnungen (spruchrolle, halveep, etc.)
+	if request.Reward != nil {
+		applySpellRewardNewSystem(result, request.Reward)
+	}
+
+	// 8. Gold-für-EP Konvertierung für Zauber-Lernen (erlaubt)
+	goldUsed := 0
+	if *remainingGold > 0 {
+		// 10 Gold = 1 EP, aber maximal EP/2 kann durch Gold ersetzt werden
+		maxEPFromGold := result.EP / 2
+		epFromGold := *remainingGold / 10
+
+		if epFromGold > maxEPFromGold {
+			// Beschränke auf maximal EP/2
+			epFromGold = maxEPFromGold
+			goldUsed = epFromGold * 10
+		} else {
+			// Verwende das verfügbare Gold
+			goldUsed = *remainingGold
+		}
+
+		// Reduziere EP um die durch Gold ersetzte Menge
+		result.EP -= epFromGold
+		result.GoldUsed = goldUsed
+		*remainingGold -= goldUsed
+
+		if *remainingGold < 0 {
+			*remainingGold = 0
+		}
+	}
+
+	return nil
+}
+
+// applySpellRewardNewSystem wendet zauber-spezifische Belohnungen an
+func applySpellRewardNewSystem(result *gsmaster.SkillCostResultNew, reward *string) {
+	if reward == nil || *reward == "" {
+		return
+	}
+
+	switch *reward {
+	case "spruchrolle":
+		// Spruchrolle: 20 Gold für jeden Versuch und 1/3 EP-Kosten bei Erfolg
+		result.GoldCost = 20
+		result.EP = result.EP / 3
+
+	case "halveep":
+		// Halbe EP für Zauber-Lernen
+		result.EP = result.EP / 2
+
+	case "halveepnoGold":
+		// Halbe EP und kein Gold
+		result.EP = result.EP / 2
+		result.GoldCost = 0
+
+	case "noGold":
+		// Nur Geld ist 0, EP bleiben
 		result.GoldCost = 0
 
 	case "default":

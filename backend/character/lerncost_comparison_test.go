@@ -249,8 +249,8 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 
 			// Create comparison table
 			fmt.Printf("\n=== Detailed Cost Comparison ===\n")
-			fmt.Printf("Level | Old EP | New EP | Old Gold | New Gold | Old LE | New LE | Old PP | New PP | Old Gold used | New Gold used | Match?\n")
-			fmt.Printf("------|--------|--------|----------|----------|--------|--------|--------|--------|---------------|---------------|-------\n")
+			fmt.Printf("Level | Old EP | New EP | Old Gold | New Gold | Old LE | New LE | Old PP used | New PP used | Old Gold used | New Gold used | Match?\n")
+			fmt.Printf("------|--------|--------|----------|----------|--------|--------|-------------|-------------|---------------|---------------|-------\n")
 
 			// Compare each level that exists in both systems
 			maxLevels := len(oldResponse)
@@ -290,7 +290,7 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 					matchSymbol = "✗"
 				}
 
-				fmt.Printf("%5d | %6d | %6d | %8d | %8d | %6d | %6d | %6d | %6d | %13d | %13d | %7s\n",
+				fmt.Printf("%5d | %6d | %6d | %8d | %8d | %6d | %6d | %11d | %11d | %13d | %13d | %7s\n",
 					old.TargetLevel, old.EP, new.EP, old.GoldCost, new.GoldCost,
 					old.LE, new.LE, old.PPUsed, new.PPUsed, old.GoldUsed, new.GoldUsed, matchSymbol)
 
@@ -308,7 +308,7 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 						old.TargetLevel, old.LE, new.LE, old.LE-new.LE)
 				}
 				if !ppMatch {
-					fmt.Printf("  PPUsed mismatch at level %d: Old=%d, New=%d (diff=%d)\n",
+					fmt.Printf("  PP used mismatch at level %d: Old=%d, New=%d (diff=%d)\n",
 						old.TargetLevel, old.PPUsed, new.PPUsed, old.PPUsed-new.PPUsed)
 				}
 				if !goldUsedMatch {

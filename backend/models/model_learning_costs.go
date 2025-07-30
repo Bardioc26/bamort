@@ -2,6 +2,7 @@ package models
 
 import (
 	"bamort/database"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -357,19 +358,29 @@ func GetSpellLearningInfo(spellName string, classCode string) (*SpellLearningInf
 			s.id as spell_id,
 			s.name as spell_name,
 			s.stufe as spell_level,
-			s.spell_school as school_name,
+			s.category as school_name,
 			cssec.character_class as class_code,
 			cssec.character_class as class_name,
 			cssec.ep_per_le,
-			sllc.le_required
+			COALESCE(sllc.le_required, 0) as le_required
 		FROM gsm_spells s
-		JOIN learning_class_spell_school_ep_costs cssec ON s.spell_school = cssec.spell_school
-		JOIN learning_spell_level_le_costs sllc ON s.stufe = sllc.level
+		JOIN learning_class_spell_school_ep_costs cssec ON s.category = cssec.spell_school
+		LEFT JOIN learning_spell_level_le_costs sllc ON s.stufe = sllc.level
 		WHERE s.name = ? AND cssec.character_class = ?
 	`, spellName, classCode).Scan(&result).Error
 
 	if err != nil {
 		return nil, err
+	}
+
+	// Validate spell level - level 0 is not a valid spell level
+	if result.SpellLevel <= 0 {
+		return nil, fmt.Errorf("invalid spell level %d for spell '%s' - spell levels must be 1 or higher", result.SpellLevel, spellName)
+	}
+
+	// Validate that we found a spell (spell_id should be > 0)
+	if result.SpellID == 0 {
+		return nil, gorm.ErrRecordNotFound
 	}
 
 	return &result, nil

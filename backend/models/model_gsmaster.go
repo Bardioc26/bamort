@@ -80,7 +80,7 @@ type Spell struct {
 	Wirkungsbereich string `json:"wirkungsbereich"`
 	Wirkungsdauer   string `json:"wirkungsdauer"`
 	Ursprung        string `json:"ursprung"`
-	Category        string `gorm:"default:normal" json:"category"`
+	Category        string `gorm:"default:normal" json:"category"` // spell_school
 }
 
 type Equipment struct {

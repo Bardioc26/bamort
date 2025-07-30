@@ -97,7 +97,7 @@ func GetLernCost(c *gin.Context) {
 	// costResult.Category = gsmaster.GetSkillCategory(request.Name)
 	// costResult.Difficulty = gsmaster.GetSkillDifficulty(costResult.Category, costResult.SkillName)
 	var response []gsmaster.SkillCostResultNew
-	
+
 	// Für "learn" Aktion: nur eine Berechnung, da Lernkosten einmalig sind
 	if request.Action == "learn" {
 		levelResult := gsmaster.SkillCostResultNew{
@@ -294,7 +294,7 @@ func calculateSkillImproveCostNewSystem(request *gsmaster.LernCostRequest, resul
 		// 10 Gold = 1 EP, aber maximal EP/2 kann durch Gold ersetzt werden
 		maxEPFromGold := result.EP / 2
 		epFromGold := *remainingGold / 10
-		
+
 		if epFromGold > maxEPFromGold {
 			// Beschränke auf maximal EP/2
 			epFromGold = maxEPFromGold
@@ -303,7 +303,7 @@ func calculateSkillImproveCostNewSystem(request *gsmaster.LernCostRequest, resul
 			// Verwende das verfügbare Gold
 			goldUsed = *remainingGold
 		}
-		
+
 		// Reduziere EP um die durch Gold ersetzte Menge
 		result.EP -= epFromGold
 		result.GoldUsed = goldUsed
@@ -369,7 +369,7 @@ func calculateSkillLearnCostNewSystem(request *gsmaster.LernCostRequest, result 
 			// 10 Gold = 1 EP, aber maximal EP/2 kann durch Gold ersetzt werden
 			maxEPFromGold := result.EP / 2
 			epFromGold := *remainingGold / 10
-			
+
 			if epFromGold > maxEPFromGold {
 				// Beschränke auf maximal EP/2
 				epFromGold = maxEPFromGold
@@ -378,7 +378,7 @@ func calculateSkillLearnCostNewSystem(request *gsmaster.LernCostRequest, result 
 				// Verwende das verfügbare Gold
 				goldUsed = *remainingGold
 			}
-			
+
 			// Reduziere EP um die durch Gold ersetzte Menge
 			result.EP -= epFromGold
 			result.GoldUsed = goldUsed

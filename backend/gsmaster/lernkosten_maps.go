@@ -761,13 +761,13 @@ func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, rewa
 		// 10 Gold = 1 EP, aber maximal EP/2 kann durch Gold ersetzt werden
 		maxEPFromGold := costResult.EP / 2
 		epFromGold := costResult.GoldUsed / 10
-		
+
 		if epFromGold > maxEPFromGold {
 			// Beschränke auf maximal EP/2
 			epFromGold = maxEPFromGold
 			costResult.GoldUsed = epFromGold * 10
 		}
-		
+
 		// Reduziere EP um die durch Gold ersetzte Menge
 		costResult.EP -= epFromGold
 	}
@@ -826,13 +826,13 @@ func CalcSpellLernCost(costResult *SkillCostResultNew, reward *string) error {
 		// 10 Gold = 1 EP, aber maximal EP/2 kann durch Gold ersetzt werden
 		maxEPFromGold := costResult.EP / 2
 		epFromGold := costResult.GoldUsed / 10
-		
+
 		if epFromGold > maxEPFromGold {
 			// Beschränke auf maximal EP/2
 			epFromGold = maxEPFromGold
 			costResult.GoldUsed = epFromGold * 10
 		}
-		
+
 		// Reduziere EP um die durch Gold ersetzte Menge
 		costResult.EP -= epFromGold
 	}

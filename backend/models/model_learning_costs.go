@@ -320,6 +320,34 @@ func GetSkillCategoryAndDifficulty(skillName string, classCode string) (*SkillLe
 	return &results[0], nil
 }
 
+// GetSkillInfoForCategoryAndDifficulty holt die Informationen für eine spezifische Kategorie/Schwierigkeit
+func GetSkillInfoForCategoryAndDifficulty(skillName, category, difficulty, classCode string) (*SkillLearningInfo, error) {
+	var result SkillLearningInfo
+
+	err := database.DB.Raw(`
+		SELECT 
+			scd.skill_id,
+			s.name as skill_name,
+			scd.skill_category as category_name,
+			scd.skill_difficulty as difficulty_name,
+			scd.learn_cost,
+			ccec.character_class as class_code,
+			ccec.character_class as class_name,
+			ccec.ep_per_te,
+			(scd.learn_cost * ccec.ep_per_te) as total_cost
+		FROM learning_skill_category_difficulties scd
+		JOIN learning_class_category_ep_costs ccec ON scd.skill_category = ccec.skill_category
+		JOIN gsm_skills s ON scd.skill_id = s.id
+		WHERE s.name = ? AND scd.skill_category = ? AND scd.skill_difficulty = ? AND ccec.character_class = ?
+	`, skillName, category, difficulty, classCode).Scan(&result).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
 // GetSpellLearningInfo holt alle Informationen für das Erlernen eines Zaubers
 func GetSpellLearningInfo(spellName string, classCode string) (*SpellLearningInfo, error) {
 	var result SpellLearningInfo
@@ -364,6 +392,19 @@ func GetImprovementCost(skillName string, categoryName string, difficultyName st
 	}
 
 	return result.TERequired, nil
+}
+
+// GetSkillLearnCost holt die Lernkosten (LE) für eine Fertigkeit basierend auf Kategorie und Schwierigkeit
+func GetSkillLearnCost(categoryName string, difficultyName string) (int, error) {
+	var result SkillCategoryDifficulty
+	err := database.DB.
+		Where("skill_category = ? AND skill_difficulty = ?", categoryName, difficultyName).
+		First(&result).Error
+
+	if err != nil {
+		return 0, err
+	}
+	return result.LearnCost, nil
 }
 
 // Quellenmanagement-Funktionen

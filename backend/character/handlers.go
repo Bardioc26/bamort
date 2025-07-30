@@ -714,12 +714,14 @@ func calculateMultiLevelCosts(character *models.Char, skillName string, currentL
 
 	// Berechne Kosten für jedes Level
 	for _, targetLevel := range sortedLevels {
+		classAbr := getCharacterClass(character)
+		cat, difficulty, _ := gsmaster.FindBestCategoryForSkillLearning(skillName, classAbr)
 		levelResult := gsmaster.SkillCostResultNew{
 			CharacterID:    fmt.Sprintf("%d", character.ID),
-			CharacterClass: getCharacterClass(character),
+			CharacterClass: classAbr,
 			SkillName:      skillName,
-			Category:       gsmaster.GetSkillCategory(skillName),
-			Difficulty:     gsmaster.GetSkillDifficulty(gsmaster.GetSkillCategory(skillName), skillName),
+			Category:       cat,
+			Difficulty:     gsmaster.GetSkillDifficulty(difficulty, skillName),
 			TargetLevel:    targetLevel,
 		}
 

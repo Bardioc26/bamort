@@ -612,8 +612,8 @@ func findBestCategoryForSkillImprovement(skillName, characterClass string, level
 	return bestOption.category, bestOption.difficulty, nil
 }
 
-// findBestCategoryForSkillLearning findet die Kategorie mit den niedrigsten EP-Kosten für das Lernen einer Fertigkeit
-func findBestCategoryForSkillLearning(skillName, characterClass string) (string, string, error) {
+// FindBestCategoryForSkillLearning findet die Kategorie mit den niedrigsten EP-Kosten für das Lernen einer Fertigkeit
+func FindBestCategoryForSkillLearning(skillName, characterClass string) (string, string, error) {
 	classKey := characterClass
 
 	// Sammle alle Kategorien und Schwierigkeiten, in denen die Fertigkeit verfügbar ist
@@ -669,7 +669,7 @@ func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
 
 	// Wenn Kategorie und Schwierigkeit noch nicht gesetzt sind, finde die beste Option
 	if costResult.Category == "" || costResult.Difficulty == "" {
-		bestCategory, bestDifficulty, err := findBestCategoryForSkillLearning(costResult.SkillName, classKey)
+		bestCategory, bestDifficulty, err := FindBestCategoryForSkillLearning(costResult.SkillName, classKey)
 		if err != nil {
 			return err
 		}
@@ -758,16 +758,18 @@ func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, rewa
 		costResult.EP = costResult.EP / 2 // Halbiere die EP-Kosten für diese Belohnung
 	}
 	if costResult.GoldUsed > 0 {
-		// 10 Gold = 1 EP
+		// 10 Gold = 1 EP, aber maximal EP/2 kann durch Gold ersetzt werden
+		maxEPFromGold := costResult.EP / 2
 		epFromGold := costResult.GoldUsed / 10
-		if epFromGold > costResult.EP {
-			// Maximal so viel Gold verwenden wie EP benötigt werden
-			costResult.GoldUsed = costResult.EP * 10
-			costResult.EP = 0
-		} else {
-			// Reduziere EP um die Menge, die durch Gold ersetzt wird
-			costResult.EP -= epFromGold
+		
+		if epFromGold > maxEPFromGold {
+			// Beschränke auf maximal EP/2
+			epFromGold = maxEPFromGold
+			costResult.GoldUsed = epFromGold * 10
 		}
+		
+		// Reduziere EP um die durch Gold ersetzte Menge
+		costResult.EP -= epFromGold
 	}
 
 	return nil
@@ -819,6 +821,22 @@ func CalcSpellLernCost(costResult *SkillCostResultNew, reward *string) error {
 		}
 	}
 
+	// Anwenden von Gold für EP Konvertierung (falls Gold verwendet wird)
+	if costResult.GoldUsed > 0 {
+		// 10 Gold = 1 EP, aber maximal EP/2 kann durch Gold ersetzt werden
+		maxEPFromGold := costResult.EP / 2
+		epFromGold := costResult.GoldUsed / 10
+		
+		if epFromGold > maxEPFromGold {
+			// Beschränke auf maximal EP/2
+			epFromGold = maxEPFromGold
+			costResult.GoldUsed = epFromGold * 10
+		}
+		
+		// Reduziere EP um die durch Gold ersetzte Menge
+		costResult.EP -= epFromGold
+	}
+
 	return nil
 }
 
@@ -828,12 +846,15 @@ func GetLernCostNextLevel(request *LernCostRequest, costResult *SkillCostResultN
 	// die Berechnung erfolgt immer für genau 1 Level
 	// Diese Funktion wird in GetLernCost aufgerufen.
 
-	// Übertrage PP und Gold aus dem Request für die Kostenberechnung
-	costResult.PPUsed = request.UsePP
-	costResult.GoldUsed = request.UseGold
+	// Übertrage PP aus dem Request für die Kostenberechnung
+	// PP sind nur bei "improve" und "spell learn" erlaubt, nicht bei "skill learn"
+	costResult.PPUsed = 0
+	// Gold für EP wird nur bei "improve" Aktionen und "spell learn" verwendet, nicht beim "skill learn"
+	costResult.GoldUsed = 0
 
 	switch {
 	case request.Action == "learn" && request.Type == "skill":
+		// Skill-Lernen: Kein PP und kein Gold für EP erlaubt
 		err := CalcSkillLernCost(costResult, request.Reward)
 		if err != nil {
 			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)
@@ -843,6 +864,9 @@ func GetLernCostNextLevel(request *LernCostRequest, costResult *SkillCostResultN
 			costResult.EP += 6
 		}
 	case request.Action == "learn" && request.Type == "spell":
+		// Zauber-Lernen: PP und Gold für EP ist erlaubt
+		costResult.PPUsed = request.UsePP
+		costResult.GoldUsed = request.UseGold
 		err := CalcSpellLernCost(costResult, request.Reward)
 		if err != nil {
 			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)
@@ -852,6 +876,9 @@ func GetLernCostNextLevel(request *LernCostRequest, costResult *SkillCostResultN
 			costResult.EP += 6
 		}
 	case request.Action == "improve" && request.Type == "skill":
+		// Skill-Verbesserung: PP und Gold für EP ist erlaubt
+		costResult.PPUsed = request.UsePP
+		costResult.GoldUsed = request.UseGold
 		err := CalcSkillImproveCost(costResult, request.CurrentLevel, request.Reward)
 		if err != nil {
 			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)

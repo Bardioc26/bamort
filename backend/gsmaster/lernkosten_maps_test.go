@@ -62,6 +62,7 @@ func TestGetSkillCategory(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
 			result := GetSkillCategory(tt.skillName)
 
 			// Check if result is in the list of expected values
@@ -569,11 +570,12 @@ func TestCalcSkillLernCostWithRewards(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create cost result
+			cat, difficulty, _ := FindBestCategoryForSkillLearning(tt.skillName, tt.characterClass)
 			costResult := &SkillCostResultNew{
 				CharacterClass: tt.characterClass,
 				SkillName:      tt.skillName,
-				Category:       GetSkillCategory(tt.skillName),
-				Difficulty:     GetSkillDifficulty(GetSkillCategory(tt.skillName), tt.skillName),
+				Category:       cat,
+				Difficulty:     difficulty,
 			}
 
 			// Calculate normal costs first to get baseline EP
@@ -1009,7 +1011,7 @@ func TestFindBestCategoryForSkillLearning(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			category, difficulty, err := findBestCategoryForSkillLearning(tt.skillName, tt.characterClass)
+			category, difficulty, err := FindBestCategoryForSkillLearning(tt.skillName, tt.characterClass)
 
 			if tt.expectError {
 				if err == nil {

@@ -216,8 +216,17 @@ func (object *Skill) Select(fieldName string, value string) ([]Skill, error) {
 	return skills, nil
 }
 
-func SelectSkills(fieldName string, value string) ([]Skill, error) {
+func SelectSkills(opts ...string) ([]Skill, error) {
+
+	fieldName := ""
+	value := ""
 	gameSystem := "midgard"
+
+	if len(opts) > 1 {
+		fieldName = opts[0]
+		value = opts[1]
+	}
+
 	var skills []Skill
 	if fieldName == "" {
 		err := database.DB.Find(&skills, "game_system=? AND name != 'Placeholder'", gameSystem).Error

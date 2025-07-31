@@ -1388,10 +1388,20 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 
 		remainingPP := request.UsePP
 		remainingGold := request.UseGold
-		spellInfo := &models.SkillLearningInfo{}
+		
+		// Hole die vollständigen Skill-Informationen für die Kostenberechnung
+		skillLearningInfo, err := models.GetSkillCategoryAndDifficulty(skill.Name, getCharacterClass(&character))
+		if err != nil {
+			// Fallback für unbekannte Skills
+			skillLearningInfo = &models.SkillLearningInfo{
+				SkillName:    skill.Name,
+				CategoryName: skill.Category,
+				LearnCost:    50, // Standard-Lernkosten
+			}
+		}
 
 		// Berechne Lernkosten mit calculateSkillLearnCostNewSystem
-		err := calculateSkillLearnCostNewSystem(&request, &levelResult, &remainingPP, &remainingGold, spellInfo)
+		err = calculateSkillLearnCostNewSystem(&request, &levelResult, &remainingPP, &remainingGold, skillLearningInfo)
 		epCost := 10000   // Fallback-Wert
 		goldCost := 50000 // Fallback-Wert
 		if err == nil {

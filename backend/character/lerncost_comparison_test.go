@@ -223,6 +223,20 @@ func TestCompareOldVsNewLearningCostSystems(t *testing.T) {
 			TargetLevel:  0, // Calculate all levels
 			Reward:       &[]string{"default"}[0],
 		},
+		// learn Naturkunde Test 2 PP
+		{
+			name:         "learn non existent Bogenbau Test Basic",
+			charId:       20,
+			skillName:    "Bogenbau",
+			currentLevel: 0,
+			usePP:        0,
+			useGold:      0,
+			description:  "Comparison Learn Bogenbau",
+			Type:         "skill",
+			Action:       "learn",
+			TargetLevel:  0, // Calculate all levels
+			Reward:       &[]string{"default"}[0],
+		},
 	}
 
 	for _, tc := range testCases {

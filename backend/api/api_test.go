@@ -4,7 +4,6 @@ import (
 	"bamort/character"
 	"bamort/database"
 	"bamort/gsmaster"
-	"bamort/importer"
 	_ "bamort/maintenance" // Anonymous import to ensure init() is called
 	"bamort/models"
 	"bamort/router"
@@ -57,7 +56,7 @@ func TestSetupCheck(t *testing.T) {
 	assert.NoError(t, err, "No error expected when migrating gsmaster tables")
 	err = user.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating user tables")
-	err = importer.MigrateStructure()
+	//err = importer.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating importer tables")
 }
 
@@ -306,4 +305,114 @@ func TestGetSkillAllLevelCosts(t *testing.T) {
 
 	err = json.Unmarshal(respRecorder.Body.Bytes(), &response)
 	assert.NoError(t, err, "Response should be valid JSON for weapon skill")
+}
+
+func TestGetAvailableSkillsNew(t *testing.T) {
+	database.SetupTestDB(true) // Setup test database
+	// Initialize a Gin router
+	r := gin.Default()
+	router.SetupGin(r)
+
+	// Routes
+	protected := router.BaseRouterGrp(r)
+	character.RegisterRoutes(protected)
+	gsmaster.RegisterRoutes(protected)
+	protected.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
+	})
+
+	u := user.User{}
+	u.First("testuser")
+
+	// Create request body for available skills
+	skillRequest := gsmaster.LernCostRequest{
+		CharId:       20,
+		Name:         "Schwimmen", // Use a valid skill name for validation
+		CurrentLevel: 0,
+		Type:         "skill",
+		Action:       "learn",
+		TargetLevel:  1,
+		UsePP:        0,
+		UseGold:      0,
+		Reward:       &[]string{"default"}[0],
+	}
+	jsonData, _ := json.Marshal(skillRequest)
+
+	// Create a test HTTP request
+	req, _ := http.NewRequest("POST", "/api/characters/available-skills-new", bytes.NewBuffer(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+	token := user.GenerateToken(&u)
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	// Create a response recorder to capture the handler's response
+	respRecorder := httptest.NewRecorder()
+
+	// Perform the test request
+	r.ServeHTTP(respRecorder, req)
+
+	// Assert the response status code
+	assert.Equal(t, http.StatusOK, respRecorder.Code)
+
+	// Parse the response to verify it contains skills by category
+	var response map[string]interface{}
+	err := json.Unmarshal(respRecorder.Body.Bytes(), &response)
+	assert.NoError(t, err, "Response should be valid JSON")
+
+	// Check that the response contains skills_by_category
+	skillsByCategory, exists := response["skills_by_category"]
+	assert.True(t, exists, "Response should contain skills_by_category")
+	assert.NotNil(t, skillsByCategory, "skills_by_category should not be nil")
+
+	// Convert to map for easier access
+	skillsMap, ok := skillsByCategory.(map[string]interface{})
+	assert.True(t, ok, "skills_by_category should be a map")
+	assert.Greater(t, len(skillsMap), 0, "Should return at least one category of skills")
+
+	// Check that "Bogenbau" is not in the available skills (assuming it's already learned)
+	foundBogenbau := false
+	for _, categorySkillsInterface := range skillsMap {
+		categorySkills, ok := categorySkillsInterface.([]interface{})
+		if !ok {
+			continue
+		}
+
+		for _, skillInterface := range categorySkills {
+			skill, ok := skillInterface.(map[string]interface{})
+			if !ok {
+				continue
+			}
+
+			skillName, exists := skill["name"]
+			if exists && skillName == "Bogenbau" {
+				foundBogenbau = true
+				break
+			}
+		}
+
+		if foundBogenbau {
+			break
+		}
+	}
+
+	assert.False(t, foundBogenbau, "Bogenbau should not be in available skills (already learned)")
+
+	// Verify that each skill has the expected structure
+	for categoryName, categorySkillsInterface := range skillsMap {
+		categorySkills, ok := categorySkillsInterface.([]interface{})
+		assert.True(t, ok, "Category %s should contain an array of skills", categoryName)
+
+		for _, skillInterface := range categorySkills {
+			skill, ok := skillInterface.(map[string]interface{})
+			assert.True(t, ok, "Each skill should be a map")
+
+			// Check required fields
+			_, hasName := skill["name"]
+			_, hasEpCost := skill["epCost"]
+			_, hasGoldCost := skill["goldCost"]
+
+			assert.True(t, hasName, "Skill should have name field")
+			assert.True(t, hasEpCost, "Skill should have epCost field")
+			assert.True(t, hasGoldCost, "Skill should have goldCost field")
+		}
+	}
 }

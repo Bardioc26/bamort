@@ -1322,6 +1322,93 @@ func GetRewardTypes(c *gin.Context) {
 // GetAvailableSkills gibt alle verfügbaren Fertigkeiten mit Lernkosten zurück
 func GetAvailableSkills(c *gin.Context) {
 	characterID := c.Param("id")
+	//rewardType := c.Query("reward_type")
+
+	var character models.Char
+	if err := database.DB.Preload("Fertigkeiten").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, characterID).Error; err != nil {
+		respondWithError(c, http.StatusNotFound, "Character not found")
+		return
+	}
+
+	// Hole alle verfügbaren Fertigkeiten aus der gsmaster Datenbank, aber filtere Placeholder aus
+	var allSkills []models.Skill
+
+	allSkills, err := models.SelectSkills("", "")
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve skills from gsmaster")
+		return
+	}
+	/*if err := database.DB.Where("name != ?", "Placeholder").Find(&allSkills).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve skills")
+		return
+	}
+	*/
+
+	// Erstelle eine Map der bereits gelernten Fertigkeiten
+	learnedSkills := make(map[string]bool)
+	for _, skill := range character.Fertigkeiten {
+		learnedSkills[skill.Name] = true
+	}
+
+	// Organisiere Fertigkeiten nach Kategorien
+	skillsByCategory := make(map[string][]gin.H)
+
+	for _, skill := range allSkills {
+		// Überspringe bereits gelernte Fertigkeiten
+		if learnedSkills[skill.Name] {
+			continue
+		}
+		// Überspringe Placeholder-Fertigkeiten (zusätzliche Sicherheit)
+		if skill.Name == "Placeholder" {
+			continue
+		}
+		request := gsmaster.LernCostRequest{
+			CharId:       character.ID,
+			Name:         skill.Name,
+			CurrentLevel: 0, // Nicht gelernt
+			TargetLevel:  1, // Auf Level 1 lernen
+			Type:         "skill",
+			Action:       "learn",
+			UsePP:        0,                       // Keine PP für neue Fertigkeiten
+			UseGold:      0,                       // Keine Gold für neue Fertigkeiten
+			Reward:       &[]string{"default"}[0], // Belohnungstyp aus Query-Parameter
+		}
+		levelResult := &gsmaster.SkillCostResultNew{}
+		remainingPP := request.UsePP
+		remainingGold := request.UseGold
+		spellInfo := &models.SkillLearningInfo{}
+		// Berechne Lernkosten mit GetLernCostNextLevel
+		//epCost, goldCost := calculateSkillLearningCosts(skill, character, rewardType)
+		err := calculateSkillLearnCostNewSystem(&request, levelResult, &remainingPP, &remainingGold, spellInfo)
+		epCost := 10000
+		goldCost := 50000
+		if err == nil {
+			epCost = levelResult.EP
+			goldCost = levelResult.GoldCost
+		}
+
+		skillInfo := gin.H{
+			"name":     skill.Name,
+			"epCost":   epCost,
+			"goldCost": goldCost,
+		}
+
+		category := skill.Category
+		if category == "" {
+			category = "Sonstige"
+		}
+
+		skillsByCategory[category] = append(skillsByCategory[category], skillInfo)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"skills_by_category": skillsByCategory,
+	})
+}
+
+// GetAvailableSkills gibt alle verfügbaren Fertigkeiten mit Lernkosten zurück
+func GetAvailableSkillsNewSystem(c *gin.Context) {
+	characterID := c.Param("id")
 	rewardType := c.Query("reward_type")
 
 	var character models.Char

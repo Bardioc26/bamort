@@ -374,6 +374,32 @@ func (object *Spell) Save() error {
 	return nil
 }
 
+// SelectSpells gibt alle Zauber zurück, optional gefiltert nach einem Feld
+func SelectSpells(opts ...string) ([]Spell, error) {
+	fieldName := ""
+	value := ""
+	gameSystem := "midgard"
+
+	if len(opts) > 1 {
+		fieldName = opts[0]
+		value = opts[1]
+	}
+
+	var spells []Spell
+	if fieldName == "" {
+		err := database.DB.Find(&spells, "game_system=? AND name != 'Placeholder'", gameSystem).Error
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := database.DB.Find(&spells, "game_system=? AND name != 'Placeholder' AND "+fieldName+" = ?", gameSystem, value).Error
+		if err != nil {
+			return nil, err
+		}
+	}
+	return spells, nil
+}
+
 func (object *Spell) GetSpellCategories() ([]string, error) {
 	var categories []string
 	gameSystem := "midgard"

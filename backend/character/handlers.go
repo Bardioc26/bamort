@@ -1388,7 +1388,7 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 
 		remainingPP := request.UsePP
 		remainingGold := request.UseGold
-		
+
 		// Hole die vollständigen Skill-Informationen für die Kostenberechnung
 		skillLearningInfo, err := models.GetSkillCategoryAndDifficulty(skill.Name, getCharacterClass(&character))
 		if err != nil {
@@ -1425,6 +1425,113 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"skills_by_category": skillsByCategory,
+	})
+}
+
+// GetAvailableSpellsNewSystem gibt alle verfügbaren Zauber mit Lernkosten zurück (POST mit LernCostRequest)
+func GetAvailableSpellsNewSystem(c *gin.Context) {
+	characterID := c.Param("id")
+
+	// Parse LernCostRequest aus POST body
+	var baseRequest gsmaster.LernCostRequest
+	if err := c.ShouldBindJSON(&baseRequest); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
+		return
+	}
+
+	var character models.Char
+	if err := database.DB.Preload("Zauber").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, characterID).Error; err != nil {
+		respondWithError(c, http.StatusNotFound, "Character not found")
+		return
+	}
+
+	charakteClass := getCharacterClass(&character)
+	// Hole alle verfügbaren Zauber aus der gsmaster Datenbank, aber filtere Placeholder aus
+	var allSpells []models.Spell
+
+	allSpells, err := models.SelectSpells("", "")
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve spells from gsmaster")
+		return
+	}
+
+	// Erstelle eine Map der bereits gelernten Zauber
+	learnedSpells := make(map[string]bool)
+	for _, spell := range character.Zauber {
+		learnedSpells[spell.Name] = true
+	}
+
+	// Organisiere Zauber nach Schulen (analog zu Kategorien bei Fertigkeiten)
+	spellsBySchool := make(map[string][]gin.H)
+
+	for _, spell := range allSpells {
+		// Überspringe bereits gelernte Zauber
+		if learnedSpells[spell.Name] {
+			continue
+		}
+		// Überspringe Placeholder-Zauber (zusätzliche Sicherheit)
+		if spell.Name == "Placeholder" {
+			continue
+		}
+
+		// Erstelle LernCostRequest für diesen Zauber basierend auf der Basis-Anfrage
+		request := baseRequest
+		request.CharId = character.ID
+		request.Name = spell.Name
+		request.CurrentLevel = 0 // Nicht gelernt
+		request.TargetLevel = 1  // Auf Level 1 lernen
+		request.Type = "spell"
+		request.Action = "learn"
+
+		// Erstelle SkillCostResultNew
+		levelResult := gsmaster.SkillCostResultNew{
+			CharacterID:    fmt.Sprintf("%d", character.ID),
+			CharacterClass: charakteClass,
+			SkillName:      spell.Name,
+			TargetLevel:    1,
+		}
+
+		remainingPP := request.UsePP
+		remainingGold := request.UseGold
+
+		// Hole die vollständigen Spell-Informationen für die Kostenberechnung
+		spellLearningInfo, err := models.GetSpellLearningInfoNewSystem(spell.Name, charakteClass)
+		if err != nil {
+			// Fallback für unbekannte Zauber
+			spellLearningInfo = &models.SpellLearningInfo{
+				SpellName:  spell.Name,
+				SpellLevel: spell.Stufe,
+				SchoolName: spell.Category,
+				LERequired: 20, // Standard-Lernkosten für Zauber
+			}
+		}
+
+		// Berechne Lernkosten mit calculateSpellLearnCostNewSystem
+		err = calculateSpellLearnCostNewSystem(&request, &levelResult, &remainingPP, &remainingGold, spellLearningInfo)
+		epCost := 10000   // Fallback-Wert
+		goldCost := 50000 // Fallback-Wert
+		if err == nil {
+			epCost = levelResult.EP
+			goldCost = levelResult.GoldCost
+		}
+
+		spellInfo := gin.H{
+			"name":     spell.Name,
+			"level":    spell.Stufe,
+			"epCost":   epCost,
+			"goldCost": goldCost,
+		}
+
+		school := spell.Category
+		if school == "" {
+			school = "Sonstige"
+		}
+
+		spellsBySchool[school] = append(spellsBySchool[school], spellInfo)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"spells_by_school": spellsBySchool,
 	})
 }
 

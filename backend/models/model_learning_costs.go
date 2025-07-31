@@ -349,8 +349,8 @@ func GetSkillInfoForCategoryAndDifficulty(skillName, category, difficulty, class
 	return &result, nil
 }
 
-// GetSpellLearningInfo holt alle Informationen für das Erlernen eines Zaubers
-func GetSpellLearningInfo(spellName string, classCode string) (*SpellLearningInfo, error) {
+// GetSpellLearningInfoNewSystem holt alle Informationen für das Erlernen eines Zaubers
+func GetSpellLearningInfoNewSystem(spellName string, classCode string) (*SpellLearningInfo, error) {
 	var result SpellLearningInfo
 
 	err := database.DB.Raw(`

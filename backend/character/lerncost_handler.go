@@ -196,7 +196,7 @@ func GetLernCostNewSystem(c *gin.Context) {
 	if request.Action == "learn" {
 		if request.Type == "spell" {
 			// Spell learning logic
-			spellInfo, err := models.GetSpellLearningInfo(skillName, characterClass)
+			spellInfo, err := models.GetSpellLearningInfoNewSystem(skillName, characterClass)
 			if err != nil {
 				respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Zauber '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))
 				return

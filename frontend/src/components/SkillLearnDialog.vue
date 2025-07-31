@@ -515,11 +515,19 @@ export default {
         await this.loadAvailableCategories()
         
         // Lade alle verfügbaren Fertigkeiten mit Kosten (bereits ohne gelernte gefiltert)
-        const response = await this.$api.get(`/api/characters/${this.character.id}/available-skills`, {
-          params: {
-            reward_type: this.rewardType
-          }
-        })
+        const requestData = {
+          char_id: this.character.id,
+          name: '', // Wird für jede Fertigkeit einzeln gesetzt
+          current_level: 0,
+          target_level: 1,
+          type: 'skill',
+          action: 'learn',
+          use_pp: 0,
+          use_gold: 0,
+          reward: this.rewardType || 'default'
+        }
+        
+        const response = await this.$api.post('/api/characters/available-skills-new', requestData)
         
         if (response.data && response.data.skills_by_category) {
           this.availableSkillsByCategory = response.data.skills_by_category

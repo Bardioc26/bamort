@@ -1319,10 +1319,16 @@ func GetRewardTypes(c *gin.Context) {
 	})
 }
 
-// GetAvailableSkills gibt alle verfügbaren Fertigkeiten mit Lernkosten zurück
-func GetAvailableSkills(c *gin.Context) {
+// GetAvailableSkillsNewSystem gibt alle verfügbaren Fertigkeiten mit Lernkosten zurück (POST mit LernCostRequest)
+func GetAvailableSkillsNewSystem(c *gin.Context) {
 	characterID := c.Param("id")
-	//rewardType := c.Query("reward_type")
+
+	// Parse LernCostRequest aus POST body
+	var baseRequest gsmaster.LernCostRequest
+	if err := c.ShouldBindJSON(&baseRequest); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
+		return
+	}
 
 	var character models.Char
 	if err := database.DB.Preload("Fertigkeiten").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, characterID).Error; err != nil {
@@ -1362,26 +1368,32 @@ func GetAvailableSkills(c *gin.Context) {
 		if skill.Name == "Placeholder" {
 			continue
 		}
-		request := gsmaster.LernCostRequest{
-			CharId:       character.ID,
-			Name:         skill.Name,
-			CurrentLevel: 0, // Nicht gelernt
-			TargetLevel:  1, // Auf Level 1 lernen
-			Type:         "skill",
-			Action:       "learn",
-			UsePP:        0,                       // Keine PP für neue Fertigkeiten
-			UseGold:      0,                       // Keine Gold für neue Fertigkeiten
-			Reward:       &[]string{"default"}[0], // Belohnungstyp aus Query-Parameter
+
+		// Erstelle LernCostRequest für diese Fertigkeit basierend auf der Basis-Anfrage
+		request := baseRequest
+		request.CharId = character.ID
+		request.Name = skill.Name
+		request.CurrentLevel = 0 // Nicht gelernt
+		request.TargetLevel = 1  // Auf Level 1 lernen
+		request.Type = "skill"
+		request.Action = "learn"
+
+		// Erstelle SkillCostResultNew
+		levelResult := gsmaster.SkillCostResultNew{
+			CharacterID:    fmt.Sprintf("%d", character.ID),
+			CharacterClass: getCharacterClass(&character),
+			SkillName:      skill.Name,
+			TargetLevel:    1,
 		}
-		levelResult := &gsmaster.SkillCostResultNew{}
+
 		remainingPP := request.UsePP
 		remainingGold := request.UseGold
 		spellInfo := &models.SkillLearningInfo{}
-		// Berechne Lernkosten mit GetLernCostNextLevel
-		//epCost, goldCost := calculateSkillLearningCosts(skill, character, rewardType)
-		err := calculateSkillLearnCostNewSystem(&request, levelResult, &remainingPP, &remainingGold, spellInfo)
-		epCost := 10000
-		goldCost := 50000
+
+		// Berechne Lernkosten mit calculateSkillLearnCostNewSystem
+		err := calculateSkillLearnCostNewSystem(&request, &levelResult, &remainingPP, &remainingGold, spellInfo)
+		epCost := 10000   // Fallback-Wert
+		goldCost := 50000 // Fallback-Wert
 		if err == nil {
 			epCost = levelResult.EP
 			goldCost = levelResult.GoldCost
@@ -1407,7 +1419,7 @@ func GetAvailableSkills(c *gin.Context) {
 }
 
 // GetAvailableSkills gibt alle verfügbaren Fertigkeiten mit Lernkosten zurück
-func GetAvailableSkillsNewSystem(c *gin.Context) {
+func GetAvailableSkills(c *gin.Context) {
 	characterID := c.Param("id")
 	rewardType := c.Query("reward_type")
 

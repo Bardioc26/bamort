@@ -34,7 +34,7 @@ func TestSkillLearningDialogWorkflow(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.learningType+"_"+tc.skillName, func(t *testing.T) {
 				router := gin.New()
-				router.GET("/api/characters/:id/reward-types", GetRewardTypes)
+				router.GET("/api/characters/:id/reward-types", GetRewardTypesOld)
 
 				url := "/api/characters/1/reward-types?learning_type=" + tc.learningType +
 					"&skill_name=" + tc.skillName + "&skill_type=" + tc.skillType
@@ -209,7 +209,7 @@ func TestSkillLearningDialogAuth(t *testing.T) {
 			c.Abort()
 		})
 
-		router.GET("/api/characters/:id/reward-types", GetRewardTypes)
+		router.GET("/api/characters/:id/reward-types", GetRewardTypesOld)
 
 		req, _ := http.NewRequest("GET", "/api/characters/1/reward-types", nil)
 		w := httptest.NewRecorder()
@@ -262,7 +262,7 @@ func TestRewardTypeVariations(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			router := gin.New()
-			router.GET("/api/characters/:id/reward-types", GetRewardTypes)
+			router.GET("/api/characters/:id/reward-types", GetRewardTypesOld)
 
 			url := "/api/characters/1/reward-types?learning_type=" + tc.learningType +
 				"&skill_type=" + tc.skillType + "&skill_name=TestSkill"

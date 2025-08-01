@@ -69,7 +69,7 @@ var AllowedGroups = map[CharClass]map[SkillGroup]bool}
 
 var Config LevelConfig // holds all loaded data
 
-func loadLevelingConfig(opts ...string) error {
+func loadLevelingConfigOld(opts ...string) error {
 	// Adjust path as needed
 	filePath := "../testdata/leveldata.json"
 	if len(opts) > 0 {
@@ -89,10 +89,10 @@ func loadLevelingConfig(opts ...string) error {
 	return nil
 }
 
-// CalculateSpellLearnCost combines SpellLearnCost with SpellEPPerSchoolByClass
-func CalculateSpellLearnCost(spell string, class string) (int, error) {
+// CalculateSpellLearnCostOld combines SpellLearnCost with SpellEPPerSchoolByClass
+func CalculateSpellLearnCostOld(spell string, class string) (int, error) {
 	if Config.AllowedSchools == nil {
-		loadLevelingConfig()
+		loadLevelingConfigOld()
 	}
 
 	var spl models.Spell
@@ -128,9 +128,9 @@ func CalculateSpellLearnCost(spell string, class string) (int, error) {
 	return totalEP, nil
 }
 
-// CalculateSkillLearnCost: erstmalige Kosten in EP
+// CalculateSkillLearnCostOld: erstmalige Kosten in EP
 // Then refer to Config in your calculations:
-func CalculateSkillLearnCost(skill string, class string) (int, error) {
+func CalculateSkillLearnCostOld(skill string, class string) (int, error) {
 	/*
 		if !Config.AllowedGroups[class][skill.Group] {
 			return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
@@ -206,9 +206,9 @@ func CalculateImprovementCost(skill string, class string, currentSkillLevel int)
 
 func CalculateLearnCost(skillType string, name string, class string) (int, error) {
 	if skillType == "skill" {
-		return CalculateSkillLearnCost(name, class)
+		return CalculateSkillLearnCostOld(name, class)
 	} else if skillType == "spell" {
-		return CalculateSpellLearnCost(name, class)
+		return CalculateSpellLearnCostOld(name, class)
 	}
 	return 0, errors.New("unknown skill type")
 }

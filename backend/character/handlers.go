@@ -144,7 +144,7 @@ func splitSkills(object []models.SkFertigkeit) ([]models.SkFertigkeit, []models.
 	//var categories map[string][]models.Fertigkeit
 	categories := make(map[string][]models.SkFertigkeit)
 	for _, skill := range object {
-		gsmsk := skill.GetGsm()
+		gsmsk := skill.GetSkillByName()
 		if gsmsk.Improvable {
 			category := "Unkategorisiert"
 			if gsmsk.ID != 0 && gsmsk.Category != "" {
@@ -163,7 +163,7 @@ func splitSkills(object []models.SkFertigkeit) ([]models.SkFertigkeit, []models.
 	return normSkills, innateSkills, categories
 }
 
-func GetLearnSkillCost(c *gin.Context) {
+func GetLearnSkillCostOld(c *gin.Context) {
 	// Get the character ID from the request
 	charID := c.Param("id")
 
@@ -187,7 +187,7 @@ func GetLearnSkillCost(c *gin.Context) {
 		return
 	}
 
-	cost, err := gsmaster.CalculateSkillLearnCost(skill.Name, character.Typ)
+	cost, err := gsmaster.CalculateSkillLearnCostOld(skill.Name, character.Typ)
 	if err != nil {
 		respondWithError(c, http.StatusBadRequest, "error getting costs to learn skill: "+err.Error())
 		return
@@ -197,7 +197,7 @@ func GetLearnSkillCost(c *gin.Context) {
 	c.JSON(http.StatusOK, cost)
 }
 
-func GetLearnSpellCost(c *gin.Context) {
+func GetLearnSpellCostOld(c *gin.Context) {
 	// Get the character ID from the request
 	charID := c.Param("id")
 
@@ -225,7 +225,7 @@ func GetLearnSpellCost(c *gin.Context) {
 		School: spell.Category,
 	}
 
-	cost, err := gsmaster.CalculateSpellLearnCost(spell.Name, character.Typ)
+	cost, err := gsmaster.CalculateSpellLearnCostOld(spell.Name, character.Typ)
 	if err != nil {
 		respondWithError(c, http.StatusBadRequest, "error getting costs to learn spell: "+err.Error())
 		return
@@ -236,94 +236,6 @@ func GetLearnSpellCost(c *gin.Context) {
 	c.JSON(http.StatusOK, sd)
 }
 
-/*
-func GetSkillNextLevelCosts(c *gin.Context) {
-	// Get the character ID from the request
-	charID := c.Param("id")
-
-	// Load the character from the database
-	var character Char
-	if err := character.FirstID(charID); err != nil {
-		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
-		return
-	}
-
-	for int, skill := range character.Fertigkeiten {
-		lCost, err := gsmaster.CalculateSkillImprovementCost(skill.Name, character.Typ, skill.Fertigkeitswert)
-		if err != nil {
-			respondWithError(c, http.StatusBadRequest, "error getting costs to learn skill: "+err.Error())
-			return
-		}
-		character.Fertigkeiten[int].LearningCost = *lCost
-	}
-
-	// Load the skill from the request
-	var s models.Fertigkeit
-	if err := c.ShouldBindJSON(&s); err != nil {
-		respondWithError(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	// Return the updated character
-	c.JSON(http.StatusOK, character.Fertigkeiten)
-}
-*/
-/*
-func GetSkillAllLevelCosts(c *gin.Context) {
-	// Get the character ID from the request
-	charID := c.Param("id")
-
-	// Load the character from the database
-	var character Char
-	if err := character.FirstID(charID); err != nil {
-		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve character")
-		return
-	}
-	var s LearnRequestStruct
-	if err := c.ShouldBindJSON(&s); err != nil {
-		respondWithError(c, http.StatusBadRequest, err.Error())
-		return
-	}
-	if s.Name == "" {
-		respondWithError(c, http.StatusBadRequest, "no name given")
-	}
-
-	costArr := make([]gsmaster.LearnCost, 0)
-	notfound := true
-	for _, skill := range character.Fertigkeiten {
-		if skill.Name == s.Name {
-			for i := skill.Fertigkeitswert; i <= 20; i++ {
-				lCost, err := gsmaster.CalculateSkillImprovementCost(skill.Name, character.Typ, skill.Fertigkeitswert)
-				if err != nil {
-					respondWithError(c, http.StatusBadRequest, "error getting costs to learn skill: "+err.Error())
-					return
-				}
-				costArr = append(costArr, *lCost)
-			}
-			notfound = false
-			break
-		}
-	}
-	if notfound {
-		for _, skill := range character.Waffenfertigkeiten {
-			if skill.Name == s.Name {
-				for i := skill.Fertigkeitswert; i <= 20; i++ {
-					lCost, err := gsmaster.CalculateSkillImprovementCost(skill.Name, character.Typ, skill.Fertigkeitswert)
-					if err != nil {
-						respondWithError(c, http.StatusBadRequest, "error getting costs to learn skill: "+err.Error())
-						return
-					}
-					costArr = append(costArr, *lCost)
-				}
-				break
-			}
-		}
-	}
-
-	// Return the updated character
-	c.JSON(http.StatusOK, costArr)
-}
-*/
 // ExperienceAndWealthResponse repräsentiert die Antwort für EP und Vermögen
 type ExperienceAndWealthResponse struct {
 	ExperiencePoints int `json:"experience_points"`
@@ -376,6 +288,7 @@ type UpdateExperienceRequest struct {
 }
 
 // UpdateCharacterExperience aktualisiert die Erfahrungspunkte eines Charakters
+// TODO Wenn EP verändert werden ändert sich auch ES
 func UpdateCharacterExperience(c *gin.Context) {
 	id := c.Param("id")
 	var character models.Char
@@ -667,8 +580,8 @@ type LearnSpellRequest struct {
 	Notes string `json:"notes,omitempty"`
 }
 
-// calculateMultiLevelCosts berechnet die Kosten für mehrere Level-Verbesserungen mit gsmaster.GetLernCostNextLevel
-func calculateMultiLevelCosts(character *models.Char, skillName string, currentLevel int, levelsToLearn []int, rewardType string, usePP, useGold int) (*models.LearnCost, error) {
+// calculateMultiLevelCostsOld berechnet die Kosten für mehrere Level-Verbesserungen mit gsmaster.GetLernCostNextLevel
+func calculateMultiLevelCostsOld(character *models.Char, skillName string, currentLevel int, levelsToLearn []int, rewardType string, usePP, useGold int) (*models.LearnCost, error) {
 	if len(levelsToLearn) == 0 {
 		return nil, fmt.Errorf("keine Level zum Lernen angegeben")
 	}
@@ -714,14 +627,14 @@ func calculateMultiLevelCosts(character *models.Char, skillName string, currentL
 
 	// Berechne Kosten für jedes Level
 	for _, targetLevel := range sortedLevels {
-		classAbr := getCharacterClass(character)
-		cat, difficulty, _ := gsmaster.FindBestCategoryForSkillLearning(skillName, classAbr)
+		classAbr := getCharacterClassOld(character)
+		cat, difficulty, _ := gsmaster.FindBestCategoryForSkillLearningOld(skillName, classAbr)
 		levelResult := gsmaster.SkillCostResultNew{
 			CharacterID:    fmt.Sprintf("%d", character.ID),
 			CharacterClass: classAbr,
 			SkillName:      skillName,
 			Category:       cat,
-			Difficulty:     gsmaster.GetSkillDifficulty(difficulty, skillName),
+			Difficulty:     gsmaster.GetSkillDifficultyOld(difficulty, skillName),
 			TargetLevel:    targetLevel,
 		}
 
@@ -731,7 +644,7 @@ func calculateMultiLevelCosts(character *models.Char, skillName string, currentL
 		tempRequest.UsePP = remainingPP
 		tempRequest.UseGold = remainingGold
 
-		err := gsmaster.GetLernCostNextLevel(&tempRequest, &levelResult, rewardTypePtr, targetLevel, character.Typ)
+		err := gsmaster.GetLernCostNextLevelOld(&tempRequest, &levelResult, rewardTypePtr, targetLevel, character.Typ)
 		if err != nil {
 			return nil, fmt.Errorf("fehler bei Level %d: %v", targetLevel, err)
 		}
@@ -758,16 +671,16 @@ func calculateMultiLevelCosts(character *models.Char, skillName string, currentL
 	return totalCost, nil
 }
 
-// getCharacterClass gibt die Charakterklassen-Abkürzung zurück
-func getCharacterClass(character *models.Char) string {
+// getCharacterClassOld gibt die Charakterklassen-Abkürzung zurück
+func getCharacterClassOld(character *models.Char) string {
 	if len(character.Typ) > 3 {
-		return gsmaster.GetClassAbbreviation(character.Typ)
+		return gsmaster.GetClassAbbreviationOld(character.Typ)
 	}
 	return character.Typ
 }
 
-// LearnSkill lernt eine neue Fertigkeit und erstellt Audit-Log-Einträge
-func LearnSkill(c *gin.Context) {
+// LearnSkillOld lernt eine neue Fertigkeit und erstellt Audit-Log-Einträge
+func LearnSkillOld(c *gin.Context) {
 	charID := c.Param("id")
 	var character models.Char
 
@@ -792,7 +705,7 @@ func LearnSkill(c *gin.Context) {
 	// Verwende Klassenabkürzung wenn der Typ länger als 3 Zeichen ist
 	var characterClass string
 	if len(character.Typ) > 3 {
-		characterClass = gsmaster.GetClassAbbreviation(character.Typ)
+		characterClass = gsmaster.GetClassAbbreviationOld(character.Typ)
 	} else {
 		characterClass = character.Typ
 	}
@@ -829,7 +742,7 @@ func LearnSkill(c *gin.Context) {
 		costResult.CharacterClass = characterClass
 		costResult.SkillName = request.Name
 
-		err = gsmaster.GetLernCostNextLevel(&tempRequest, &costResult, request.Reward, nextLevel, character.Rasse)
+		err = gsmaster.GetLernCostNextLevelOld(&tempRequest, &costResult, request.Reward, nextLevel, character.Rasse)
 		if err != nil {
 			respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fehler bei Level %d: %v", nextLevel, err))
 			return
@@ -972,8 +885,8 @@ func LearnSkill(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// ImproveSkill verbessert eine bestehende Fertigkeit und erstellt Audit-Log-Einträge
-func ImproveSkill(c *gin.Context) {
+// ImproveSkillOld verbessert eine bestehende Fertigkeit und erstellt Audit-Log-Einträge
+func ImproveSkillOld(c *gin.Context) {
 	// Verwende gsmaster.LernCostRequest direkt
 	var request gsmaster.LernCostRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -997,7 +910,7 @@ func ImproveSkill(c *gin.Context) {
 	// Verwende Klassenabkürzung wenn der Typ länger als 3 Zeichen ist
 	var characterClass string
 	if len(character.Typ) > 3 {
-		characterClass = gsmaster.GetClassAbbreviation(character.Typ)
+		characterClass = gsmaster.GetClassAbbreviationOld(character.Typ)
 	} else {
 		characterClass = character.Typ
 	}
@@ -1038,7 +951,7 @@ func ImproveSkill(c *gin.Context) {
 		costResult.CharacterClass = characterClass
 		costResult.SkillName = request.Name
 
-		err = gsmaster.GetLernCostNextLevel(&tempRequest, &costResult, request.Reward, nextLevel, character.Rasse)
+		err = gsmaster.GetLernCostNextLevelOld(&tempRequest, &costResult, request.Reward, nextLevel, character.Rasse)
 		if err != nil {
 			respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fehler bei Level %d: %v", nextLevel, err))
 			return
@@ -1195,8 +1108,8 @@ func ImproveSkill(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// LearnSpell lernt einen neuen Zauber und erstellt Audit-Log-Einträge
-func LearnSpell(c *gin.Context) {
+// LearnSpellOld lernt einen neuen Zauber und erstellt Audit-Log-Einträge
+func LearnSpellOld(c *gin.Context) {
 	charID := c.Param("id")
 	var character models.Char
 
@@ -1218,7 +1131,7 @@ func LearnSpell(c *gin.Context) {
 		Action: "learn",
 	}
 
-	cost, _, _, err := calculateSingleCost(&character, &costRequest)
+	cost, _, _, err := calculateSingleCostOld(&character, &costRequest)
 	if err != nil {
 		respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
 		return
@@ -1267,8 +1180,8 @@ func LearnSpell(c *gin.Context) {
 	})
 }
 
-// GetRewardTypes liefert verfügbare Belohnungsarten für ein bestimmtes Lernszenario
-func GetRewardTypes(c *gin.Context) {
+// GetRewardTypesOld liefert verfügbare Belohnungsarten für ein bestimmtes Lernszenario
+func GetRewardTypesOld(c *gin.Context) {
 	characterID := c.Param("id")
 	learningType := c.Query("learning_type") // 'improve', 'learn', 'spell'
 	skillName := c.Query("skill_name")
@@ -1381,7 +1294,7 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 		// Erstelle SkillCostResultNew
 		levelResult := gsmaster.SkillCostResultNew{
 			CharacterID:    fmt.Sprintf("%d", character.ID),
-			CharacterClass: getCharacterClass(&character),
+			CharacterClass: getCharacterClassOld(&character),
 			SkillName:      skill.Name,
 			TargetLevel:    1,
 		}
@@ -1390,7 +1303,7 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 		remainingGold := request.UseGold
 
 		// Hole die vollständigen Skill-Informationen für die Kostenberechnung
-		skillLearningInfo, err := models.GetSkillCategoryAndDifficulty(skill.Name, getCharacterClass(&character))
+		skillLearningInfo, err := models.GetSkillCategoryAndDifficultyNew(skill.Name, getCharacterClassOld(&character))
 		if err != nil {
 			// Fallback für unbekannte Skills
 			skillLearningInfo = &models.SkillLearningInfo{
@@ -1445,7 +1358,7 @@ func GetAvailableSpellsNewSystem(c *gin.Context) {
 		return
 	}
 
-	charakteClass := getCharacterClass(&character)
+	charakteClass := getCharacterClassOld(&character)
 	// Hole alle verfügbaren Zauber aus der gsmaster Datenbank, aber filtere Placeholder aus
 	var allSpells []models.Spell
 
@@ -1535,8 +1448,8 @@ func GetAvailableSpellsNewSystem(c *gin.Context) {
 	})
 }
 
-// GetAvailableSkills gibt alle verfügbaren Fertigkeiten mit Lernkosten zurück
-func GetAvailableSkills(c *gin.Context) {
+// GetAvailableSkillsOld gibt alle verfügbaren Fertigkeiten mit Lernkosten zurück
+func GetAvailableSkillsOld(c *gin.Context) {
 	characterID := c.Param("id")
 	rewardType := c.Query("reward_type")
 
@@ -1581,7 +1494,7 @@ func GetAvailableSkills(c *gin.Context) {
 		}
 
 		// Berechne Lernkosten mit GetLernCostNextLevel
-		epCost, goldCost := calculateSkillLearningCosts(skill, character, rewardType)
+		epCost, goldCost := calculateSkillLearningCostsOld(skill, character, rewardType)
 
 		skillInfo := gin.H{
 			"name":     skill.Name,
@@ -1602,8 +1515,8 @@ func GetAvailableSkills(c *gin.Context) {
 	})
 }
 
-// calculateSkillLearningCosts berechnet die EP- und Goldkosten für das Lernen einer Fertigkeit mit GetLernCostNextLevel
-func calculateSkillLearningCosts(skill models.Skill, character models.Char, rewardType string) (int, int) {
+// calculateSkillLearningCostsOld berechnet die EP- und Goldkosten für das Lernen einer Fertigkeit mit GetLernCostNextLevel
+func calculateSkillLearningCostsOld(skill models.Skill, character models.Char, rewardType string) (int, int) {
 	// Erstelle LernCostRequest für das Lernen (Level 0 -> 1)
 	var rewardTypePtr *string
 	if rewardType != "" && rewardType != "default" {
@@ -1625,7 +1538,7 @@ func calculateSkillLearningCosts(skill models.Skill, character models.Char, rewa
 	// Erstelle SkillCostResultNew
 	costResult := gsmaster.SkillCostResultNew{
 		CharacterID:    fmt.Sprintf("%d", character.ID),
-		CharacterClass: getCharacterClass(&character),
+		CharacterClass: getCharacterClassOld(&character),
 		SkillName:      skill.Name,
 		Category:       skill.Category,
 		Difficulty:     skill.Difficulty,
@@ -1633,7 +1546,7 @@ func calculateSkillLearningCosts(skill models.Skill, character models.Char, rewa
 	}
 
 	// Berechne Kosten mit GetLernCostNextLevel
-	err := gsmaster.GetLernCostNextLevel(&request, &costResult, rewardTypePtr, 1, character.Typ)
+	err := gsmaster.GetLernCostNextLevelOld(&request, &costResult, rewardTypePtr, 1, character.Typ)
 	if err != nil {
 		// Fallback zu Standard-Kosten bei Fehler
 		epCost := 100

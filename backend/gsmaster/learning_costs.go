@@ -322,15 +322,15 @@ func GetLearningCosts() *LearningCostsTable {
 	return learningCosts
 }
 
-// CalculateSkillLearningCosts berechnet die Kosten für das Lernen einer Fertigkeit
-func CalculateSkillLearningCosts(characterClass, category, difficulty string) (*SkillCostResult, error) {
+// CalculateSkillLearningCostsOld berechnet die Kosten für das Lernen einer Fertigkeit
+func CalculateSkillLearningCostsOld(characterClass, category, difficulty string) (*SkillCostResult, error) {
 	//Überprüfe ob die tabelle vorhanden ist in der die EP-Kosten pro LE for die einzelnen Kategorien für jede Charakterklasse definiert sind
 	if learningCosts.EPPerTE == nil {
 		return nil, errors.New("keine EP-per-TE-Definition gefunden")
 	}
 
 	// Konvertiere Vollnamen der Charakterklasse zu Abkürzungen falls nötig
-	classKey := GetClassAbbreviation(characterClass)
+	classKey := GetClassAbbreviationOld(characterClass)
 
 	// Hole die EP-Kosten pro TE für die angegebene Charakterklasse
 	classData, exists := learningCosts.EPPerTE[classKey]
@@ -373,14 +373,14 @@ func CalculateSkillLearningCosts(characterClass, category, difficulty string) (*
 	}, nil
 }
 
-// CalculateSpellLearningCosts berechnet die Kosten für das Lernen eines Zaubers
-func CalculateSpellLearningCosts(characterClass, spellSchool string, leNeeded int) (*SkillCostResult, error) {
+// CalculateSpellLearningCostsOld berechnet die Kosten für das Lernen eines Zaubers
+func CalculateSpellLearningCostsOld(characterClass, spellSchool string, leNeeded int) (*SkillCostResult, error) {
 	if learningCosts.SpellEPPerLE == nil {
 		return nil, errors.New("keine Zauber-EP-Definition gefunden")
 	}
 
 	// Konvertiere Vollnamen zu Abkürzungen falls nötig
-	classKey := GetClassAbbreviation(characterClass)
+	classKey := GetClassAbbreviationOld(characterClass)
 
 	classData, exists := learningCosts.SpellEPPerLE[classKey]
 	if !exists {
@@ -438,13 +438,13 @@ type SkillCostResultNew struct {
 	Details        map[string]interface{} `json:"details"`
 }
 
-// CalculateDetailedSkillLearningCost berechnet die Kosten für das Lernen einer Fertigkeit mit Details
-func CalculateDetailedSkillLearningCost(skillName, characterClass string) (*models.LearnCost, error) {
+// CalculateDetailedSkillLearningCostOld berechnet die Kosten für das Lernen einer Fertigkeit mit Details
+func CalculateDetailedSkillLearningCostOld(skillName, characterClass string) (*models.LearnCost, error) {
 	// Fallback-Werte für Skills ohne definierte Kategorie/Schwierigkeit
-	category := GetDefaultCategory(skillName)
-	difficulty := GetDefaultDifficulty(skillName)
+	category := GetDefaultCategoryOld(skillName)
+	difficulty := GetDefaultDifficultyOld(skillName)
 
-	result, err := CalculateSkillLearningCosts(characterClass, category, difficulty)
+	result, err := CalculateSkillLearningCostsOld(characterClass, category, difficulty)
 	if err != nil {
 		return nil, err
 	}
@@ -458,15 +458,15 @@ func CalculateDetailedSkillLearningCost(skillName, characterClass string) (*mode
 	}, nil
 }
 
-// CalculateDetailedSkillImprovementCost berechnet die Kosten für die Verbesserung einer Fertigkeit
-func CalculateDetailedSkillImprovementCost(skillName, characterClass string, currentLevel int) (*models.LearnCost, error) {
+// CalculateDetailedSkillImprovementCostOld berechnet die Kosten für die Verbesserung einer Fertigkeit
+func CalculateDetailedSkillImprovementCostOld(skillName, characterClass string, currentLevel int) (*models.LearnCost, error) {
 	// Fallback-Werte für Skills ohne definierte Kategorie/Schwierigkeit
-	category := GetDefaultCategory(skillName)
-	difficulty := GetDefaultDifficulty(skillName)
+	category := GetDefaultCategoryOld(skillName)
+	difficulty := GetDefaultDifficultyOld(skillName)
 
 	// Verwende die Lernkosten als Basis für Verbesserungen
 	// In einer vollständigen Implementierung würden hier die ImprovementCost-Tabellen verwendet
-	baseCost, err := CalculateSkillLearningCosts(characterClass, category, difficulty)
+	baseCost, err := CalculateSkillLearningCostsOld(characterClass, category, difficulty)
 	if err != nil {
 		return nil, err
 	}
@@ -490,15 +490,15 @@ func CalculateDetailedSkillImprovementCost(skillName, characterClass string, cur
 	}, nil
 }
 
-// CalculateDetailedSpellLearningCost berechnet die Kosten für das Lernen eines Zaubers
-func CalculateDetailedSpellLearningCost(spellName, characterClass string) (*models.LearnCost, error) {
+// CalculateDetailedSpellLearningCostOld berechnet die Kosten für das Lernen eines Zaubers
+func CalculateDetailedSpellLearningCostOld(spellName, characterClass string) (*models.LearnCost, error) {
 	// Standard-Zauberschule bestimmen
-	spellSchool := getDefaultSpellSchool(spellName)
+	spellSchool := getDefaultSpellSchoolOld(spellName)
 
 	// Standard LE für Zauber
 	standardLE := 4
 
-	result, err := CalculateSpellLearningCosts(characterClass, spellSchool, standardLE)
+	result, err := CalculateSpellLearningCostsOld(characterClass, spellSchool, standardLE)
 	if err != nil {
 		return nil, err
 	}
@@ -624,8 +624,8 @@ func GetAvailableSkillCategories(skillName string) []SkillCategoryOption {
 	}
 
 	// Fallback: verwende Standard-Mapping (erste gefundene Kategorie)
-	category := GetDefaultCategory(skillName)
-	difficulty := GetDefaultDifficulty(skillName)
+	category := GetDefaultCategoryOld(skillName)
+	difficulty := GetDefaultDifficultyOld(skillName)
 
 	// Bestimme LE basierend auf Schwierigkeit
 	le := 2 // Standard
@@ -645,8 +645,8 @@ func GetAvailableSkillCategories(skillName string) []SkillCategoryOption {
 	}
 }
 
-// GetDefaultCategory gibt die erste (bevorzugte) Kategorie für eine Fertigkeit zurück
-func GetDefaultCategory(skillName string) string {
+// GetDefaultCategoryOld gibt die erste (bevorzugte) Kategorie für eine Fertigkeit zurück
+func GetDefaultCategoryOld(skillName string) string {
 	// WICHTIG: Wir verwenden bewusst die erste gefundene Kategorie als Standard.
 	// Für das Lernen ist es unerheblich, aber später wird es für andere Dinge wichtig werden.
 	// Die Reihenfolge der Kategorien ist nach Wichtigkeit/Häufigkeit sortiert.
@@ -711,11 +711,11 @@ func GetDefaultCategory(skillName string) string {
 
 func GetDifficulty(skillName string, category string) string {
 	// aktuell nur ein Wrapper das die Stantruktur noch keine Fettigkeiten in mehreren Kategorien enthält
-	return GetDefaultDifficulty(skillName)
+	return GetDefaultDifficultyOld(skillName)
 }
 
-// GetDefaultDifficulty gibt die erste (bevorzugte) Schwierigkeit für eine Fertigkeit zurück
-func GetDefaultDifficulty(skillName string) string {
+// GetDefaultDifficultyOld gibt die erste (bevorzugte) Schwierigkeit für eine Fertigkeit zurück
+func GetDefaultDifficultyOld(skillName string) string {
 	// WICHTIG: Korrespondiert mit getDefaultCategory() - verwendet die Schwierigkeit
 	// der ersten (bevorzugten) Kategorie für konsistente Ergebnisse.
 	// Schwierigkeitszuordnung basierend auf dem Fertigkeitsnamen und Lerntabellen.md
@@ -791,8 +791,8 @@ func GetDefaultDifficulty(skillName string) string {
 	return "normal"
 }
 
-// getDefaultSpellSchool gibt eine Standard-Zauberschule für einen Zauber zurück
-func getDefaultSpellSchool(spellName string) string {
+// getDefaultSpellSchoolOld gibt eine Standard-Zauberschule für einen Zauber zurück
+func getDefaultSpellSchoolOld(spellName string) string {
 	// Vereinfachte Zuordnung von Zauber zu Schulen
 	spellSchoolMap := map[string]string{
 		"Licht":          "Erschaffen",
@@ -815,8 +815,8 @@ func getDefaultSpellSchool(spellName string) string {
 	return "Verändern"
 }
 
-// GetClassAbbreviation konvertiert Charakterklassen-Vollnamen zu Abkürzungen
-func GetClassAbbreviation(characterClass string) string {
+// GetClassAbbreviationOld konvertiert Charakterklassen-Vollnamen zu Abkürzungen
+func GetClassAbbreviationOld(characterClass string) string {
 	// Mapping von Vollnamen zu Abkürzungen
 	classMap := map[string]string{
 		// Abenteurer-Klassen

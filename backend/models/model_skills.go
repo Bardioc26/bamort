@@ -40,7 +40,7 @@ func (object *SkZauber) TableName() string {
 	return dbPrefix + "_" + "spells"
 }
 
-func (object *SkFertigkeit) GetGsm() *Skill {
+func (object *SkFertigkeit) GetSkillByName() *Skill {
 	var gsmsk Skill
 	gsmsk.First(object.Name)
 	if gsmsk.ID == 0 {

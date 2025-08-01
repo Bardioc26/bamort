@@ -94,7 +94,7 @@ func TestImproveSkillHandler(t *testing.T) {
 		c.Request = req
 
 		// Call the actual handler function
-		ImproveSkill(c)
+		ImproveSkillOld(c)
 
 		// Print the actual response to see what we get
 		t.Logf("Response Status: %d", w.Code)
@@ -204,7 +204,7 @@ func TestImproveSkillHandler(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 		c.Request = req
 
-		ImproveSkill(c)
+		ImproveSkillOld(c)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code, "Should return 400 for insufficient EP")
 
@@ -234,7 +234,7 @@ func TestImproveSkillHandler(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 		c.Request = req
 
-		ImproveSkill(c)
+		ImproveSkillOld(c)
 
 		assert.Equal(t, http.StatusNotFound, w.Code, "Should return 404 for non-existent character")
 

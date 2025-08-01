@@ -85,7 +85,7 @@ func GetLernCost(c *gin.Context) {
 
 	// Verwende Klassenabkürzung wenn der Typ länger als 3 Zeichen ist
 	if len(character.Typ) > 3 {
-		costResult.CharacterClass = gsmaster.GetClassAbbreviation(character.Typ)
+		costResult.CharacterClass = gsmaster.GetClassAbbreviationOld(character.Typ)
 	} else {
 		costResult.CharacterClass = character.Typ
 	}
@@ -108,7 +108,7 @@ func GetLernCost(c *gin.Context) {
 			Difficulty:     costResult.Difficulty,
 			TargetLevel:    1, // Lernkosten sind für das Erlernen der Fertigkeit (Level 1)
 		}
-		err := gsmaster.GetLernCostNextLevel(&request, &levelResult, request.Reward, 1, character.Typ)
+		err := gsmaster.GetLernCostNextLevelOld(&request, &levelResult, request.Reward, 1, character.Typ)
 		if err != nil {
 			respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
 			return
@@ -125,7 +125,7 @@ func GetLernCost(c *gin.Context) {
 				Difficulty:     costResult.Difficulty,
 				TargetLevel:    i,
 			}
-			err := gsmaster.GetLernCostNextLevel(&request, &levelResult, request.Reward, i, character.Typ)
+			err := gsmaster.GetLernCostNextLevelOld(&request, &levelResult, request.Reward, i, character.Typ)
 			if err != nil {
 				respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
 				return
@@ -220,7 +220,7 @@ func GetLernCostNewSystem(c *gin.Context) {
 			response = append(response, levelResult)
 		} else {
 			// Skill learning logic
-			skillInfo, err := models.GetSkillCategoryAndDifficulty(skillName, characterClass)
+			skillInfo, err := models.GetSkillCategoryAndDifficultyNew(skillName, characterClass)
 			if err != nil {
 				respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fertigkeit '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))
 				return
@@ -246,7 +246,7 @@ func GetLernCostNewSystem(c *gin.Context) {
 	} else {
 		// Für "improve" Aktion: berechne für jedes Level von current+1 bis 18
 		// Improvement only works on skills, not spells
-		skillInfo, err := models.GetSkillCategoryAndDifficulty(skillName, characterClass)
+		skillInfo, err := models.GetSkillCategoryAndDifficultyNew(skillName, characterClass)
 		if err != nil {
 			respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fertigkeit '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))
 			return
@@ -572,7 +572,7 @@ func GetSkillCost(c *gin.Context) {
 	}
 
 	// Single cost calculation
-	cost, originalCost, skillInfo, err := calculateSingleCost(&character, &request)
+	cost, originalCost, skillInfo, err := calculateSingleCostOld(&character, &request)
 	if err != nil {
 		respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
 		return
@@ -581,7 +581,7 @@ func GetSkillCost(c *gin.Context) {
 	// Originalkosten berechnen (ohne PP-Reduktion)
 	originalRequest := request
 	originalRequest.UsePP = 0
-	_, _, _, err = calculateSingleCost(&character, &originalRequest)
+	_, _, _, err = calculateSingleCostOld(&character, &originalRequest)
 	if err != nil {
 		respondWithError(c, http.StatusBadRequest, "Fehler bei der ursprünglichen Kostenberechnung: "+err.Error())
 		return
@@ -678,32 +678,32 @@ func getCurrentSkillLevel(character *models.Char, skillName, skillType string) i
 }
 
 // Helper function to calculate single cost
-func calculateSingleCost(character *models.Char, request *SkillCostRequest) (*models.LearnCost, *models.LearnCost, *skillInfo, error) {
+func calculateSingleCostOld(character *models.Char, request *SkillCostRequest) (*models.LearnCost, *models.LearnCost, *skillInfo, error) {
 	var cost *models.LearnCost
 	var err error
 	var info skillInfo
 
 	switch {
 	case request.Action == "learn" && request.Type == "skill":
-		cost, err = gsmaster.CalculateDetailedSkillLearningCost(request.Name, character.Typ)
+		cost, err = gsmaster.CalculateDetailedSkillLearningCostOld(request.Name, character.Typ)
 		if err == nil {
-			info = getSkillInfo(request.Name, request.Type)
+			info = getSkillInfoOld(request.Name, request.Type)
 		}
 
 	case request.Action == "improve" && request.Type == "skill":
-		cost, err = gsmaster.CalculateDetailedSkillImprovementCost(request.Name, character.Typ, request.CurrentLevel)
+		cost, err = gsmaster.CalculateDetailedSkillImprovementCostOld(request.Name, character.Typ, request.CurrentLevel)
 		if err == nil {
-			info = getSkillInfo(request.Name, request.Type)
+			info = getSkillInfoOld(request.Name, request.Type)
 		}
 
 	case request.Action == "improve" && request.Type == "weapon":
-		cost, err = gsmaster.CalculateDetailedSkillImprovementCost(request.Name, character.Typ, request.CurrentLevel)
+		cost, err = gsmaster.CalculateDetailedSkillImprovementCostOld(request.Name, character.Typ, request.CurrentLevel)
 		if err == nil {
-			info = getSkillInfo(request.Name, request.Type)
+			info = getSkillInfoOld(request.Name, request.Type)
 		}
 
 	case request.Action == "learn" && request.Type == "spell":
-		cost, err = gsmaster.CalculateDetailedSpellLearningCost(request.Name, character.Typ)
+		cost, err = gsmaster.CalculateDetailedSpellLearningCostOld(request.Name, character.Typ)
 		if err == nil {
 			info = getSpellInfo(request.Name)
 		}
@@ -813,7 +813,7 @@ func calculateMultiLevelCost(character *models.Char, request *SkillCostRequest) 
 			tempRequest.UsePP = 0
 		}
 
-		cost, originalCost, skillInfo, err := calculateSingleCost(character, &tempRequest)
+		cost, originalCost, skillInfo, err := calculateSingleCostOld(character, &tempRequest)
 		if err != nil {
 			continue
 		}
@@ -821,7 +821,7 @@ func calculateMultiLevelCost(character *models.Char, request *SkillCostRequest) 
 		// Originalkosten berechnen (ohne PP)
 		originalRequest := tempRequest
 		originalRequest.UsePP = 0
-		_, _, _, _ = calculateSingleCost(character, &originalRequest)
+		_, _, _, _ = calculateSingleCostOld(character, &originalRequest)
 
 		// PP-Informationen sammeln (fertigkeitsspezifisch)
 		availablePP := getPPForSkill(character, request.Name)
@@ -908,7 +908,7 @@ type skillInfo struct {
 	Difficulty string
 }
 
-func getSkillInfo(skillName, skillType string) skillInfo {
+func getSkillInfoOld(skillName, skillType string) skillInfo {
 	var skill models.Skill
 	if err := skill.First(skillName); err != nil {
 		return skillInfo{Category: "unknown", Difficulty: "unknown"}
@@ -920,12 +920,12 @@ func getSkillInfo(skillName, skillType string) skillInfo {
 
 	if category == "" {
 		// Standard-Kategorien basierend auf Skill-Namen
-		category = gsmaster.GetDefaultCategory(skillName)
+		category = gsmaster.GetDefaultCategoryOld(skillName)
 	}
 
 	if difficulty == "" {
 		// Standard-Schwierigkeit für verschiedene Skills
-		difficulty = gsmaster.GetDefaultDifficulty(skillName)
+		difficulty = gsmaster.GetDefaultDifficultyOld(skillName)
 	}
 
 	return skillInfo{Category: category, Difficulty: difficulty}
@@ -1039,7 +1039,7 @@ func applyPPReduction(request *SkillCostRequest, cost *models.LearnCost, availab
 func CalcSkillLearnCost(req *gsmaster.LernCostRequest, skillCostInfo *gsmaster.SkillCostResultNew) error {
 	// Fallback-Werte für Skills ohne definierte Kategorie/Schwierigkeit
 
-	result, err := gsmaster.CalculateSkillLearningCosts(skillCostInfo.CharacterClass, skillCostInfo.Category, skillCostInfo.Difficulty)
+	result, err := gsmaster.CalculateSkillLearningCostsOld(skillCostInfo.CharacterClass, skillCostInfo.Category, skillCostInfo.Difficulty)
 	if err != nil {
 		return err
 	}

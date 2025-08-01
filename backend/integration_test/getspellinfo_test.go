@@ -55,7 +55,7 @@ func TestGetSpellInfoIntegration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.spellName, func(t *testing.T) {
-			school, level, err := gsmaster.GetSpellInfo(tt.spellName)
+			school, level, err := gsmaster.GetSpellInfoNew(tt.spellName)
 
 			if tt.expectError {
 				if err == nil {

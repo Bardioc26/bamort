@@ -258,27 +258,27 @@ func TestHelperFunctions(t *testing.T) {
 func TestGSMasterIntegration(t *testing.T) {
 	t.Run("GetDefaultCategory integration", func(t *testing.T) {
 		// Test that we can access the exported function from gsmaster
-		category := gsmaster.GetDefaultCategory("Menschenkenntnis")
+		category := gsmaster.GetDefaultCategoryOld("Menschenkenntnis")
 		assert.Equal(t, "Sozial", category, "Should return correct category for Menschenkenntnis")
 
-		category = gsmaster.GetDefaultCategory("Stichwaffen")
+		category = gsmaster.GetDefaultCategoryOld("Stichwaffen")
 		assert.Equal(t, "Waffen", category, "Should return correct category for Stichwaffen")
 
 		// Test fallback for unknown skill
-		category = gsmaster.GetDefaultCategory("NonExistentSkill")
+		category = gsmaster.GetDefaultCategoryOld("NonExistentSkill")
 		assert.Equal(t, "Alltag", category, "Should return default category for unknown skill")
 	})
 
 	t.Run("GetDefaultDifficulty integration", func(t *testing.T) {
 		// Test that we can access the exported function from gsmaster
-		difficulty := gsmaster.GetDefaultDifficulty("Menschenkenntnis")
+		difficulty := gsmaster.GetDefaultDifficultyOld("Menschenkenntnis")
 		assert.Equal(t, "schwer", difficulty, "Should return correct difficulty for Menschenkenntnis")
 
-		difficulty = gsmaster.GetDefaultDifficulty("Stichwaffen")
+		difficulty = gsmaster.GetDefaultDifficultyOld("Stichwaffen")
 		assert.Equal(t, "leicht", difficulty, "Should return correct difficulty for Stichwaffen")
 
 		// Test fallback for unknown skill
-		difficulty = gsmaster.GetDefaultDifficulty("NonExistentSkill")
+		difficulty = gsmaster.GetDefaultDifficultyOld("NonExistentSkill")
 		assert.Equal(t, "normal", difficulty, "Should return default difficulty for unknown skill")
 	})
 
@@ -319,8 +319,8 @@ func TestGSMasterIntegration(t *testing.T) {
 		skillName := "Menschenkenntnis"
 
 		// Get skill info using exported functions
-		category := gsmaster.GetDefaultCategory(skillName)
-		difficulty := gsmaster.GetDefaultDifficulty(skillName)
+		category := gsmaster.GetDefaultCategoryOld(skillName)
+		difficulty := gsmaster.GetDefaultDifficultyOld(skillName)
 
 		assert.Equal(t, "Sozial", category, "Should get correct category from gsmaster")
 		assert.Equal(t, "schwer", difficulty, "Should get correct difficulty from gsmaster")

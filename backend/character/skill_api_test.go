@@ -52,7 +52,7 @@ func TestGetAvailableSkills(t *testing.T) {
 		fmt.Printf("Character EP: %d, Gold: %d\n", testChar.Erfahrungsschatz.EP, testChar.Vermoegen.Goldstücke)
 
 		// Call the handler function
-		GetAvailableSkills(c)
+		GetAvailableSkillsOld(c)
 
 		// Print the response for debugging
 		fmt.Printf("Response Status: %d\n", w.Code)
@@ -145,7 +145,7 @@ func TestGetAvailableSkills(t *testing.T) {
 		fmt.Printf("Test: Get available skills for character ID %s (noGold reward)\n", characterID)
 
 		// Call the handler function
-		GetAvailableSkills(c)
+		GetAvailableSkillsOld(c)
 
 		// Print the response for debugging
 		fmt.Printf("Response Status: %d\n", w.Code)
@@ -193,7 +193,7 @@ func TestGetAvailableSkills(t *testing.T) {
 		c.Request = req
 		c.Params = []gin.Param{{Key: "id", Value: "99999"}}
 
-		GetAvailableSkills(c)
+		GetAvailableSkillsOld(c)
 
 		// Should return 404
 		assert.Equal(t, http.StatusNotFound, w.Code, "Status code should be 404 Not Found")
@@ -225,7 +225,7 @@ func TestGetAvailableSkills(t *testing.T) {
 		c.Request = req
 		c.Params = []gin.Param{{Key: "id", Value: characterID}}
 
-		GetAvailableSkills(c)
+		GetAvailableSkillsOld(c)
 
 		assert.Equal(t, http.StatusOK, w.Code, "Status code should be 200 OK")
 

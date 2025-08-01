@@ -24,19 +24,19 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	// im Frontend wir nur noch der neue Endpunkt benutzt
 	//charGrp.POST("/lerncost", GetLernCost)              // alter Hauptendpunkt für alle Kostenberechnungen (verwendet lerningCostsData)
 	charGrp.POST("/lerncost-new", GetLernCostNewSystem) // neuer Hauptendpunkt für alle Kostenberechnungen (verwendet neue Datenbank)
-	charGrp.POST("/improve-skill", ImproveSkill)        // Fertigkeit verbessern
+	charGrp.POST("/improve-skill", ImproveSkillOld)     // Fertigkeit verbessern
 
 	// Lernen und Verbessern (mit automatischem Audit-Log)
-	charGrp.POST("/:id/learn-skill", LearnSkill) // Fertigkeit lernen
-	charGrp.POST("/:id/learn-spell", LearnSpell) // Zauber lernen
+	charGrp.POST("/:id/learn-skill", LearnSkillOld) // Fertigkeit lernen
+	charGrp.POST("/:id/learn-spell", LearnSpellOld) // Zauber lernen
 
 	// Fertigkeiten-Information
-	charGrp.GET("/:id/available-skills", GetAvailableSkills)           // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
+	charGrp.GET("/:id/available-skills", GetAvailableSkillsOld)        // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
 	charGrp.POST("/available-skills-new", GetAvailableSkillsNewSystem) // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
 	charGrp.POST("/available-spells-new", GetAvailableSpellsNewSystem) // Verfügbare Zauber mit Kosten (bereits gelernte ausgeschlossen)
 
 	// Belohnungsarten für verschiedene Lernszenarien
-	charGrp.GET("/:id/reward-types", GetRewardTypes) // Verfügbare Belohnungsarten je nach Kontext
+	charGrp.GET("/:id/reward-types", GetRewardTypesOld) // Verfügbare Belohnungsarten je nach Kontext
 
 	// Praxispunkte-Verwaltung
 	charGrp.GET("/:id/practice-points", GetPracticePoints)

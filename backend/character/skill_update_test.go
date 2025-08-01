@@ -124,7 +124,7 @@ func TestImproveSkillUpdatesLevel(t *testing.T) {
 		c.Request = req
 
 		// Call the actual handler function
-		ImproveSkill(c)
+		ImproveSkillOld(c)
 
 		// Print the actual response to see what we get
 		t.Logf("Response Status: %d", w.Code)
@@ -180,7 +180,7 @@ func TestImproveSkillUpdatesLevel(t *testing.T) {
 		c.Params = gin.Params{gin.Param{Key: "id", Value: "20"}}
 
 		// Call the actual handler function
-		LearnSkill(c)
+		LearnSkillOld(c)
 
 		// Check if we got a successful response
 		assert.Equal(t, http.StatusOK, w.Code, "Status code should be 200 OK")

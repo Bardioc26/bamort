@@ -71,11 +71,11 @@ func TestLoadLevelingConfig(t *testing.T) {
 	}()
 
 	// Call init() which should panic
-	loadLevelingConfig("/invalid/path/leveldata.json")
+	loadLevelingConfigOld("/invalid/path/leveldata.json")
 }
 
 func TestInitValidConfig(t *testing.T) {
-	loadLevelingConfig()
+	loadLevelingConfigOld()
 	setupTestDB(false)
 	/*
 		// Save original Config
@@ -87,7 +87,7 @@ func TestInitValidConfig(t *testing.T) {
 
 	// Test with valid config file
 	os.Setenv("CONFIG_PATH", "/data/dev/bamort/config/leveldata.json")
-	loadLevelingConfig("../testdata/leveldata.json")
+	loadLevelingConfigOld("../testdata/leveldata.json")
 
 	// Verify Config was populated
 	assert.LessOrEqual(t, 1, len(Config.BaseLearnCost), "Expected BaseLearnCost to be populated")
@@ -96,7 +96,7 @@ func TestInitValidConfig(t *testing.T) {
 }
 
 func TestCalculateSpellLearnCost(t *testing.T) {
-	loadLevelingConfig()
+	loadLevelingConfigOld()
 	setupTestDB(false)
 	/*
 		// Save original Config
@@ -176,7 +176,7 @@ func TestCalculateSpellLearnCost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CalculateSpellLearnCost(tt.spell.Name, tt.class)
+			got, err := CalculateSpellLearnCostOld(tt.spell.Name, tt.class)
 			if tt.wantErr {
 				if err == nil {
 					assert.Error(t, err, "CalculateSpellLearnCost() expected error")
@@ -200,7 +200,7 @@ func TestCalculateSpellLearnCost(t *testing.T) {
 }
 
 func TestCalculateLearnCost(t *testing.T) {
-	loadLevelingConfig()
+	loadLevelingConfigOld()
 	setupTestDB(false)
 	// Save original Config
 	/*
@@ -294,7 +294,7 @@ func TestCalculateLearnCost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CalculateSkillLearnCost(tt.skill.Name, tt.class)
+			got, err := CalculateSkillLearnCostOld(tt.skill.Name, tt.class)
 			if tt.wantErr {
 				if err == nil {
 					assert.Error(t, err, "CalculateLearnCost() expected error")
@@ -318,7 +318,7 @@ func TestCalculateLearnCost(t *testing.T) {
 }
 
 func TestCalculateImprovementCost(t *testing.T) {
-	loadLevelingConfig()
+	loadLevelingConfigOld()
 	setupTestDB(false)
 	/*
 		// Save original Config

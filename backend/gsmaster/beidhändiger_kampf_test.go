@@ -11,7 +11,7 @@ func TestBeidhändigerKampfFürPS(t *testing.T) {
 	// Testfall für das Erlernen von "Beidhändiger Kampf" durch einen Priester Streiter (PS)
 	t.Run("Lernkosten für Beidhändiger Kampf als PS", func(t *testing.T) {
 		// Verwende exportierte Funktion zum Berechnen der Lernkosten
-		result, err := CalculateDetailedSkillLearningCost("Beidhändiger Kampf", "PS")
+		result, err := CalculateDetailedSkillLearningCostOld("Beidhändiger Kampf", "PS")
 		assert.NoError(t, err, "Es sollte keinen Fehler beim Berechnen der Lernkosten geben")
 		assert.True(t, result.LE > 0, "LE-Kosten sollten größer als 0 sein")
 
@@ -31,7 +31,7 @@ func TestBeidhändigerKampfFürPS(t *testing.T) {
 	// von Stufe 5 auf 6
 	t.Run("Verbesserungskosten für Beidhändiger Kampf als PS von 5 auf 6", func(t *testing.T) {
 		// Verwende exportierte Funktion zum Berechnen der Verbesserungskosten
-		result, err := CalculateDetailedSkillImprovementCost("Beidhändiger Kampf", "PS", 5)
+		result, err := CalculateDetailedSkillImprovementCostOld("Beidhändiger Kampf", "PS", 5)
 		assert.NoError(t, err, "Es sollte keinen Fehler beim Berechnen der Verbesserungskosten geben")
 		assert.True(t, result.LE > 0, "LE-Kosten sollten größer als 0 sein")
 
@@ -51,7 +51,7 @@ func TestBeidhändigerKampfFürPS(t *testing.T) {
 	// von Stufe 6 auf 7
 	t.Run("Verbesserungskosten für Beidhändiger Kampf als PS von 6 auf 7", func(t *testing.T) {
 		// Verwende exportierte Funktion zum Berechnen der Verbesserungskosten
-		result, err := CalculateDetailedSkillImprovementCost("Beidhändiger Kampf", "PS", 6)
+		result, err := CalculateDetailedSkillImprovementCostOld("Beidhändiger Kampf", "PS", 6)
 		assert.NoError(t, err, "Es sollte keinen Fehler beim Berechnen der Verbesserungskosten geben")
 		assert.True(t, result.LE > 0, "LE-Kosten sollten größer als 0 sein")
 
@@ -71,7 +71,7 @@ func TestBeidhändigerKampfFürPS(t *testing.T) {
 	// von Stufe 7 auf 8
 	t.Run("Verbesserungskosten für Beidhändiger Kampf als PS von 7 auf 8", func(t *testing.T) {
 		// Verwende exportierte Funktion zum Berechnen der Verbesserungskosten
-		result, err := CalculateDetailedSkillImprovementCost("Beidhändiger Kampf", "PS", 7)
+		result, err := CalculateDetailedSkillImprovementCostOld("Beidhändiger Kampf", "PS", 7)
 		assert.NoError(t, err, "Es sollte keinen Fehler beim Berechnen der Verbesserungskosten geben")
 		assert.True(t, result.LE > 0, "LE-Kosten sollten größer als 0 sein")
 

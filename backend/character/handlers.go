@@ -163,6 +163,8 @@ func splitSkills(object []models.SkFertigkeit) ([]models.SkFertigkeit, []models.
 	return normSkills, innateSkills, categories
 }
 
+// GetLearnSkillCostOld is deprecated. Use GetLearnSkillCost instead.
+// This function uses the old hardcoded learning cost system.
 func GetLearnSkillCostOld(c *gin.Context) {
 	// Get the character ID from the request
 	charID := c.Param("id")
@@ -197,6 +199,8 @@ func GetLearnSkillCostOld(c *gin.Context) {
 	c.JSON(http.StatusOK, cost)
 }
 
+// GetLearnSpellCostOld is deprecated. Use GetLearnSpellCost instead.
+// This function uses the old hardcoded learning cost system.
 func GetLearnSpellCostOld(c *gin.Context) {
 	// Get the character ID from the request
 	charID := c.Param("id")
@@ -580,6 +584,8 @@ type LearnSpellRequest struct {
 	Notes string `json:"notes,omitempty"`
 }
 
+// calculateMultiLevelCostsOld is deprecated. Use the new database-based learning cost system instead.
+// This function uses the old hardcoded learning cost system.
 // calculateMultiLevelCostsOld berechnet die Kosten für mehrere Level-Verbesserungen mit gsmaster.GetLernCostNextLevel
 func calculateMultiLevelCostsOld(character *models.Char, skillName string, currentLevel int, levelsToLearn []int, rewardType string, usePP, useGold int) (*models.LearnCost, error) {
 	if len(levelsToLearn) == 0 {
@@ -671,6 +677,8 @@ func calculateMultiLevelCostsOld(character *models.Char, skillName string, curre
 	return totalCost, nil
 }
 
+// getCharacterClassOld is deprecated. Use character.Klasse directly or appropriate database lookups.
+// This function provides backwards compatibility for character class access.
 // getCharacterClassOld gibt die Charakterklassen-Abkürzung zurück
 func getCharacterClassOld(character *models.Char) string {
 	if len(character.Typ) > 3 {
@@ -679,6 +687,8 @@ func getCharacterClassOld(character *models.Char) string {
 	return character.Typ
 }
 
+// LearnSkillOld is deprecated. Use LearnSkill instead.
+// This function uses the old hardcoded learning cost system.
 // LearnSkillOld lernt eine neue Fertigkeit und erstellt Audit-Log-Einträge
 func LearnSkillOld(c *gin.Context) {
 	charID := c.Param("id")
@@ -885,6 +895,8 @@ func LearnSkillOld(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// ImproveSkillOld is deprecated. Use ImproveSkill instead.
+// This function uses the old hardcoded learning cost system.
 // ImproveSkillOld verbessert eine bestehende Fertigkeit und erstellt Audit-Log-Einträge
 func ImproveSkillOld(c *gin.Context) {
 	// Verwende gsmaster.LernCostRequest direkt
@@ -1108,6 +1120,8 @@ func ImproveSkillOld(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// LearnSpellOld is deprecated. Use LearnSpell instead.
+// This function uses the old hardcoded learning cost system.
 // LearnSpellOld lernt einen neuen Zauber und erstellt Audit-Log-Einträge
 func LearnSpellOld(c *gin.Context) {
 	charID := c.Param("id")
@@ -1180,6 +1194,8 @@ func LearnSpellOld(c *gin.Context) {
 	})
 }
 
+// GetRewardTypesOld is deprecated. Use GetRewardTypes instead.
+// This function provides hardcoded reward type mappings.
 // GetRewardTypesOld liefert verfügbare Belohnungsarten für ein bestimmtes Lernszenario
 func GetRewardTypesOld(c *gin.Context) {
 	characterID := c.Param("id")
@@ -1448,6 +1464,8 @@ func GetAvailableSpellsNewSystem(c *gin.Context) {
 	})
 }
 
+// GetAvailableSkillsOld is deprecated. Use GetAvailableSkillsNewSystem instead.
+// This function uses the old hardcoded learning cost system.
 // GetAvailableSkillsOld gibt alle verfügbaren Fertigkeiten mit Lernkosten zurück
 func GetAvailableSkillsOld(c *gin.Context) {
 	characterID := c.Param("id")
@@ -1515,6 +1533,8 @@ func GetAvailableSkillsOld(c *gin.Context) {
 	})
 }
 
+// calculateSkillLearningCostsOld is deprecated. Use calculateSkillLearnCostNewSystem instead.
+// This function uses the old hardcoded learning cost system.
 // calculateSkillLearningCostsOld berechnet die EP- und Goldkosten für das Lernen einer Fertigkeit mit GetLernCostNextLevel
 func calculateSkillLearningCostsOld(skill models.Skill, character models.Char, rewardType string) (int, int) {
 	// Erstelle LernCostRequest für das Lernen (Level 0 -> 1)

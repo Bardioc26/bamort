@@ -677,7 +677,8 @@ func getCurrentSkillLevel(character *models.Char, skillName, skillType string) i
 	return -1
 }
 
-// Helper function to calculate single cost
+// calculateSingleCostOld is deprecated. Use calculateSkillLearnCostNewSystem or calculateSpellLearnCostNewSystem instead.
+// This function uses the old hardcoded learning cost system.
 func calculateSingleCostOld(character *models.Char, request *SkillCostRequest) (*models.LearnCost, *models.LearnCost, *skillInfo, error) {
 	var cost *models.LearnCost
 	var err error
@@ -687,19 +688,19 @@ func calculateSingleCostOld(character *models.Char, request *SkillCostRequest) (
 	case request.Action == "learn" && request.Type == "skill":
 		cost, err = gsmaster.CalculateDetailedSkillLearningCostOld(request.Name, character.Typ)
 		if err == nil {
-			info = getSkillInfoOld(request.Name, request.Type)
+			info = GetSkillInfoCategoryAndDifficultyOld(request.Name, request.Type)
 		}
 
 	case request.Action == "improve" && request.Type == "skill":
 		cost, err = gsmaster.CalculateDetailedSkillImprovementCostOld(request.Name, character.Typ, request.CurrentLevel)
 		if err == nil {
-			info = getSkillInfoOld(request.Name, request.Type)
+			info = GetSkillInfoCategoryAndDifficultyOld(request.Name, request.Type)
 		}
 
 	case request.Action == "improve" && request.Type == "weapon":
 		cost, err = gsmaster.CalculateDetailedSkillImprovementCostOld(request.Name, character.Typ, request.CurrentLevel)
 		if err == nil {
-			info = getSkillInfoOld(request.Name, request.Type)
+			info = GetSkillInfoCategoryAndDifficultyOld(request.Name, request.Type)
 		}
 
 	case request.Action == "learn" && request.Type == "spell":
@@ -908,7 +909,9 @@ type skillInfo struct {
 	Difficulty string
 }
 
-func getSkillInfoOld(skillName, skillType string) skillInfo {
+// GetSkillInfoCategoryAndDifficultyOld is deprecated. Use models.GetSkillCategoryAndDifficulty instead.
+// This function uses the old hardcoded skill categorization system.
+func GetSkillInfoCategoryAndDifficultyOld(skillName, skillType string) skillInfo {
 	var skill models.Skill
 	if err := skill.First(skillName); err != nil {
 		return skillInfo{Category: "unknown", Difficulty: "unknown"}

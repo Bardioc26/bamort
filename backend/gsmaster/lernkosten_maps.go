@@ -491,6 +491,8 @@ var learningCostsData = &LearningCostsTable2{
 	},
 }
 
+// GetSkillCategoryOld is deprecated. Use models.GetSkillCategoryAndDifficulty instead.
+// This function uses the old hardcoded skill categorization system.
 func GetSkillCategoryOld(skillName string) string {
 
 	for category, difficulties := range learningCostsData.ImprovementCost {
@@ -503,6 +505,8 @@ func GetSkillCategoryOld(skillName string) string {
 	return "Unbekannt"
 }
 
+// GetSkillDifficultyOld is deprecated. Use models.GetSkillCategoryAndDifficulty instead.
+// This function uses the old hardcoded skill categorization system.
 func GetSkillDifficultyOld(category string, skillName string) string {
 	// Wenn eine Kategorie angegeben ist, suche nur in dieser Kategorie
 	if category != "" {
@@ -555,6 +559,8 @@ func GetSpellInfoNewSystem(spellName string) (string, int, error) {
 	return spell.Category, spell.Stufe, nil
 }
 
+// GetSpecializationOld is deprecated. Use appropriate character data access methods instead.
+// This function is a placeholder that should not be used in production.
 // GetSpecializationOld returns the specialization school for a character (placeholder)
 // This should be implemented to get the actual specialization from character data
 func GetSpecializationOld(characterID string) string {
@@ -563,6 +569,8 @@ func GetSpecializationOld(characterID string) string {
 	return "Beherrschen"
 }
 
+// findBestCategoryForSkillImprovementOld is deprecated. Use the new database-based learning cost system instead.
+// This function uses the old hardcoded learning cost data.
 // findBestCategoryForSkillImprovementOld findet die Kategorie mit den niedrigsten EP-Kosten für eine Fertigkeit
 func findBestCategoryForSkillImprovementOld(skillName, characterClass string, level int) (string, string, error) {
 	classKey := characterClass
@@ -612,6 +620,8 @@ func findBestCategoryForSkillImprovementOld(skillName, characterClass string, le
 	return bestOption.category, bestOption.difficulty, nil
 }
 
+// FindBestCategoryForSkillLearningOld is deprecated. Use the new database-based learning cost system instead.
+// This function uses the old hardcoded learning cost data.
 // FindBestCategoryForSkillLearningOld findet die Kategorie mit den niedrigsten EP-Kosten für das Lernen einer Fertigkeit
 func FindBestCategoryForSkillLearningOld(skillName, characterClass string) (string, string, error) {
 	classKey := characterClass
@@ -659,6 +669,8 @@ func FindBestCategoryForSkillLearningOld(skillName, characterClass string) (stri
 	return bestOption.category, bestOption.difficulty, nil
 }
 
+// CalcSkillLernCostOld is deprecated. Use CalcSkillLernCost instead.
+// This function uses the old hardcoded learning cost system.
 func CalcSkillLernCostOld(costResult *SkillCostResultNew, reward *string) error {
 	// Berechne die Lernkosten basierend auf den aktuellen Werten im costResult
 	// Hier sollte die Logik zur Berechnung der Lernkosten implementiert werden
@@ -709,6 +721,8 @@ func CalcSkillLernCostOld(costResult *SkillCostResultNew, reward *string) error 
 	return nil
 }
 
+// CalcSkillImproveCostOld is deprecated. Use CalcSkillImproveCost instead.
+// This function uses the old hardcoded learning cost system.
 // CalcSkillImproveCostOld berechnet die Kosten für die Verbesserung einer Fertigkeit
 func CalcSkillImproveCostOld(costResult *SkillCostResultNew, currentLevel int, reward *string) error {
 	// Für Skill-Verbesserung könnten die Kosten vom aktuellen Level abhängen
@@ -775,6 +789,8 @@ func CalcSkillImproveCostOld(costResult *SkillCostResultNew, currentLevel int, r
 	return nil
 }
 
+// CalcSpellLernCostOld is deprecated. Use CalcSpellLernCost instead.
+// This function uses the old hardcoded learning cost system.
 // CalcSpellLernCostOld berechnet die Kosten für das Erlernen eines Zaubers
 func CalcSpellLernCostOld(costResult *SkillCostResultNew, reward *string) error {
 	// Für Zauber verwenden wir eine ähnliche Logik wie für Skills
@@ -840,6 +856,8 @@ func CalcSpellLernCostOld(costResult *SkillCostResultNew, reward *string) error 
 	return nil
 }
 
+// GetLernCostNextLevelOld is deprecated. Use GetLernCostNextLevel instead.
+// This function uses the old hardcoded learning cost system.
 func GetLernCostNextLevelOld(request *LernCostRequest, costResult *SkillCostResultNew, reward *string, level int, characterRasse string) error {
 	// Diese Funktion berechnet die Kosten für das Erlernen oder Verbessern einer Fertigkeit oder eines Zaubers
 	// abhängig von der Aktion (learn/improve) und der Belohnung.

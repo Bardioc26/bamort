@@ -321,8 +321,8 @@ func GetSkillCategoryAndDifficultyNewSystem(skillName string, classCode string) 
 	return &results[0], nil
 }
 
-// GetSkillInfoForCategoryAndDifficulty holt die Informationen für eine spezifische Kategorie/Schwierigkeit
-func GetSkillInfoForCategoryAndDifficulty(skillName, category, difficulty, classCode string) (*SkillLearningInfo, error) {
+// GetSkillInfoCategoryAndDifficultyNewSystem holt die Informationen für eine spezifische Kategorie/Schwierigkeit
+func GetSkillInfoCategoryAndDifficultyNewSystem(skillName, category, difficulty, classCode string) (*SkillLearningInfo, error) {
 	var result SkillLearningInfo
 
 	err := database.DB.Raw(`

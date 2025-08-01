@@ -69,6 +69,8 @@ var AllowedGroups = map[CharClass]map[SkillGroup]bool}
 
 var Config LevelConfig // holds all loaded data
 
+// loadLevelingConfigOld is deprecated. Use the new database-based learning cost system instead.
+// This function loads data from static JSON files.
 func loadLevelingConfigOld(opts ...string) error {
 	// Adjust path as needed
 	filePath := "../testdata/leveldata.json"
@@ -89,6 +91,8 @@ func loadLevelingConfigOld(opts ...string) error {
 	return nil
 }
 
+// CalculateSpellLearnCostOld is deprecated. Use CalcSpellLernCost instead.
+// This function uses the old hardcoded learning cost system.
 // CalculateSpellLearnCostOld combines SpellLearnCost with SpellEPPerSchoolByClass
 func CalculateSpellLearnCostOld(spell string, class string) (int, error) {
 	if Config.AllowedSchools == nil {
@@ -128,6 +132,8 @@ func CalculateSpellLearnCostOld(spell string, class string) (int, error) {
 	return totalEP, nil
 }
 
+// CalculateSkillLearnCostOld is deprecated. Use CalcSkillLernCost instead.
+// This function uses the old hardcoded learning cost system.
 // CalculateSkillLearnCostOld: erstmalige Kosten in EP
 // Then refer to Config in your calculations:
 func CalculateSkillLearnCostOld(skill string, class string) (int, error) {

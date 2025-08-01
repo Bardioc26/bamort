@@ -71,9 +71,11 @@ func UpdatePracticePoints(c *gin.Context) {
 	}
 
 	// Alle Fertigkeiten durchgehen und Praxispunkte zurücksetzen
-	for i := range character.Fertigkeiten {
-		character.Fertigkeiten[i].Pp = 0
-	}
+	/*
+		for i := range character.Fertigkeiten {
+			character.Fertigkeiten[i].Pp = 0
+		}
+	*/
 
 	// Neue Praxispunkte setzen
 	for _, pp := range practicePoints {
@@ -106,6 +108,7 @@ func UpdatePracticePoints(c *gin.Context) {
 }
 
 // AddPracticePoint fügt einen Praxispunkt zu einer Fertigkeit hinzu
+// TODO prüfe speichern der PP für Spells
 func AddPracticePoint(c *gin.Context) {
 	// Charakter-ID aus der URL abrufen
 	charID := c.Param("id")
@@ -136,9 +139,9 @@ func AddPracticePoint(c *gin.Context) {
 	// Prüfen, ob es sich um einen Zauber handelt
 	var targetSkillName string
 	var isSpellFlag bool
-	if isSpell(request.SkillName) {
+	if isSpellNewSystem(request.SkillName) {
 		// Bei Zaubern: PP werden der entsprechenden Zaubergruppe zugeordnet
-		targetSkillName = getSpellCategory(request.SkillName)
+		targetSkillName = getSpellCategoryNewSystem(request.SkillName)
 		isSpellFlag = true
 	} else {
 		// Bei normalen Fertigkeiten: PP werden direkt der Fertigkeit zugeordnet
@@ -234,9 +237,9 @@ func UsePracticePoint(c *gin.Context) {
 	// Prüfen, ob es sich um einen Zauber handelt
 	var targetSkillName string
 	var isSpellFlag bool
-	if isSpell(request.SkillName) {
+	if isSpellNewSystem(request.SkillName) {
 		// Bei Zaubern: PP werden von der entsprechenden Zaubergruppe abgezogen
-		targetSkillName = getSpellCategory(request.SkillName)
+		targetSkillName = getSpellCategoryNewSystem(request.SkillName)
 		isSpellFlag = true
 	} else {
 		// Bei normalen Fertigkeiten: PP werden direkt von der Fertigkeit abgezogen

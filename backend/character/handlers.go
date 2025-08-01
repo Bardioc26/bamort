@@ -1303,7 +1303,7 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 		remainingGold := request.UseGold
 
 		// Hole die vollständigen Skill-Informationen für die Kostenberechnung
-		skillLearningInfo, err := models.GetSkillCategoryAndDifficultyNew(skill.Name, getCharacterClassOld(&character))
+		skillLearningInfo, err := models.GetSkillCategoryAndDifficultyNewSystem(skill.Name, getCharacterClassOld(&character))
 		if err != nil {
 			// Fallback für unbekannte Skills
 			skillLearningInfo = &models.SkillLearningInfo{

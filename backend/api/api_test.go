@@ -307,7 +307,7 @@ func TestGetSkillAllLevelCosts(t *testing.T) {
 	assert.NoError(t, err, "Response should be valid JSON for weapon skill")
 }
 
-func TestGetAvailableSkillsNew(t *testing.T) {
+func TestGetAvailableSkillsNewSystem(t *testing.T) {
 	database.SetupTestDB(true) // Setup test database
 	// Initialize a Gin router
 	r := gin.Default()
@@ -417,7 +417,7 @@ func TestGetAvailableSkillsNew(t *testing.T) {
 	}
 }
 
-func TestGetAvailableSpellsNew(t *testing.T) {
+func TestGetAvailableSpellsNewSystem(t *testing.T) {
 	database.SetupTestDB(true) // Setup test database
 	// Initialize a Gin router
 	r := gin.Default()

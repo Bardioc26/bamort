@@ -13,9 +13,9 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.DELETE("/:id", DeleteCharacter)
 
 	// Erfahrung und Vermögen
-	charGrp.GET("/:id/experience-wealth", GetCharacterExperienceAndWealth)
-	charGrp.PUT("/:id/experience", UpdateCharacterExperience)
-	charGrp.PUT("/:id/wealth", UpdateCharacterWealth)
+	charGrp.GET("/:id/experience-wealth", GetCharacterExperienceAndWealth) // NewSystem
+	charGrp.PUT("/:id/experience", UpdateCharacterExperience)              // NewSystem
+	charGrp.PUT("/:id/wealth", UpdateCharacterWealth)                      // NewSystem
 
 	// Audit-Log für Änderungen
 	charGrp.GET("/:id/audit-log", GetCharacterAuditLog)   // Alle Änderungen oder gefiltert nach Feld (?field=experience_points)
@@ -39,12 +39,12 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.GET("/:id/reward-types", GetRewardTypesOld) // Verfügbare Belohnungsarten je nach Kontext
 
 	// Praxispunkte-Verwaltung
-	charGrp.GET("/:id/practice-points", GetPracticePoints)
-	charGrp.PUT("/:id/practice-points", UpdatePracticePoints)
-	charGrp.POST("/:id/practice-points/add", AddPracticePoint)
-	charGrp.POST("/:id/practice-points/use", UsePracticePoint)
+	charGrp.GET("/:id/practice-points", GetPracticePoints)     // NewSystem
+	charGrp.PUT("/:id/practice-points", UpdatePracticePoints)  // NewSystem
+	charGrp.POST("/:id/practice-points/add", AddPracticePoint) // NewSystem
+	charGrp.POST("/:id/practice-points/use", UsePracticePoint) // NewSystem
 
 	// System-Information
-	charGrp.GET("/character-classes", GetCharacterClassesHandler)
-	charGrp.GET("/skill-categories", GetSkillCategoriesHandler)
+	charGrp.GET("/character-classes", GetCharacterClassesHandlerOld)
+	charGrp.GET("/skill-categories", GetSkillCategoriesHandlerOld)
 }

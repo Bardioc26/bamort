@@ -180,7 +180,7 @@ func GetLernCostNewSystem(c *gin.Context) {
 	// Verwende Klassenabkürzung wenn der Typ länger als 3 Zeichen ist
 	var characterClass string
 	if len(character.Typ) > 3 {
-		characterClass = gsmaster.GetClassAbbreviationNew(character.Typ)
+		characterClass = gsmaster.GetClassAbbreviationNewSystem(character.Typ)
 	} else {
 		characterClass = character.Typ
 	}
@@ -220,7 +220,7 @@ func GetLernCostNewSystem(c *gin.Context) {
 			response = append(response, levelResult)
 		} else {
 			// Skill learning logic
-			skillInfo, err := models.GetSkillCategoryAndDifficultyNew(skillName, characterClass)
+			skillInfo, err := models.GetSkillCategoryAndDifficultyNewSystem(skillName, characterClass)
 			if err != nil {
 				respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fertigkeit '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))
 				return
@@ -246,7 +246,7 @@ func GetLernCostNewSystem(c *gin.Context) {
 	} else {
 		// Für "improve" Aktion: berechne für jedes Level von current+1 bis 18
 		// Improvement only works on skills, not spells
-		skillInfo, err := models.GetSkillCategoryAndDifficultyNew(skillName, characterClass)
+		skillInfo, err := models.GetSkillCategoryAndDifficultyNewSystem(skillName, characterClass)
 		if err != nil {
 			respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fertigkeit '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))
 			return
@@ -981,7 +981,7 @@ func generateNotes(character *models.Char, request *SkillCostRequest, cost *mode
 // getPPForSkill ermittelt die verfügbaren Praxispunkte für eine spezifische Fertigkeit
 func getPPForSkill(character *models.Char, skillName string) int {
 	// Ermittle die tatsächliche Fertigkeit (bei Zaubern die Zaubergruppe)
-	targetSkillName := getSpellCategory(skillName)
+	targetSkillName := getSpellCategoryNewSystem(skillName)
 
 	for _, fertigkeit := range character.Fertigkeiten {
 		if fertigkeit.Name == targetSkillName {

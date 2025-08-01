@@ -817,7 +817,7 @@ func TestGetSpellInfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.spellName, func(t *testing.T) {
-			school, level, err := GetSpellInfoNew(tt.spellName)
+			school, level, err := GetSpellInfoNewSystem(tt.spellName)
 
 			if tt.expectError {
 				if err == nil {

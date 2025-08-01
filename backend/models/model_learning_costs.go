@@ -288,8 +288,8 @@ func GetEPPerLEForClassAndSpellSchool(classCode string, schoolName string) (int,
 	return result.EPPerLE, nil
 }
 
-// GetSkillCategoryAndDifficultyNew findet die beste Kategorie für eine Fertigkeit basierend auf niedrigsten EP-Kosten
-func GetSkillCategoryAndDifficultyNew(skillName string, classCode string) (*SkillLearningInfo, error) {
+// GetSkillCategoryAndDifficultyNewSystem findet die beste Kategorie für eine Fertigkeit basierend auf niedrigsten EP-Kosten
+func GetSkillCategoryAndDifficultyNewSystem(skillName string, classCode string) (*SkillLearningInfo, error) {
 	var results []SkillLearningInfo
 
 	err := database.DB.Raw(`

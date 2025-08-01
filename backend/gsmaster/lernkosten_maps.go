@@ -541,8 +541,8 @@ func contains(slice []string, item string) bool {
 
 //### End of Helper functions ###
 
-// GetSpellInfoNew returns the school and level of a spell from the database
-func GetSpellInfoNew(spellName string) (string, int, error) {
+// GetSpellInfoNewSystem returns the school and level of a spell from the database
+func GetSpellInfoNewSystem(spellName string) (string, int, error) {
 	// Create a Spell instance to search in the database
 	var spell models.Spell
 
@@ -780,7 +780,7 @@ func CalcSpellLernCostOld(costResult *SkillCostResultNew, reward *string) error 
 	// Für Zauber verwenden wir eine ähnliche Logik wie für Skills
 	// TODO: Implementiere spezifische Zauber-Kostenlogik wenn verfügbar
 	classKey := costResult.CharacterClass
-	spellCategory, spellLevel, err := GetSpellInfoNew(costResult.SkillName)
+	spellCategory, spellLevel, err := GetSpellInfoNewSystem(costResult.SkillName)
 	if err != nil {
 		return fmt.Errorf("failed to get spell info: %w", err)
 	}

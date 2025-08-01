@@ -852,7 +852,7 @@ func GetClassAbbreviationOld(characterClass string) string {
 	// Fallback: originale Eingabe zurückgeben
 	return characterClass
 }
-func GetClassAbbreviationNew(characterClass string) string {
+func GetClassAbbreviationNewSystem(characterClass string) string {
 	// Try to find by code first (e.g., "Kr" -> "Kr")
 	var charClass models.CharacterClass
 	if err := charClass.FirstByName(characterClass); err == nil {

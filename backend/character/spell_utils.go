@@ -5,10 +5,10 @@ import (
 	"bamort/models"
 )
 
-// getSpellCategory ermittelt die Zaubergruppe für einen gegebenen Zaubernamen
+// getSpellCategoryNewSystem ermittelt die Zaubergruppe für einen gegebenen Zaubernamen
 // Wenn es sich um einen Zauber handelt, wird die Kategorie zurückgegeben
 // Andernfalls wird der ursprüngliche Name zurückgegeben
-func getSpellCategory(name string) string {
+func getSpellCategoryNewSystem(name string) string {
 	var spell models.Spell
 	if err := database.DB.Where("name = ?", name).First(&spell).Error; err != nil {
 		// Kein Zauber gefunden, ursprünglichen Namen verwenden
@@ -20,8 +20,8 @@ func getSpellCategory(name string) string {
 	return spell.Category
 }
 
-// isSpell prüft, ob der gegebene Name ein Zauber ist
-func isSpell(name string) bool {
+// isSpellNewSystem prüft, ob der gegebene Name ein Zauber ist
+func isSpellNewSystem(name string) bool {
 	var spell models.Spell
 	err := database.DB.Where("name = ?", name).First(&spell).Error
 	return err == nil

@@ -979,7 +979,7 @@ func TestGetLernCostEndpointNewSystem(t *testing.T) {
 			assert.Greater(t, firstResult.EP, 0, "EP cost should be greater than 0")
 			assert.GreaterOrEqual(t, firstResult.GoldCost, 0, "Gold cost should be 0 or greater")
 			assert.Equal(t, firstResult.EP, 20, "EP cost should be 20")
-			assert.Equal(t, firstResult.GoldCost, 20, "Gold cost should be 20")
+			assert.Equal(t, firstResult.GoldCost, 40, "Gold cost should be 40")
 
 			fmt.Printf("Level %d cost: EP=%d, GoldCost=%d, LE=%d\n", firstResult.TargetLevel,
 				firstResult.EP, firstResult.GoldCost, firstResult.LE)

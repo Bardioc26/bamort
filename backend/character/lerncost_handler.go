@@ -262,7 +262,7 @@ func GetLernCostNewSystem(c *gin.Context) {
 				TargetLevel:    i,
 			}
 
-			err := calculateSkillImproveCostNewSystem(&request, &levelResult, i, &remainingPP, &remainingGold, skillInfo)
+			err := CalculateSkillImproveCostNewSystem(&request, &levelResult, i, &remainingPP, &remainingGold, skillInfo)
 			if err != nil {
 				respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
 				return
@@ -290,7 +290,7 @@ func GetLernCostNewSystem(c *gin.Context) {
 }
 
 // calculateCostNewSystem berechnet die Kosten für ein Level mit dem neuen Datenbank-System
-func calculateSkillImproveCostNewSystem(request *gsmaster.LernCostRequest, result *gsmaster.SkillCostResultNew, targetLevel int, remainingPP *int, remainingGold *int, skillInfo *models.SkillLearningInfo) error {
+func CalculateSkillImproveCostNewSystem(request *gsmaster.LernCostRequest, result *gsmaster.SkillCostResultNew, targetLevel int, remainingPP *int, remainingGold *int, skillInfo *models.SkillLearningInfo) error {
 	// 1. Hole die TE-Kosten für die Verbesserung vom aktuellen Level
 	teRequired, err := models.GetImprovementCost(skillInfo.SkillName, skillInfo.CategoryName, skillInfo.DifficultyName, targetLevel)
 	if err != nil {
@@ -298,9 +298,12 @@ func calculateSkillImproveCostNewSystem(request *gsmaster.LernCostRequest, resul
 	}
 
 	// 2. Hole die EP-Kosten pro TE für diese Klasse und Kategorie
-	epPerTE, err := models.GetEPPerTEForClassAndCategory(result.CharacterClass, skillInfo.CategoryName)
-	if err != nil {
-		return fmt.Errorf("EP-Kosten pro TE nicht gefunden für Klasse %s, Kategorie %s: %v", result.CharacterClass, skillInfo.CategoryName, err)
+	if skillInfo.EPPerTE == 0 {
+		epPerTE, err := models.GetEPPerTEForClassAndCategory(result.CharacterClass, skillInfo.CategoryName)
+		if err != nil {
+			return fmt.Errorf("EP-Kosten pro TE nicht gefunden für Klasse %s, Kategorie %s: %v", result.CharacterClass, skillInfo.CategoryName, err)
+		}
+		skillInfo.EPPerTE = epPerTE
 	}
 
 	// 3. Setze die ursprünglichen TE-Kosten
@@ -327,7 +330,7 @@ func calculateSkillImproveCostNewSystem(request *gsmaster.LernCostRequest, resul
 
 	// 5. Berechne Kosten nach PP-Anwendung (wie im alten System)
 	result.LE = trainCost
-	result.EP = epPerTE * trainCost
+	result.EP = skillInfo.EPPerTE * trainCost
 	result.GoldCost = trainCost * 20 // Wie im alten System: 20 Gold pro TE
 
 	// 6. Anwenden von Belohnungen

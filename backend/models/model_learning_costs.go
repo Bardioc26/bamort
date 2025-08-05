@@ -3,6 +3,7 @@ package models
 import (
 	"bamort/database"
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -148,6 +149,20 @@ type SpellLearningInfo struct {
 	ClassName        string `json:"class_name"`
 	EPPerLE          int    `json:"ep_per_le"`
 	LERequired       int    `json:"le_required"`
+}
+
+// AuditLogEntry repräsentiert einen Eintrag im Audit-Log
+type AuditLogEntry struct {
+	ID          uint      `gorm:"primaryKey" json:"id"`
+	CharacterID uint      `json:"character_id" gorm:"not null"`
+	FieldName   string    `json:"field_name" gorm:"not null"` // "experience_points", "gold", "silver", "copper"
+	OldValue    int       `json:"old_value"`
+	NewValue    int       `json:"new_value"`
+	Difference  int       `json:"difference"` // NewValue - OldValue
+	Reason      string    `json:"reason"`     // "manual", "skill_learning", "skill_improvement", "spell_learning", etc.
+	UserID      uint      `json:"user_id,omitempty"`
+	Timestamp   time.Time `json:"timestamp" gorm:"autoCreateTime"`
+	Notes       string    `json:"notes,omitempty"` // Zusätzliche Informationen
 }
 
 // TableName-Methoden für GORM

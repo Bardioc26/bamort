@@ -1,6 +1,7 @@
 package character
 
 import (
+	"bamort/models"
 	"net/http"
 	"strconv"
 
@@ -21,7 +22,7 @@ func GetCharacterAuditLog(c *gin.Context) {
 	// Filter für spezifisches Feld (optional)
 	fieldName := c.Query("field")
 
-	var entries []AuditLogEntry
+	var entries []models.AuditLogEntry
 
 	if fieldName != "" {
 		entries, err = GetAuditLogForField(uint(id), fieldName)

@@ -29,7 +29,8 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	// Lernen und Verbessern (mit automatischem Audit-Log)
 	charGrp.POST("/:id/learn-skill-new", LearnSkill) // Fertigkeit lernen (neues System)
 	charGrp.POST("/:id/learn-skill", LearnSkillOld)  // Fertigkeit lernen (altes System)
-	charGrp.POST("/:id/learn-spell", LearnSpellOld)  // Zauber lernen
+	charGrp.POST("/:id/learn-spell-new", LearnSpell) // Zauber lernen (neues System)
+	charGrp.POST("/:id/learn-spell", LearnSpellOld)  // Zauber lernen (altes System)
 
 	// Fertigkeiten-Information
 	charGrp.GET("/:id/available-skills", GetAvailableSkillsOld)        // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)

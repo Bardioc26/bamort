@@ -1094,6 +1094,11 @@ func calculateLearningCosts(char *models.Char, request *gsmaster.LernCostRequest
 
 // deductResourcesForLearning zieht die Ressourcen für das Lernen ab und erstellt Audit-Log-Einträge
 func deductResourcesForLearning(char *models.Char, skillName string, finalLevel, totalEP, totalGold, totalPP int) (int, int, error) {
+	return deductResourcesWithAuditReason(char, skillName, finalLevel, totalEP, totalGold, totalPP, ReasonSkillLearning)
+}
+
+// deductResourcesWithAuditReason zieht EP, Gold und PP ab und erstellt entsprechende Audit-Log-Einträge
+func deductResourcesWithAuditReason(char *models.Char, itemName string, finalLevel, totalEP, totalGold, totalPP int, auditReason AuditLogReason) (int, int, error) {
 	currentEP := char.Erfahrungsschatz.EP
 	currentGold := char.Vermoegen.Goldstücke
 
@@ -1102,12 +1107,14 @@ func deductResourcesForLearning(char *models.Char, skillName string, finalLevel,
 	if totalEP > 0 {
 		var notes string
 		if finalLevel > 1 {
-			notes = fmt.Sprintf("Fertigkeit '%s' bis Level %d gelernt", skillName, finalLevel)
+			notes = fmt.Sprintf("Fertigkeit '%s' bis Level %d gelernt", itemName, finalLevel)
+		} else if auditReason == ReasonSpellLearning {
+			notes = fmt.Sprintf("Zauber '%s' gelernt", itemName)
 		} else {
-			notes = fmt.Sprintf("Fertigkeit '%s' gelernt", skillName)
+			notes = fmt.Sprintf("Fertigkeit '%s' gelernt", itemName)
 		}
 
-		err := CreateAuditLogEntry(char.ID, "experience_points", currentEP, newEP, ReasonSkillLearning, 0, notes)
+		err := CreateAuditLogEntry(char.ID, "experience_points", currentEP, newEP, auditReason, 0, notes)
 		if err != nil {
 			return 0, 0, fmt.Errorf("fehler beim Erstellen des Audit-Log-Eintrags: %v", err)
 		}
@@ -1120,9 +1127,14 @@ func deductResourcesForLearning(char *models.Char, skillName string, finalLevel,
 	// Gold abziehen und Audit-Log erstellen
 	newGold := currentGold - totalGold
 	if totalGold > 0 {
-		notes := fmt.Sprintf("Gold für Fertigkeit '%s' ausgegeben", skillName)
+		var notes string
+		if auditReason == ReasonSpellLearning {
+			notes = fmt.Sprintf("Gold für Zauber '%s' ausgegeben", itemName)
+		} else {
+			notes = fmt.Sprintf("Gold für Fertigkeit '%s' ausgegeben", itemName)
+		}
 
-		err := CreateAuditLogEntry(char.ID, "gold", currentGold, newGold, ReasonSkillLearning, 0, notes)
+		err := CreateAuditLogEntry(char.ID, "gold", currentGold, newGold, auditReason, 0, notes)
 		if err != nil {
 			return 0, 0, fmt.Errorf("fehler beim Erstellen des Audit-Log-Eintrags: %v", err)
 		}
@@ -1136,7 +1148,7 @@ func deductResourcesForLearning(char *models.Char, skillName string, finalLevel,
 	if totalPP > 0 {
 		// Suche die richtige Fertigkeit und ziehe PP ab
 		for i := range char.Fertigkeiten {
-			if char.Fertigkeiten[i].Name == skillName {
+			if char.Fertigkeiten[i].Name == itemName {
 				char.Fertigkeiten[i].Pp -= totalPP
 				if err := database.DB.Save(&char.Fertigkeiten[i]).Error; err != nil {
 					return 0, 0, fmt.Errorf("fehler beim Aktualisieren der Praxispunkte: %v", err)
@@ -1146,7 +1158,7 @@ func deductResourcesForLearning(char *models.Char, skillName string, finalLevel,
 		}
 		// Falls nicht in normalen Fertigkeiten gefunden, prüfe Waffenfertigkeiten
 		for i := range char.Waffenfertigkeiten {
-			if char.Waffenfertigkeiten[i].Name == skillName {
+			if char.Waffenfertigkeiten[i].Name == itemName {
 				char.Waffenfertigkeiten[i].Pp -= totalPP
 				if err := database.DB.Save(&char.Waffenfertigkeiten[i]).Error; err != nil {
 					return 0, 0, fmt.Errorf("fehler beim Aktualisieren der Praxispunkte: %v", err)
@@ -1750,6 +1762,156 @@ func LearnSpellOld(c *gin.Context) {
 		"ep_cost":      cost.Ep,
 		"remaining_ep": newEP,
 	})
+}
+
+// validateSpellForLearning validiert Zauber-Namen für neue Zauber (Learning)
+func validateSpellForLearning(char *models.Char, request *gsmaster.LernCostRequest) (string, *models.SpellLearningInfo, int, error) {
+	// Verwende Klassenabkürzung wenn der Typ länger als 3 Zeichen ist
+	var characterClass string
+	if len(char.Typ) > 3 {
+		characterClass = gsmaster.GetClassAbbreviationNewSystem(char.Typ)
+	} else {
+		characterClass = char.Typ
+	}
+
+	// Normalize spell name (trim whitespace, proper case)
+	spellName := strings.TrimSpace(request.Name)
+
+	spellInfo, err := models.GetSpellLearningInfoNewSystem(spellName, characterClass)
+	if err != nil {
+		return "", nil, 0, fmt.Errorf("zauber '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", spellName, characterClass, err)
+	}
+
+	// Für Learning starten wir bei Level 0
+	currentLevel := 0
+
+	// Prüfe, ob der Zauber bereits existiert
+	for _, spell := range char.Zauber {
+		if spell.Name == request.Name {
+			return "", nil, 0, fmt.Errorf("zauber '%s' ist bereits gelernt - Zauber können nicht verbessert werden", request.Name)
+		}
+	}
+
+	return characterClass, spellInfo, currentLevel, nil
+}
+
+// calculateSpellLearningCosts berechnet die Kosten für das Erlernen eines neuen Zaubers
+func calculateSpellLearningCosts(char *models.Char, request *gsmaster.LernCostRequest, characterClass string, spellInfo *models.SpellLearningInfo, currentLevel, finalLevel int) ([]gsmaster.SkillCostResultNew, int, error) {
+	var response []gsmaster.SkillCostResultNew
+	var totalEP int
+
+	// Erstelle cost result structure für Zauber
+	costResult := gsmaster.SkillCostResultNew{
+		CharacterID:    fmt.Sprintf("%d", char.ID),
+		CharacterClass: characterClass,
+		SkillName:      request.Name,
+		TargetLevel:    finalLevel,
+	}
+
+	remainingPP := 0
+	remainingGold := 0
+
+	// Verwende die Spell-spezifische Kostenfunktion
+	err := calculateSpellLearnCostNewSystem(request, &costResult, &remainingPP, &remainingGold, spellInfo)
+	if err != nil {
+		return nil, 0, fmt.Errorf("fehler bei der Kostenberechnung: %v", err)
+	}
+
+	response = append(response, costResult)
+	totalEP = costResult.EP
+
+	// Zauber haben normalerweise keine Gold- oder PP-Kosten
+	return response, totalEP, nil
+}
+
+// LearnSpell lernt einen neuen Zauber und erstellt Audit-Log-Einträge
+func LearnSpell(c *gin.Context) {
+	charID := c.Param("id")
+	var character models.Char
+
+	if err := character.FirstID(charID); err != nil {
+		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	var request LearnSpellRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
+		return
+	}
+
+	// Konvertiere LearnSpellRequest zu LernCostRequest für Kompatibilität mit neuem System
+	lernRequest := gsmaster.LernCostRequest{
+		CharId:       character.ID,
+		Name:         request.Name,
+		CurrentLevel: 0, // Zauber sind nicht gelernt
+		TargetLevel:  1, // Zauber werden auf Level 1 gelernt
+		Type:         "spell",
+		Action:       "learn",
+		UsePP:        0,
+		UseGold:      0,
+		Reward:       nil,
+	}
+
+	// 1. Charakter laden
+	char, err := loadCharacterForImprovement(lernRequest.CharId)
+	if err != nil {
+		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	// 2. Zauber validieren (für Learning beginnen wir bei Level 0)
+	characterClass, spellInfo, currentLevel, err := validateSpellForLearning(char, &lernRequest)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	finalLevel := 1 // Zauber werden immer auf Level 1 gelernt
+
+	// 3. Kosten berechnen (von Level 0 bis 1)
+	response, totalEP, err := calculateSpellLearningCosts(char, &lernRequest, characterClass, spellInfo, currentLevel, finalLevel)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 4. Ressourcen validieren (nur EP für Zauber)
+	err = validateResources(char, lernRequest.Name, totalEP, 0, 0) // Gold=0, PP=0 für Zauber
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 5. Ressourcen abziehen
+	newEP, _, err := deductResourcesWithAuditReason(char, lernRequest.Name, 1, totalEP, 0, 0, ReasonSpellLearning)
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// 6. Zauber hinzufügen
+	if err := addSpellToCharacter(char, lernRequest.Name); err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Hinzufügen des Zaubers: "+err.Error())
+		return
+	}
+
+	// 7. Charakter speichern
+	if err := database.DB.Save(char).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern des Charakters")
+		return
+	}
+
+	// 8. Response erstellen (kompatibel mit alter Version)
+	responseData := gin.H{
+		"message":      "Zauber erfolgreich gelernt",
+		"spell_name":   lernRequest.Name,
+		"ep_cost":      totalEP,
+		"remaining_ep": newEP,
+		"cost_details": response,
+	}
+
+	c.JSON(http.StatusOK, responseData)
 }
 
 // GetRewardTypesOld is deprecated. Use GetRewardTypes instead.

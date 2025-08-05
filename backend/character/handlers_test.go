@@ -94,7 +94,7 @@ func TestImproveSkillHandler(t *testing.T) {
 		c.Request = req
 
 		// Call the actual handler function
-		ImproveSkillOld(c)
+		ImproveSkill(c)
 
 		// Print the actual response to see what we get
 		t.Logf("Response Status: %d", w.Code)

@@ -24,11 +24,12 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	// im Frontend wir nur noch der neue Endpunkt benutzt
 	//charGrp.POST("/lerncost", GetLernCost)              // alter Hauptendpunkt für alle Kostenberechnungen (verwendet lerningCostsData)
 	charGrp.POST("/lerncost-new", GetLernCostNewSystem) // neuer Hauptendpunkt für alle Kostenberechnungen (verwendet neue Datenbank)
-	charGrp.POST("/improve-skill", ImproveSkillOld)     // Fertigkeit verbessern
+	charGrp.POST("/improve-skill-new", ImproveSkill)    // Fertigkeit verbessern
 
 	// Lernen und Verbessern (mit automatischem Audit-Log)
-	charGrp.POST("/:id/learn-skill", LearnSkillOld) // Fertigkeit lernen
-	charGrp.POST("/:id/learn-spell", LearnSpellOld) // Zauber lernen
+	charGrp.POST("/:id/learn-skill-new", LearnSkill) // Fertigkeit lernen (neues System)
+	charGrp.POST("/:id/learn-skill", LearnSkillOld)  // Fertigkeit lernen (altes System)
+	charGrp.POST("/:id/learn-spell", LearnSpellOld)  // Zauber lernen
 
 	// Fertigkeiten-Information
 	charGrp.GET("/:id/available-skills", GetAvailableSkillsOld)        // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)

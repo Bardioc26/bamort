@@ -896,6 +896,269 @@ func LearnSkillOld(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// LearnSkill lernt eine neue Fertigkeit und erstellt Audit-Log-Einträge
+func LearnSkill(c *gin.Context) {
+	charID := c.Param("id")
+	var character models.Char
+
+	if err := character.FirstID(charID); err != nil {
+		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	// Verwende gsmaster.LernCostRequest direkt
+	var request gsmaster.LernCostRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
+		return
+	}
+
+	// Setze Charakter-ID und Action für learning
+	request.CharId = character.ID
+	request.Action = "learn"
+	if request.Type == "" {
+		request.Type = "skill" // Default zu skill für Learning
+	}
+
+	// 1. Charakter laden
+	char, err := loadCharacterForImprovement(request.CharId)
+	if err != nil {
+		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	// 2. Skill validieren (für Learning beginnen wir bei Level 0)
+	characterClass, skillInfo, currentLevel, err := validateSkillForLearning(char, &request)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Bestimme das finale Level
+	finalLevel := request.TargetLevel
+	if finalLevel <= 0 {
+		finalLevel = 1 // Standard für neue Fertigkeit
+	}
+
+	// 3. Kosten berechnen (von Level 0 bis finalLevel)
+	response, totalEP, totalGold, totalPP, err := calculateLearningCosts(char, &request, characterClass, skillInfo, currentLevel, finalLevel)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 4. Ressourcen validieren
+	err = validateResources(char, request.Name, totalEP, totalGold, totalPP)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 5. Ressourcen abziehen
+	newEP, newGold, err := deductResourcesForLearning(char, request.Name, finalLevel, totalEP, totalGold, totalPP)
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// 6. Skill hinzufügen/erstellen
+	if err := updateOrCreateSkill(char, request.Name, finalLevel); err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Hinzufügen der Fertigkeit: "+err.Error())
+		return
+	}
+
+	// 7. Charakter speichern
+	if err := database.DB.Save(char).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Speichern des Charakters")
+		return
+	}
+
+	// 8. Response erstellen
+	responseData := gin.H{
+		"message":        "Fertigkeit erfolgreich gelernt",
+		"skill_name":     request.Name,
+		"final_level":    finalLevel,
+		"ep_cost":        totalEP,
+		"gold_cost":      totalGold,
+		"remaining_ep":   newEP,
+		"remaining_gold": newGold,
+		"cost_details":   response,
+	}
+
+	// Füge Multi-Level-spezifische Informationen hinzu
+	if finalLevel > 1 {
+		// Erstelle Array der gelernten Level für Kompatibilität
+		var levelsLearned []int
+		for i := 1; i <= finalLevel; i++ {
+			levelsLearned = append(levelsLearned, i)
+		}
+		responseData["levels_learned"] = levelsLearned
+		responseData["level_count"] = finalLevel
+		responseData["multi_level"] = true
+	}
+
+	c.JSON(http.StatusOK, responseData)
+}
+
+// ImproveSkill verbessert eine bestehende Fertigkeit und erstellt Audit-Log-Einträge
+// validateSkillForLearning validiert Skill-Namen für neue Fertigkeiten (Learning)
+func validateSkillForLearning(char *models.Char, request *gsmaster.LernCostRequest) (string, *models.SkillLearningInfo, int, error) {
+	// Verwende Klassenabkürzung wenn der Typ länger als 3 Zeichen ist
+	var characterClass string
+	if len(char.Typ) > 3 {
+		characterClass = gsmaster.GetClassAbbreviationNewSystem(char.Typ)
+	} else {
+		characterClass = char.Typ
+	}
+
+	// Normalize skill/spell name (trim whitespace, proper case)
+	skillName := strings.TrimSpace(request.Name)
+
+	skillInfo, err := models.GetSkillCategoryAndDifficultyNewSystem(skillName, characterClass)
+	if err != nil {
+		return "", nil, 0, fmt.Errorf("fertigkeit '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err)
+	}
+
+	// Für Learning starten wir bei Level 0
+	currentLevel := 0
+
+	// Prüfe, ob die Fertigkeit bereits existiert
+	existingLevel := getCurrentSkillLevel(char, request.Name, "skill")
+	if existingLevel > 0 {
+		return "", nil, 0, fmt.Errorf("fertigkeit '%s' ist bereits auf Level %d - verwende ImproveSkill stattdessen", request.Name, existingLevel)
+	}
+
+	return characterClass, skillInfo, currentLevel, nil
+}
+
+// calculateLearningCosts berechnet die Kosten für das Erlernen einer neuen Fertigkeit
+func calculateLearningCosts(char *models.Char, request *gsmaster.LernCostRequest, characterClass string, skillInfo *models.SkillLearningInfo, currentLevel, finalLevel int) ([]gsmaster.SkillCostResultNew, int, int, int, error) {
+	var response []gsmaster.SkillCostResultNew
+	var totalEP, totalGold, totalPP int
+
+	// Loop für jeden Level von 0 bis finalLevel (für neue Fertigkeiten)
+	for tempLevel := currentLevel; tempLevel < finalLevel; tempLevel++ {
+		nextLevel := tempLevel + 1
+
+		// Erstelle temporären Request für diesen Level
+		tempRequest := *request
+		tempRequest.CurrentLevel = tempLevel
+		tempRequest.TargetLevel = nextLevel
+
+		// Für das erste Level (0->1) ist es ein "learn", für weitere Level "improve"
+		if tempLevel == 0 {
+			tempRequest.Action = "learn"
+		} else {
+			tempRequest.Action = "improve"
+		}
+
+		// Erstelle cost result structure
+		costResult := gsmaster.SkillCostResultNew{
+			CharacterID:    fmt.Sprintf("%d", char.ID),
+			CharacterClass: characterClass,
+			SkillName:      request.Name,
+			TargetLevel:    nextLevel,
+		}
+
+		// Verwende die gleiche Kostenfunktion wie für Improvements
+		err := CalculateSkillImproveCostNewSystem(&tempRequest, &costResult, nextLevel, &tempRequest.UsePP, &tempRequest.UseGold, skillInfo)
+		if err != nil {
+			return nil, 0, 0, 0, fmt.Errorf("fehler bei der Kostenberechnung: %v", err)
+		}
+
+		// für die nächste Runde die PP und Gold reduzieren die zum Lernen genutzt werden sollen
+		if costResult.PPUsed > 0 {
+			request.UsePP -= costResult.PPUsed
+			if request.UsePP < 0 {
+				request.UsePP = 0
+			}
+		}
+
+		if costResult.GoldUsed > 0 {
+			request.UseGold -= costResult.GoldUsed
+			if request.UseGold < 0 {
+				request.UseGold = 0
+			}
+		}
+
+		response = append(response, costResult)
+
+		// Addiere die Kosten
+		totalEP += costResult.EP
+		totalGold += costResult.GoldCost
+		totalPP += costResult.PPUsed
+	}
+
+	return response, totalEP, totalGold, totalPP, nil
+}
+
+// deductResourcesForLearning zieht die Ressourcen für das Lernen ab und erstellt Audit-Log-Einträge
+func deductResourcesForLearning(char *models.Char, skillName string, finalLevel, totalEP, totalGold, totalPP int) (int, int, error) {
+	currentEP := char.Erfahrungsschatz.EP
+	currentGold := char.Vermoegen.Goldstücke
+
+	// EP abziehen und Audit-Log erstellen
+	newEP := currentEP - totalEP
+	if totalEP > 0 {
+		var notes string
+		if finalLevel > 1 {
+			notes = fmt.Sprintf("Fertigkeit '%s' bis Level %d gelernt", skillName, finalLevel)
+		} else {
+			notes = fmt.Sprintf("Fertigkeit '%s' gelernt", skillName)
+		}
+
+		err := CreateAuditLogEntry(char.ID, "experience_points", currentEP, newEP, ReasonSkillLearning, 0, notes)
+		if err != nil {
+			return 0, 0, fmt.Errorf("fehler beim Erstellen des Audit-Log-Eintrags: %v", err)
+		}
+		char.Erfahrungsschatz.EP = newEP
+		if err := database.DB.Save(&char.Erfahrungsschatz).Error; err != nil {
+			return 0, 0, fmt.Errorf("fehler beim Speichern der Erfahrungspunkte: %v", err)
+		}
+	}
+
+	// Gold abziehen und Audit-Log erstellen
+	newGold := currentGold - totalGold
+	if totalGold > 0 {
+		notes := fmt.Sprintf("Gold für Fertigkeit '%s' ausgegeben", skillName)
+
+		err := CreateAuditLogEntry(char.ID, "gold", currentGold, newGold, ReasonSkillLearning, 0, notes)
+		if err != nil {
+			return 0, 0, fmt.Errorf("fehler beim Erstellen des Audit-Log-Eintrags: %v", err)
+		}
+		char.Vermoegen.Goldstücke = newGold
+		if err := database.DB.Save(&char.Vermoegen).Error; err != nil {
+			return 0, 0, fmt.Errorf("fehler beim Speichern des Vermögens: %v", err)
+		}
+	}
+
+	// PP abziehen (falls vorhanden und erforderlich)
+	if totalPP > 0 {
+		// Suche die richtige Fertigkeit und ziehe PP ab
+		for i := range char.Fertigkeiten {
+			if char.Fertigkeiten[i].Name == skillName {
+				char.Fertigkeiten[i].Pp -= totalPP
+				if err := database.DB.Save(&char.Fertigkeiten[i]).Error; err != nil {
+					return 0, 0, fmt.Errorf("fehler beim Aktualisieren der Praxispunkte: %v", err)
+				}
+				break
+			}
+		}
+		// Falls nicht in normalen Fertigkeiten gefunden, prüfe Waffenfertigkeiten
+		for i := range char.Waffenfertigkeiten {
+			if char.Waffenfertigkeiten[i].Name == skillName {
+				char.Waffenfertigkeiten[i].Pp -= totalPP
+				if err := database.DB.Save(&char.Waffenfertigkeiten[i]).Error; err != nil {
+					return 0, 0, fmt.Errorf("fehler beim Aktualisieren der Praxispunkte: %v", err)
+				}
+				break
+			}
+		}
+	}
+
+	return newEP, newGold, nil
+}
+
 // ImproveSkill verbessert eine bestehende Fertigkeit und erstellt Audit-Log-Einträge
 // loadCharacterForImprovement lädt einen Charakter mit allen benötigten Beziehungen
 func loadCharacterForImprovement(characterID uint) (*models.Char, error) {
@@ -1033,6 +1296,7 @@ func validateResources(char *models.Char, skillName string, totalEP, totalGold, 
 }
 
 // deductResources zieht die Kosten von den Charakterressourcen ab
+// TODO Fehlerbehandlung (Falls Tabelle nicht vorhanden ist)
 func deductResources(char *models.Char, skillName string, currentLevel, finalLevel, totalEP, totalGold, totalPP int) (int, int, error) {
 	currentEP := char.Erfahrungsschatz.EP
 	currentGold := char.Vermoegen.Goldstücke
@@ -1051,11 +1315,11 @@ func deductResources(char *models.Char, skillName string, currentLevel, finalLev
 
 		err := CreateAuditLogEntry(char.ID, "experience_points", currentEP, newEP, ReasonSkillImprovement, 0, notes)
 		if err != nil {
-			return 0, 0, fmt.Errorf("Fehler beim Erstellen des Audit-Log-Eintrags: %v", err)
+			return newEP, 0, fmt.Errorf("Fehler beim Erstellen des Audit-Log-Eintrags: %v", err)
 		}
 		char.Erfahrungsschatz.EP = newEP
 		if err := database.DB.Save(&char.Erfahrungsschatz).Error; err != nil {
-			return 0, 0, fmt.Errorf("Fehler beim Speichern der Erfahrungspunkte: %v", err)
+			return newEP, 0, fmt.Errorf("Fehler beim Speichern der Erfahrungspunkte: %v", err)
 		}
 	}
 
@@ -1066,11 +1330,11 @@ func deductResources(char *models.Char, skillName string, currentLevel, finalLev
 
 		err := CreateAuditLogEntry(char.ID, "gold", currentGold, newGold, ReasonSkillImprovement, 0, notes)
 		if err != nil {
-			return 0, 0, fmt.Errorf("Fehler beim Erstellen des Audit-Log-Eintrags: %v", err)
+			return newEP, newGold, fmt.Errorf("Fehler beim Erstellen des Audit-Log-Eintrags: %v", err)
 		}
 		char.Vermoegen.Goldstücke = newGold
 		if err := database.DB.Save(&char.Vermoegen).Error; err != nil {
-			return 0, 0, fmt.Errorf("Fehler beim Speichern des Vermögens: %v", err)
+			return newEP, newGold, fmt.Errorf("Fehler beim Speichern des Vermögens: %v", err)
 		}
 	}
 
@@ -1081,7 +1345,7 @@ func deductResources(char *models.Char, skillName string, currentLevel, finalLev
 			if char.Fertigkeiten[i].Name == skillName {
 				char.Fertigkeiten[i].Pp -= totalPP
 				if err := database.DB.Save(&char.Fertigkeiten[i]).Error; err != nil {
-					return 0, 0, fmt.Errorf("Fehler beim Aktualisieren der Praxispunkte: %v", err)
+					return newEP, newGold, fmt.Errorf("Fehler beim Aktualisieren der Praxispunkte: %v", err)
 				}
 				break
 			}
@@ -1091,7 +1355,7 @@ func deductResources(char *models.Char, skillName string, currentLevel, finalLev
 			if char.Waffenfertigkeiten[i].Name == skillName {
 				char.Waffenfertigkeiten[i].Pp -= totalPP
 				if err := database.DB.Save(&char.Waffenfertigkeiten[i]).Error; err != nil {
-					return 0, 0, fmt.Errorf("Fehler beim Aktualisieren der Praxispunkte: %v", err)
+					return newEP, newGold, fmt.Errorf("Fehler beim Aktualisieren der Praxispunkte: %v", err)
 				}
 				break
 			}

@@ -2079,7 +2079,7 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 
 // GetAvailableSpellsNewSystem gibt alle verfügbaren Zauber mit Lernkosten zurück (POST mit LernCostRequest)
 func GetAvailableSpellsNewSystem(c *gin.Context) {
-	characterID := c.Param("id")
+	//characterID := c.Param("id")
 
 	// Parse LernCostRequest aus POST body
 	var baseRequest gsmaster.LernCostRequest
@@ -2089,7 +2089,7 @@ func GetAvailableSpellsNewSystem(c *gin.Context) {
 	}
 
 	var character models.Char
-	if err := database.DB.Preload("Zauber").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, characterID).Error; err != nil {
+	if err := database.DB.Preload("Zauber").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, baseRequest.CharId).Error; err != nil {
 		respondWithError(c, http.StatusNotFound, "Character not found")
 		return
 	}

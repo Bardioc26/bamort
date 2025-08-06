@@ -37,6 +37,10 @@ var (
 )
 
 func ConnectDatabase() *gorm.DB {
+	SetupTestDB()
+	return DB
+}
+func ConnectDatabaseOrig() *gorm.DB {
 	dsn := "bamort:bG4)efozrc@tcp(192.168.0.5:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
 	database, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {

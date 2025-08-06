@@ -78,10 +78,34 @@ export default {
     wirkungsbereich:'Wirkungsbereich',
     wirkungsdauer:'Wirkungsdauer',
     ursprung:'Ursprung',
-    quelle:'Quelle',
-    system:'System',
     bonus:'Bonus',
-
+    quelle:'Quelle',
+  },
+  spells: {
+    learn: {
+      title: 'Neuen Zauber lernen',
+      search: {
+        label: 'Suche',
+        placeholder: 'Zauber suchen...'
+      },
+      school: {
+        label: 'Schule',
+        all: 'Alle Schulen'
+      },
+      available: 'Verfügbare Zauber',
+      selected: 'Ausgewählter Zauber',
+      costs: {
+        title: 'Lernkosten',
+        ep: 'Erfahrungspunkte',
+        gold: 'Gold',
+        total: 'Gesamt'
+      },
+      action: 'Zauber lernen'
+    },
+    costs: {
+      ep: 'EP',
+      gold: 'Gold'
+    }
   },
   Spell:'Zauber',
   weapon:{
@@ -128,6 +152,10 @@ export default {
   },
   search:'Suche',
   Skill:'Fertigkeit',
+  common: {
+    loading: 'Laden...',
+    cancel: 'Abbrechen'
+  },
   experience: {
     title: 'Erfahrung & Vermögen',
     experience_points: 'Erfahrungspunkte',

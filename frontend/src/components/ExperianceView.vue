@@ -8,7 +8,7 @@
       <div class="stat-box">
         <div class="stat-item">
           <span class="stat-label">{{ $t('experience.available_ep') }}:</span>
-          <span class="stat-value">{{ character.erfahrungsschatz?.value || 0 }} EP</span>
+          <span class="stat-value">{{ character.erfahrungsschatz?.ep || 0 }} EP</span>
         </div>
         <div class="control-row">
           <div class="input-group">
@@ -285,7 +285,7 @@ export default {
       
       this.isLoading = true;
       try {
-        const currentEP = this.character.erfahrungsschatz?.value || 0;
+        const currentEP = this.character.erfahrungsschatz?.ep || 0;
         const newEP = currentEP + this.experienceAmount;
         
         await this.updateExperience(newEP);
@@ -302,7 +302,7 @@ export default {
       
       this.isLoading = true;
       try {
-        const currentEP = this.character.erfahrungsschatz?.value || 0;
+        const currentEP = this.character.erfahrungsschatz?.ep || 0;
         const newEP = Math.max(0, currentEP - this.experienceAmount);
         
         await this.updateExperience(newEP);

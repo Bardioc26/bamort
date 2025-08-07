@@ -45,6 +45,40 @@ func migrateAllStructures(db *gorm.DB) error {
 	return nil
 }
 
+func migrateDataIfNeeded(db *gorm.DB) error {
+	// Kopiere categorie nach learning_category für Spells, wenn learning_category leer ist
+	err := migrateSpellLearningCategories(db)
+	if err != nil {
+		return fmt.Errorf("failed to migrate spell learning categories: %w", err)
+	}
+
+	return nil
+}
+
+// migrateSpellLearningCategories kopiert categorie-Werte in learning_category wenn diese leer sind
+func migrateSpellLearningCategories(db *gorm.DB) error {
+	// SQL-Statement um categorie nach learning_category zu kopieren, wo learning_category leer oder NULL ist
+	sql := `
+		UPDATE gsm_spells 
+		SET learning_category = category 
+		WHERE (learning_category IS NULL OR learning_category = '') 
+		AND category IS NOT NULL 
+		AND category != ''
+	`
+
+	result := db.Exec(sql)
+	if result.Error != nil {
+		return fmt.Errorf("failed to update spell learning categories: %w", result.Error)
+	}
+
+	// Log der Anzahl der aktualisierten Datensätze
+	if result.RowsAffected > 0 {
+		fmt.Printf("Updated %d spell records with learning_category from categorie\n", result.RowsAffected)
+	}
+
+	return nil
+}
+
 func MakeTestdataFromLive(c *gin.Context) {
 	liveDB := database.ConnectDatabase()
 	if liveDB == nil {
@@ -359,6 +393,12 @@ func SetupCheck(c *gin.Context) {
 	err := migrateAllStructures(db)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = migrateDataIfNeeded(db)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to migrate data: " + err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Setup Check OK"})

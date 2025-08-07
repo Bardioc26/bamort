@@ -63,24 +63,25 @@ type WeaponSkill struct {
 }
 
 type Spell struct {
-	ID              uint   `gorm:"primaryKey" json:"id"`
-	GameSystem      string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
-	Name            string `gorm:"type:varchar(255);index" json:"name"`
-	Beschreibung    string `json:"beschreibung"`
-	Quelle          string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
-	SourceID        uint   `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
-	PageNumber      int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
-	Bonus           int    `json:"bonus"`
-	Stufe           int    `json:"level"`
-	AP              string `gorm:"default:1"  json:"ap"`
-	Art             string `gorm:"default:Gestenzauber" json:"art"`
-	Zauberdauer     string `gorm:"default:10 sec" json:"zauberdauer"`
-	Reichweite      string `json:"reichweite"` // in m
-	Wirkungsziel    string `json:"wirkungsziel"`
-	Wirkungsbereich string `json:"wirkungsbereich"`
-	Wirkungsdauer   string `json:"wirkungsdauer"`
-	Ursprung        string `json:"ursprung"`
-	Category        string `gorm:"default:normal" json:"category"` // spell_school
+	ID               uint   `gorm:"primaryKey" json:"id"`
+	GameSystem       string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
+	Name             string `gorm:"type:varchar(255);index" json:"name"`
+	Beschreibung     string `json:"beschreibung"`
+	Quelle           string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
+	SourceID         uint   `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
+	PageNumber       int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
+	Bonus            int    `json:"bonus"`
+	Stufe            int    `json:"level"`
+	AP               string `gorm:"default:1"  json:"ap"`
+	Art              string `gorm:"default:Gestenzauber" json:"art"`
+	Zauberdauer      string `gorm:"default:10 sec" json:"zauberdauer"`
+	Reichweite       string `json:"reichweite"` // in m
+	Wirkungsziel     string `json:"wirkungsziel"`
+	Wirkungsbereich  string `json:"wirkungsbereich"`
+	Wirkungsdauer    string `json:"wirkungsdauer"`
+	Ursprung         string `json:"ursprung"`
+	Category         string `gorm:"default:normal" json:"category"` // spell_school
+	LearningCategory string `gorm:"type:varchar(25);index" json:"learning_category"`
 }
 
 type Equipment struct {

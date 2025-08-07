@@ -373,13 +373,13 @@ func GetSpellLearningInfoNewSystem(spellName string, classCode string) (*SpellLe
 			s.id as spell_id,
 			s.name as spell_name,
 			s.stufe as spell_level,
-			s.category as school_name,
+			s.learning_category as school_name,
 			cssec.character_class as class_code,
 			cssec.character_class as class_name,
 			cssec.ep_per_le,
 			COALESCE(sllc.le_required, 0) as le_required
 		FROM gsm_spells s
-		JOIN learning_class_spell_school_ep_costs cssec ON s.category = cssec.spell_school
+		JOIN learning_class_spell_school_ep_costs cssec ON s.learning_category = cssec.spell_school
 		LEFT JOIN learning_spell_level_le_costs sllc ON s.stufe = sllc.level
 		WHERE s.name = ? AND cssec.character_class = ?
 	`, spellName, classCode).Scan(&result).Error

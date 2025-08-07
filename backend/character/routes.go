@@ -36,6 +36,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.GET("/:id/available-skills", GetAvailableSkillsOld)        // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
 	charGrp.POST("/available-skills-new", GetAvailableSkillsNewSystem) // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
 	charGrp.POST("/available-spells-new", GetAvailableSpellsNewSystem) // Verfügbare Zauber mit Kosten (bereits gelernte ausgeschlossen)
+	charGrp.GET("/spell-details", GetSpellDetails)                     // Detaillierte Informationen zu einem bestimmten Zauber
 
 	// Belohnungsarten für verschiedene Lernszenarien
 	charGrp.GET("/:id/reward-types", GetRewardTypesOld) // Verfügbare Belohnungsarten je nach Kontext

@@ -89,43 +89,188 @@
         </div>
       </div>
       
-      <!-- Verfügbare Zauber -->
-      <div class="form-group">
-        <label>{{ $t('spells.learn.available') }}</label>
-        <div v-if="filteredSpells.length > 0" class="learning-levels">
-          <div 
-            v-for="spell in filteredSpells" 
-            :key="spell.name"
-            class="level-option"
-            :class="{ 'selected': selectedSpell?.name === spell.name }"
-            @click="selectSpell(spell)"
-          >
-            <div class="level-header">
-              <span class="level-target">{{ spell.name }}</span>
-              <span class="level-cost">
-                <span v-if="spell.epCost">{{ spell.epCost }} EP</span>
-                <span v-if="spell.epCost && spell.goldCost"> + </span>
-                <span v-if="spell.goldCost">{{ spell.goldCost }} GS</span>
-              </span>
+      <!-- Verfügbare Zauber und Zu lernende Zauber -->
+      <div class="spells-container">
+        <!-- Linke Spalte: Verfügbare Zauber -->
+        <div class="available-spells-section">
+          <div class="form-group">
+            <label>{{ $t('spells.learn.available') }}</label>
+            <div v-if="filteredSpells.length > 0" class="learning-levels">
+              <div 
+                v-for="spell in filteredSpells" 
+                :key="spell.name"
+                class="level-option"
+                :class="{ 
+                  'selected': selectedSpell?.name === spell.name,
+                  'already-selected': isSpellInLearningList(spell.name)
+                }"
+                @click="selectSpell(spell)"
+              >
+                <div class="level-header">
+                  <span class="level-target">{{ spell.name }}</span>
+                  <div class="spell-actions-inline">
+                    <span class="level-cost">
+                      <span v-if="spell.epCost">{{ spell.epCost }} EP</span>
+                      <span v-if="spell.epCost && spell.goldCost"> + </span>
+                      <span v-if="spell.goldCost">{{ spell.goldCost }} GS</span>
+                    </span>
+                    <button 
+                      @click.stop="addSpellToLearningListDirect(spell)"
+                      class="btn-add-inline"
+                      :disabled="isSpellInLearningList(spell.name) || !canAffordSpell(spell)"
+                      :title="isSpellInLearningList(spell.name) ? 'Bereits in Liste' : 'Zur Liste hinzufügen'"
+                    >
+                      {{ isSpellInLearningList(spell.name) ? '✓' : '+' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else-if="!isLoading" class="no-spells">
+              Keine Zauber verfügbar
             </div>
           </div>
         </div>
-        <div v-else-if="!isLoading" class="no-spells">
-          Keine Zauber verfügbar
+
+        <!-- Rechte Spalte: Zu lernende Zauber -->
+        <div class="learning-list-section">
+          <div class="form-group">
+            <label>Zu lernende Zauber</label>
+            <div v-if="spellsToLearn.length > 0" class="learning-levels">
+              <div 
+                v-for="(spell, index) in spellsToLearn" 
+                :key="spell.name"
+                class="level-option learning-item"
+              >
+                <div class="level-header">
+                  <span class="level-target">{{ spell.name }}</span>
+                  <span class="level-cost">
+                    <span v-if="spell.epCost">{{ spell.epCost }} EP</span>
+                    <span v-if="spell.epCost && spell.goldCost"> + </span>
+                    <span v-if="spell.goldCost">{{ spell.goldCost }} GS</span>
+                  </span>
+                  <button 
+                    @click="removeSpellFromLearningList(index)"
+                    class="remove-btn"
+                    title="Zauber aus Liste entfernen"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div v-else class="no-spells">
+              Keine Zauber ausgewählt
+            </div>
+            
+            <!-- Gesamtkosten -->
+            <div v-if="spellsToLearn.length > 0" class="total-costs">
+              <div class="cost-summary">
+                <strong>Gesamtkosten:</strong>
+                <span v-if="totalLearningCosts.ep > 0">{{ totalLearningCosts.ep }} EP</span>
+                <span v-if="totalLearningCosts.ep > 0 && totalLearningCosts.gold > 0"> + </span>
+                <span v-if="totalLearningCosts.gold > 0">{{ totalLearningCosts.gold }} GS</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Ausgewählter Zauber Details -->
+      <!-- Ausgewählter Zauber Aktionen und Details -->
       <div v-if="selectedSpell" class="form-group">
-        <div class="selection-summary">
-          <strong>Ausgewählt:</strong> {{ selectedSpell.name }}
-          <br>
-          <span class="cost-summary">
-            Lernkosten: 
-            <span v-if="selectedSpell.epCost">{{ selectedSpell.epCost }} EP</span>
-            <span v-if="selectedSpell.epCost && selectedSpell.goldCost"> + </span>
-            <span v-if="selectedSpell.goldCost">{{ selectedSpell.goldCost }} GS</span>
-          </span>
+        <div class="spell-details-section">
+          <!---
+          <div class="selection-summary">
+            <div class="spell-actions">
+              <strong>Ausgewählt:</strong> {{ selectedSpell.name }}
+              <span class="cost-info">
+                - Kosten: 
+                <span v-if="selectedSpell.epCost">{{ selectedSpell.epCost }} EP</span>
+                <span v-if="selectedSpell.epCost && selectedSpell.goldCost"> + </span>
+                <span v-if="selectedSpell.goldCost">{{ selectedSpell.goldCost }} GS</span>
+              </span>
+              <button 
+                @click="addSpellToLearningList"
+                class="btn-add-spell"
+                :disabled="isSpellInLearningList(selectedSpell.name) || !canAffordSpell(selectedSpell)"
+              >
+                {{ isSpellInLearningList(selectedSpell.name) ? 'Bereits in Liste' : 'Zur Liste hinzufügen' }}
+              </button>
+            </div>
+          </div>
+          --->
+          <!-- Detaillierte Zauber-Informationen -->
+          <div v-if="isLoadingSpellDetails" class="loading-spell-details">
+            <span>Lade Zauber-Details...</span>
+          </div>
+          
+          <div v-else-if="selectedSpellDetails" class="spell-details-grid">
+            <div class="spell-detail-card">
+              <h4>Grunddaten</h4>
+              <div class="detail-row">
+                <span class="detail-label">Stufe:</span>
+                <span class="detail-value">{{ selectedSpellDetails.level }}</span>
+              </div>
+              <div class="detail-row" v-if="selectedSpellDetails.bonus">
+                <span class="detail-label">Bonus:</span>
+                <span class="detail-value">+{{ selectedSpellDetails.bonus }}</span>
+              </div>
+              <div class="detail-row" v-if="selectedSpellDetails.category">
+                <span class="detail-label">Schule:</span>
+                <span class="detail-value">{{ selectedSpellDetails.category }}</span>
+              </div>
+              <div class="detail-row" v-if="selectedSpellDetails.ursprung">
+                <span class="detail-label">Ursprung:</span>
+                <span class="detail-value">{{ selectedSpellDetails.ursprung }}</span>
+              </div>
+            </div>
+
+            <div class="spell-detail-card" v-if="selectedSpellDetails.ap || selectedSpellDetails.art || selectedSpellDetails.zauberdauer">
+              <h4>Ausführung</h4>
+              <div class="detail-row" v-if="selectedSpellDetails.ap">
+                <span class="detail-label">AP:</span>
+                <span class="detail-value">{{ selectedSpellDetails.ap }}</span>
+              </div>
+              <div class="detail-row" v-if="selectedSpellDetails.art">
+                <span class="detail-label">Art:</span>
+                <span class="detail-value">{{ selectedSpellDetails.art }}</span>
+              </div>
+              <div class="detail-row" v-if="selectedSpellDetails.zauberdauer">
+                <span class="detail-label">Zauberdauer:</span>
+                <span class="detail-value">{{ selectedSpellDetails.zauberdauer }}</span>
+              </div>
+            </div>
+
+            <div class="spell-detail-card" v-if="selectedSpellDetails.reichweite || selectedSpellDetails.wirkungsziel || selectedSpellDetails.wirkungsbereich">
+              <h4>Reichweite & Ziel</h4>
+              <div class="detail-row" v-if="selectedSpellDetails.reichweite">
+                <span class="detail-label">Reichweite:</span>
+                <span class="detail-value">{{ selectedSpellDetails.reichweite }}</span>
+              </div>
+              <div class="detail-row" v-if="selectedSpellDetails.wirkungsziel">
+                <span class="detail-label">Wirkungsziel:</span>
+                <span class="detail-value">{{ selectedSpellDetails.wirkungsziel }}</span>
+              </div>
+              <div class="detail-row" v-if="selectedSpellDetails.wirkungsbereich">
+                <span class="detail-label">Wirkungsbereich:</span>
+                <span class="detail-value">{{ selectedSpellDetails.wirkungsbereich }}</span>
+              </div>
+            </div>
+
+            <div class="spell-detail-card" v-if="selectedSpellDetails.wirkungsdauer">
+              <h4>Wirkung</h4>
+              <div class="detail-row">
+                <span class="detail-label">Wirkungsdauer:</span>
+                <span class="detail-value">{{ selectedSpellDetails.wirkungsdauer }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Beschreibung -->
+          <div class="spell-description" v-if="selectedSpellDetails && selectedSpellDetails.beschreibung">
+            <h4>Beschreibung</h4>
+            <p>{{ selectedSpellDetails.beschreibung }}</p>
+          </div>
         </div>
       </div>
 
@@ -135,11 +280,11 @@
 
       <div class="modal-actions">
         <button 
-          @click="learnSpell" 
+          @click="learnAllSpells" 
           class="btn-confirm" 
-          :disabled="!selectedSpell || isLoading"
+          :disabled="spellsToLearn.length === 0 || isLoading || !canAffordAllSpells"
         >
-          {{ isLoading ? 'Wird gelernt...' : $t('spells.learn.action') }}
+          {{ isLoading ? 'Wird gelernt...' : `${spellsToLearn.length} Zauber lernen` }}
         </button>
         <button @click="closeDialog" class="btn-cancel" :disabled="isLoading">
           {{ $t('common.cancel') }}
@@ -173,7 +318,10 @@ export default {
       sortBy: 'name',
       spellsBySchool: {},
       selectedSpell: null,
+      selectedSpellDetails: null,
+      spellsToLearn: [],
       isLoading: false,
+      isLoadingSpellDetails: false,
       availableRewardTypes: [],
       isLoadingRewardTypes: false
     };
@@ -181,14 +329,30 @@ export default {
   computed: {
     remainingEP() {
       const currentEP = this.character.erfahrungsschatz?.ep || 0;
-      const spellEPCost = this.selectedSpell?.epCost || 0;
-      return Math.max(0, currentEP - spellEPCost);
+      const usedEP = this.totalLearningCosts.ep;
+      return Math.max(0, currentEP - usedEP);
     },
     
     remainingGold() {
       const currentGold = this.character.vermoegen?.goldstücke || 0;
-      const spellGoldCost = this.selectedSpell?.goldCost || 0;
-      return Math.max(0, currentGold - spellGoldCost);
+      const usedGold = this.totalLearningCosts.gold;
+      return Math.max(0, currentGold - usedGold);
+    },
+    
+    totalLearningCosts() {
+      return this.spellsToLearn.reduce((total, spell) => {
+        total.ep += spell.epCost || 0;
+        total.gold += spell.goldCost || 0;
+        return total;
+      }, { ep: 0, gold: 0 });
+    },
+    
+    canAffordAllSpells() {
+      const currentEP = this.character.erfahrungsschatz?.ep || 0;
+      const currentGold = this.character.vermoegen?.goldstücke || 0;
+      const costs = this.totalLearningCosts;
+      
+      return currentEP >= costs.ep && currentGold >= costs.gold;
     },
     
     totalCosts() {
@@ -260,7 +424,43 @@ export default {
       this.sortBy = 'name';
       this.spellsBySchool = {};
       this.selectedSpell = null;
+      this.selectedSpellDetails = null;
+      this.spellsToLearn = [];
       this.availableRewardTypes = [];
+    },
+    
+    isSpellInLearningList(spellName) {
+      return this.spellsToLearn.some(spell => spell.name === spellName);
+    },
+    
+    canAffordSpell(spell) {
+      const currentEP = this.character.erfahrungsschatz?.ep || 0;
+      const currentGold = this.character.vermoegen?.goldstücke || 0;
+      const totalCostsWithSpell = {
+        ep: this.totalLearningCosts.ep + (spell.epCost || 0),
+        gold: this.totalLearningCosts.gold + (spell.goldCost || 0)
+      };
+      
+      return currentEP >= totalCostsWithSpell.ep && currentGold >= totalCostsWithSpell.gold;
+    },
+    
+    addSpellToLearningList() {
+      if (!this.selectedSpell || this.isSpellInLearningList(this.selectedSpell.name)) return;
+      if (!this.canAffordSpell(this.selectedSpell)) return;
+      
+      this.spellsToLearn.push({ ...this.selectedSpell });
+      this.selectedSpell = null;
+    },
+    
+    addSpellToLearningListDirect(spell) {
+      if (this.isSpellInLearningList(spell.name)) return;
+      if (!this.canAffordSpell(spell)) return;
+      
+      this.spellsToLearn.push({ ...spell });
+    },
+    
+    removeSpellFromLearningList(index) {
+      this.spellsToLearn.splice(index, 1);
     },
     
     async loadRewardTypes() {
@@ -335,34 +535,76 @@ export default {
       }
     },
     
-    selectSpell(spell) {
-      this.selectedSpell = this.selectedSpell?.name === spell.name ? null : spell;
+    async loadSpellDetails(spellName) {
+      if (!spellName) return;
+      
+      try {
+        this.isLoadingSpellDetails = true;
+        const response = await this.$api.get('/api/characters/spell-details', {
+          params: { name: spellName }
+        });
+        
+        this.selectedSpellDetails = response.data.spell;
+      } catch (error) {
+        console.error('Fehler beim Laden der Zauber-Details:', error);
+        this.selectedSpellDetails = null;
+      } finally {
+        this.isLoadingSpellDetails = false;
+      }
     },
     
-    async learnSpell() {
-      if (!this.selectedSpell || this.isLoading) return;
+    selectSpell(spell) {
+      const wasSelected = this.selectedSpell?.name === spell.name;
+      this.selectedSpell = wasSelected ? null : spell;
+      
+      if (this.selectedSpell) {
+        // Lade Details nur wenn der Zauber ausgewählt wurde
+        this.loadSpellDetails(this.selectedSpell.name);
+      } else {
+        // Leerere Details wenn kein Zauber ausgewählt ist
+        this.selectedSpellDetails = null;
+      }
+    },
+    
+    async learnAllSpells() {
+      if (this.spellsToLearn.length === 0 || this.isLoading || !this.canAffordAllSpells) return;
       
       try {
         this.isLoading = true;
+        const responses = [];
         
-        const response = await this.$api.post(`/characters/${this.character.id}/learn-spell-new`, {
-          char_id: this.character.id,
-          name: this.selectedSpell.name,
-          type: 'spell',
-          action: 'learn',
-          use_pp: 0,
-          use_gold: 0,
-          reward: this.selectedRewardType
-        });
+        // Lerne jeden Zauber einzeln
+        for (const spell of this.spellsToLearn) {
+          const response = await this.$api.post(`/characters/${this.character.id}/learn-spell-new`, {
+            char_id: this.character.id,
+            name: spell.name,
+            type: 'spell',
+            action: 'learn',
+            use_pp: 0,
+            use_gold: 0,
+            reward: this.selectedRewardType
+          });
+          
+          responses.push({
+            spell: spell,
+            response: response.data
+          });
+        }
         
+        // Erfolgsmeldung mit Details
+        const learnedCount = responses.length;
         this.$emit('spell-learned', {
-          spell: this.selectedSpell,
-          response: response.data
+          spells: this.spellsToLearn,
+          responses: responses,
+          count: learnedCount
         });
+        
+        // Dialog schließen nach erfolgreichem Lernen
+        this.closeDialog();
         
       } catch (error) {
-        console.error('Fehler beim Lernen des Zaubers:', error);
-        alert('Fehler beim Lernen des Zaubers: ' + (error.response?.data?.message || error.message));
+        console.error('Fehler beim Lernen der Zauber:', error);
+        alert('Fehler beim Lernen der Zauber: ' + (error.response?.data?.message || error.message));
       } finally {
         this.isLoading = false;
       }
@@ -460,6 +702,140 @@ export default {
   color: #d9534f !important;
 }
 
+/* Zweispaltiges Layout */
+.spells-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.available-spells-section,
+.learning-list-section {
+  min-height: 300px;
+}
+
+.learning-item {
+  background: #f0f8ff !important;
+  border-left: 3px solid #007bff !important;
+}
+
+.learning-item .level-header {
+  position: relative;
+}
+
+.remove-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-btn:hover {
+  background: #c82333;
+}
+
+.already-selected {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.spell-actions-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-add-inline {
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-add-inline:hover:not(:disabled) {
+  background: #218838;
+  transform: scale(1.1);
+}
+
+.btn-add-inline:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.already-selected .btn-add-inline {
+  background: #17a2b8;
+}
+
+.total-costs {
+  margin-top: 10px;
+  padding: 10px;
+  background: #e7f3ff;
+  border-radius: 4px;
+  border-left: 4px solid #007bff;
+}
+
+.spell-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cost-info {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.btn-add-spell {
+  padding: 4px 12px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s ease;
+}
+
+.btn-add-spell:hover:not(:disabled) {
+  background: #218838;
+}
+
+.btn-add-spell:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1024px) {
+  .spells-container {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Filter und Sortierung */
 .school-buttons {
   display: flex;
@@ -490,7 +866,92 @@ export default {
   border-color: #007bff;
 }
 
-/* Zauber-Auswahl */
+/* Zauber-Auswahl und Details */
+.spell-details-section {
+  background: #e7f3ff;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  border-left: 4px solid #007bff;
+}
+
+.loading-spell-details {
+  text-align: center;
+  padding: 20px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.spell-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.spell-detail-card {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.spell-detail-card h4 {
+  margin: 0 0 10px 0;
+  color: #495057;
+  font-size: 14px;
+  font-weight: bold;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 5px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  color: #6c757d;
+  font-weight: 500;
+  flex: 0 0 auto;
+  margin-right: 10px;
+}
+
+.detail-value {
+  color: #495057;
+  text-align: right;
+  flex: 1 1 auto;
+}
+
+.spell-description {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 15px;
+}
+
+.spell-description h4 {
+  margin: 0 0 8px 0;
+  color: #495057;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.spell-description p {
+  margin: 0;
+  color: #495057;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 .selection-summary {
   background: #e7f3ff;
   padding: 12px;

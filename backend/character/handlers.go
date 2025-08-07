@@ -2184,6 +2184,48 @@ func GetAvailableSpellsNewSystem(c *gin.Context) {
 	})
 }
 
+// GetSpellDetails gibt detaillierte Informationen zu einem bestimmten Zauber zurück
+func GetSpellDetails(c *gin.Context) {
+	spellName := c.Query("name")
+	if spellName == "" {
+		respondWithError(c, http.StatusBadRequest, "Zaubername ist erforderlich")
+		return
+	}
+
+	// Lade den Zauber aus der Datenbank
+	var spell models.Spell
+	if err := database.DB.Where("name = ?", spellName).First(&spell).Error; err != nil {
+		respondWithError(c, http.StatusNotFound, "Zauber nicht gefunden")
+		return
+	}
+
+	// Erstelle Response mit allen verfügbaren Details
+	spellDetails := gin.H{
+		"id":                spell.ID,
+		"name":              spell.Name,
+		"beschreibung":      spell.Beschreibung,
+		"level":             spell.Stufe,
+		"bonus":             spell.Bonus,
+		"ap":                spell.AP,
+		"art":               spell.Art,
+		"zauberdauer":       spell.Zauberdauer,
+		"reichweite":        spell.Reichweite,
+		"wirkungsziel":      spell.Wirkungsziel,
+		"wirkungsbereich":   spell.Wirkungsbereich,
+		"wirkungsdauer":     spell.Wirkungsdauer,
+		"ursprung":          spell.Ursprung,
+		"category":          spell.Category,
+		"learning_category": spell.LearningCategory,
+		"quelle":            spell.Quelle,
+		"page_number":       spell.PageNumber,
+		"game_system":       spell.GameSystem,
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"spell": spellDetails,
+	})
+}
+
 // GetAvailableSkillsOld is deprecated. Use GetAvailableSkillsNewSystem instead.
 // This function uses the old hardcoded learning cost system.
 // GetAvailableSkillsOld gibt alle verfügbaren Fertigkeiten mit Lernkosten zurück

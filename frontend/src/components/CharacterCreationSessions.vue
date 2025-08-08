@@ -16,8 +16,8 @@
         </div>
         <div class="session-details">
           <p class="list-item-details"><strong>{{ $t('characters.list.race') }}:</strong> {{ session.rasse || $t('characters.list.not_selected') }}
-          <span class="list-item-separator">|</span><strong>{{ $t('characters.list.class') }}:</strong> {{ session.typ || $t('characters.list.not_selected') }} 
-          <span class="list-item-separator">|</span><strong>{{ $t('characters.list.current_step') }}:</strong> {{ session.progress_text }}</p>
+          <span class="list-item-separator">|</span><strong>{{ $t('characters.list.class') }}:</strong> {{ session.typ || $t('characters.list.not_selected') }} </p> 
+          <p class="list-item-details"><strong>{{ $t('characters.list.current_step') }}:</strong> {{ session.progress_text }} </p>
         </div>
         <div class="session-meta">
           <span class="session-date">{{ $t('characters.list.last_updated') }}: {{ formatDate(session.updated_at) }}</span>

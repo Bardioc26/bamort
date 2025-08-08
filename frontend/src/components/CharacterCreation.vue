@@ -249,10 +249,19 @@ export default {
         })
         
         const characterId = response.data.character_id
+        
+        // Success message
+        alert('Character successfully created!')
+        
+        // Navigate to character view or back to character list
         this.$router.push(`/character/${characterId}`)
       } catch (error) {
         console.error('Error finalizing character:', error)
-        alert('Fehler beim Abschließen der Charakter-Erstellung')
+        if (error.response?.data?.error) {
+          alert(`Error: ${error.response.data.error}`)
+        } else {
+          alert('Fehler beim Abschließen der Charakter-Erstellung')
+        }
       }
     },
     

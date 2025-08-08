@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bamort/user"
 	"encoding/json"
 	"time"
 
@@ -10,7 +11,8 @@ import (
 // CharacterCreationSession speichert den Fortschritt der Charakter-Erstellung
 type CharacterCreationSession struct {
 	ID            string                   `json:"id" gorm:"primaryKey"`
-	UserID        uint                     `json:"user_id" gorm:"index"`
+	UserID        uint                     `json:"user_id" gorm:"index;not null"`
+	User          user.User                `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	Name          string                   `json:"name"`
 	Rasse         string                   `json:"rasse"`
 	Typ           string                   `json:"typ"`

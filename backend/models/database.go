@@ -79,6 +79,7 @@ func characterMigrateStructure(db ...*gorm.DB) error {
 
 	err := targetDB.AutoMigrate(
 		&Char{},
+		&CharacterCreationSession{},
 		&Eigenschaft{},
 		&Lp{},
 		&Ap{},

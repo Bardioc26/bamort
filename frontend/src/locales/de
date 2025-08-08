@@ -1,4 +1,11 @@
 export default {
+  DatasheetView:'Datenblatt',
+  SkillView: 'Fertigkeiten',
+  WeaponView: 'Waffen',
+  SpellView: 'Zauber',
+  EquipmentView: 'Ausrüstung',
+  ExperianceView: 'Erfahrung & Vermögen',
+  DeleteCharView: 'Figur löschen',
   char:'Figur',
   stats: {
     strength: 'St',
@@ -154,7 +161,9 @@ export default {
   Skill:'Fertigkeit',
   common: {
     loading: 'Laden...',
-    cancel: 'Abbrechen'
+    cancel: 'Abbrechen',
+    revious: 'Zurück',
+    next: 'Weiter'
   },
   experience: {
     title: 'Erfahrung & Vermögen',
@@ -185,9 +194,5 @@ export default {
       notEnoughPoints: 'Nicht genug Punkte',
       remove: 'Entfernen'
     }
-  },
-  common: {
-    previous: 'Zurück',
-    next: 'Weiter'
   }
 }

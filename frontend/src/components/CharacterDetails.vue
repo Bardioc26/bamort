@@ -2,7 +2,7 @@
   <div class="character-details">
     <!-- Character Header -->
     <div class="character-header">
-      <h2>{{ $t('char') }}: {{ character.name }}</h2>
+      <h2>{{ $t('char') }}: {{ character.name }} ({{ $t(currentView) }})</h2>
     </div>
     <!-- Submenu Content -->
     <!-- <div class="character-aspect"> -->

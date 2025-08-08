@@ -1,8 +1,5 @@
 <template>
   <div class="fullwidth-container">
-    <div class="page-header">
-      <h2>{{ character.name }}'s Ausrüstung</h2>
-    </div>
     <div class="cd-list">
       <table class="cd-table">
       <thead>

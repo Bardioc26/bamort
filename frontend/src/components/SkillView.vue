@@ -3,9 +3,7 @@
     <div class="cd-list">
       <div class="tables-container">
         <div class="table-wrapper-left">
-          <div class="header-section">
-            <h2 style="line-height: 1.5; margin-top: 5px;">Fertigkeiten</h2>
-            
+          <div class="header-section">            
             <!-- Lernmodus Toggle Button -->
             <div class="learning-mode-controls">
               <!-- Ressourcen-Anzeige (nur sichtbar wenn Lernmodus aktiv) -->

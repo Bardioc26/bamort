@@ -1,8 +1,5 @@
 <template>
-    <div class="fullwidth-container experiance-view">
-    <div class="page-header">
-      <h3>{{ $t('experience.title') }}</h3>
-    </div>
+    <div class="fullwidth-container">
     
     <!-- Erfahrungspunkte -->
     <div class="experience-section">
@@ -97,9 +94,6 @@
 
 <style scoped>
 /* ExperianceView spezifische Styles */
-.experiance-view {
-  max-width: 800px;
-}
 
 .experience-section, 
 .wealth-section {

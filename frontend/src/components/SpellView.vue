@@ -1,9 +1,7 @@
 <template>
   <div class="fullwidth-container">
     <!-- Header mit Lernmodus-Kontrollen -->
-    <div class="page-header header-section">
-      <h2>{{ character.name }}'s Zauber</h2>
-      
+    <div class="page-header header-section">      
       <div class="learning-mode-controls">
         <!-- Lernmodus Toggle Button -->
         <button 

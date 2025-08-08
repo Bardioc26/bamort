@@ -10,6 +10,7 @@ import (
 	"log"
 
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -38,13 +39,11 @@ var (
 
 func ConnectDatabase() *gorm.DB {
 	SetupTestDB()
-	/*
-		db, err := gorm.Open(sqlite.Open(PreparedTestDB), &gorm.Config{})
-		if err != nil {
-			log.Fatal("Failed to connect to database:", err)
-		}
-		DB = db
-	*/
+	db, err := gorm.Open(sqlite.Open(PreparedTestDB), &gorm.Config{})
+	if err != nil {
+		log.Fatal("Failed to connect to database:", err)
+	}
+	DB = db
 	return DB
 }
 func ConnectDatabaseOrig() *gorm.DB {

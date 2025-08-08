@@ -165,5 +165,29 @@ export default {
     silver_coins: 'Silberstücke',
     copper_coins: 'Kupferstücke',
     total_in_gs: 'Gesamt in GS'
+  },
+  characters: {
+    create: {
+      spells: {
+        title: 'Zauber auswählen',
+        description: 'Wähle magische Zauber für deinen Charakter',
+        available: 'Verfügbare Zauber',
+        selected: 'Ausgewählte Zauber'
+      },
+      finalize: 'Charakter erstellen'
+    },
+    spells: {
+      zauber: 'Zauber'
+    },
+    skills: {
+      cost: 'Kosten',
+      alreadySelected: 'Bereits ausgewählt',
+      notEnoughPoints: 'Nicht genug Punkte',
+      remove: 'Entfernen'
+    }
+  },
+  common: {
+    previous: 'Zurück',
+    next: 'Weiter'
   }
 }

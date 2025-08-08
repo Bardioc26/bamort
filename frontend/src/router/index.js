@@ -8,6 +8,7 @@ import MaintenanceView from "../views/MaintenanceView.vue";
 import FileUploadPage from "../views/FileUploadPage.vue";
 
 import CharacterDetails from "@/components/CharacterDetails.vue";
+import CharacterCreation from "@/components/CharacterCreation.vue";
 
 
 
@@ -21,6 +22,8 @@ const routes = [
   { path: "/upload", name: "FileUpload", component: FileUploadPage },
   // Route for character details  // Pass route params as props to the component
   {    path: "/character/:id",     name: "CharacterDetails",    component: CharacterDetails,    props: true, meta: { requiresAuth: true }   },
+  // Route for character creation
+  {    path: "/character/create/:sessionId",     name: "CharacterCreation",    component: CharacterCreation,    props: true, meta: { requiresAuth: true }   },
 ];
 
 const router = createRouter({

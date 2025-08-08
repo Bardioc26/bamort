@@ -73,5 +73,29 @@ export default {
     silver_coins: 'Silver Coins',
     copper_coins: 'Copper Coins',
     total_in_gs: 'Total in GS'
+  },
+  characters: {
+    create: {
+      spells: {
+        title: 'Select Spells',
+        description: 'Choose magical spells for your character',
+        available: 'Available Spells',
+        selected: 'Selected Spells'
+      },
+      finalize: 'Create Character'
+    },
+    spells: {
+      zauber: 'Spells'
+    },
+    skills: {
+      cost: 'Cost',
+      alreadySelected: 'Already selected',
+      notEnoughPoints: 'Not enough points',
+      remove: 'Remove'
+    }
+  },
+  common: {
+    previous: 'Previous',
+    next: 'Next'
   }
 }

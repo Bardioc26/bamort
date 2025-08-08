@@ -6,6 +6,7 @@ import (
 	"bamort/models"
 	"strconv"
 	"strings"
+	"time"
 
 	"fmt"
 	"net/http"
@@ -2351,4 +2352,360 @@ func calculateSkillLearningCostsOld(skill models.Skill, character models.Char, r
 	}
 
 	return costResult.EP, costResult.GoldCost
+}
+
+// Character Creation Session Management
+
+// CharacterCreationSession repräsentiert eine Charakter-Erstellungssession
+type CharacterCreationSession struct {
+	ID            string                   `json:"id" gorm:"primaryKey"`
+	UserID        uint                     `json:"user_id" gorm:"index"`
+	Name          string                   `json:"name"`
+	Rasse         string                   `json:"rasse"`
+	Typ           string                   `json:"typ"`
+	Herkunft      string                   `json:"herkunft"`
+	Glaube        string                   `json:"glaube"`
+	Attributes    map[string]int           `json:"attributes" gorm:"type:json"`
+	DerivedValues map[string]int           `json:"derived_values" gorm:"type:json"`
+	Skills        []CharacterCreationSkill `json:"skills" gorm:"type:json"`
+	Spells        []CharacterCreationSpell `json:"spells" gorm:"type:json"`
+	SkillPoints   map[string]int           `json:"skill_points" gorm:"type:json"`
+	CreatedAt     time.Time                `json:"created_at"`
+	UpdatedAt     time.Time                `json:"updated_at"`
+	ExpiresAt     time.Time                `json:"expires_at"`
+	CurrentStep   int                      `json:"current_step"` // 1=Basic, 2=Attributes, 3=Derived, 4=Skills
+}
+
+type CharacterCreationSkill struct {
+	Name     string `json:"name"`
+	Level    int    `json:"level"`
+	Category string `json:"category"`
+	Cost     int    `json:"cost"`
+}
+
+type CharacterCreationSpell struct {
+	Name string `json:"name"`
+	Cost int    `json:"cost"`
+}
+
+// CreateCharacterSession erstellt eine neue Charakter-Erstellungssession
+func CreateCharacterSession(c *gin.Context) {
+	// TODO: UserID aus Authentication Context holen
+	userID := uint(1) // Placeholder
+
+	sessionID := fmt.Sprintf("char_create_%d_%d", userID, time.Now().Unix())
+
+	session := CharacterCreationSession{
+		ID:            sessionID,
+		UserID:        userID,
+		Attributes:    make(map[string]int),
+		DerivedValues: make(map[string]int),
+		Skills:        []CharacterCreationSkill{},
+		Spells:        []CharacterCreationSpell{},
+		SkillPoints:   make(map[string]int),
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
+		ExpiresAt:     time.Now().AddDate(0, 0, 14), // 14 Tage
+		CurrentStep:   1,
+	}
+
+	// Session in Datenbank speichern (Dummy - würde in Session-Tabelle gespeichert)
+	// TODO: Implementiere Session-Speicherung in Redis oder Datenbank
+
+	c.JSON(http.StatusCreated, gin.H{
+		"session_id": sessionID,
+		"expires_at": session.ExpiresAt,
+	})
+}
+
+// ListCharacterSessions gibt alle aktiven Sessions für einen Benutzer zurück
+func ListCharacterSessions(c *gin.Context) {
+	// TODO: UserID aus Authentication Context holen
+	// userID := uint(1) // Placeholder - würde für Datenbank-Abfrage verwendet
+
+	// TODO: Sessions aus Datenbank/Redis laden
+	// Dummy-Implementierung mit Sample-Sessions
+	sessions := []gin.H{
+		{
+			"session_id":    "char_create_1_1722888000",
+			"name":          "Mein Magier",
+			"rasse":         "Elf",
+			"typ":           "Zauberer",
+			"current_step":  3,
+			"total_steps":   5,
+			"created_at":    time.Now().AddDate(0, 0, -2),
+			"updated_at":    time.Now().AddDate(0, 0, -1),
+			"expires_at":    time.Now().AddDate(0, 0, 12),
+			"progress_text": "Abgeleitete Werte",
+		},
+		{
+			"session_id":    "char_create_1_1722974400",
+			"name":          "Kämpfer Draft",
+			"rasse":         "Mensch",
+			"typ":           "Krieger",
+			"current_step":  1,
+			"total_steps":   5,
+			"created_at":    time.Now().AddDate(0, 0, -1),
+			"updated_at":    time.Now().AddDate(0, 0, -1),
+			"expires_at":    time.Now().AddDate(0, 0, 13),
+			"progress_text": "Grundinformationen",
+		},
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"sessions": sessions,
+		"count":    len(sessions),
+	})
+}
+
+// GetCharacterSession gibt Session-Daten zurück
+func GetCharacterSession(c *gin.Context) {
+	sessionID := c.Param("sessionId")
+
+	// TODO: Session aus Datenbank/Redis laden
+	// Dummy-Response
+	session := CharacterCreationSession{
+		ID:          sessionID,
+		UserID:      1,
+		CurrentStep: 1,
+		ExpiresAt:   time.Now().AddDate(0, 0, 14),
+	}
+
+	c.JSON(http.StatusOK, session)
+}
+
+// UpdateCharacterBasicInfo Request
+type UpdateBasicInfoRequest struct {
+	Name     string `json:"name" binding:"required,min=2,max=50"`
+	Rasse    string `json:"rasse" binding:"required"`
+	Typ      string `json:"typ" binding:"required"`
+	Herkunft string `json:"herkunft" binding:"required"`
+	Glaube   string `json:"glaube"`
+}
+
+// UpdateCharacterBasicInfo speichert Grundinformationen
+func UpdateCharacterBasicInfo(c *gin.Context) {
+	sessionID := c.Param("sessionId")
+
+	var request UpdateBasicInfoRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Eingabedaten: "+err.Error())
+		return
+	}
+
+	// TODO: Session aus Datenbank laden und aktualisieren
+	// Dummy-Response
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Grundinformationen gespeichert",
+		"session_id":   sessionID,
+		"current_step": 2,
+	})
+}
+
+// UpdateAttributesRequest
+type UpdateAttributesRequest struct {
+	ST int `json:"st" binding:"required,min=1,max=100"` // Stärke
+	GS int `json:"gs" binding:"required,min=1,max=100"` // Geschicklichkeit
+	GW int `json:"gw" binding:"required,min=1,max=100"` // Gewandtheit
+	KO int `json:"ko" binding:"required,min=1,max=100"` // Konstitution
+	IN int `json:"in" binding:"required,min=1,max=100"` // Intelligenz
+	ZT int `json:"zt" binding:"required,min=1,max=100"` // Zaubertalent
+	AU int `json:"au" binding:"required,min=1,max=100"` // Ausstrahlung
+	PA int `json:"pa" binding:"required,min=1,max=100"` // Psi-Kraft
+	WK int `json:"wk" binding:"required,min=1,max=100"` // Willenskraft
+}
+
+// UpdateCharacterAttributes speichert Grundwerte
+func UpdateCharacterAttributes(c *gin.Context) {
+	sessionID := c.Param("sessionId")
+
+	var request UpdateAttributesRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Attributswerte: "+err.Error())
+		return
+	}
+
+	// TODO: Session aktualisieren
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Grundwerte gespeichert",
+		"session_id":   sessionID,
+		"current_step": 3,
+	})
+}
+
+// UpdateDerivedValuesRequest
+type UpdateDerivedValuesRequest struct {
+	LP_Max int `json:"lp_max"` // Lebenspunkte Maximum
+	AP_Max int `json:"ap_max"` // Abenteuerpunkte Maximum
+	B_Max  int `json:"b_max"`  // Belastung Maximum
+	SG     int `json:"sg"`     // Schicksalsgunst
+	GG     int `json:"gg"`     // Göttliche Gnade
+	GP     int `json:"gp"`     // Glückspunkte
+}
+
+// UpdateCharacterDerivedValues speichert abgeleitete Werte
+func UpdateCharacterDerivedValues(c *gin.Context) {
+	sessionID := c.Param("sessionId")
+
+	var request UpdateDerivedValuesRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige abgeleitete Werte: "+err.Error())
+		return
+	}
+
+	// TODO: Session aktualisieren
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Abgeleitete Werte gespeichert",
+		"session_id":   sessionID,
+		"current_step": 4,
+	})
+}
+
+// UpdateSkillsRequest
+type UpdateSkillsRequest struct {
+	Skills      []CharacterCreationSkill `json:"skills"`
+	Spells      []CharacterCreationSpell `json:"spells"`
+	SkillPoints map[string]int           `json:"skill_points"` // Verbleibende Punkte pro Kategorie
+}
+
+// UpdateCharacterSkills speichert Fertigkeiten und Zauber
+func UpdateCharacterSkills(c *gin.Context) {
+	sessionID := c.Param("sessionId")
+
+	var request UpdateSkillsRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Fertigkeitsdaten: "+err.Error())
+		return
+	}
+
+	// TODO: Session aktualisieren
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Fertigkeiten gespeichert",
+		"session_id":   sessionID,
+		"current_step": 5,
+	})
+}
+
+// FinalizeCharacterCreation schließt die Charakter-Erstellung ab
+func FinalizeCharacterCreation(c *gin.Context) {
+	sessionID := c.Param("sessionId")
+
+	// TODO: Session laden, validieren und finalen Charakter erstellen
+	// TODO: Character in Datenbank speichern
+	// TODO: Session löschen
+
+	// Dummy-Response
+	characterID := uint(123) // Würde aus DB kommen
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message":      "Charakter erfolgreich erstellt",
+		"character_id": characterID,
+		"session_id":   sessionID,
+	})
+}
+
+// DeleteCharacterSession löscht eine Session
+func DeleteCharacterSession(c *gin.Context) {
+	sessionID := c.Param("sessionId")
+
+	// TODO: Session aus Datenbank löschen
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "Session gelöscht",
+		"session_id": sessionID,
+	})
+}
+
+// Reference Data Handlers
+
+// GetRaces gibt verfügbare Rassen zurück
+func GetRaces(c *gin.Context) {
+	// TODO: Aus Datenbank laden
+	races := []string{
+		"Mensch", "Elf", "Halbling", "Zwerg", "Gnom",
+	}
+
+	c.JSON(http.StatusOK, gin.H{"races": races})
+}
+
+// GetCharacterClasses gibt verfügbare Klassen zurück
+func GetCharacterClasses(c *gin.Context) {
+	// TODO: Aus Datenbank laden
+	classes := []string{
+		"Abenteurer", "Assassine", "Barbar", "Barde", "Bauer",
+		"Glückspriester", "Heiler", "Händler", "Kämpfer", "Krieger",
+		"Magier", "Ordenskrieger", "Priester", "Schamane", "Seefahrer",
+		"Späher", "Thaumaturg", "Waldläufer", "Zauberer", "Zaubersänger",
+	}
+
+	c.JSON(http.StatusOK, gin.H{"classes": classes})
+}
+
+// GetOrigins gibt verfügbare Herkünfte zurück
+func GetOrigins(c *gin.Context) {
+	// TODO: Aus Datenbank laden
+	origins := []string{
+		"Albai", "Aran", "Buluga", "Cangebiet", "Chryseia", "Dwerunlande",
+		"Eschar", "Fuardain", "Ikenga", "KanThaiPan", "Küstenstaaten",
+		"Medjis", "Moravod", "Nahuatlan", "Rawindra", "Scharidis",
+		"Tegarisch Gebiete", "Valian", "Waeland", "Ywerddon",
+	}
+
+	c.JSON(http.StatusOK, gin.H{"origins": origins})
+}
+
+// SearchBeliefs sucht Glaubensrichtungen
+func SearchBeliefs(c *gin.Context) {
+	query := c.Query("q")
+
+	if len(query) < 2 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Mindestens 2 Zeichen erforderlich"})
+		return
+	}
+
+	// TODO: Datenbanksuche implementieren
+	// Dummy-Daten für Demo
+	allBeliefs := []string{
+		"Apshai", "Arthusos", "Beschützer", "Dwyllas", "Elfen",
+		"Fruchtbarkeitsgöttin", "Gaia", "Grafschafter", "Heiler",
+		"Jäger", "Kämpfer", "Lichbringer", "Meeresherr", "Natur",
+		"Ostküste", "Priester", "Rechtschaffener", "Schutzpatron",
+		"Stammesgeist", "Totengott", "Unterwelt", "Vater", "Weisheit",
+		"Xan", "Ylhoon", "Zauberer",
+	}
+
+	var results []string
+	queryLower := strings.ToLower(query)
+	for _, belief := range allBeliefs {
+		if strings.Contains(strings.ToLower(belief), queryLower) {
+			results = append(results, belief)
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"beliefs": results})
+}
+
+// SkillCategoryWithPoints repräsentiert eine Kategorie mit verfügbaren Lernpunkten
+type SkillCategoryWithPoints struct {
+	Name        string `json:"name"`
+	DisplayName string `json:"display_name"`
+	Points      int    `json:"points"`
+	MaxPoints   int    `json:"max_points"`
+}
+
+// GetSkillCategoriesWithPoints gibt Kategorien mit Lernpunkten zurück
+func GetSkillCategoriesWithPoints(c *gin.Context) {
+	// TODO: Basierend auf Charakter-Klasse und -Typ berechnen
+	categories := []SkillCategoryWithPoints{
+		{Name: "alltag", DisplayName: "Alltag", Points: 150, MaxPoints: 150},
+		{Name: "wissen", DisplayName: "Wissen", Points: 100, MaxPoints: 100},
+		{Name: "kampf", DisplayName: "Kampf", Points: 80, MaxPoints: 80},
+		{Name: "korper", DisplayName: "Körper", Points: 120, MaxPoints: 120},
+		{Name: "gesellschaft", DisplayName: "Gesellschaft", Points: 60, MaxPoints: 60},
+		{Name: "natur", DisplayName: "Natur", Points: 90, MaxPoints: 90},
+		{Name: "unterwelt", DisplayName: "Unterwelt", Points: 40, MaxPoints: 40},
+		{Name: "zauber", DisplayName: "Zauber", Points: 200, MaxPoints: 200},
+	}
+
+	c.JSON(http.StatusOK, gin.H{"categories": categories})
 }

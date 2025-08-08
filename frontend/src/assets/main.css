@@ -90,6 +90,7 @@ a,
   height: calc(100vh - 60px);
   margin-top: 60px;
   padding: 0;
+  padding-bottom: 60px; /* Platz für das fixierte Submenu */
   overflow-y: auto;
   background-color: var(--color-background);
 }
@@ -99,6 +100,7 @@ a,
   width: 100%;
   height: 100%;
   padding: 20px;
+  padding-bottom: 80px; /* Extra Platz für das fixierte Submenu */
   box-sizing: border-box;
   overflow-y: auto;
 }
@@ -505,10 +507,6 @@ a,
   }
 }
 
-.equipment-view {
-  color: #fff;
-}
-
 .cd-table {
   width: 100%;
   border-collapse: collapse;
@@ -570,14 +568,13 @@ a,
 }
 
 .cd-view {
-  color: #fff;
+  color: #333;
+  background: white;
 }
 
 .character-details {
-  background-color: #444;
-  /* Background color */
-  color: #fff;
-  /* Text color */
+  background-color: white;
+  color: #333;
   padding: 12px;
   border-radius: 8px;
   width: 90%;
@@ -585,17 +582,18 @@ a,
   font-family: Arial, sans-serif;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 90px); /* Subtract menu height */
+  height: calc(100vh - 90px);
   overflow-y: scroll;
   top: 45px;
+  border: 1px solid #dee2e6;
 }
 
 .character-header h2 {
   font-size: 1.5rem;
   text-align: center;
-  color: #ddd;
+  color: #333;
   margin-bottom: 20px;
-  flex: 0 0 auto; /* Don't grow or shrink, use content height */
+  flex: 0 0 auto;
 }
 
 .character-overview {
@@ -608,7 +606,7 @@ a,
   width: 150px;
   height: auto;
   border-radius: 8px;
-  border: 2px solid #333;
+  border: 2px solid #dee2e6;
 }
 
 .character-stats {
@@ -619,28 +617,31 @@ a,
 }
 
 .stat {
-  background-color: #555;
-  border: 1px solid #333;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
   text-align: center;
   padding: 12px;
   border-radius: 5px;
   font-size: 0.9rem;
   font-weight: bold;
   line-height: 1.2;
+  color: #495057;
 }
 
 .stat span {
   display: block;
   font-size: 0.8rem;
-  color: #aaa;
+  color: #6c757d;
 }
 
 .character-info {
-  background-color: #333;
+  background-color: #f8f9fa;
   padding: 12px;
   border-radius: 8px;
   line-height: 1.6;
   white-space: nowrap;
+  border: 1px solid #dee2e6;
+  color: #495057;
 }
 
 .character-info p {
@@ -648,25 +649,28 @@ a,
 }
 
 .character-info strong {
-  color: #eee;
+  color: #495057;
+  font-weight: 600;
 }
 
 .character-info em {
   font-style: italic;
-  color: #ccc;
+  color: #6c757d;
 }
 
 .character-details {
   position: relative;
-  background-color: #444;
-  color: #fff;
+  background-color: white;
+  color: #333;
   padding: 12px;
+  padding-bottom: 80px; /* Platz für das fixierte Submenu */
   border-radius: 8px;
   width: 90%;
   margin: 0 auto;
   font-family: Arial, sans-serif;
-  min-height: calc(100vh - 60px - 64px);  /* Ensure there's space for content */
+  min-height: calc(100vh - 60px - 64px);
   flex-direction: column;
+  border: 1px solid #dee2e6;
 }
 
 .character-main {
@@ -675,28 +679,31 @@ a,
 
 .character-aspect {
   padding: 12px;
-  background-color: #333;
+  background-color: #f8f9fa;
   border-radius: 8px;
   min-height: 200px;
-  /* Space for content */
+  border: 1px solid #dee2e6;
 }
 
 .submenu {
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #222;
+  width: 100%;
+  background-color: #f8f9fa;
   display: flex;
   justify-content: center;
-  padding: 3px;
-  border-top: 1px solid #555;
-  flex: 0 0 auto; /* Don't grow or shrink, use content height */
-  margin-top: auto; /* Push to bottom */
+  padding: 8px;
+  border-top: 1px solid #dee2e6;
+  flex: 0 0 auto;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .submenu button {
-  background-color: #555;
-  color: #fff;
+  background-color: #6c757d;
+  color: white;
   border: none;
   padding: 10px 12px;
   margin: 0 10px;
@@ -707,11 +714,41 @@ a,
 }
 
 .submenu button:hover {
-  background-color: #777;
+  background-color: #5a6268;
 }
 
 .submenu button.active {
   background-color: #007BFF;
-  color: #fff;
+  color: white;
   font-weight: bold;
+}
+
+/* Responsive Submenu für mobile Geräte */
+@media (max-width: 768px) {
+  .submenu {
+    padding: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-height: 100px;
+    overflow-y: auto;
+  }
+  
+  .submenu button {
+    padding: 6px 8px;
+    margin: 2px;
+    font-size: 0.8rem;
+    min-width: 60px;
+  }
+  
+  .fullwidth-container {
+    padding-bottom: 120px; /* Mehr Platz für mehrreihiges Submenu auf mobilen Geräten */
+  }
+  
+  .main-content {
+    padding-bottom: 120px;
+  }
+  
+  .character-details {
+    padding-bottom: 120px;
+  }
 }

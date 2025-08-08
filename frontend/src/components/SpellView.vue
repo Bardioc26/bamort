@@ -1,5 +1,5 @@
 <template>
-  <div class="fullwidth-container cd-view">
+  <div class="fullwidth-container">
     <!-- Header mit Lernmodus-Kontrollen -->
     <div class="page-header header-section">
       <h2>{{ character.name }}'s Zauber</h2>

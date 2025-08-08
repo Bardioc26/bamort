@@ -1,5 +1,5 @@
 <template>
-    <div class="fullwidth-container" v-if="character">
+    <div class="fullwidth-container datasheet-container" v-if="character">
       <!-- Character Overview -->
       <div class="character-overview">
         <div class="character-image">
@@ -61,6 +61,10 @@
 
 <style>
 /* DatasheetView spezifische Styles */
+.datasheet-container {
+  padding-top: 10px; /* Reduziertes oberes Padding */
+}
+
 .info-section {
   max-width: none;
   white-space: normal;
@@ -74,6 +78,7 @@
 
 .character-overview {
   margin-bottom: 30px;
+  margin-top: 0; /* Kein zusätzlicher oberer Margin */
 }
 
 .character-info {

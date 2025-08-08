@@ -176,6 +176,29 @@ export default {
     total_in_gs: 'Gesamt in GS'
   },
   characters: {
+    list: {
+      title: 'Ihre Charaktere',
+      create_new: 'Neuen Charakter erstellen',
+      continue_creation: 'Charaktererstellung fortsetzen',
+      no_characters: 'Noch keine Charaktere',
+      no_characters_description: 'Erstellen Sie Ihren ersten Charakter um zu beginnen!',
+      view_details: 'Details anzeigen',
+      manage_equipment: 'Ausrüstung verwalten',
+      delete_draft: 'Entwurf löschen',
+      delete_draft_confirm: 'Sind Sie sicher, dass Sie diesen Charakterentwurf löschen möchten?',
+      race: 'Rasse',
+      class: 'Klasse',
+      current_step: 'Aktueller Schritt',
+      step: 'Schritt',
+      last_updated: 'Zuletzt aktualisiert',
+      expires: 'Läuft ab',
+      not_selected: 'Nicht ausgewählt',
+      unnamed_character: 'Unbenannter Charakter',
+      public: 'Öffentlich',
+      private: 'Privat',
+      grade: 'Grad',
+      owner: 'Besitzer'
+    },
     create: {
       spells: {
         title: 'Zauber auswählen',

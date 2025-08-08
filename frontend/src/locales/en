@@ -1,4 +1,11 @@
 export default {
+    DatasheetView:'Datasheet',
+  SkillView: 'Skills',
+  WeaponView: 'Weapons',
+  SpellView: 'Spells',
+  EquipmentView: 'Equipment',
+  ExperianceView: 'Experience & Wealth',
+  DeleteCharView: 'Delete Character',
   char:'Char',
   stats: {
     strength: 'St',
@@ -75,6 +82,29 @@ export default {
     total_in_gs: 'Total in GS'
   },
   characters: {
+    list: {
+      title: 'Your Characters',
+      create_new: 'Create New Character',
+      continue_creation: 'Continue Character Creation',
+      no_characters: 'No Characters Yet',
+      no_characters_description: 'Create your first character to get started!',
+      view_details: 'View Details',
+      manage_equipment: 'Manage Equipment',
+      delete_draft: 'Delete Draft',
+      delete_draft_confirm: 'Are you sure you want to delete this character draft?',
+      race: 'Race',
+      class: 'Class',
+      current_step: 'Current step',
+      step: 'Step',
+      last_updated: 'Last updated',
+      expires: 'Expires',
+      not_selected: 'Not selected',
+      unnamed_character: 'Unnamed Character',
+      public: 'Public',
+      private: 'Private',
+      grade: 'Grade',
+      owner: 'Owner'
+    },
     create: {
       spells: {
         title: 'Select Spells',

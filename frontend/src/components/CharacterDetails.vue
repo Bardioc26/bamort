@@ -23,7 +23,56 @@
   </div>
 </template>
 
-<style>
+<style scoped>
+.character-details {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.character-header {
+  margin-bottom: 20px;
+}
+
+.character-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+}
+
+.submenu {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.submenu button {
+  padding: 10px 16px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #f8f9fa;
+  color: #495057;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.submenu button:hover {
+  background: #e9ecef;
+  border-color: #007bff;
+}
+
+.submenu button.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
 </style>
 
 

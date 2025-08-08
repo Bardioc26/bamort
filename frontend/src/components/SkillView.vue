@@ -1,5 +1,5 @@
 <template>
-  <div class="cd-view">
+  <div class="fullwidth-container cd-view">
     <div class="cd-list">
       <div class="tables-container">
         <div class="table-wrapper-left">

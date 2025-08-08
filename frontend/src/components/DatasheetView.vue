@@ -1,5 +1,5 @@
 <template>
-    <div class="cd-view" v-if="character">
+    <div class="fullwidth-container cd-view" v-if="character">
       <!-- Character Overview -->
       <div class="character-overview">
         <div class="character-image">

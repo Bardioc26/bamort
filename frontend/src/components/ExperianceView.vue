@@ -1,34 +1,41 @@
 <template>
-  <div class="experiance-view">
-    <h3>{{ $t('experience.title') }}</h3>
+    <div class="fullwidth-container experiance-view">
+    <div class="page-header">
+      <h3>{{ $t('experience.title') }}</h3>
+    </div>
     
     <!-- Erfahrungspunkte -->
     <div class="experience-section">
-      <h4>{{ $t('experience.experience_points') }}</h4>
-      <div class="stat-box">
-        <div class="stat-item">
-          <span class="stat-label">{{ $t('experience.available_ep') }}:</span>
-          <span class="stat-value">{{ character.erfahrungsschatz?.ep || 0 }} EP</span>
+      <div class="section-header">
+        <h4>{{ $t('experience.experience_points') }}</h4>
+      </div>
+      <div class="resource-display">
+        <div class="resource-card">
+          <span class="resource-icon">⚡</span>
+          <div class="resource-info">
+            <div class="resource-label">{{ $t('experience.available_ep') }}</div>
+            <div class="resource-amount">{{ character.erfahrungsschatz?.ep || 0 }} EP</div>
+          </div>
         </div>
-        <div class="control-row">
-          <div class="input-group">
+        <div class="form-row control-row">
+          <div class="form-group">
             <input 
               v-model.number="experienceAmount" 
               type="number" 
-              class="amount-input"
+              class="form-control amount-input"
               placeholder="Anzahl EP"
               min="1"
             />
-            <div class="button-group">
-              <button @click="addExperience" class="btn-add" :disabled="!experienceAmount || experienceAmount <= 0 || isLoading">
-                <span v-if="isLoading">⏳</span>
-                <span v-else>+ Hinzufügen</span>
-              </button>
-              <button @click="removeExperience" class="btn-remove" :disabled="!experienceAmount || experienceAmount <= 0 || isLoading">
-                <span v-if="isLoading">⏳</span>
-                <span v-else>- Entfernen</span>
-              </button>
-            </div>
+          </div>
+          <div class="button-group">
+            <button @click="addExperience" class="btn btn-success" :disabled="!experienceAmount || experienceAmount <= 0 || isLoading">
+              <span v-if="isLoading">⏳</span>
+              <span v-else>+ Hinzufügen</span>
+            </button>
+            <button @click="removeExperience" class="btn btn-danger" :disabled="!experienceAmount || experienceAmount <= 0 || isLoading">
+              <span v-if="isLoading">⏳</span>
+              <span v-else>- Entfernen</span>
+            </button>
           </div>
         </div>
       </div>
@@ -36,47 +43,46 @@
 
     <!-- Vermögen -->
     <div class="wealth-section">
-      <h4>{{ $t('experience.wealth') }}</h4>
-      <div class="stat-box">
-        <div class="wealth-item">
-          <span class="wealth-label">{{ $t('experience.gold_coins') }}:</span>
-          <span class="wealth-value">{{ character.vermoegen?.goldstücke || 0 }} GS</span>
+      <div class="section-header">
+        <h4>{{ $t('experience.wealth') }}</h4>
+      </div>
+      <div class="resource-display">
+        <div class="resource-card">
+          <span class="resource-icon">💰</span>
+          <div class="resource-info">
+            <div class="resource-label">{{ $t('experience.gold_coins') }}</div>
+            <div class="resource-amount">{{ character.vermoegen?.goldstücke || 0 }} GS</div>
+          </div>
         </div>
-        <div class="control-row">
-          <div class="input-group">
+        <div class="form-row control-row">
+          <div class="form-group">
             <input 
               v-model.number="goldAmount" 
               type="number" 
-              class="amount-input"
+              class="form-control amount-input"
               placeholder="Anzahl GS"
               min="1"
             />
-            <div class="button-group">
-              <button @click="addGold" class="btn-add" :disabled="!goldAmount || goldAmount <= 0 || isLoading">
-                <span v-if="isLoading">⏳</span>
-                <span v-else>+ Hinzufügen</span>
-              </button>
-              <button @click="removeGold" class="btn-remove" :disabled="!goldAmount || goldAmount <= 0 || isLoading">
-                <span v-if="isLoading">⏳</span>
-                <span v-else>- Entfernen</span>
-              </button>
-            </div>
+          </div>
+          <div class="button-group">
+            <button @click="addGold" class="btn btn-success" :disabled="!goldAmount || goldAmount <= 0 || isLoading">
+              <span v-if="isLoading">⏳</span>
+              <span v-else>+ Hinzufügen</span>
+            </button>
+            <button @click="removeGold" class="btn btn-danger" :disabled="!goldAmount || goldAmount <= 0 || isLoading">
+              <span v-if="isLoading">⏳</span>
+              <span v-else>- Entfernen</span>
+            </button>
           </div>
         </div>
-        <!-- Silberstücke und Kupferstücke temporär ausgeblendet -->
-        <!-- 
-        <div class="wealth-item">
-          <span class="wealth-label">{{ $t('experience.silver_coins') }}:</span>
-          <span class="wealth-value">{{ character.vermoegen?.silberstücke || 0 }} SS</span>
-        </div>
-        <div class="wealth-item">
-          <span class="wealth-label">{{ $t('experience.copper_coins') }}:</span>
-          <span class="wealth-value">{{ character.vermoegen?.kupferstücke || 0 }} KS</span>
-        </div>
-        -->
-        <div class="wealth-item total">
-          <span class="wealth-label">{{ $t('experience.total_in_gs') }}:</span>
-          <span class="wealth-value">{{ totalWealthInGS }} GS</span>
+        
+        <!-- Total wealth display -->
+        <div class="resource-card wealth-total">
+          <span class="resource-icon">💎</span>
+          <div class="resource-info">
+            <div class="resource-label">{{ $t('experience.total_in_gs') }}</div>
+            <div class="resource-amount total-amount">{{ totalWealthInGS }} GS</div>
+          </div>
         </div>
       </div>
     </div>
@@ -90,106 +96,22 @@
 </template>
 
 <style scoped>
+/* ExperianceView spezifische Styles */
 .experiance-view {
-  padding: 20px;
   max-width: 800px;
 }
 
-.experiance-view h3 {
-  color: #333;
-  border-bottom: 2px solid #007bff;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
-}
-
-.experiance-view h4 {
-  color: #555;
-  margin-bottom: 15px;
-  margin-top: 25px;
-}
-
-.stat-box {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 20px;
-}
-
-.stat-item, .wealth-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.stat-item:last-child, .wealth-item:last-child {
-  border-bottom: none;
-}
-
-.wealth-item.total {
-  border-top: 2px solid #007bff;
-  margin-top: 10px;
-  padding-top: 15px;
-  font-weight: bold;
-  color: #007bff;
-}
-
-.stat-label, .wealth-label {
-  font-weight: 500;
-  color: #555;
-}
-
-.stat-value, .wealth-value {
-  font-weight: bold;
-  color: #333;
-  background: #fff;
-  padding: 5px 10px;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-}
-
-.wealth-item.total .wealth-value {
-  background: #007bff;
-  color: white;
-  border-color: #007bff;
-}
-
-.value-controls {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.experience-section, 
+.wealth-section {
+  margin-bottom: 30px;
 }
 
 .control-row {
   margin-top: 15px;
   padding-top: 15px;
   border-top: 1px solid #e9ecef;
-}
-
-.input-group {
-  display: flex;
-  gap: 10px;
   align-items: center;
-}
-
-.amount-input {
-  font-weight: bold;
-  color: #333;
-  background: #fff;
-  padding: 8px 12px;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-  width: 120px;
-  text-align: right;
-  transition: border-color 0.2s;
-}
-
-.amount-input:focus {
-  border-color: #007bff;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  gap: 15px;
 }
 
 .button-group {
@@ -197,46 +119,22 @@
   gap: 8px;
 }
 
-.btn-add, .btn-remove {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 14px;
-}
-
-.btn-add {
-  background: #28a745;
-  color: white;
-}
-
-.btn-add:hover:not(:disabled) {
-  background: #218838;
-}
-
-.btn-remove {
-  background: #dc3545;
-  color: white;
-}
-
-.btn-remove:hover:not(:disabled) {
-  background: #c82333;
-}
-
-.btn-add:disabled, .btn-remove:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.unit {
+.amount-input {
+  width: 120px;
+  text-align: right;
   font-weight: bold;
-  color: #666;
 }
 
-.experience-section, .wealth-section {
-  margin-bottom: 30px;
+.wealth-total {
+  margin-top: 15px;
+  border: 2px solid #007bff;
+  background: #f0f8ff;
+}
+
+.total-amount {
+  color: #007bff;
+  font-size: 1.1em;
+  font-weight: bold;
 }
 </style>
 

@@ -216,6 +216,22 @@ export default {
       alreadySelected: 'Bereits ausgewählt',
       notEnoughPoints: 'Nicht genug Punkte',
       remove: 'Entfernen'
+    },
+    basicInfo: {
+      title: 'Grundlegende Charakterinformationen',
+      characterName: 'Charaktername',
+      characterNamePlaceholder: 'Charaktername eingeben',
+      race: 'Rasse',
+      selectRace: 'Rasse auswählen',
+      characterClass: 'Charakterklasse',
+      selectClass: 'Klasse auswählen',
+      origin: 'Herkunft',
+      selectOrigin: 'Herkunft auswählen',
+      religion: 'Religion/Glaube',
+      religionPlaceholder: 'Mindestens 2 Zeichen für die Suche eingeben...',
+      selected: 'Ausgewählt',
+      nextAttributes: 'Weiter: Attribute →',
+      required: '*'
     }
   }
 }

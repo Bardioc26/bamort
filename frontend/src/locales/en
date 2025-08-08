@@ -122,6 +122,22 @@ export default {
       alreadySelected: 'Already selected',
       notEnoughPoints: 'Not enough points',
       remove: 'Remove'
+    },
+    basicInfo: {
+      title: 'Basic Character Information',
+      characterName: 'Character Name',
+      characterNamePlaceholder: 'Enter character name',
+      race: 'Race',
+      selectRace: 'Select Race',
+      characterClass: 'Character Class',
+      selectClass: 'Select Class',
+      origin: 'Origin',
+      selectOrigin: 'Select Origin',
+      religion: 'Religion/Belief',
+      religionPlaceholder: 'Type at least 2 characters to search beliefs...',
+      selected: 'Selected',
+      nextAttributes: 'Next: Attributes →',
+      required: '*'
     }
   },
   common: {

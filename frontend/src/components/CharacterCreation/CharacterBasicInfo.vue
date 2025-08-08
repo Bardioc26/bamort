@@ -1,10 +1,10 @@
 <template>
   <div class="basic-info-form">
-    <h2>Basic Character Information</h2>
+    <h2>{{ $t('characters.basicInfo.title') }}</h2>
     
     <form @submit.prevent="handleSubmit">
       <div class="form-group">
-        <label for="name">Character Name *</label>
+        <label for="name">{{ $t('characters.basicInfo.characterName') }} {{ $t('characters.basicInfo.required') }}</label>
         <input 
           id="name"
           v-model="formData.name"
@@ -12,44 +12,44 @@
           required
           minlength="2"
           maxlength="50"
-          placeholder="Enter character name"
+          :placeholder="$t('characters.basicInfo.characterNamePlaceholder')"
         />
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="rasse">Race *</label>
+          <label for="rasse">{{ $t('characters.basicInfo.race') }} {{ $t('characters.basicInfo.required') }}</label>
           <select id="rasse" v-model="formData.rasse" required>
-            <option value="">Select Race</option>
+            <option value="">{{ $t('characters.basicInfo.selectRace') }}</option>
             <option v-for="race in races" :key="race" :value="race">{{ race }}</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="typ">Character Class *</label>
+          <label for="typ">{{ $t('characters.basicInfo.characterClass') }} {{ $t('characters.basicInfo.required') }}</label>
           <select id="typ" v-model="formData.typ" required>
-            <option value="">Select Class</option>
+            <option value="">{{ $t('characters.basicInfo.selectClass') }}</option>
             <option v-for="cls in classes" :key="cls" :value="cls">{{ cls }}</option>
           </select>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="herkunft">Origin *</label>
+        <label for="herkunft">{{ $t('characters.basicInfo.origin') }} {{ $t('characters.basicInfo.required') }}</label>
         <select id="herkunft" v-model="formData.herkunft" required>
-          <option value="">Select Origin</option>
+          <option value="">{{ $t('characters.basicInfo.selectOrigin') }}</option>
           <option v-for="origin in origins" :key="origin" :value="origin">{{ origin }}</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="glaube">Religion/Belief</label>
+        <label for="glaube">{{ $t('characters.basicInfo.religion') }}</label>
         <div class="belief-search">
           <input 
             id="glaube"
             v-model="beliefSearch"
             type="text"
-            placeholder="Type at least 2 characters to search beliefs..."
+            :placeholder="$t('characters.basicInfo.religionPlaceholder')"
             @input="searchBeliefs"
           />
           <div v-if="beliefResults.length > 0" class="belief-dropdown">
@@ -64,14 +64,14 @@
           </div>
         </div>
         <div v-if="formData.glaube" class="selected-belief">
-          Selected: {{ formData.glaube }}
+          {{ $t('characters.basicInfo.selected') }}: {{ formData.glaube }}
           <button type="button" @click="clearBelief" class="clear-btn">×</button>
         </div>
       </div>
 
       <div class="form-actions">
         <button type="submit" class="next-btn" :disabled="!isValid">
-          Next: Attributes →
+          {{ $t('characters.basicInfo.nextAttributes') }}
         </button>
       </div>
     </form>

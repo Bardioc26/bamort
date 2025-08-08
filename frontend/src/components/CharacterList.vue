@@ -23,7 +23,7 @@
     
     <div v-else class="list-container">
       <div v-for="character in characters" :key="character.character_id" class="list-item">
-        <div class="list-item-content">
+        <router-link :to="`/character/${character.id}`" class="list-item-content">
           <h4 class="list-item-title">{{ character.name }}</h4>
           <div class="list-item-details">
             {{ character.rasse }} <span class="list-item-separator">|</span>
@@ -34,9 +34,8 @@
               {{ character.public ? $t('characters.list.public') : $t('characters.list.private') }}
             </span>
           </div>
-        </div>
+        </router-link>
         <div class="list-item-actions">
-          <router-link :to="`/character/${character.id}`" class="btn btn-primary">{{ $t('characters.list.view_details') }}</router-link>
           <button @click="goToAusruestung(character.character_id)" class="btn btn-secondary">{{ $t('characters.list.manage_equipment') }}</button>
         </div>
       </div>
@@ -150,6 +149,23 @@ export default {
 .btn-large {
   padding: 12px 24px;
   font-size: 16px;
+}
+
+/* RouterLink als list-item-content styling */
+.list-item-content {
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.list-item-content:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+.list-item-content:hover .list-item-title {
+  color: #007bff;
 }
 
 /* Responsive Design */

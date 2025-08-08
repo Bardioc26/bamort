@@ -575,7 +575,7 @@ export default {
         
         // Lerne jeden Zauber einzeln
         for (const spell of this.spellsToLearn) {
-          const response = await this.$api.post(`/characters/${this.character.id}/learn-spell-new`, {
+          const response = await this.$api.post(`/api/characters/${this.character.id}/learn-spell-new`, {
             char_id: this.character.id,
             name: spell.name,
             type: 'spell',

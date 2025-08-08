@@ -4,6 +4,7 @@ import (
 	"bamort/database"
 	"bamort/gsmaster"
 	"bamort/models"
+	"strconv"
 	"strings"
 
 	"fmt"
@@ -1826,31 +1827,43 @@ func calculateSpellLearningCosts(char *models.Char, request *gsmaster.LernCostRe
 
 // LearnSpell lernt einen neuen Zauber und erstellt Audit-Log-Einträge
 func LearnSpell(c *gin.Context) {
-	charID := c.Param("id")
-	var character models.Char
+	char_ID := c.Param("id")
+	/*
+		var character models.Char
 
-	if err := character.FirstID(charID); err != nil {
-		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		if err := character.FirstID(charID); err != nil {
+			respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+			return
+		}
+	*/
+	charIDInt, err := strconv.Atoi(char_ID)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Charakter-ID")
 		return
 	}
+	charID := uint(charIDInt)
 
-	var request LearnSpellRequest
-	if err := c.ShouldBindJSON(&request); err != nil {
+	var lernRequest gsmaster.LernCostRequest
+	if err := c.ShouldBindJSON(&lernRequest); err != nil {
 		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
 		return
 	}
 
-	// Konvertiere LearnSpellRequest zu LernCostRequest für Kompatibilität mit neuem System
-	lernRequest := gsmaster.LernCostRequest{
-		CharId:       character.ID,
-		Name:         request.Name,
-		CurrentLevel: 0, // Zauber sind nicht gelernt
-		TargetLevel:  1, // Zauber werden auf Level 1 gelernt
-		Type:         "spell",
-		Action:       "learn",
-		UsePP:        0,
-		UseGold:      0,
-		Reward:       nil,
+	// Setze die CharId aus der URL, falls sie nicht im Request enthalten ist
+	if lernRequest.CharId == 0 {
+		lernRequest.CharId = charID
+	}
+
+	// Setze Standard-Werte für Spell Learning falls nicht gesetzt
+	if lernRequest.Type == "" {
+		lernRequest.Type = "spell"
+	}
+	if lernRequest.Action == "" {
+		lernRequest.Action = "learn"
+	}
+	if lernRequest.CurrentLevel == 0 && lernRequest.TargetLevel == 0 {
+		lernRequest.CurrentLevel = 0 // Zauber sind nicht gelernt
+		lernRequest.TargetLevel = 1  // Zauber werden auf Level 1 gelernt
 	}
 
 	// 1. Charakter laden

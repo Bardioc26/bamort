@@ -2,6 +2,7 @@ package gsmaster
 
 import (
 	"bamort/database"
+	"bamort/models"
 	"fmt"
 	"testing"
 	"time"
@@ -46,6 +47,6 @@ func TestImportGSMasterdata(t *testing.T) {
 
 func TestMigrateStructure(t *testing.T) {
 	database.SetupTestDB(true) // Use in-memory SQLite for testing
-	err := MigrateStructure()
+	err := models.MigrateStructure()
 	assert.NoError(t, err, "expected no Error during MigrateStructure")
 }

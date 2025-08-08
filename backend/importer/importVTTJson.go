@@ -1,10 +1,7 @@
 package importer
 
 import (
-	"bamort/character"
-	"bamort/equipment"
 	"bamort/models"
-	"bamort/skills"
 	"encoding/json"
 	"os"
 )
@@ -20,7 +17,7 @@ func readImportChar(fileName string) (*CharacterImport, error) {
 	return &character, err
 }
 
-func ImportVTTJSON(fileName string) (*character.Char, error) {
+func ImportVTTJSON(fileName string) (*models.Char, error) {
 	//fileName = fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	imp, err := readImportChar(fileName)
 	if err != nil {
@@ -59,7 +56,7 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 		return nil, err
 	}
 
-	char := character.Char{}
+	char := models.Char{}
 	char.Name = imp.Name
 	char.Rasse = imp.Rasse
 	char.Typ = imp.Typ
@@ -72,7 +69,7 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 	char.Hand = imp.Hand
 	char.Image = imp.Image
 	for i := range imp.Fertigkeiten {
-		char.Fertigkeiten = append(char.Fertigkeiten, skills.Fertigkeit{
+		char.Fertigkeiten = append(char.Fertigkeiten, models.SkFertigkeit{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{Name: imp.Fertigkeiten[i].Name},
 			},
@@ -83,7 +80,7 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 		})
 	}
 	for i := range imp.Zauber {
-		char.Zauber = append(char.Zauber, skills.Zauber{
+		char.Zauber = append(char.Zauber, models.SkZauber{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{Name: imp.Zauber[i].Name},
 			},
@@ -94,46 +91,46 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 	}
 	char.Lp.Max = imp.Lp.Max
 	char.Lp.Value = imp.Lp.Value
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "Au",
 		Value: imp.Eigenschaften.Au,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "Gs",
 		Value: imp.Eigenschaften.Gs,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "Gw",
 		Value: imp.Eigenschaften.Gw,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "In",
 		Value: imp.Eigenschaften.In,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "Ko",
 		Value: imp.Eigenschaften.Ko,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "PA",
 		Value: imp.Eigenschaften.Pa,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "St",
 		Value: imp.Eigenschaften.St,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "Wk",
 		Value: imp.Eigenschaften.Wk,
 	})
-	char.Eigenschaften = append(char.Eigenschaften, character.Eigenschaft{
+	char.Eigenschaften = append(char.Eigenschaften, models.Eigenschaft{
 		Name:  "Zt",
 		Value: imp.Eigenschaften.Zt,
 	})
 	char.Merkmale.Augenfarbe = imp.Merkmale.Augenfarbe
 	char.Merkmale.Haarfarbe = imp.Merkmale.Haarfarbe
 	char.Merkmale.Sonstige = imp.Merkmale.Sonstige
-	char.Bennies = character.Bennies{
+	char.Bennies = models.Bennies{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{Name: "bennies"},
 		},
@@ -147,9 +144,9 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 	char.Ap.Value = imp.Ap.Value
 	char.B.Max = imp.B.Max
 	char.B.Value = imp.B.Value
-	char.Erfahrungsschatz.Value = imp.Erfahrungsschatz.Value
+	char.Erfahrungsschatz.ES = imp.Erfahrungsschatz.Value
 	for i := range imp.Transportmittel {
-		char.Transportmittel = append(char.Transportmittel, equipment.Container{
+		char.Transportmittel = append(char.Transportmittel, models.EqContainer{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{Name: imp.Transportmittel[i].Name},
 			},
@@ -168,7 +165,7 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 		})
 	}
 	for i := range imp.Ausruestung {
-		char.Ausruestung = append(char.Ausruestung, equipment.Ausruestung{
+		char.Ausruestung = append(char.Ausruestung, models.EqAusruestung{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
 					Name: imp.Ausruestung[i].Name},
@@ -187,7 +184,7 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 		})
 	}
 	for i := range imp.Behaeltnisse {
-		char.Behaeltnisse = append(char.Behaeltnisse, equipment.Container{
+		char.Behaeltnisse = append(char.Behaeltnisse, models.EqContainer{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
 					Name: imp.Behaeltnisse[i].Name},
@@ -208,7 +205,7 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 		})
 	}
 	for i := range imp.Waffen {
-		char.Waffen = append(char.Waffen, equipment.Waffe{
+		char.Waffen = append(char.Waffen, models.EqWaffe{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{
 					Name: imp.Waffen[i].Name},
@@ -231,8 +228,8 @@ func ImportVTTJSON(fileName string) (*character.Char, error) {
 
 	}
 	for i := range imp.Waffenfertigkeiten {
-		char.Waffenfertigkeiten = append(char.Waffenfertigkeiten, skills.Waffenfertigkeit{
-			Fertigkeit: skills.Fertigkeit{
+		char.Waffenfertigkeiten = append(char.Waffenfertigkeiten, models.SkWaffenfertigkeit{
+			SkFertigkeit: models.SkFertigkeit{
 				BamortCharTrait: models.BamortCharTrait{
 					BamortBase: models.BamortBase{Name: imp.Waffenfertigkeiten[i].Name},
 				},

@@ -2,15 +2,13 @@ package character
 
 import (
 	"bamort/database"
-	"bamort/gsmaster"
 	"bamort/models"
-	"bamort/skills"
 )
 
 // createTestSkillData erstellt Test-Daten für Skills und Spells
 func createTestSkillData() error {
 	// Test-Fertigkeit erstellen
-	testSkill := skills.Fertigkeit{
+	testSkill := models.SkFertigkeit{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: "Menschenkenntnis",
@@ -27,7 +25,7 @@ func createTestSkillData() error {
 	}
 
 	// Test-Zauber erstellen
-	testSpell := skills.Zauber{
+	testSpell := models.SkZauber{
 		BamortCharTrait: models.BamortCharTrait{
 			BamortBase: models.BamortBase{
 				Name: "Macht über das Selbst",
@@ -42,33 +40,29 @@ func createTestSkillData() error {
 	}
 
 	// GSM Test-Skill erstellen
-	gsmSkill := gsmaster.Skill{
-		LookupList: gsmaster.LookupList{
-			GameSystem:   "midgard",
-			Name:         "Menschenkenntnis",
-			Beschreibung: "Test Skill",
-			Quelle:       "Test",
-		},
-		Category:    "Sozial",
-		Initialwert: 5,
-		Improvable:  true,
-		Difficulty:  "normal",
+	gsmSkill := models.Skill{
+		GameSystem:   "midgard",
+		Name:         "Menschenkenntnis",
+		Beschreibung: "Test Skill",
+		Quelle:       "Test",
+		Category:     "Sozial",
+		Initialwert:  5,
+		Improvable:   true,
+		Difficulty:   "normal",
 	}
 	if err := database.DB.Create(&gsmSkill).Error; err != nil {
 		return err
 	}
 
 	// GSM Test-Spell erstellen
-	gsmSpell := gsmaster.Spell{
-		LookupList: gsmaster.LookupList{
-			GameSystem:   "midgard",
-			Name:         "Macht über das Selbst",
-			Beschreibung: "Test Spell",
-			Quelle:       "Test",
-		},
-		Stufe:    1,
-		AP:       "1",
-		Category: "Beherrschen",
+	gsmSpell := models.Spell{
+		GameSystem:   "midgard",
+		Name:         "Macht über das Selbst",
+		Beschreibung: "Test Spell",
+		Quelle:       "Test",
+		Stufe:        1,
+		AP:           "1",
+		Category:     "Beherrschen",
 	}
 	if err := database.DB.Create(&gsmSpell).Error; err != nil {
 		return err
@@ -79,8 +73,8 @@ func createTestSkillData() error {
 
 // cleanupTestSkillData entfernt Test-Daten
 func cleanupTestSkillData() {
-	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&skills.Fertigkeit{})
-	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&skills.Zauber{})
-	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&gsmaster.Skill{})
-	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&gsmaster.Spell{})
+	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&models.SkFertigkeit{})
+	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&models.SkZauber{})
+	database.DB.Where("name = ?", "Menschenkenntnis").Delete(&models.Skill{})
+	database.DB.Where("name = ?", "Macht über das Selbst").Delete(&models.Spell{})
 }

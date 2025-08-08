@@ -1,8 +1,8 @@
-package importer
+package models
 
 import "gorm.io/gorm"
 
-func MigrateStructure(db ...*gorm.DB) error {
+func importerMigrateStructure(db ...*gorm.DB) error {
 	// Use provided DB or default to database.DB
 	// var targetDB *gorm.DB
 	// if len(db) > 0 && db[0] != nil {

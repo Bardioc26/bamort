@@ -2,7 +2,7 @@ package importer
 
 import (
 	"bamort/database"
-	"bamort/gsmaster"
+	"bamort/models"
 	"fmt"
 	"testing"
 
@@ -218,12 +218,12 @@ func TestImportSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, false, skill.Improvable)
 	assert.Equal(t, "midgard", skill.GameSystem)
 	//}
-	skill2 := gsmaster.Skill{}
+	skill2 := models.Skill{}
 	erro = skill2.First("Hören")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
-	skill3 := gsmaster.Skill{}
+	skill3 := models.Skill{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Hören", skill3.Name)
@@ -259,12 +259,12 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 	assert.Equal(t, true, skill.Improvable)
 	assert.Equal(t, "midgard", skill.GameSystem)
 	//}
-	skill2 := gsmaster.WeaponSkill{}
+	skill2 := models.WeaponSkill{}
 	erro = skill2.First("Armbrüste")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
-	skill3 := gsmaster.WeaponSkill{}
+	skill3 := models.WeaponSkill{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Armbrüste", skill3.Name)
@@ -301,12 +301,12 @@ func TestImportSpell2GSMaster(t *testing.T) {
 	assert.Equal(t, "", skill.Wirkungsziel)
 	assert.Equal(t, 0, skill.Reichweite)
 	//}
-	skill2 := gsmaster.Spell{}
+	skill2 := models.Spell{}
 	erro = skill2.First("Angst")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
-	skill3 := gsmaster.Spell{}
+	skill3 := models.Spell{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Angst", skill3.Name)
@@ -344,12 +344,12 @@ func TestImportWeapon2GSMaster(t *testing.T) {
 	assert.Equal(t, "check", skill.SkillRequired)
 	assert.Equal(t, "check", skill.Damage)
 	//}
-	skill2 := gsmaster.Weapon{}
+	skill2 := models.Weapon{}
 	erro = skill2.First("Armbrust:schwer")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
-	skill3 := gsmaster.Weapon{}
+	skill3 := models.Weapon{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Armbrust:schwer", skill3.Name)
@@ -387,12 +387,12 @@ func TestImportContainer2GSMaster(t *testing.T) {
 	assert.Equal(t, 25.0, container.Volumen)
 	assert.Equal(t, 25.0, container.Tragkraft)
 	//}
-	container2 := gsmaster.Container{}
+	container2 := models.Container{}
 	erro = container2.First("Lederrucksack")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(container.ID))
 
-	container3 := gsmaster.Container{}
+	container3 := models.Container{}
 	erro = container3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Lederrucksack", container3.Name)
@@ -430,12 +430,12 @@ func TestImportTransportation2GSMaster(t *testing.T) {
 	assert.Equal(t, 0.0, skill.Volumen)
 	assert.Equal(t, 250.0, skill.Tragkraft)
 	//}
-	skill2 := gsmaster.Transportation{}
+	skill2 := models.Transportation{}
 	erro = skill2.First("Karren")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
-	skill3 := gsmaster.Transportation{}
+	skill3 := models.Transportation{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Karren", skill3.Name)
@@ -471,12 +471,12 @@ func TestImportEquipment2GSMaster(t *testing.T) {
 	assert.Equal(t, 13.0, skill.Gewicht)
 	assert.Equal(t, 30.0, skill.Wert)
 	//}
-	skill2 := gsmaster.Equipment{}
+	skill2 := models.Equipment{}
 	erro = skill2.First("Lederrüstung")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
-	skill3 := gsmaster.Equipment{}
+	skill3 := models.Equipment{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Lederrüstung", skill3.Name)
@@ -507,12 +507,12 @@ func TestImportBelieve2GSMaster(t *testing.T) {
 	assert.Equal(t, "", skill.Beschreibung)
 	assert.Equal(t, "", skill.Quelle)
 	//}
-	skill2 := gsmaster.Believe{}
+	skill2 := models.Believe{}
 	erro = skill2.First("Torkin")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
 	assert.Equal(t, 1, int(skill.ID))
 
-	skill3 := gsmaster.Believe{}
+	skill3 := models.Believe{}
 	erro = skill3.FirstId(1)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Torkin", skill3.Name)

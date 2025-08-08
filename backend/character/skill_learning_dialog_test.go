@@ -2,6 +2,7 @@ package character
 
 import (
 	"bamort/gsmaster"
+	"bamort/models"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -33,7 +34,7 @@ func TestSkillLearningDialogWorkflow(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.learningType+"_"+tc.skillName, func(t *testing.T) {
 				router := gin.New()
-				router.GET("/api/characters/:id/reward-types", GetRewardTypes)
+				router.GET("/api/characters/:id/reward-types", GetRewardTypesOld)
 
 				url := "/api/characters/1/reward-types?learning_type=" + tc.learningType +
 					"&skill_name=" + tc.skillName + "&skill_type=" + tc.skillType
@@ -92,14 +93,14 @@ func TestSkillLearningDialogWorkflow(t *testing.T) {
 		assert.Equal(t, 10, parsedRequest.Stufe)
 
 		// Teste erwartete Response-Struktur (ohne DB-Aufruf)
-		expectedResponse := []gsmaster.LearnCost{
+		expectedResponse := []models.LearnCost{
 			{Stufe: 11, Ep: 120, Money: 60, LE: 2},
 			{Stufe: 12, Ep: 140, Money: 70, LE: 2},
 		}
 
 		// Überprüfe Response-Format wie das Frontend es erwartet
 		responseBody, _ := json.Marshal(expectedResponse)
-		var response []gsmaster.LearnCost
+		var response []models.LearnCost
 		err = json.Unmarshal(responseBody, &response)
 		require.NoError(t, err)
 
@@ -114,7 +115,7 @@ func TestSkillLearningDialogWorkflow(t *testing.T) {
 
 	t.Run("Frontend Conversion Logic Test", func(t *testing.T) {
 		// Simuliere die Konvertierung wie sie das Frontend durchführt
-		mockApiResponse := []gsmaster.LearnCost{
+		mockApiResponse := []models.LearnCost{
 			{Stufe: 11, Ep: 120, Money: 60, LE: 2},
 			{Stufe: 12, Ep: 140, Money: 70, LE: 2},
 			{Stufe: 13, Ep: 160, Money: 80, LE: 3},
@@ -177,16 +178,18 @@ func TestSkillLearningDialogWorkflow(t *testing.T) {
 		t.Skip("Skipping DB-dependent test - testing request structure only")
 
 		// Request wie das Frontend ihn für executeDetailedLearning sendet
-		requestData := ImproveSkillRequest{
+		requestData := gsmaster.LernCostRequest{
 			Name:         "Menschenkenntnis",
 			CurrentLevel: 10,
-			Notes:        "Fertigkeit Menschenkenntnis von 10 auf 11 verbessert",
+			Type:         "skill",
+			Action:       "improve",
 		}
 
 		// Verify the request structure is correct
 		assert.Equal(t, "Menschenkenntnis", requestData.Name)
 		assert.Equal(t, 10, requestData.CurrentLevel)
-		assert.NotEmpty(t, requestData.Notes)
+		assert.Equal(t, "skill", requestData.Type)
+		assert.Equal(t, "improve", requestData.Action)
 
 		// Das Frontend erwartet nach erfolgreichem Lernen diese Response-Felder:
 		expectedResponseFields := []string{"message", "skill_name", "ep_cost", "remaining_ep"}
@@ -206,7 +209,7 @@ func TestSkillLearningDialogAuth(t *testing.T) {
 			c.Abort()
 		})
 
-		router.GET("/api/characters/:id/reward-types", GetRewardTypes)
+		router.GET("/api/characters/:id/reward-types", GetRewardTypesOld)
 
 		req, _ := http.NewRequest("GET", "/api/characters/1/reward-types", nil)
 		w := httptest.NewRecorder()
@@ -259,7 +262,7 @@ func TestRewardTypeVariations(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			router := gin.New()
-			router.GET("/api/characters/:id/reward-types", GetRewardTypes)
+			router.GET("/api/characters/:id/reward-types", GetRewardTypesOld)
 
 			url := "/api/characters/1/reward-types?learning_type=" + tc.learningType +
 				"&skill_type=" + tc.skillType + "&skill_name=TestSkill"

@@ -1,4 +1,4 @@
-package gsmaster
+package models
 
 import (
 	"bamort/database"
@@ -7,14 +7,30 @@ import (
 	"gorm.io/gorm"
 )
 
-var dbPrefix = "gsm"
+type BamortBase struct {
+	ID   uint   `gorm:"primaryKey" json:"id"`
+	Name string `json:"name"`
+}
+
+type BamortCharTrait struct {
+	BamortBase
+	CharacterID uint `gorm:"index" json:"character_id"`
+}
+
+type Magisch struct {
+	IstMagisch  bool `json:"ist_magisch"`
+	Abw         int  `json:"abw"`
+	Ausgebrannt bool `json:"ausgebrannt"`
+}
 
 type LookupList struct {
 	ID           uint   `gorm:"primaryKey" json:"id"` //`gorm:"default:uuid_generate_v3()"` // db func
 	GameSystem   string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
-	Name         string `json:"name"`
+	Name         string `gorm:"type:varchar(255);index" json:"name"`
 	Beschreibung string `json:"beschreibung"`
-	Quelle       string `json:"quelle"`
+	Quelle       string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
+	SourceID     uint   `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
+	PageNumber   int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
 }
 
 type LearnCost struct {
@@ -27,7 +43,13 @@ type LearnCost struct {
 }
 
 type Skill struct {
-	LookupList
+	ID               uint   `gorm:"primaryKey" json:"id"`
+	GameSystem       string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
+	Name             string `gorm:"type:varchar(255);index" json:"name"`
+	Beschreibung     string `json:"beschreibung"`
+	Quelle           string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
+	SourceID         uint   `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
+	PageNumber       int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
 	Initialwert      int    `gorm:"default:5" json:"initialwert"`
 	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
 	Improvable       bool   `gorm:"default:true" json:"improvable"`
@@ -41,24 +63,37 @@ type WeaponSkill struct {
 }
 
 type Spell struct {
-	LookupList
-	Bonus           int    `json:"bonus"`
-	Stufe           int    `json:"level"`
-	AP              string `gorm:"default:1"  json:"ap"`
-	Art             string `gorm:"default:Gestenzauber" json:"art"`
-	Zauberdauer     string `gorm:"default:10 sec" json:"zauberdauer"`
-	Reichweite      string `json:"reichweite"` // in m
-	Wirkungsziel    string `json:"wirkungsziel"`
-	Wirkungsbereich string `json:"wirkungsbereich"`
-	Wirkungsdauer   string `json:"wirkungsdauer"`
-	Ursprung        string `json:"ursprung"`
-	Category        string `gorm:"default:normal" json:"category"`
+	ID               uint   `gorm:"primaryKey" json:"id"`
+	GameSystem       string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
+	Name             string `gorm:"type:varchar(255);index" json:"name"`
+	Beschreibung     string `json:"beschreibung"`
+	Quelle           string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
+	SourceID         uint   `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
+	PageNumber       int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
+	Bonus            int    `json:"bonus"`
+	Stufe            int    `json:"level"`
+	AP               string `gorm:"default:1"  json:"ap"`
+	Art              string `gorm:"default:Gestenzauber" json:"art"`
+	Zauberdauer      string `gorm:"default:10 sec" json:"zauberdauer"`
+	Reichweite       string `json:"reichweite"` // in m
+	Wirkungsziel     string `json:"wirkungsziel"`
+	Wirkungsbereich  string `json:"wirkungsbereich"`
+	Wirkungsdauer    string `json:"wirkungsdauer"`
+	Ursprung         string `json:"ursprung"`
+	Category         string `gorm:"default:normal" json:"category"` // spell_school
+	LearningCategory string `gorm:"type:varchar(25);index" json:"learning_category"`
 }
 
 type Equipment struct {
-	LookupList
-	Gewicht      float64 `json:"gewicht"` // in kg
-	Wert         float64 `json:"wert"`    // in Gold
+	ID           uint    `gorm:"primaryKey" json:"id"`
+	GameSystem   string  `gorm:"column:game_system;index;default:midgard" json:"game_system"`
+	Name         string  `gorm:"type:varchar(255);index" json:"name"`
+	Beschreibung string  `json:"beschreibung"`
+	Quelle       string  `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
+	SourceID     uint    `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
+	PageNumber   int     `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
+	Gewicht      float64 `json:"gewicht"`                          // in kg
+	Wert         float64 `json:"wert"`                             // in Gold
 	PersonalItem bool    `gorm:"default:false" json:"personal_item"`
 }
 
@@ -79,9 +114,16 @@ type Transportation struct {
 }
 
 type Believe struct {
-	LookupList
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	GameSystem   string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
+	Name         string `gorm:"type:varchar(255);index" json:"name"`
+	Beschreibung string `json:"beschreibung"`
+	Quelle       string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
+	SourceID     uint   `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
+	PageNumber   int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
 }
 
+/*
 func (object *LookupList) Create() error {
 	gameSystem := "midgard"
 	object.GameSystem = gameSystem
@@ -98,7 +140,7 @@ func (object *LookupList) Create() error {
 
 func (object *LookupList) First(value string) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "game_system=? AND name = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "game_system=? AND name!='Placeholder' AND name = ?", gameSystem, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -108,7 +150,7 @@ func (object *LookupList) First(value string) error {
 
 func (object *LookupList) FirstId(value uint) error {
 	gameSystem := "midgard"
-	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
+	err := database.DB.First(&object, "game_system=? AND name!='Placeholder' AND id = ?", gameSystem, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -124,8 +166,10 @@ func (object *LookupList) Save() error {
 	}
 	return nil
 }
+*/
 
 func (object *Skill) TableName() string {
+	dbPrefix := "gsm"
 	return dbPrefix + "_" + "skills"
 }
 
@@ -161,6 +205,42 @@ func (object *Skill) FirstId(value uint) error {
 		return err
 	}
 	return nil
+}
+
+func (object *Skill) Select(fieldName string, value string) ([]Skill, error) {
+	gameSystem := "midgard"
+	var skills []Skill
+	err := database.DB.Find(&skills, "game_system=? AND name != 'Placeholder' AND "+fieldName+" = ?", gameSystem, value).Error
+	if err != nil {
+		return nil, err
+	}
+	return skills, nil
+}
+
+func SelectSkills(opts ...string) ([]Skill, error) {
+
+	fieldName := ""
+	value := ""
+	gameSystem := "midgard"
+
+	if len(opts) > 1 {
+		fieldName = opts[0]
+		value = opts[1]
+	}
+
+	var skills []Skill
+	if fieldName == "" {
+		err := database.DB.Find(&skills, "game_system=? AND name != 'Placeholder'", gameSystem).Error
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := database.DB.Find(&skills, "game_system=? AND name != 'Placeholder' AND "+fieldName+" = ?", gameSystem, value).Error
+		if err != nil {
+			return nil, err
+		}
+	}
+	return skills, nil
 }
 
 func (object *Skill) Save() error {
@@ -200,6 +280,7 @@ func (object *Skill) GetSkillCategories() ([]string, error) {
 }
 
 func (object *WeaponSkill) TableName() string {
+	dbPrefix := "gsm"
 	return dbPrefix + "_" + "weaponskills"
 }
 
@@ -247,6 +328,7 @@ func (object *WeaponSkill) Save() error {
 }
 
 func (object *Spell) TableName() string {
+	dbPrefix := "gsm"
 	return dbPrefix + "_" + "spells"
 }
 
@@ -293,6 +375,32 @@ func (object *Spell) Save() error {
 	return nil
 }
 
+// SelectSpells gibt alle Zauber zurück, optional gefiltert nach einem Feld
+func SelectSpells(opts ...string) ([]Spell, error) {
+	fieldName := ""
+	value := ""
+	gameSystem := "midgard"
+
+	if len(opts) > 1 {
+		fieldName = opts[0]
+		value = opts[1]
+	}
+
+	var spells []Spell
+	if fieldName == "" {
+		err := database.DB.Find(&spells, "game_system=? AND name != 'Placeholder'", gameSystem).Error
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := database.DB.Find(&spells, "game_system=? AND name != 'Placeholder' AND "+fieldName+" = ?", gameSystem, value).Error
+		if err != nil {
+			return nil, err
+		}
+	}
+	return spells, nil
+}
+
 func (object *Spell) GetSpellCategories() ([]string, error) {
 	var categories []string
 	gameSystem := "midgard"
@@ -310,6 +418,7 @@ func (object *Spell) GetSpellCategories() ([]string, error) {
 }
 
 func (object *Equipment) TableName() string {
+	dbPrefix := "gsm"
 	return dbPrefix + "_" + "equipments"
 }
 
@@ -357,6 +466,7 @@ func (object *Equipment) Save() error {
 }
 
 func (object *Weapon) TableName() string {
+	dbPrefix := "gsm"
 	return dbPrefix + "_" + "weapons"
 }
 
@@ -403,6 +513,7 @@ func (object *Weapon) Save() error {
 }
 
 func (object *Container) TableName() string {
+	dbPrefix := "gsm"
 	return dbPrefix + "_" + "containers"
 }
 
@@ -450,6 +561,7 @@ func (object *Container) Save() error {
 }
 
 func (object *Transportation) TableName() string {
+	dbPrefix := "gsm"
 	return dbPrefix + "_" + "transportations"
 }
 
@@ -497,6 +609,7 @@ func (object *Transportation) Save() error {
 }
 
 func (object *Believe) TableName() string {
+	dbPrefix := "gsm"
 	return dbPrefix + "_" + "believes"
 }
 

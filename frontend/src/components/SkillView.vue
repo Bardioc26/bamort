@@ -12,7 +12,7 @@
               <div v-if="learningMode" class="resources-display">
                 <div class="resource-item">
                   <span class="resource-icon">⚡</span>
-                  <span class="resource-value">{{ character.erfahrungsschatz?.value || 0 }} EP</span>
+                  <span class="resource-value">{{ character.erfahrungsschatz?.ep || 0 }} EP</span>
                 </div>
                 <div class="resource-item">
                   <span class="resource-icon">💰</span>
@@ -69,7 +69,26 @@
             <td>{{ skill.name || '-' }}</td>
             <td>{{ skill.fertigkeitswert || '-' }}</td>
             <td>{{ skill.bonus || '0' }}</td>
-            <td>{{ skill.pp || '0' }}</td>
+            <td class="pp-cell">
+              <div class="pp-container">
+                <button 
+                  @click="decreasePP(skill)" 
+                  class="pp-btn pp-btn-minus"
+                  :disabled="(skill.pp || 0) <= 0"
+                  title="Praxispunkt entfernen"
+                >
+                  −
+                </button>
+                <span class="pp-value">{{ skill.pp || '0' }}</span>
+                <button 
+                  @click="increasePP(skill)" 
+                  class="pp-btn pp-btn-plus"
+                  title="Praxispunkt hinzufügen"
+                >
+                  +
+                </button>
+              </div>
+            </td>
             <td>{{ skill.bemerkung || '-' }}</td>
             <td v-if="learningMode" class="action-cell">
               <button 
@@ -91,7 +110,26 @@
           <td>{{ skill.name || '-' }}</td>
           <td>{{ skill.fertigkeitswert || '-' }}</td>
           <td>{{ skill.bonus || '0' }}</td>
-          <td>{{ skill.pp || '0' }}</td>
+          <td class="pp-cell">
+            <div class="pp-container">
+              <button 
+                @click="decreaseWeaponPP(skill)" 
+                class="pp-btn pp-btn-minus"
+                :disabled="(skill.pp || 0) <= 0"
+                title="Praxispunkt entfernen"
+              >
+                −
+              </button>
+              <span class="pp-value">{{ skill.pp || '0' }}</span>
+              <button 
+                @click="increaseWeaponPP(skill)" 
+                class="pp-btn pp-btn-plus"
+                title="Praxispunkt hinzufügen"
+              >
+                +
+              </button>
+            </div>
+          </td>
           <td>{{ skill.bemerkung || '-' }}</td>
           <td v-if="learningMode" class="action-cell">
             <button 
@@ -130,23 +168,12 @@
     </div> <!--- end cd-list-->
     
     <!-- Dialog für neue Fertigkeit lernen -->
-    <div v-if="showLearnDialog" class="modal-overlay" @click.self="closeDialogs">
-      <div class="modal-content">
-        <h3>Neue Fertigkeit lernen</h3>
-        <div class="form-group">
-          <label>Fertigkeitsname:</label>
-          <input v-model="newSkillName" type="text" placeholder="Name der Fertigkeit" />
-        </div>
-        <div class="form-group">
-          <label>Notizen (optional):</label>
-          <textarea v-model="learnNotes" placeholder="Zusätzliche Notizen..."></textarea>
-        </div>
-        <div class="modal-actions">
-          <button @click="learnNewSkill" class="btn-confirm">Lernen</button>
-          <button @click="closeDialogs" class="btn-cancel">Abbrechen</button>
-        </div>
-      </div>
-    </div>
+    <SkillLearnDialog 
+      :character="character"
+      :isVisible="showLearnDialog"
+      @close="closeDialogs"
+      @skill-learned="handleSkillLearned"
+    />
 
     <!-- Dialog für Fertigkeit verbessern -->
     <div v-if="showImproveSelectionDialog" class="modal-overlay" @click.self="closeDialogs">
@@ -213,7 +240,7 @@
     </div>
 
     <!-- Neue Dialog-Komponente für detailliertes Fertigkeiten-Lernen -->
-    <SkillLearningDialog 
+    <SkillImproveDialog 
       :character="character"
       :skill="selectedSkillToLearn"
       :isVisible="showDetailedLearnDialog"
@@ -516,18 +543,90 @@
   font-size: 14px;
 }
 
+/* PP-Button Styles */
+.pp-cell {
+  padding: 4px 8px;
+}
+
+.pp-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.pp-btn {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #007bff;
+  background: white;
+  color: #007bff;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+  padding: 0;
+}
+
+.pp-btn:hover:not(:disabled) {
+  background: #007bff;
+  color: white;
+}
+
+.pp-btn:disabled {
+  border-color: #ccc;
+  color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pp-btn-plus {
+  border-color: #28a745;
+  color: #28a745;
+}
+
+.pp-btn-plus:hover:not(:disabled) {
+  background: #28a745;
+  color: white;
+}
+
+.pp-btn-minus {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.pp-btn-minus:hover:not(:disabled) {
+  background: #dc3545;
+  color: white;
+}
+
+.pp-value {
+  min-width: 20px;
+  text-align: center;
+  font-weight: bold;
+  color: #495057;
+  font-size: 13px;
+}
+
 
 </style>
 
 
 <script>
 import API from '@/utils/api'
-import SkillLearningDialog from './SkillLearningDialog.vue'
+import SkillImproveDialog from './SkillImproveDialog.vue'
+import SkillLearnDialog from './SkillLearnDialog.vue'
 
 export default {
   name: "SkillView",
   components: {
-    SkillLearningDialog
+    SkillImproveDialog,
+    SkillLearnDialog
   },
   props: {
     character: {
@@ -543,9 +642,7 @@ export default {
       showAddDialog: false,
       showDetailedLearnDialog: false,
       
-      // Formulardaten
-      newSkillName: '',
-      learnNotes: '',
+      // Formulardaten für Verbesserungs-Dialog (vereinfacht)
       selectedSkillToImprove: null,
       usePP: 0,
       improveNotes: '',
@@ -595,8 +692,6 @@ export default {
     },
     
     clearFormData() {
-      this.newSkillName = '';
-      this.learnNotes = '';
       this.selectedSkillToImprove = null;
       this.usePP = 0;
       this.improveNotes = '';
@@ -609,30 +704,10 @@ export default {
       this.selectedLearningType = 'improve';
     },
     
-    async learnNewSkill() {
-      if (!this.newSkillName.trim()) {
-        alert('Bitte geben Sie einen Fertigkeitsnamen ein.');
-        return;
-      }
-      
-      this.isLoading = true;
-      try {
-        const response = await this.$api.post(`/api/characters/${this.character.id}/learn-skill`, {
-          name: this.newSkillName.trim(),
-          notes: this.learnNotes || `Fertigkeit ${this.newSkillName} über Frontend gelernt`
-        });
-        
-        console.log('Fertigkeit erfolgreich gelernt:', response.data);
-        alert(`Fertigkeit "${this.newSkillName}" erfolgreich gelernt!`);
-        this.closeDialogs();
-        this.$emit('character-updated');
-        
-      } catch (error) {
-        console.error('Fehler beim Lernen der Fertigkeit:', error);
-        alert('Fehler beim Lernen der Fertigkeit: ' + (error.response?.data?.error || error.message));
-      } finally {
-        this.isLoading = false;
-      }
+    handleSkillLearned(eventData) {
+      // Event-Handler für die neue SkillLearnDialog-Komponente
+      console.log('Fertigkeit gelernt:', eventData);
+      this.$emit('character-updated');
     },
     
     async improveSelectedSkill() {
@@ -643,9 +718,14 @@ export default {
       
       this.isLoading = true;
       try {
-        const response = await this.$api.post(`/api/characters/${this.character.id}/improve-skill`, {
+        const response = await this.$api.post(`/api/characters/improve-skill`, {
+          char_id: this.character.id,
           name: this.selectedSkillToImprove.name,
           current_level: this.selectedSkillToImprove.fertigkeitswert,
+          target_level: this.selectedSkillToImprove.fertigkeitswert + 1,
+          type: 'skill',
+          action: 'improve',
+          reward: 'default',
           use_pp: this.usePP || 0,
           notes: this.improveNotes || `Fertigkeit ${this.selectedSkillToImprove.name} über Frontend verbessert`
         });
@@ -674,9 +754,14 @@ export default {
       // Waffenfertigkeit verbessern
       this.isLoading = true;
       try {
-        const response = await this.$api.post(`/api/characters/${this.character.id}/improve-skill`, {
+        const response = await this.$api.post(`/api/characters/improve-skill`, {
+          char_id: this.character.id,
           name: skill.name,
           current_level: skill.fertigkeitswert,
+          target_level: skill.fertigkeitswert + 1,
+          type: 'skill',
+          action: 'improve',
+          reward: 'default',
           use_pp: 0,
           notes: `Waffenfertigkeit ${skill.name} direkt aus Tabelle verbessert`
         });
@@ -714,6 +799,166 @@ export default {
     handleSkillUpdated() {
       // Event-Handler für die neue Dialog-Komponente
       this.$emit('character-updated');
+    },
+    
+    async increasePP(skill) {
+      try {
+        const response = await this.$api.post(`/api/characters/${this.character.id}/practice-points/add`, {
+          skill_name: skill.name,
+          amount: 1
+        });
+        
+        // Verwende die Enhanced Response Daten
+        const data = response.data;
+        if (data.success) {
+          // Aktualisiere die lokalen Daten mit den Server-Daten
+          if (data.practice_points) {
+            // Aktualisiere alle Praxispunkte basierend auf der Server-Antwort
+            this.updateLocalPracticePoints(data.practice_points);
+          }
+          
+          // Zeige informative Nachricht über Zauber-Detection
+          if (data.is_spell && data.requested_skill !== data.target_skill) {
+            console.log(`Zauber erkannt: PP für "${data.requested_skill}" wurde zu "${data.target_skill}" hinzugefügt`);
+          }
+          
+          console.log('Praxispunkt hinzugefügt:', data.message);
+          
+          // Charakter-Ansicht aktualisieren
+          this.$emit('character-updated');
+        }
+        
+      } catch (error) {
+        console.error('Fehler beim Hinzufügen von Praxispunkten:', error);
+        alert('Fehler beim Hinzufügen von Praxispunkten: ' + (error.response?.data?.error || error.message));
+      }
+    },
+    
+    async decreasePP(skill) {
+      if ((skill.pp || 0) <= 0) return;
+      
+      try {
+        const response = await this.$api.post(`/api/characters/${this.character.id}/practice-points/use`, {
+          skill_name: skill.name,
+          amount: 1
+        });
+        
+        // Verwende die Enhanced Response Daten
+        const data = response.data;
+        if (data.success) {
+          // Aktualisiere die lokalen Daten mit den Server-Daten
+          if (data.practice_points) {
+            // Aktualisiere alle Praxispunkte basierend auf der Server-Antwort
+            this.updateLocalPracticePoints(data.practice_points);
+          }
+          
+          // Zeige informative Nachricht über Zauber-Detection
+          if (data.is_spell && data.requested_skill !== data.target_skill) {
+            console.log(`Zauber erkannt: PP für "${data.requested_skill}" wurde von "${data.target_skill}" verwendet`);
+          }
+          
+          console.log('Praxispunkt entfernt:', data.message);
+          
+          // Charakter-Ansicht aktualisieren
+          this.$emit('character-updated');
+        }
+        
+      } catch (error) {
+        console.error('Fehler beim Entfernen von Praxispunkten:', error);
+        alert('Fehler beim Entfernen von Praxispunkten: ' + (error.response?.data?.error || error.message));
+      }
+    },
+    
+    async increaseWeaponPP(skill) {
+      try {
+        const response = await this.$api.post(`/api/characters/${this.character.id}/practice-points/add`, {
+          skill_name: skill.name,
+          amount: 1
+        });
+        
+        // Verwende die Enhanced Response Daten
+        const data = response.data;
+        if (data.success) {
+          // Aktualisiere die lokalen Daten mit den Server-Daten
+          if (data.practice_points) {
+            // Aktualisiere alle Praxispunkte basierend auf der Server-Antwort
+            this.updateLocalPracticePoints(data.practice_points);
+          }
+          
+          console.log('Praxispunkt für Waffenfertigkeit hinzugefügt:', data.message);
+          
+          // Charakter-Ansicht aktualisieren
+          this.$emit('character-updated');
+        }
+        
+      } catch (error) {
+        console.error('Fehler beim Hinzufügen von Praxispunkten für Waffenfertigkeit:', error);
+        alert('Fehler beim Hinzufügen von Praxispunkten: ' + (error.response?.data?.error || error.message));
+      }
+    },
+    
+    async decreaseWeaponPP(skill) {
+      if ((skill.pp || 0) <= 0) return;
+      
+      try {
+        const response = await this.$api.post(`/api/characters/${this.character.id}/practice-points/use`, {
+          skill_name: skill.name,
+          amount: 1
+        });
+        
+        // Verwende die Enhanced Response Daten
+        const data = response.data;
+        if (data.success) {
+          // Aktualisiere die lokalen Daten mit den Server-Daten
+          if (data.practice_points) {
+            // Aktualisiere alle Praxispunkte basierend auf der Server-Antwort
+            this.updateLocalPracticePoints(data.practice_points);
+          }
+          
+          console.log('Praxispunkt für Waffenfertigkeit entfernt:', data.message);
+          
+          // Charakter-Ansicht aktualisieren
+          this.$emit('character-updated');
+        }
+        
+      } catch (error) {
+        console.error('Fehler beim Entfernen von Praxispunkten für Waffenfertigkeit:', error);
+        alert('Fehler beim Entfernen von Praxispunkten: ' + (error.response?.data?.error || error.message));
+      }
+    },
+
+    // Helper-Methode zum Aktualisieren der lokalen Praxispunkte basierend auf Server-Response
+    updateLocalPracticePoints(practicePointsFromServer) {
+      // Erstelle ein Map für schnellen Zugriff
+      const ppMap = {};
+      practicePointsFromServer.forEach(pp => {
+        ppMap[pp.skill_name] = pp.amount;
+      });
+
+      // Aktualisiere categorizedskills (Fertigkeiten nach Kategorien)
+      if (this.character.categorizedskills) {
+        Object.values(this.character.categorizedskills).forEach(skillCategory => {
+          if (Array.isArray(skillCategory)) {
+            skillCategory.forEach(skill => {
+              skill.pp = ppMap[skill.name] || 0;
+            });
+          }
+        });
+      }
+
+      // Aktualisiere Waffen-Fertigkeiten
+      if (this.character.waffenfertigkeiten) {
+        this.character.waffenfertigkeiten.forEach(skill => {
+          skill.pp = ppMap[skill.name] || 0;
+        });
+      }
+
+      // Aktualisiere auch flache fertigkeiten Liste falls vorhanden
+      if (this.character.fertigkeiten) {
+        this.character.fertigkeiten.forEach(skill => {
+          skill.pp = ppMap[skill.name] || 0;
+        });
+      }
     }
   }
 };

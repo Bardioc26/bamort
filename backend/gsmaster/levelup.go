@@ -1,6 +1,7 @@
 package gsmaster
 
 import (
+	"bamort/models"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -68,7 +69,9 @@ var AllowedGroups = map[CharClass]map[SkillGroup]bool}
 
 var Config LevelConfig // holds all loaded data
 
-func loadLevelingConfig(opts ...string) error {
+// loadLevelingConfigOld is deprecated. Use the new database-based learning cost system instead.
+// This function loads data from static JSON files.
+func loadLevelingConfigOld(opts ...string) error {
 	// Adjust path as needed
 	filePath := "../testdata/leveldata.json"
 	if len(opts) > 0 {
@@ -88,13 +91,15 @@ func loadLevelingConfig(opts ...string) error {
 	return nil
 }
 
-// CalculateSpellLearnCost combines SpellLearnCost with SpellEPPerSchoolByClass
-func CalculateSpellLearnCost(spell string, class string) (int, error) {
+// CalculateSpellLearnCostOld is deprecated. Use CalcSpellLernCost instead.
+// This function uses the old hardcoded learning cost system.
+// CalculateSpellLearnCostOld combines SpellLearnCost with SpellEPPerSchoolByClass
+func CalculateSpellLearnCostOld(spell string, class string) (int, error) {
 	if Config.AllowedSchools == nil {
-		loadLevelingConfig()
+		loadLevelingConfigOld()
 	}
 
-	var spl Spell
+	var spl models.Spell
 	if err := spl.First(spell); err != nil {
 		return 0, errors.New("unbekannter Zauberspruch")
 	}
@@ -127,15 +132,17 @@ func CalculateSpellLearnCost(spell string, class string) (int, error) {
 	return totalEP, nil
 }
 
-// CalculateSkillLearnCost: erstmalige Kosten in EP
+// CalculateSkillLearnCostOld is deprecated. Use CalcSkillLernCost instead.
+// This function uses the old hardcoded learning cost system.
+// CalculateSkillLearnCostOld: erstmalige Kosten in EP
 // Then refer to Config in your calculations:
-func CalculateSkillLearnCost(skill string, class string) (int, error) {
+func CalculateSkillLearnCostOld(skill string, class string) (int, error) {
 	/*
 		if !Config.AllowedGroups[class][skill.Group] {
 			return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
 		}
 	*/
-	var skl Skill
+	var skl models.Skill
 	if err := skl.First(skill); err != nil {
 		return 0, errors.New("unbekannte Fertigkeit")
 	}
@@ -163,18 +170,18 @@ func CalculateSkillLearnCost(skill string, class string) (int, error) {
 }
 
 // CalculateImprovementCost: Kosten zum Steigern von +X auf +X+1
-func CalculateSkillImprovementCost(skill string, class string, currentSkillLevel int) (*LearnCost, error) {
+func CalculateSkillImprovementCost(skill string, class string, currentSkillLevel int) (*models.LearnCost, error) {
 	return CalculateImprovementCost(skill, class, currentSkillLevel)
 }
 
-func CalculateImprovementCost(skill string, class string, currentSkillLevel int) (*LearnCost, error) {
+func CalculateImprovementCost(skill string, class string, currentSkillLevel int) (*models.LearnCost, error) {
 	/*
 		if !Config.AllowedGroups[class][skill.Group] {
 			return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
 		}
 	*/
-	lCost := LearnCost{}
-	var skl Skill
+	lCost := models.LearnCost{}
+	var skl models.Skill
 	if err := skl.First(skill); err != nil {
 		return nil, errors.New("unbekannte Fertigkeit")
 	}
@@ -205,9 +212,9 @@ func CalculateImprovementCost(skill string, class string, currentSkillLevel int)
 
 func CalculateLearnCost(skillType string, name string, class string) (int, error) {
 	if skillType == "skill" {
-		return CalculateSkillLearnCost(name, class)
+		return CalculateSkillLearnCostOld(name, class)
 	} else if skillType == "spell" {
-		return CalculateSpellLearnCost(name, class)
+		return CalculateSpellLearnCostOld(name, class)
 	}
 	return 0, errors.New("unknown skill type")
 }

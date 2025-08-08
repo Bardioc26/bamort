@@ -1,17 +1,19 @@
 package gsmaster
 
 import (
+	"bamort/models"
 	"fmt"
 )
 
 type LernCostRequest struct {
 	CharId       uint   `json:"char_id" binding:"required"`                       // Charakter-ID
-	Name         string `json:"name" binding:"required"`                          // Name der Fertigkeit / des Zaubers
+	Name         string `json:"name" binding:"omitempty"`                         // Name der Fertigkeit / des Zaubers
 	CurrentLevel int    `json:"current_level,omitempty"`                          // Aktueller Wert (nur für Verbesserung)
 	Type         string `json:"type" binding:"required,oneof=skill spell weapon"` // 'skill', 'spell' oder 'weapon' Waffenfertigkeiten sind normale Fertigkeiten (evtl. kann hier später der Name der Waffe angegeben werden )
 	Action       string `json:"action" binding:"required,oneof=learn improve"`    // 'learn' oder 'improve'
 	TargetLevel  int    `json:"target_level,omitempty"`                           // Zielwert (optional, für Kostenberechnung bis zu einem bestimmten Level)
 	UsePP        int    `json:"use_pp,omitempty"`                                 // Anzahl der zu verwendenden Praxispunkte
+	UseGold      int    `json:"use_gold,omitempty"`                               // Anzahl der zu verwendenden Goldstücke
 	// Belohnungsoptionen
 	Reward *string `json:"reward" binding:"required,oneof=default noGold halveep halveepnoGold"` // Belohnungsoptionen Lernen als Belohnung
 	// default
@@ -489,7 +491,9 @@ var learningCostsData = &LearningCostsTable2{
 	},
 }
 
-func GetSkillCategory(skillName string) string {
+// GetSkillCategoryOld is deprecated. Use models.GetSkillCategoryAndDifficulty instead.
+// This function uses the old hardcoded skill categorization system.
+func GetSkillCategoryOld(skillName string) string {
 
 	for category, difficulties := range learningCostsData.ImprovementCost {
 		for _, data := range difficulties {
@@ -501,7 +505,9 @@ func GetSkillCategory(skillName string) string {
 	return "Unbekannt"
 }
 
-func GetSkillDifficulty(category string, skillName string) string {
+// GetSkillDifficultyOld is deprecated. Use models.GetSkillCategoryAndDifficulty instead.
+// This function uses the old hardcoded skill categorization system.
+func GetSkillDifficultyOld(category string, skillName string) string {
 	// Wenn eine Kategorie angegeben ist, suche nur in dieser Kategorie
 	if category != "" {
 		difficulties, ok := learningCostsData.ImprovementCost[category]
@@ -539,10 +545,10 @@ func contains(slice []string, item string) bool {
 
 //### End of Helper functions ###
 
-// GetSpellInfo returns the school and level of a spell from the database
-func GetSpellInfo(spellName string) (string, int, error) {
+// GetSpellInfoNewSystem returns the school and level of a spell from the database
+func GetSpellInfoNewSystem(spellName string) (string, int, error) {
 	// Create a Spell instance to search in the database
-	var spell Spell
+	var spell models.Spell
 
 	// Search for the spell in the database
 	err := spell.First(spellName)
@@ -553,16 +559,20 @@ func GetSpellInfo(spellName string) (string, int, error) {
 	return spell.Category, spell.Stufe, nil
 }
 
-// GetSpecialization returns the specialization school for a character (placeholder)
+// GetSpecializationOld is deprecated. Use appropriate character data access methods instead.
+// This function is a placeholder that should not be used in production.
+// GetSpecializationOld returns the specialization school for a character (placeholder)
 // This should be implemented to get the actual specialization from character data
-func GetSpecialization(characterID string) string {
+func GetSpecializationOld(characterID string) string {
 	// TODO: Implement actual character specialization lookup
 	// For now, return a default specialization
 	return "Beherrschen"
 }
 
-// findBestCategoryForSkillImprovement findet die Kategorie mit den niedrigsten EP-Kosten für eine Fertigkeit
-func findBestCategoryForSkillImprovement(skillName, characterClass string, level int) (string, string, error) {
+// findBestCategoryForSkillImprovementOld is deprecated. Use the new database-based learning cost system instead.
+// This function uses the old hardcoded learning cost data.
+// findBestCategoryForSkillImprovementOld findet die Kategorie mit den niedrigsten EP-Kosten für eine Fertigkeit
+func findBestCategoryForSkillImprovementOld(skillName, characterClass string, level int) (string, string, error) {
 	classKey := characterClass
 
 	// Sammle alle Kategorien und Schwierigkeiten, in denen die Fertigkeit verfügbar ist
@@ -610,8 +620,10 @@ func findBestCategoryForSkillImprovement(skillName, characterClass string, level
 	return bestOption.category, bestOption.difficulty, nil
 }
 
-// findBestCategoryForSkillLearning findet die Kategorie mit den niedrigsten EP-Kosten für das Lernen einer Fertigkeit
-func findBestCategoryForSkillLearning(skillName, characterClass string) (string, string, error) {
+// FindBestCategoryForSkillLearningOld is deprecated. Use the new database-based learning cost system instead.
+// This function uses the old hardcoded learning cost data.
+// FindBestCategoryForSkillLearningOld findet die Kategorie mit den niedrigsten EP-Kosten für das Lernen einer Fertigkeit
+func FindBestCategoryForSkillLearningOld(skillName, characterClass string) (string, string, error) {
 	classKey := characterClass
 
 	// Sammle alle Kategorien und Schwierigkeiten, in denen die Fertigkeit verfügbar ist
@@ -657,7 +669,9 @@ func findBestCategoryForSkillLearning(skillName, characterClass string) (string,
 	return bestOption.category, bestOption.difficulty, nil
 }
 
-func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
+// CalcSkillLernCostOld is deprecated. Use CalcSkillLernCost instead.
+// This function uses the old hardcoded learning cost system.
+func CalcSkillLernCostOld(costResult *SkillCostResultNew, reward *string) error {
 	// Berechne die Lernkosten basierend auf den aktuellen Werten im costResult
 	// Hier sollte die Logik zur Berechnung der Lernkosten implementiert werden
 	//Finde EP kosten für die Kategorie für die Charakterklasse aus learningCostsData.EPPerTE
@@ -667,7 +681,7 @@ func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
 
 	// Wenn Kategorie und Schwierigkeit noch nicht gesetzt sind, finde die beste Option
 	if costResult.Category == "" || costResult.Difficulty == "" {
-		bestCategory, bestDifficulty, err := findBestCategoryForSkillLearning(costResult.SkillName, classKey)
+		bestCategory, bestDifficulty, err := FindBestCategoryForSkillLearningOld(costResult.SkillName, classKey)
 		if err != nil {
 			return err
 		}
@@ -707,8 +721,10 @@ func CalcSkillLernCost(costResult *SkillCostResultNew, reward *string) error {
 	return nil
 }
 
-// CalcSkillImproveCost berechnet die Kosten für die Verbesserung einer Fertigkeit
-func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, reward *string) error {
+// CalcSkillImproveCostOld is deprecated. Use CalcSkillImproveCost instead.
+// This function uses the old hardcoded learning cost system.
+// CalcSkillImproveCostOld berechnet die Kosten für die Verbesserung einer Fertigkeit
+func CalcSkillImproveCostOld(costResult *SkillCostResultNew, currentLevel int, reward *string) error {
 	// Für Skill-Verbesserung könnten die Kosten vom aktuellen Level abhängen
 
 	//Finde EP kosten für die Kategorie für die Charakterklasse aus learningCostsData.EPPerTE
@@ -721,7 +737,7 @@ func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, rewa
 
 	// Wenn Kategorie und Schwierigkeit noch nicht gesetzt sind, finde die beste Option
 	if costResult.Category == "" || costResult.Difficulty == "" {
-		bestCategory, bestDifficulty, err := findBestCategoryForSkillImprovement(costResult.SkillName, classKey, currentLevel+1)
+		bestCategory, bestDifficulty, err := findBestCategoryForSkillImprovementOld(costResult.SkillName, classKey, currentLevel+1)
 		if err != nil {
 			return err
 		}
@@ -737,7 +753,10 @@ func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, rewa
 	diffData := learningCostsData.ImprovementCost[costResult.Category][costResult.Difficulty]
 
 	trainCost := diffData.TrainCosts[currentLevel+1]
-	if costResult.PPUsed > 0 {
+	if trainCost < costResult.PPUsed {
+		costResult.PPUsed = trainCost //maximal so viele PP verwenden wie TE benötigt werden
+		trainCost = 0                 // Wenn PP verwendet werden, setze die Kosten auf
+	} else if costResult.PPUsed > 0 {
 		trainCost -= costResult.PPUsed // Wenn PP verwendet werden, setze die Kosten auf die PP
 	}
 	// Apply reward logic
@@ -752,16 +771,32 @@ func CalcSkillImproveCost(costResult *SkillCostResultNew, currentLevel int, rewa
 		costResult.GoldCost = 0           // Keine Goldkosten für diese Belohnung
 		costResult.EP = costResult.EP / 2 // Halbiere die EP-Kosten für diese Belohnung
 	}
+	if costResult.GoldUsed > 0 {
+		// 10 Gold = 1 EP, aber maximal EP/2 kann durch Gold ersetzt werden
+		maxEPFromGold := costResult.EP / 2
+		epFromGold := costResult.GoldUsed / 10
+
+		if epFromGold > maxEPFromGold {
+			// Beschränke auf maximal EP/2
+			epFromGold = maxEPFromGold
+			costResult.GoldUsed = epFromGold * 10
+		}
+
+		// Reduziere EP um die durch Gold ersetzte Menge
+		costResult.EP -= epFromGold
+	}
 
 	return nil
 }
 
-// CalcSpellLernCost berechnet die Kosten für das Erlernen eines Zaubers
-func CalcSpellLernCost(costResult *SkillCostResultNew, reward *string) error {
+// CalcSpellLernCostOld is deprecated. Use CalcSpellLernCost instead.
+// This function uses the old hardcoded learning cost system.
+// CalcSpellLernCostOld berechnet die Kosten für das Erlernen eines Zaubers
+func CalcSpellLernCostOld(costResult *SkillCostResultNew, reward *string) error {
 	// Für Zauber verwenden wir eine ähnliche Logik wie für Skills
 	// TODO: Implementiere spezifische Zauber-Kostenlogik wenn verfügbar
 	classKey := costResult.CharacterClass
-	spellCategory, spellLevel, err := GetSpellInfo(costResult.SkillName)
+	spellCategory, spellLevel, err := GetSpellInfoNewSystem(costResult.SkillName)
 	if err != nil {
 		return fmt.Errorf("failed to get spell info: %w", err)
 	}
@@ -770,7 +805,7 @@ func CalcSpellLernCost(costResult *SkillCostResultNew, reward *string) error {
 		return fmt.Errorf("EP-Kosten für Zauber '%s' und Klasse '%s' nicht gefunden", costResult.SkillName, classKey)
 	}
 	if classKey == "Ma" {
-		spezialgebiet := GetSpecialization(costResult.CharacterID)
+		spezialgebiet := GetSpecializationOld(costResult.CharacterID)
 		if spellCategory == spezialgebiet {
 			SpellEPPerLE = 30 // Spezialgebiet für Magier
 		}
@@ -778,10 +813,14 @@ func CalcSpellLernCost(costResult *SkillCostResultNew, reward *string) error {
 
 	trainCost := learningCostsData.SpellLEPerLevel[spellLevel] // LE pro Stufe des Zaubers
 	if costResult.PPUsed > 0 {
-		trainCost -= costResult.PPUsed // Wenn PP verwendet werden, setze die Kosten auf die PP
+		trainCost -= costResult.PPUsed // Wenn PP verwendet werden, reduziere die LE-Kosten
+		if trainCost < 0 {
+			trainCost = 0 // Verhindere negative LE-Kosten
+		}
 	}
+	costResult.LE = trainCost                // Setze die LE-Kosten
 	costResult.EP = trainCost * SpellEPPerLE // EP-Kosten für das Lernen des Zaubers
-	costResult.GoldCost = trainCost * 100    // Beispiel: 200 Gold pro LE
+	costResult.GoldCost = trainCost * 100    // Beispiel: 100 Gold pro LE
 	costResult.Category = spellCategory
 	costResult.Difficulty = fmt.Sprintf("Stufe %d", spellLevel) // Zauber haben keine Schwierigkeit, sondern eine Stufe
 	if reward != nil && *reward == "spruchrolle" {
@@ -798,35 +837,67 @@ func CalcSpellLernCost(costResult *SkillCostResultNew, reward *string) error {
 		}
 	}
 
+	// Anwenden von Gold für EP Konvertierung (falls Gold verwendet wird)
+	if costResult.GoldUsed > 0 {
+		// 10 Gold = 1 EP, aber maximal EP/2 kann durch Gold ersetzt werden
+		maxEPFromGold := costResult.EP / 2
+		epFromGold := costResult.GoldUsed / 10
+
+		if epFromGold > maxEPFromGold {
+			// Beschränke auf maximal EP/2
+			epFromGold = maxEPFromGold
+			costResult.GoldUsed = epFromGold * 10
+		}
+
+		// Reduziere EP um die durch Gold ersetzte Menge
+		costResult.EP -= epFromGold
+	}
+
 	return nil
 }
 
-func GetLernCostNextLevel(request *LernCostRequest, costResult *SkillCostResultNew, reward *string, level int, characterTyp string) error {
+// GetLernCostNextLevelOld is deprecated. Use GetLernCostNextLevel instead.
+// This function uses the old hardcoded learning cost system.
+func GetLernCostNextLevelOld(request *LernCostRequest, costResult *SkillCostResultNew, reward *string, level int, characterRasse string) error {
 	// Diese Funktion berechnet die Kosten für das Erlernen oder Verbessern einer Fertigkeit oder eines Zaubers
 	// abhängig von der Aktion (learn/improve) und der Belohnung.
 	// die Berechnung erfolgt immer für genau 1 Level
 	// Diese Funktion wird in GetLernCost aufgerufen.
+
+	// Übertrage PP aus dem Request für die Kostenberechnung
+	// PP sind nur bei "improve" und "spell learn" erlaubt, nicht bei "skill learn"
+	costResult.PPUsed = 0
+	// Gold für EP wird nur bei "improve" Aktionen und "spell learn" verwendet, nicht beim "skill learn"
+	costResult.GoldUsed = 0
+
 	switch {
 	case request.Action == "learn" && request.Type == "skill":
-		err := CalcSkillLernCost(costResult, request.Reward)
+		// Skill-Lernen: Kein PP und kein Gold für EP erlaubt
+		err := CalcSkillLernCostOld(costResult, request.Reward)
 		if err != nil {
 			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)
 		}
 		// extrakosten für elfen
-		if characterTyp == "Elf" {
+		if characterRasse == "Elf" {
 			costResult.EP += 6
 		}
 	case request.Action == "learn" && request.Type == "spell":
-		err := CalcSpellLernCost(costResult, request.Reward)
+		// Zauber-Lernen: PP und Gold für EP ist erlaubt
+		costResult.PPUsed = request.UsePP
+		costResult.GoldUsed = request.UseGold
+		err := CalcSpellLernCostOld(costResult, request.Reward)
 		if err != nil {
 			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)
 		}
 		// extrakosten für elfen
-		if characterTyp == "Elf" {
+		if characterRasse == "Elf" {
 			costResult.EP += 6
 		}
 	case request.Action == "improve" && request.Type == "skill":
-		err := CalcSkillImproveCost(costResult, request.CurrentLevel, request.Reward)
+		// Skill-Verbesserung: PP und Gold für EP ist erlaubt
+		costResult.PPUsed = request.UsePP
+		costResult.GoldUsed = request.UseGold
+		err := CalcSkillImproveCostOld(costResult, request.CurrentLevel, request.Reward)
 		if err != nil {
 			return fmt.Errorf("fehler bei der Kostenberechnung: %w", err)
 		}

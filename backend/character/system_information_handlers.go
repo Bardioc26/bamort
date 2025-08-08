@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetCharacterClassesHandler gibt alle verfügbaren Charakterklassen zurück
-func GetCharacterClassesHandler(c *gin.Context) {
+// GetCharacterClassesHandlerOld gibt alle verfügbaren Charakterklassen zurück
+func GetCharacterClassesHandlerOld(c *gin.Context) {
 	// Vereinfachte Antwort mit den drei Hauptklassen
 	classes := map[string]interface{}{
 		"Sp": map[string]interface{}{
@@ -30,8 +30,8 @@ func GetCharacterClassesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"character_classes": classes})
 }
 
-// GetSkillCategoriesHandler gibt alle verfügbaren Fertigkeitskategorien zurück
-func GetSkillCategoriesHandler(c *gin.Context) {
+// GetSkillCategoriesHandlerOld gibt alle verfügbaren Fertigkeitskategorien zurück
+func GetSkillCategoriesHandlerOld(c *gin.Context) {
 	categories := map[string]interface{}{
 		"Alltag": map[string]interface{}{
 			"name":        "Alltag",

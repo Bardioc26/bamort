@@ -13,37 +13,41 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.DELETE("/:id", DeleteCharacter)
 
 	// Erfahrung und Vermögen
-	charGrp.GET("/:id/experience-wealth", GetCharacterExperienceAndWealth)
-	charGrp.PUT("/:id/experience", UpdateCharacterExperience)
-	charGrp.PUT("/:id/wealth", UpdateCharacterWealth)
+	charGrp.GET("/:id/experience-wealth", GetCharacterExperienceAndWealth) // NewSystem
+	charGrp.PUT("/:id/experience", UpdateCharacterExperience)              // NewSystem
+	charGrp.PUT("/:id/wealth", UpdateCharacterWealth)                      // NewSystem
 
 	// Audit-Log für Änderungen
 	charGrp.GET("/:id/audit-log", GetCharacterAuditLog)   // Alle Änderungen oder gefiltert nach Feld (?field=experience_points)
 	charGrp.GET("/:id/audit-log/stats", GetAuditLogStats) // Statistiken über Änderungen
 
-	charGrp.POST("/lerncost", GetLernCost) // neuer Hauptendpunkt für alle Kostenberechnungen
-
-	// Kostenberechnung (konsolidiert)
-	//charGrp.POST("/:id/skill-cost", GetSkillCost)            // Hauptendpunkt für alle Kostenberechnungen
-	//charGrp.GET("/:id/improve", GetSkillNextLevelCosts)      // Legacy - für nächste Stufe
-	//charGrp.GET("/:id/improve/skill", GetSkillAllLevelCosts) // Legacy - für alle Stufen
+	// im Frontend wir nur noch der neue Endpunkt benutzt
+	//charGrp.POST("/lerncost", GetLernCost)              // alter Hauptendpunkt für alle Kostenberechnungen (verwendet lerningCostsData)
+	charGrp.POST("/lerncost-new", GetLernCostNewSystem) // neuer Hauptendpunkt für alle Kostenberechnungen (verwendet neue Datenbank)
+	charGrp.POST("/improve-skill-new", ImproveSkill)    // Fertigkeit verbessern
 
 	// Lernen und Verbessern (mit automatischem Audit-Log)
-	charGrp.POST("/:id/learn-skill", LearnSkill)     // Fertigkeit lernen
-	charGrp.POST("/:id/improve-skill", ImproveSkill) // Fertigkeit verbessern
-	charGrp.POST("/:id/learn-spell", LearnSpell)     // Zauber lernen
-	//charGrp.POST("/:id/improve-spell", ImproveSpell) // Zauber verbessern
+	charGrp.POST("/:id/learn-skill-new", LearnSkill) // Fertigkeit lernen (neues System)
+	charGrp.POST("/:id/learn-skill", LearnSkillOld)  // Fertigkeit lernen (altes System)
+	charGrp.POST("/:id/learn-spell-new", LearnSpell) // Zauber lernen (neues System)
+	charGrp.POST("/:id/learn-spell", LearnSpellOld)  // Zauber lernen (altes System)
+
+	// Fertigkeiten-Information
+	charGrp.GET("/:id/available-skills", GetAvailableSkillsOld)        // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
+	charGrp.POST("/available-skills-new", GetAvailableSkillsNewSystem) // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
+	charGrp.POST("/available-spells-new", GetAvailableSpellsNewSystem) // Verfügbare Zauber mit Kosten (bereits gelernte ausgeschlossen)
+	charGrp.GET("/spell-details", GetSpellDetails)                     // Detaillierte Informationen zu einem bestimmten Zauber
 
 	// Belohnungsarten für verschiedene Lernszenarien
-	charGrp.GET("/:id/reward-types", GetRewardTypes) // Verfügbare Belohnungsarten je nach Kontext
+	charGrp.GET("/:id/reward-types", GetRewardTypesOld) // Verfügbare Belohnungsarten je nach Kontext
 
 	// Praxispunkte-Verwaltung
-	charGrp.GET("/:id/practice-points", GetPracticePoints)
-	charGrp.PUT("/:id/practice-points", UpdatePracticePoints)
-	charGrp.POST("/:id/practice-points/add", AddPracticePoint)
-	charGrp.POST("/:id/practice-points/use", UsePracticePoint)
+	charGrp.GET("/:id/practice-points", GetPracticePoints)     // NewSystem
+	charGrp.PUT("/:id/practice-points", UpdatePracticePoints)  // NewSystem
+	charGrp.POST("/:id/practice-points/add", AddPracticePoint) // NewSystem
+	charGrp.POST("/:id/practice-points/use", UsePracticePoint) // NewSystem
 
 	// System-Information
-	charGrp.GET("/character-classes", GetCharacterClassesHandler)
-	charGrp.GET("/skill-categories", GetSkillCategoriesHandler)
+	charGrp.GET("/character-classes", GetCharacterClassesHandlerOld)
+	charGrp.GET("/skill-categories", GetSkillCategoriesHandlerOld)
 }

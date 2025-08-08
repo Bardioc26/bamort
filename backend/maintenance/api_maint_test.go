@@ -4,6 +4,7 @@ import (
 	"bamort/character"
 	"bamort/database"
 	"bamort/gsmaster"
+	"bamort/models"
 	"bamort/router"
 	"bamort/user"
 	"encoding/json"
@@ -38,7 +39,7 @@ func TestMaintSetupCheck(t *testing.T) {
 }
 
 func TestGetMasterData(t *testing.T) {
-	database.SetupTestDB(false)
+	database.SetupTestDB() //(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -70,11 +71,11 @@ func TestGetMasterData(t *testing.T) {
 
 	// Assert the response body
 	type dtaStruct struct {
-		Skills       []gsmaster.Skill       `json:"skills"`
-		Weaponskills []gsmaster.WeaponSkill `json:"weaponskills"`
-		Spell        []gsmaster.Spell       `json:"spells"`
-		Equipment    []gsmaster.Equipment   `json:"equipment"`
-		Weapons      []gsmaster.Weapon      `json:"weapons"`
+		Skills       []models.Skill       `json:"skills"`
+		Weaponskills []models.WeaponSkill `json:"weaponskills"`
+		Spell        []models.Spell       `json:"spells"`
+		Equipment    []models.Equipment   `json:"equipment"`
+		Weapons      []models.Weapon      `json:"weapons"`
 	}
 	var dta dtaStruct
 	err := json.Unmarshal(respRecorder.Body.Bytes(), &dta)
@@ -82,9 +83,9 @@ func TestGetMasterData(t *testing.T) {
 }
 
 func TestGetMDSkillCategories(t *testing.T) {
-	database.SetupTestDB(false)
-	//gsmaster.MigrateStructure()
-	ski := gsmaster.Skill{}
+	database.SetupTestDB() //(false)
+
+	ski := models.Skill{}
 	categories, err := ski.GetSkillCategories()
 	assert.NoError(t, err)
 	assert.LessOrEqual(t, 1, len(categories))
@@ -92,7 +93,7 @@ func TestGetMDSkillCategories(t *testing.T) {
 }
 
 func TestGetMDSkills(t *testing.T) {
-	database.SetupTestDB(false)
+	database.SetupTestDB() //(false)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -126,7 +127,7 @@ func TestGetMDSkills(t *testing.T) {
 	assert.Equal(t, http.StatusOK, respRecorder.Code)
 
 	// Assert the response body
-	var listOfCharacter *character.Char
+	var listOfCharacter *models.Char
 	err := json.Unmarshal(respRecorder.Body.Bytes(), &listOfCharacter)
 	assert.NoError(t, err)
 	assert.Equal(t, "Harsk Hammerhuter, Zen", listOfCharacter.Name)
@@ -138,55 +139,3 @@ func TestGetMDSkills(t *testing.T) {
 	//assert.Equal(t, false, listOfCharacter.Public)
 
 }
-
-/*
-func TestUpdateMDSkill(t *testing.T) {
-	database.SetupTestDB(false)
-	// Initialize a Gin router
-	r := gin.Default()
-	router.SetupGin(r)
-
-	// Routes
-	protected := router.BaseRouterGrp(r)
-	character.RegisterRoutes(protected)
-	gsmaster.RegisterRoutes(protected)
-	protected.GET("/test", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
-	})
-	u := user.User{}
-	u.FirstId(1)
-
-	// Define the test case input
-	sk := gsmaster.Skill{}
-	sk.Name = "Geländekunde"
-	sk.ID = 64
-	jsonData, err := json.Marshal(sk)
-	if err != nil {
-		t.Fatalf("Failed to marshal skill: %v", err)
-	}
-
-	// Create a test HTTP request
-	req, _ := http.NewRequest("PUT", "/api/maintenance/skills/64", bytes.NewBuffer(jsonData))
-	req.Header.Set("Content-Type", "application/json")
-	token := user.GenerateToken(&u)
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	// Create a response recorder to capture the handler's response
-	respRecorder := httptest.NewRecorder()
-
-	// Perform the test request
-	r.ServeHTTP(respRecorder, req)
-
-	// Assert the response status code
-	assert.Equal(t, http.StatusCreated, respRecorder.Code)
-
-	// Assert the response body
-	var createdCharacter character.Char
-	err = json.Unmarshal(respRecorder.Body.Bytes(), &createdCharacter)
-	assert.NoError(t, err)
-	assert.Equal(t, "Aragorn", createdCharacter.Name)
-	assert.Equal(t, "Human", createdCharacter.Rasse)
-	assert.Equal(t, 1, createdCharacter.ID) // Check the simulated ID
-}
-
-*/

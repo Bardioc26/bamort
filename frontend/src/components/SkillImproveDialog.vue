@@ -9,8 +9,8 @@
             <span class="resource-icon">⚡</span>
             <div class="resource-info">
               <div class="resource-label">Erfahrungspunkte</div>
-              <div class="resource-amount">{{ character.erfahrungsschatz?.value || 0 }} EP</div>
-              <div v-if="selectedLevel && selectedCost > 0" class="resource-remaining">
+              <div class="resource-amount">{{ character.erfahrungsschatz?.ep || 0 }} EP</div>
+              <div class="resource-remaining">
                 <small :class="{ 'text-warning': remainingEP < 50, 'text-danger': remainingEP <= 0 }">
                   Verbleibend: {{ remainingEP }} EP
                 </small>
@@ -22,9 +22,15 @@
             <div class="resource-info">
               <div class="resource-label">Gold</div>
               <div class="resource-amount">{{ character.vermoegen?.goldstücke || 0 }} GS</div>
-              <div v-if="selectedLevel && selectedGoldCost > 0" class="resource-remaining">
+              <div class="resource-remaining">
+                <small>
+                  Verwendet: {{ totalGoldCost || 0 }} GS | 
+                  Verbleibend: {{ Math.max(0, (character.vermoegen?.goldstücke || 0) - (totalGoldCost || 0)) }} GS
+                </small>
+              </div>
+              <div class="resource-remaining">
                 <small :class="{ 'text-warning': remainingGold < 20, 'text-danger': remainingGold <= 0 }">
-                  Verbleibend: {{ remainingGold }} GS
+                  Nach Lernen: {{ remainingGold }} GS
                 </small>
               </div>
             </div>
@@ -36,20 +42,20 @@
               <div class="resource-amount">{{ skill?.pp || 0 }} PP</div>
               <div class="resource-remaining">
                 <small>
-                  Verwendet: {{ ppUsed || 0 }} PP | 
-                  Verbleibend: {{ Math.max(0, (skill?.pp || 0) - (ppUsed || 0)) }} PP
+                  Verwendet: {{ totalPPCost || 0 }} PP | 
+                  Verbleibend: {{ Math.max(0, (skill?.pp || 0) - (totalPPCost || 0)) }} PP
                 </small>
               </div>
-              <div v-if="selectedLevel && selectedPPCost > 0" class="resource-remaining">
+              <div class="resource-remaining">
                 <small :class="{ 'text-warning': remainingPP < 5, 'text-danger': remainingPP <= 0 }">
                   Nach Lernen: {{ remainingPP }} PP
                 </small>
               </div>
             </div>
           </div>
-        </div>      <!-- Belohnungsart und PP-Eingabe nebeneinander -->
+        </div>      <!-- Belohnungsart, PP-Eingabe und Gold-Eingabe nebeneinander -->
       <div class="form-group form-row">
-        <div class="form-col">
+        <div class="form-col form-col-main">
           <label>Lernen als Belohnung:</label>
           <select v-model="selectedRewardType" :disabled="isLoadingRewardTypes">
             <option value="" disabled>
@@ -64,7 +70,7 @@
             </option>
           </select>
         </div>
-        <div class="form-col">
+        <div class="form-col form-col-input">
           <label>Praxispunkte verwenden:</label>
           <input 
             v-model.number="ppUsed" 
@@ -78,17 +84,49 @@
             {{ ppUsed || 0 }} / {{ skill?.pp || 0 }} PP
           </small>
         </div>
+        <div class="form-col form-col-input">
+          <label>Goldstücke verwenden:</label>
+          <input 
+            v-model.number="goldUsed" 
+            type="number" 
+            min="0" 
+            :max="character.vermoegen?.goldstücke || 0"
+            placeholder="GS verwenden"
+            @input="updateGoldUsage"
+          />
+          <small class="help-text">
+            {{ goldUsed || 0 }} / {{ character.vermoegen?.goldstücke || 0 }} GS
+          </small>
+        </div>
       </div>
 
       <!-- Lernbare Stufen -->
       <div class="form-group">
-        <label>Lernbare Stufen:</label>
+        <label>Lernbare Stufen (mehrere auswählbar):</label>
+        <div v-if="selectedLevels.length > 0" class="selection-summary">
+          <strong>Ausgewählt:</strong> {{ skill?.fertigkeitswert || 0 }} → {{ finalTargetLevel }} 
+          ({{ selectedLevels.length }} Level{{ selectedLevels.length !== 1 ? 's' : '' }})
+          <br>
+          <span class="cost-summary">
+            Gesamtkosten: 
+            <span v-if="selectedRewardType === 'default'">{{ totalCost }} EP + {{ totalGoldCost }} GS</span>
+            <span v-else-if="selectedRewardType === 'noGold'">{{ totalCost }} EP</span>
+            <span v-else-if="selectedRewardType === 'halveepnoGold'">{{ Math.floor(totalCost / 2) }} EP</span>
+            <span v-else-if="selectedRewardType === 'pp'">{{ totalPPCost }} PP</span>
+            <span v-else-if="selectedRewardType === 'mixed'">{{ totalCost }} EP + {{ totalPPCost }} PP</span>
+            <span v-else>{{ totalCost }} EP + {{ totalGoldCost }} GS</span>
+          </span>
+        </div>
         <div class="learning-levels">
           <div 
             v-for="level in availableLevels" 
             :key="level.targetLevel"
             class="level-option"
-            :class="{ selected: selectedLevel === level.targetLevel, disabled: !level.canAfford }"
+            :class="{ 
+              selected: selectedLevels.includes(level.targetLevel), 
+              disabled: !level.canAfford,
+              'in-sequence': isInSelectedSequence(level.targetLevel)
+            }"
             @click="selectLevel(level)"
           >
             <div class="level-header">
@@ -117,9 +155,9 @@
         <button 
           @click="executeDetailedLearning" 
           class="btn-confirm" 
-          :disabled="!selectedLevel || !canAffordSelectedLevel || isLoading"
+          :disabled="!selectedLevels.length || !canAffordSelectedLevels || isLoading"
         >
-          {{ isLoading ? 'Wird gelernt...' : 'Jetzt lernen' }}
+          {{ isLoading ? 'Wird gelernt...' : `${selectedLevels.length > 1 ? selectedLevels.length + ' Level' : '1 Level'} jetzt lernen` }}
         </button>
         <button @click="closeDialog" class="btn-cancel" :disabled="isLoading">Abbrechen</button>
       </div>
@@ -215,6 +253,19 @@
 }
 
 /* Lernbare Stufen */
+.selection-summary {
+  background: #e7f3ff;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  border-left: 4px solid #007bff;
+}
+
+.cost-summary {
+  color: #28a745;
+  font-weight: bold;
+}
+
 .learning-levels {
   border: 1px solid #dee2e6;
   border-radius: 6px;
@@ -240,6 +291,11 @@
 .level-option.selected {
   background: #e7f3ff;
   border-left: 4px solid #007bff;
+}
+
+.level-option.in-sequence:not(.selected) {
+  background: #f0f8ff;
+  border-left: 2px solid #87ceeb;
 }
 
 .level-option.disabled {
@@ -308,8 +364,14 @@
   min-width: 0;
 }
 
-.form-col:last-child {
-  flex: 0 0 180px;
+.form-col-main {
+  flex: 2;
+  min-width: 200px;
+}
+
+.form-col-input {
+  flex: 1;
+  min-width: 140px;
 }
 
 .form-group label {
@@ -391,7 +453,7 @@
 import API from '@/utils/api'
 
 export default {
-  name: 'SkillLearningDialog',
+  name: 'SkillImproveDialog',
   props: {
     character: {
       type: Object,
@@ -416,8 +478,9 @@ export default {
   data() {
     return {
       selectedRewardType: '',
-      selectedLevel: null,
+      selectedLevels: [], // Array von ausgewählten Leveln
       ppUsed: 0,
+      goldUsed: 0,
       notes: '',
       availableLevels: [],
       availableRewardTypes: [],
@@ -426,47 +489,79 @@ export default {
     };
   },
   computed: {
-    canAffordSelectedLevel() {
-      if (!this.selectedLevel || !this.skill) return false;
+    canAffordSelectedLevels() {
+      if (!this.selectedLevels || this.selectedLevels.length === 0) return false;
       
-      const level = this.availableLevels.find(l => l.targetLevel === this.selectedLevel);
-      return level ? level.canAfford : false;
+      // Prüfe ob alle ausgewählten Level bezahlbar sind (kumulativ)
+      return this.selectedLevels.every(levelNum => {
+        const level = this.availableLevels.find(l => l.targetLevel === levelNum);
+        return level && level.canAfford;
+      }) && this.totalCost <= (this.character.erfahrungsschatz?.ep || 0) &&
+             this.totalGoldCost <= (this.character.vermoegen?.goldstücke || 0) &&
+             this.totalPPCost <= (this.skill?.pp || 0);
+    },
+    
+    totalCost() {
+      return this.selectedLevels.reduce((sum, levelNum) => {
+        const level = this.availableLevels.find(l => l.targetLevel === levelNum);
+        return sum + (level ? level.epCost : 0);
+      }, 0);
+    },
+    
+    totalGoldCost() {
+      return this.selectedLevels.reduce((sum, levelNum) => {
+        const level = this.availableLevels.find(l => l.targetLevel === levelNum);
+        return sum + (level ? level.goldCost : 0);
+      }, 0);
+    },
+    
+    totalPPCost() {
+      return this.selectedLevels.reduce((sum, levelNum) => {
+        const level = this.availableLevels.find(l => l.targetLevel === levelNum);
+        if (!level) return sum;
+        
+        // PP werden nur bei bestimmten Belohnungstypen tatsächlich verwendet
+        switch (this.selectedRewardType) {
+          case 'pp':
+            return sum + (level.ppCost || 0);
+          case 'mixed':
+            return sum + (level.ppUsed || 0);
+          default:
+            return sum; // Bei anderen Belohnungstypen werden keine PP verwendet
+        }
+      }, 0);
+    },
+    
+    finalTargetLevel() {
+      if (this.selectedLevels.length === 0) return this.skill?.fertigkeitswert || 0;
+      return Math.max(...this.selectedLevels);
     },
     
     selectedCost() {
-      if (!this.selectedLevel) return 0;
-      
-      const level = this.availableLevels.find(l => l.targetLevel === this.selectedLevel);
-      return level ? level.epCost : 0;
+      return this.totalCost;
     },
     
     selectedGoldCost() {
-      if (!this.selectedLevel) return 0;
-      
-      const level = this.availableLevels.find(l => l.targetLevel === this.selectedLevel);
-      return level ? level.goldCost : 0;
+      return this.totalGoldCost;
     },
     
     selectedPPCost() {
-      if (!this.selectedLevel) return 0;
-      
-      const level = this.availableLevels.find(l => l.targetLevel === this.selectedLevel);
-      return level ? (level.ppUsed || level.ppCost) : 0;
+      return this.totalPPCost;
     },
     
     remainingEP() {
-      const current = this.character.erfahrungsschatz?.value || 0;
-      return Math.max(0, current - this.selectedCost);
+      const current = this.character.erfahrungsschatz?.ep || 0;
+      return Math.max(0, current - this.totalCost);
     },
     
     remainingGold() {
       const current = this.character.vermoegen?.goldstücke || 0;
-      return Math.max(0, current - this.selectedGoldCost);
+      return Math.max(0, current - this.totalGoldCost);
     },
     
     remainingPP() {
       const current = this.skill?.pp || 0;
-      return Math.max(0, current - this.selectedPPCost);
+      return Math.max(0, current - this.totalPPCost);
     }
   },
   watch: {
@@ -493,7 +588,7 @@ export default {
       if (this.selectedRewardType && this.skill) {
         this.loadLearningCosts();
       }
-      this.selectedLevel = null; // Reset selection when reward type changes
+      this.selectedLevels = []; // Reset selection when reward type changes
     },
     isVisible(newValue) {
       if (newValue) {
@@ -511,8 +606,9 @@ export default {
     
     resetDialog() {
       this.selectedRewardType = '';
-      this.selectedLevel = null;
+      this.selectedLevels = [];
       this.ppUsed = 0;
+      this.goldUsed = 0;
       this.notes = '';
       this.availableLevels = [];
       this.availableRewardTypes = [];
@@ -528,12 +624,11 @@ export default {
       // Prüfe ob Token vorhanden ist
       const token = localStorage.getItem('token');
       if (!token) {
-        console.warn('No authentication token available, using fallback reward types');
-        this.availableRewardTypes = this.getDefaultRewardTypes();
-        if (this.availableRewardTypes.length > 0 && !this.selectedRewardType) {
-          this.selectedRewardType = this.availableRewardTypes[0].value;
-          // loadLearningCosts wird automatisch durch selectedRewardType watcher ausgelöst
-        }
+        console.error('No authentication token available - cannot load reward types');
+        this.availableRewardTypes = [{
+          value: 'error',
+          label: 'Anmeldung erforderlich'
+        }];
         return;
       }
       
@@ -569,12 +664,12 @@ export default {
           console.log('Set default reward type to:', this.selectedRewardType);
           // loadLearningCosts wird automatisch durch selectedRewardType watcher ausgelöst
         } else if (this.availableRewardTypes.length === 0) {
-          console.warn('No reward types received from API, using fallback');
-          this.availableRewardTypes = this.getDefaultRewardTypes();
-          if (this.availableRewardTypes.length > 0 && !this.selectedRewardType) {
-            this.selectedRewardType = this.availableRewardTypes[0].value;
-            // loadLearningCosts wird automatisch durch selectedRewardType watcher ausgelöst
-          }
+          console.error('No reward types received from API - cannot proceed without proper reward types');
+          // Zeige Fehlermeldung statt Fallback zu verwenden
+          this.availableRewardTypes = [{
+            value: 'error',
+            label: 'Fehler beim Laden der Belohnungsarten'
+          }];
         }
         
       } catch (error) {
@@ -603,53 +698,15 @@ export default {
           console.error('Access forbidden - insufficient permissions');
         }
         
-        // Fallback auf Standard-Belohnungsarten bei Fehler
-        this.availableRewardTypes = this.getDefaultRewardTypes();
-        if (this.availableRewardTypes.length > 0 && !this.selectedRewardType) {
-          this.selectedRewardType = this.availableRewardTypes[0].value;
-          // loadLearningCosts wird automatisch durch selectedRewardType watcher ausgelöst
-        }
-        console.log('Using fallback reward types:', this.availableRewardTypes);
+        // Bei Fehlern klare Fehlermeldung statt Fallback
+        this.availableRewardTypes = [{
+          value: 'error',
+          label: 'Fehler beim Laden der Belohnungsarten'
+        }];
+        console.error('Could not load reward types from API, showing error state');
       } finally {
         this.isLoadingRewardTypes = false;
       }
-    },
-    
-    getDefaultRewardTypes() {
-      // Fallback-Belohnungsarten je nach Lerntyp
-      console.log('Generating default reward types for learning type:', this.learningType);
-      
-      let rewardTypes = [];
-      
-      switch (this.learningType) {
-        case 'learn':
-          rewardTypes = [
-            { value: 'default', label: 'Erfahrungspunkte verwenden' },
-            { value: 'gold', label: 'Gold verwenden' }
-          ];
-          break;
-        case 'spell':
-          rewardTypes = [
-            { value: 'default', label: 'Erfahrungspunkte verwenden' },
-            { value: 'gold', label: 'Gold verwenden' },
-            { value: 'pp', label: 'Praxispunkte verwenden' },
-            { value: 'mixed', label: 'Gemischt (EP + PP)' },
-            { value: 'ritual', label: 'Ritual durchführen' }
-          ];
-          break;
-        case 'improve':
-        default:
-          rewardTypes = [
-            { value: 'default', label: 'Erfahrungspunkte verwenden' },
-            { value: 'gold', label: 'Gold verwenden' },
-            { value: 'pp', label: 'Praxispunkte verwenden' },
-            { value: 'mixed', label: 'Gemischt (EP + PP)' }
-          ];
-          break;
-      }
-      
-      console.log('Generated default reward types:', rewardTypes);
-      return rewardTypes;
     },
     
     calculateAvailableLevels() {
@@ -689,17 +746,18 @@ export default {
           type: this.skill.type || 'skill',
           action: this.learningType === 'learn' ? 'learn' : 'improve',
           target_level: 0, // Wird vom Backend automatisch bis Level 18 berechnet
-          use_pp: this.selectedRewardType === 'mixed' ? this.ppUsed : 0,
+          use_pp: this.ppUsed || 0,
+          use_gold: this.goldUsed || 0,
           reward: this.selectedRewardType
         };
         
-        const response = await this.$api.post(`/api/characters/lerncost`, requestData);
+        const response = await this.$api.post(`/api/characters/lerncost-new`, requestData);
         
         console.log('Learning costs API response:', response.data);
         
         if (response.data && Array.isArray(response.data) && response.data.length > 0) {
           // Konvertiere gsmaster.SkillCostResultNew Array zu unserem internen Format
-          const availableEP = this.character.erfahrungsschatz?.value || 0;
+          const availableEP = this.character.erfahrungsschatz?.ep || 0;
           const availableGold = this.character.vermoegen?.goldstücke || 0;
           const availablePP = this.skill?.pp || 0;
           
@@ -765,7 +823,7 @@ export default {
       // Einfache Fallback-Methode für Kostenberechnung (nur für Notfälle)
       const currentLevel = this.skill.fertigkeitswert || 0;
       const maxLevel = 20;
-      const availableEP = this.character.erfahrungsschatz?.value || 0;
+      const availableEP = this.character.erfahrungsschatz?.ep || 0;
       const availableGold = this.character.vermoegen?.goldstücke || 0;
       const availablePP = this.skill?.pp || 0;
       
@@ -810,9 +868,52 @@ export default {
     },
     
     selectLevel(level) {
-      if (level.canAfford) {
-        this.selectedLevel = level.targetLevel;
+      if (!level.canAfford) return;
+      
+      const targetLevel = level.targetLevel;
+      const currentLevel = this.skill?.fertigkeitswert || 0;
+      
+      // Toggle-Logik für Multi-Level-Auswahl
+      const isSelected = this.selectedLevels.includes(targetLevel);
+      
+      if (isSelected) {
+        // Entferne das Level und alle höheren Level
+        this.selectedLevels = this.selectedLevels.filter(l => l < targetLevel);
+      } else {
+        // Füge das Level hinzu und alle Level zwischen dem aktuellen Level und diesem Level
+        const levelsToAdd = [];
+        
+        // Bestimme den niedrigsten bereits ausgewählten Level oder das aktuelle Level
+        const minSelectedLevel = this.selectedLevels.length > 0 
+          ? Math.min(...this.selectedLevels) 
+          : currentLevel + 1;
+        
+        // Füge alle Level vom niedrigsten bis zum angeklickten Level hinzu
+        for (let i = Math.min(minSelectedLevel, targetLevel); i <= targetLevel; i++) {
+          if (i > currentLevel && !this.selectedLevels.includes(i)) {
+            // Prüfe ob das Level verfügbar und bezahlbar ist
+            const levelData = this.availableLevels.find(l => l.targetLevel === i);
+            if (levelData && levelData.canAfford) {
+              levelsToAdd.push(i);
+            }
+          }
+        }
+        
+        // Aktualisiere die Auswahl
+        this.selectedLevels = [...new Set([...this.selectedLevels, ...levelsToAdd])].sort((a, b) => a - b);
       }
+      
+      console.log('Selected levels:', this.selectedLevels);
+    },
+    
+    isInSelectedSequence(targetLevel) {
+      // Prüft ob ein Level Teil der ausgewählten Sequenz ist (visueller Hinweis)
+      if (this.selectedLevels.length === 0) return false;
+      
+      const minSelected = Math.min(...this.selectedLevels);
+      const maxSelected = Math.max(...this.selectedLevels);
+      
+      return targetLevel >= minSelected && targetLevel <= maxSelected;
     },
     
     updatePPUsage() {
@@ -825,8 +926,24 @@ export default {
         this.ppUsed = 0;
       }
       
-      // Bei gemischten Kosten oder PP-Belohnung: Neue Kosten vom Backend laden
-      if (this.selectedRewardType === 'mixed' || this.selectedRewardType === 'pp') {
+      // Lernkosten immer neu laden, da PP-Verwendung die Kosten beeinflussen kann
+      if (this.selectedRewardType && this.skill) {
+        this.loadLearningCosts();
+      }
+    },
+    
+    updateGoldUsage() {
+      // Stelle sicher, dass Gold-Verwendung die verfügbaren GS nicht überschreitet
+      const maxGold = this.character.vermoegen?.goldstücke || 0;
+      if (this.goldUsed > maxGold) {
+        this.goldUsed = maxGold;
+      }
+      if (this.goldUsed < 0) {
+        this.goldUsed = 0;
+      }
+      
+      // Lernkosten immer neu laden, da Gold-Verwendung die Kosten beeinflussen kann
+      if (this.selectedRewardType && this.skill) {
         this.loadLearningCosts();
       }
     },
@@ -837,8 +954,8 @@ export default {
     },
     
     async executeDetailedLearning() {
-      if (!this.skill || !this.selectedLevel) {
-        alert('Bitte wählen Sie eine Zielstufe aus.');
+      if (!this.skill || !this.selectedLevels.length) {
+        alert('Bitte wählen Sie mindestens eine Zielstufe aus.');
         return;
       }
       
@@ -847,23 +964,28 @@ export default {
         return;
       }
       
-      const selectedLevelData = this.availableLevels.find(l => l.targetLevel === this.selectedLevel);
-      if (!selectedLevelData || !selectedLevelData.canAfford) {
-        alert('Sie haben nicht genügend Ressourcen für diese Verbesserung.');
+      if (!this.canAffordSelectedLevels) {
+        alert('Sie haben nicht genügend Ressourcen für diese Verbesserung(en).');
         return;
       }
       
       this.isLoading = true;
       try {
+        // Für Multi-Level-Learning senden wir das höchste Level als Ziel
+        const finalLevel = Math.max(...this.selectedLevels);
+        
         const requestData = {
+          char_id: this.character.id,
           name: this.skill.name,
           current_level: this.skill.fertigkeitswert,
-          target_level: this.selectedLevel,
-          reward_type: this.selectedRewardType,
-          learning_type: this.learningType,
-          use_pp: this.selectedRewardType === 'mixed' ? this.ppUsed : 
-                  this.selectedRewardType === 'pp' ? selectedLevelData.ppCost : 0,
-          notes: this.notes || `${this.learningType === 'spell' ? 'Zauber' : 'Fertigkeit'} ${this.skill.name} von ${this.skill.fertigkeitswert} auf ${this.selectedLevel} ${this.learningType === 'learn' ? 'gelernt' : 'verbessert'}`
+          target_level: finalLevel, // Höchstes ausgewähltes Level
+          type: this.learningType === 'spell' ? 'spell' : 'skill',
+          action: this.learningType === 'learn' ? 'learn' : 'improve',
+          reward: this.selectedRewardType,
+          use_pp: this.ppUsed || 0,
+          use_gold: this.goldUsed || 0,
+          levels_to_learn: this.selectedLevels, // Alle ausgewählten Level
+          notes: this.notes || `${this.learningType === 'spell' ? 'Zauber' : 'Fertigkeit'} ${this.skill.name} von ${this.skill.fertigkeitswert} auf ${finalLevel} ${this.learningType === 'learn' ? 'gelernt' : 'verbessert'} (${this.selectedLevels.length} Level)`
         };
         
         // Wähle den richtigen API-Endpunkt basierend auf Lerntyp
@@ -877,14 +999,14 @@ export default {
             break;
           case 'improve':
           default:
-            endpoint = `/api/characters/${this.character.id}/improve-skill`;
+            endpoint = `/api/characters/improve-skill`;
             break;
         }
         
         const response = await this.$api.post(endpoint, requestData);
         
         console.log(`${this.learningType} erfolgreich ausgeführt:`, response.data);
-        alert(`${this.learningType === 'spell' ? 'Zauber' : 'Fertigkeit'} "${this.skill.name}" erfolgreich ${this.learningType === 'learn' ? 'gelernt' : 'auf Stufe ' + this.selectedLevel + ' verbessert'}!`);
+        alert(`${this.learningType === 'spell' ? 'Zauber' : 'Fertigkeit'} "${this.skill.name}" erfolgreich ${this.learningType === 'learn' ? 'gelernt' : 'auf Stufe ' + finalLevel + ' verbessert'} (${this.selectedLevels.length} Level)!`);
         this.$emit('skill-updated');
         this.closeDialog();
         

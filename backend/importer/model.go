@@ -1,7 +1,7 @@
 package importer
 
 import (
-	"bamort/gsmaster"
+	"bamort/models"
 	"fmt"
 	"regexp"
 )
@@ -210,8 +210,8 @@ func isImprovableSkill(name string) bool {
 	}
 	return true
 }
-func TransformImportFertigkeit2GSDMaster(object *Fertigkeit) (*gsmaster.Skill, error) {
-	gsmobj := gsmaster.Skill{}
+func TransformImportFertigkeit2GSDMaster(object *Fertigkeit) (*models.Skill, error) {
+	gsmobj := models.Skill{}
 
 	err := gsmobj.First(object.Name)
 	// if found check if we need to adjust masterdata
@@ -240,8 +240,8 @@ func TransformImportFertigkeit2GSDMaster(object *Fertigkeit) (*gsmaster.Skill, e
 	return &gsmobj, nil
 }
 
-func TransformImportWaffenFertigkeit2GSDMaster(object *Waffenfertigkeit) (*gsmaster.WeaponSkill, error) {
-	gsmobj := gsmaster.WeaponSkill{}
+func TransformImportWaffenFertigkeit2GSDMaster(object *Waffenfertigkeit) (*models.WeaponSkill, error) {
+	gsmobj := models.WeaponSkill{}
 
 	err := gsmobj.First(object.Name)
 	// if found check if we need to adjust masterdata
@@ -263,8 +263,8 @@ func TransformImportWaffenFertigkeit2GSDMaster(object *Waffenfertigkeit) (*gsmas
 	return &gsmobj, nil
 }
 
-func TransformImportSpell2GSDMaster(object *Zauber) (*gsmaster.Spell, error) {
-	gsmobj := gsmaster.Spell{}
+func TransformImportSpell2GSDMaster(object *Zauber) (*models.Spell, error) {
+	gsmobj := models.Spell{}
 
 	err := gsmobj.First(object.Name)
 	// if found check if we need to adjust masterdata
@@ -287,8 +287,8 @@ func TransformImportSpell2GSDMaster(object *Zauber) (*gsmaster.Spell, error) {
 	return &gsmobj, nil
 }
 
-func TransformImportWeapon2GSDMaster(object *Waffe) (*gsmaster.Weapon, error) {
-	gsmobj := gsmaster.Weapon{}
+func TransformImportWeapon2GSDMaster(object *Waffe) (*models.Weapon, error) {
+	gsmobj := models.Weapon{}
 
 	err := gsmobj.First(object.Name)
 	// if found check if we need to adjust masterdata
@@ -311,8 +311,8 @@ func TransformImportWeapon2GSDMaster(object *Waffe) (*gsmaster.Weapon, error) {
 	return &gsmobj, nil
 }
 
-func TransformImportContainer2GSDMaster(object *Behaeltniss) (*gsmaster.Container, error) {
-	gsmobj := gsmaster.Container{}
+func TransformImportContainer2GSDMaster(object *Behaeltniss) (*models.Container, error) {
+	gsmobj := models.Container{}
 
 	err := gsmobj.First(object.Name)
 	// if found check if we need to adjust masterdata
@@ -335,8 +335,8 @@ func TransformImportContainer2GSDMaster(object *Behaeltniss) (*gsmaster.Containe
 	return &gsmobj, nil
 }
 
-func TransformImportTransportation2GSDMaster(object *Transportation) (*gsmaster.Transportation, error) {
-	gsmobj := gsmaster.Transportation{}
+func TransformImportTransportation2GSDMaster(object *Transportation) (*models.Transportation, error) {
+	gsmobj := models.Transportation{}
 
 	err := gsmobj.First(object.Name)
 	// if found check if we need to adjust masterdata
@@ -358,8 +358,8 @@ func TransformImportTransportation2GSDMaster(object *Transportation) (*gsmaster.
 	return &gsmobj, nil
 }
 
-func TransformImportEquipment2GSDMaster(object *Ausruestung) (*gsmaster.Equipment, error) {
-	gsmobj := gsmaster.Equipment{}
+func TransformImportEquipment2GSDMaster(object *Ausruestung) (*models.Equipment, error) {
+	gsmobj := models.Equipment{}
 
 	err := gsmobj.First(object.Name)
 	// if found check if we need to adjust masterdata
@@ -381,8 +381,8 @@ func TransformImportEquipment2GSDMaster(object *Ausruestung) (*gsmaster.Equipmen
 	return &gsmobj, nil
 }
 
-func TransformImportBelieve2GSDMaster(object string) (*gsmaster.Believe, error) {
-	gsmobj := gsmaster.Believe{}
+func TransformImportBelieve2GSDMaster(object string) (*models.Believe, error) {
+	gsmobj := models.Believe{}
 
 	err := gsmobj.First(object)
 	// if found check if we need to adjust masterdata

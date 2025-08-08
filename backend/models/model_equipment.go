@@ -1,15 +1,12 @@
-package equipment
+package models
 
 import (
 	"bamort/database"
-	"bamort/models"
 )
 
-var dbPrefix = "equi"
-
-type Ausruestung struct {
-	models.BamortCharTrait
-	models.Magisch
+type EqAusruestung struct {
+	BamortCharTrait
+	Magisch
 	Beschreibung  string  `json:"beschreibung"`
 	Anzahl        int     `json:"anzahl"`
 	BeinhaltetIn  string  `json:"beinhaltet_in"`
@@ -20,9 +17,9 @@ type Ausruestung struct {
 	Wert          float64 `json:"wert"`
 }
 
-type Waffe struct {
-	models.BamortCharTrait
-	models.Magisch
+type EqWaffe struct {
+	BamortCharTrait
+	Magisch
 	Beschreibung            string  `json:"beschreibung"`
 	Abwb                    int     `json:"abwb"`
 	Anb                     int     `json:"anb"`
@@ -36,9 +33,9 @@ type Waffe struct {
 	Wert                    float64 `json:"wert"`
 }
 
-type Container struct {
-	models.BamortCharTrait
-	models.Magisch
+type EqContainer struct {
+	BamortCharTrait
+	Magisch
 	Beschreibung     string  `json:"beschreibung"`
 	BeinhaltetIn     string  `json:"beinhaltet_in"`
 	ContainedIn      uint    `json:"contained_in"`
@@ -50,17 +47,20 @@ type Container struct {
 	ExtID            string  `json:"ext_id"`
 }
 
-func (object *Ausruestung) TableName() string {
+func (object *EqAusruestung) TableName() string {
+	dbPrefix := "equi"
 	return dbPrefix + "_" + "equipments"
 }
-func (object *Waffe) TableName() string {
+func (object *EqWaffe) TableName() string {
+	dbPrefix := "equi"
 	return dbPrefix + "_" + "weapons"
 }
-func (object *Container) TableName() string {
+func (object *EqContainer) TableName() string {
+	dbPrefix := "equi"
 	return dbPrefix + "_" + "containers"
 }
 
-func (object *Container) FirstExtId(id string) error {
+func (object *EqContainer) FirstExtId(id string) error {
 	err := database.DB.
 		First(&object, "ext_id = ?", id).Error
 	if err != nil {
@@ -69,7 +69,7 @@ func (object *Container) FirstExtId(id string) error {
 	}
 	return nil
 }
-func (object *Container) Save() error {
+func (object *EqContainer) Save() error {
 	err := database.DB.Save(&object).Error
 	if err != nil {
 		// Container saved
@@ -78,7 +78,7 @@ func (object *Container) Save() error {
 	return nil
 }
 
-func (object *Ausruestung) Save() error {
+func (object *EqAusruestung) Save() error {
 	err := database.DB.Save(&object).Error
 	if err != nil {
 		// Ausruestung saved
@@ -86,7 +86,7 @@ func (object *Ausruestung) Save() error {
 	}
 	return nil
 }
-func (object *Waffe) Save() error {
+func (object *EqWaffe) Save() error {
 	err := database.DB.Save(&object).Error
 	if err != nil {
 		// Waffe saved
@@ -95,10 +95,10 @@ func (object *Waffe) Save() error {
 	return nil
 }
 
-func (object *Ausruestung) LinkContainer() error {
+func (object *EqAusruestung) LinkContainer() error {
 	//var err error
 	if object.BeinhaltetIn != "" {
-		co := Container{}
+		co := EqContainer{}
 		co.FirstExtId(object.BeinhaltetIn)
 		if co.ID > 0 {
 			object.ContainedIn = co.ID
@@ -115,10 +115,10 @@ func (object *Ausruestung) LinkContainer() error {
 	return nil
 }
 
-func (object *Waffe) LinkContainer() error {
+func (object *EqWaffe) LinkContainer() error {
 	//var err error
 	if object.BeinhaltetIn != "" {
-		co := Container{}
+		co := EqContainer{}
 		co.FirstExtId(object.BeinhaltetIn)
 		if co.ID > 0 {
 			object.ContainedIn = co.ID
@@ -135,10 +135,10 @@ func (object *Waffe) LinkContainer() error {
 	return nil
 }
 
-func (object *Container) LinkContainer() error {
+func (object *EqContainer) LinkContainer() error {
 	//var err error
 	if object.BeinhaltetIn != "" {
-		co := Container{}
+		co := EqContainer{}
 		co.FirstExtId(object.BeinhaltetIn)
 		if co.ID > 0 {
 			object.ContainedIn = co.ID

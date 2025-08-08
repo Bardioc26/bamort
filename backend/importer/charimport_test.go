@@ -1,8 +1,8 @@
 package importer
 
 import (
-	"bamort/character"
 	"bamort/database"
+	"bamort/models"
 	"fmt"
 	"testing"
 
@@ -14,7 +14,7 @@ func TestImportVTT2Char(t *testing.T) {
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	char, err := ImportVTTJSON(fileName)
 	assert.NoError(t, err, "expected no error when saving imported Char")
-	var chr2 character.Char
+	var chr2 models.Char
 	chr2.First(char.Name)
 	assert.Equal(t, char.ID, chr2.ID)
 	/*
@@ -31,9 +31,9 @@ func TestImportVTT2Char(t *testing.T) {
 		assert.Equal(t, "Zwerg", character.Rasse)
 		assert.Equal(t, "Hören", character.Fertigkeiten[0].Name)
 		assert.Equal(t, 1, len(character.Zauber))
-		assert.Equal(t, 17, character.Lp.Value)
-		assert.Equal(t, 96, character.Eigenschaften.Gs)
-		assert.Equal(t, 74, character.Eigenschaften.Au)
+		assert.Equal(t, 17, models.Lp.Value)
+		assert.Equal(t, 96, models.Eigenschaften.Gs)
+		assert.Equal(t, 74, models.Eigenschaften.Au)
 		assert.Equal(t, 1, len(character.Ausruestung))
 		assert.Equal(t, "Lederrüstung", character.Ausruestung[0].Name)
 		assert.Equal(t, "blau", character.Merkmale.Augenfarbe)

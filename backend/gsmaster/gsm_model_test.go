@@ -2,6 +2,7 @@ package gsmaster
 
 import (
 	"bamort/database"
+	"bamort/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,17 +12,15 @@ func TestSkill_Create(t *testing.T) {
 	database.SetupTestDB()
 	testDefinition := []struct {
 		name    string
-		skill   *Skill
+		skill   *models.Skill
 		wantErr bool
 	}{
 		{
 			name: "valid skill",
-			skill: &Skill{
-				LookupList: LookupList{
-					Name:         "Test Skill",
-					Beschreibung: "Test Description",
-					Quelle:       "Test Source",
-				},
+			skill: &models.Skill{
+				Name:             "Test Skill",
+				Beschreibung:     "Test Description",
+				Quelle:           "Test Source",
 				Initialwert:      5,
 				Bonuseigenschaft: "st",
 				Improvable:       true,
@@ -56,18 +55,16 @@ func TestWeaponSkill_Create(t *testing.T) {
 	database.SetupTestDB()
 	testDefinition := []struct {
 		name        string
-		weaponSkill *WeaponSkill
+		weaponSkill *models.WeaponSkill
 		wantErr     bool
 	}{
 		{
 			name: "valid weapon skill",
-			weaponSkill: &WeaponSkill{
-				Skill: Skill{
-					LookupList: LookupList{
-						Name:         "Test Weapon Skill",
-						Beschreibung: "Test Description",
-						Quelle:       "Test Source",
-					},
+			weaponSkill: &models.WeaponSkill{
+				Skill: models.Skill{
+					Name:             "Test Weapon Skill",
+					Beschreibung:     "Test Description",
+					Quelle:           "Test Source",
 					Initialwert:      5,
 					Bonuseigenschaft: "st",
 					Improvable:       true,
@@ -101,7 +98,7 @@ func TestWeaponSkill_Create(t *testing.T) {
 
 func TestSkill_TableName(t *testing.T) {
 	database.SetupTestDB()
-	skill := &Skill{}
+	skill := &models.Skill{}
 	expected := "gsm_skills"
 	assert.Equal(t, expected, skill.TableName())
 	database.ResetTestDB()
@@ -111,30 +108,28 @@ func TestSkill_First(t *testing.T) {
 	database.SetupTestDB()
 	testDefinition := []struct {
 		name     string
-		skill    *Skill
+		skill    *models.Skill
 		findName string
 		wantErr  bool
 	}{
 		{
 			name: "existing skill",
-			skill: &Skill{
-				LookupList: LookupList{
-					Name:       "Test Skill",
-					GameSystem: "midgard",
-				},
+			skill: &models.Skill{
+				Name:       "Test Skill",
+				GameSystem: "midgard",
 			},
 			findName: "Test Skill",
 			wantErr:  false,
 		},
 		{
 			name:     "non-existing skill",
-			skill:    &Skill{},
+			skill:    &models.Skill{},
 			findName: "NonExistent",
 			wantErr:  true,
 		},
 		{
 			name:     "empty name",
-			skill:    &Skill{},
+			skill:    &models.Skill{},
 			findName: "",
 			wantErr:  true,
 		},
@@ -148,7 +143,7 @@ func TestSkill_First(t *testing.T) {
 				assert.NoError(t, err)
 			}
 
-			s := &Skill{}
+			s := &models.Skill{}
 			err := s.First(tt.findName)
 
 			if tt.wantErr {
@@ -168,30 +163,28 @@ func TestSkill_FirstId(t *testing.T) {
 	database.SetupTestDB()
 	testDefinition := []struct {
 		name    string
-		skill   *Skill
+		skill   *models.Skill
 		findId  uint
 		wantErr bool
 	}{
 		{
 			name: "existing skill",
-			skill: &Skill{
-				LookupList: LookupList{
-					Name:       "Test Skill",
-					GameSystem: "midgard",
-				},
+			skill: &models.Skill{
+				Name:       "Test Skill",
+				GameSystem: "midgard",
 			},
 			findId:  1,
 			wantErr: false,
 		},
 		{
 			name:    "non-existing id",
-			skill:   &Skill{},
+			skill:   &models.Skill{},
 			findId:  9999,
 			wantErr: true,
 		},
 		{
 			name:    "zero id",
-			skill:   &Skill{},
+			skill:   &models.Skill{},
 			findId:  0,
 			wantErr: true,
 		},
@@ -206,7 +199,7 @@ func TestSkill_FirstId(t *testing.T) {
 				tt.findId = tt.skill.ID
 			}
 
-			s := &Skill{}
+			s := &models.Skill{}
 			err := s.FirstId(tt.findId)
 
 			if tt.wantErr {
@@ -227,17 +220,15 @@ func TestSkill_Save(t *testing.T) {
 	database.SetupTestDB()
 	testDefinition := []struct {
 		name    string
-		skill   *Skill
+		skill   *models.Skill
 		wantErr bool
 	}{
 		{
 			name: "update existing skill",
-			skill: &Skill{
-				LookupList: LookupList{
-					Name:         "Test Skill",
-					Beschreibung: "Original Description",
-					GameSystem:   "midgard",
-				},
+			skill: &models.Skill{
+				Name:         "Test Skill",
+				Beschreibung: "Original Description",
+				GameSystem:   "midgard",
 			},
 			wantErr: false,
 		},
@@ -269,7 +260,7 @@ func TestSkill_Save(t *testing.T) {
 				assert.NoError(t, err)
 
 				// Verify the update
-				saved := &Skill{}
+				saved := &models.Skill{}
 				err = saved.FirstId(tt.skill.ID)
 				assert.NoError(t, err)
 				assert.Equal(t, "Updated Description", saved.Beschreibung)
@@ -283,25 +274,21 @@ func TestSkill_Delete(t *testing.T) {
 	database.SetupTestDB()
 	testDefinition := []struct {
 		name    string
-		skill   *Skill
+		skill   *models.Skill
 		wantErr bool
 	}{
 		{
 			name: "delete existing skill",
-			skill: &Skill{
-				LookupList: LookupList{
-					Name:       "Test Skill",
-					GameSystem: "midgard",
-				},
+			skill: &models.Skill{
+				Name:       "Test Skill",
+				GameSystem: "midgard",
 			},
 			wantErr: false,
 		},
 		{
 			name: "delete non-existing skill",
-			skill: &Skill{
-				LookupList: LookupList{
-					ID: 9999,
-				},
+			skill: &models.Skill{
+				ID: 9999,
 			},
 			wantErr: true,
 		},
@@ -333,7 +320,7 @@ func TestSkill_Delete(t *testing.T) {
 			assert.NoError(t, err)
 
 			// Verify deletion
-			s := &Skill{}
+			s := &models.Skill{}
 			err = s.FirstId(tt.skill.ID)
 			assert.Error(t, err) // Should error since record is deleted
 		})
@@ -344,34 +331,26 @@ func TestSkill_Delete(t *testing.T) {
 func TestSkill_GetSkillCategories(t *testing.T) {
 	database.SetupTestDB()
 	// Create test skills with different categories
-	testSkills := []*Skill{
+	testSkills := []*models.Skill{
 		{
-			LookupList: LookupList{
-				Name:       "Skill1",
-				GameSystem: "midgard",
-			},
-			Category: "Category1",
+			Name:       "Skill1",
+			GameSystem: "midgard",
+			Category:   "Category1",
 		},
 		{
-			LookupList: LookupList{
-				Name:       "Skill2",
-				GameSystem: "midgard",
-			},
-			Category: "Category2",
+			Name:       "Skill2",
+			GameSystem: "midgard",
+			Category:   "Category2",
 		},
 		{
-			LookupList: LookupList{
-				Name:       "Skill3",
-				GameSystem: "midgard",
-			},
-			Category: "Category1", // Duplicate category
+			Name:       "Skill3",
+			GameSystem: "midgard",
+			Category:   "Category1", // Duplicate category
 		},
 		{
-			LookupList: LookupList{
-				Name:       "Skill4",
-				GameSystem: "midgard",
-			},
-			Category: "", // Empty category
+			Name:       "Skill4",
+			GameSystem: "midgard",
+			Category:   "", // Empty category
 		},
 	}
 
@@ -397,7 +376,7 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 
 	for _, tt := range testDefinition {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &Skill{}
+			s := &models.Skill{}
 			categories, err := s.GetSkillCategories()
 
 			if tt.wantErr {

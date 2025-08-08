@@ -2,6 +2,8 @@ package character
 
 import (
 	"bamort/database"
+	"bamort/models"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,13 +15,23 @@ type PracticePointResponse struct {
 	Amount    int    `json:"amount"`
 }
 
+// PracticePointActionResponse repräsentiert die erweiterte Antwort für PP-Aktionen
+type PracticePointActionResponse struct {
+	Success        bool                    `json:"success"`
+	Message        string                  `json:"message"`
+	RequestedSkill string                  `json:"requested_skill"` // Ursprünglich angefragter Name
+	TargetSkill    string                  `json:"target_skill"`    // Tatsächlich betroffene Fertigkeit
+	IsSpell        bool                    `json:"is_spell"`        // Ob es sich um einen Zauber handelt
+	PracticePoints []PracticePointResponse `json:"practice_points"` // Aktuelle PP-Liste
+}
+
 // GetPracticePoints gibt die verfügbaren Praxispunkte eines Charakters zurück
 func GetPracticePoints(c *gin.Context) {
 	// Charakter-ID aus der URL abrufen
 	charID := c.Param("id")
 
 	// Charakter aus der Datenbank laden
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -45,7 +57,7 @@ func UpdatePracticePoints(c *gin.Context) {
 	charID := c.Param("id")
 
 	// Charakter aus der Datenbank laden
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -59,9 +71,11 @@ func UpdatePracticePoints(c *gin.Context) {
 	}
 
 	// Alle Fertigkeiten durchgehen und Praxispunkte zurücksetzen
-	for i := range character.Fertigkeiten {
-		character.Fertigkeiten[i].Pp = 0
-	}
+	/*
+		for i := range character.Fertigkeiten {
+			character.Fertigkeiten[i].Pp = 0
+		}
+	*/
 
 	// Neue Praxispunkte setzen
 	for _, pp := range practicePoints {
@@ -94,12 +108,13 @@ func UpdatePracticePoints(c *gin.Context) {
 }
 
 // AddPracticePoint fügt einen Praxispunkt zu einer Fertigkeit hinzu
+// TODO prüfe speichern der PP für Spells
 func AddPracticePoint(c *gin.Context) {
 	// Charakter-ID aus der URL abrufen
 	charID := c.Param("id")
 
 	// Charakter aus der Datenbank laden
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -121,8 +136,18 @@ func AddPracticePoint(c *gin.Context) {
 		request.Amount = 1
 	}
 
-	// Ermittle die tatsächliche Fertigkeit (bei Zaubern die Zaubergruppe)
-	targetSkillName := getSpellCategory(request.SkillName)
+	// Prüfen, ob es sich um einen Zauber handelt
+	var targetSkillName string
+	var isSpellFlag bool
+	if isSpellNewSystem(request.SkillName) {
+		// Bei Zaubern: PP werden der entsprechenden Zaubergruppe zugeordnet
+		targetSkillName = getSpellCategoryNewSystem(request.SkillName)
+		isSpellFlag = true
+	} else {
+		// Bei normalen Fertigkeiten: PP werden direkt der Fertigkeit zugeordnet
+		targetSkillName = request.SkillName
+		isSpellFlag = false
+	}
 
 	// Praxispunkt zur entsprechenden Fertigkeit hinzufügen
 	found := false
@@ -150,7 +175,7 @@ func AddPracticePoint(c *gin.Context) {
 		}
 	}
 
-	// Aktualisierte Praxispunkte zurückgeben
+	// Aktualisierte Praxispunkte sammeln
 	var practicePoints []PracticePointResponse
 	for _, skill := range character.Fertigkeiten {
 		if skill.Pp > 0 {
@@ -161,7 +186,24 @@ func AddPracticePoint(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, practicePoints)
+	// Erfolgreiche Response mit Details zurückgeben
+	var message string
+	if isSpellFlag {
+		message = "Praxispunkt für Zauber '" + request.SkillName + "' wurde der Zaubergruppe '" + targetSkillName + "' hinzugefügt"
+	} else {
+		message = "Praxispunkt für Fertigkeit '" + targetSkillName + "' hinzugefügt"
+	}
+
+	response := PracticePointActionResponse{
+		Success:        true,
+		Message:        message,
+		RequestedSkill: request.SkillName,
+		TargetSkill:    targetSkillName,
+		IsSpell:        isSpellFlag,
+		PracticePoints: practicePoints,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // UsePracticePoint verbraucht Praxispunkte für eine spezifische Fertigkeit
@@ -170,7 +212,7 @@ func UsePracticePoint(c *gin.Context) {
 	charID := c.Param("id")
 
 	// Charakter aus der Datenbank laden
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -192,8 +234,18 @@ func UsePracticePoint(c *gin.Context) {
 		request.Amount = 1
 	}
 
-	// Ermittle die tatsächliche Fertigkeit (bei Zaubern die Zaubergruppe)
-	targetSkillName := getSpellCategory(request.SkillName)
+	// Prüfen, ob es sich um einen Zauber handelt
+	var targetSkillName string
+	var isSpellFlag bool
+	if isSpellNewSystem(request.SkillName) {
+		// Bei Zaubern: PP werden von der entsprechenden Zaubergruppe abgezogen
+		targetSkillName = getSpellCategoryNewSystem(request.SkillName)
+		isSpellFlag = true
+	} else {
+		// Bei normalen Fertigkeiten: PP werden direkt von der Fertigkeit abgezogen
+		targetSkillName = request.SkillName
+		isSpellFlag = false
+	}
 
 	// Praxispunkt von der entsprechenden Fertigkeit abziehen
 	found := false
@@ -226,7 +278,7 @@ func UsePracticePoint(c *gin.Context) {
 		}
 	}
 
-	// Aktualisierte Praxispunkte zurückgeben
+	// Erfolgreiche Antwort mit detaillierten Informationen und aktueller PP-Liste
 	var practicePoints []PracticePointResponse
 	for _, skill := range character.Fertigkeiten {
 		if skill.Pp > 0 {
@@ -237,5 +289,14 @@ func UsePracticePoint(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, practicePoints)
+	response := PracticePointActionResponse{
+		Success:        true,
+		Message:        fmt.Sprintf("%d Übungspunkte erfolgreich von %s verwendet", request.Amount, targetSkillName),
+		RequestedSkill: request.SkillName,
+		TargetSkill:    targetSkillName,
+		IsSpell:        isSpellFlag,
+		PracticePoints: practicePoints,
+	}
+
+	c.JSON(http.StatusOK, response)
 }

@@ -2,6 +2,7 @@ package gsmaster
 
 import (
 	"bamort/database"
+	"bamort/models"
 	"testing"
 )
 
@@ -61,7 +62,8 @@ func TestGetSkillCategory(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := GetSkillCategory(tt.skillName)
+
+			result := GetSkillCategoryOld(tt.skillName)
 
 			// Check if result is in the list of expected values
 			found := false
@@ -175,7 +177,7 @@ func TestGetSkillDifficulty(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := GetSkillDifficulty(tt.category, tt.skillName)
+			result := GetSkillDifficultyOld(tt.category, tt.skillName)
 			if result != tt.expected {
 				t.Errorf("GetSkillDifficulty(%q, %q) = %q, want %q", tt.category, tt.skillName, result, tt.expected)
 			}
@@ -337,7 +339,7 @@ func TestCalcSkillLernCost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := CalcSkillLernCost(tt.costResult, nil) // nil reward for original tests
+			err := CalcSkillLernCostOld(tt.costResult, nil) // nil reward for original tests
 
 			if tt.expectError {
 				if err == nil {
@@ -432,19 +434,19 @@ func TestSkillCoverage(t *testing.T) {
 					skillsFound[skill] = false
 
 					// Test that GetSkillCategory can find this skill
-					foundCategory := GetSkillCategory(skill)
+					foundCategory := GetSkillCategoryOld(skill)
 					if foundCategory == "Unbekannt" {
 						t.Errorf("GetSkillCategory could not find skill: %s (should be in %s)", skill, category)
 					}
 
 					// Test that GetSkillDifficulty can find this skill without category
-					foundDifficulty := GetSkillDifficulty("", skill)
+					foundDifficulty := GetSkillDifficultyOld("", skill)
 					if foundDifficulty == "Unbekannt" {
 						t.Errorf("GetSkillDifficulty could not find skill: %s (should have difficulty %s)", skill, difficulty)
 					}
 
 					// Test that GetSkillDifficulty can find this skill with category
-					foundDifficultyWithCategory := GetSkillDifficulty(category, skill)
+					foundDifficultyWithCategory := GetSkillDifficultyOld(category, skill)
 					if foundDifficultyWithCategory == "Unbekannt" {
 						t.Errorf("GetSkillDifficulty could not find skill: %s in category %s (should have difficulty %s)", skill, category, difficulty)
 					}
@@ -491,7 +493,7 @@ func TestFindBestCategoryForSkill(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			category, difficulty, err := findBestCategoryForSkillImprovement(tt.skillName, tt.characterClass, tt.currentLevel)
+			category, difficulty, err := findBestCategoryForSkillImprovementOld(tt.skillName, tt.characterClass, tt.currentLevel)
 
 			if tt.expectError {
 				if err == nil {
@@ -568,11 +570,12 @@ func TestCalcSkillLernCostWithRewards(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create cost result
+			cat, difficulty, _ := FindBestCategoryForSkillLearningOld(tt.skillName, tt.characterClass)
 			costResult := &SkillCostResultNew{
 				CharacterClass: tt.characterClass,
 				SkillName:      tt.skillName,
-				Category:       GetSkillCategory(tt.skillName),
-				Difficulty:     GetSkillDifficulty(GetSkillCategory(tt.skillName), tt.skillName),
+				Category:       cat,
+				Difficulty:     difficulty,
 			}
 
 			// Calculate normal costs first to get baseline EP
@@ -582,13 +585,13 @@ func TestCalcSkillLernCostWithRewards(t *testing.T) {
 				Category:       costResult.Category,
 				Difficulty:     costResult.Difficulty,
 			}
-			err := CalcSkillLernCost(baselineResult, stringPtr("default"))
+			err := CalcSkillLernCostOld(baselineResult, stringPtr("default"))
 			if err != nil {
 				t.Fatalf("Failed to calculate baseline costs: %v", err)
 			}
 
 			// Calculate costs with reward
-			err = CalcSkillLernCost(costResult, tt.reward)
+			err = CalcSkillLernCostOld(costResult, tt.reward)
 			if err != nil {
 				t.Fatalf("Failed to calculate costs: %v", err)
 			}
@@ -718,7 +721,7 @@ func TestCalcSkillImproveCostWithRewards(t *testing.T) {
 				// Lassen Sie Kategorie und Schwierigkeit leer, damit die Funktion die beste auswählt
 			}
 
-			err := CalcSkillImproveCost(costResult, tt.currentLevel, tt.reward)
+			err := CalcSkillImproveCostOld(costResult, tt.currentLevel, tt.reward)
 			if err != nil {
 				t.Fatalf("Failed to calculate improvement costs: %v", err)
 			}
@@ -743,39 +746,33 @@ func TestGetSpellInfo(t *testing.T) {
 	// Initialize test database with migration (but no test data since we don't have the preparedTestDB file)
 	database.SetupTestDB(true, false) // Use in-memory SQLite, no test data loading
 	defer database.ResetTestDB()
-	MigrateStructure()
+	models.MigrateStructure()
 
 	// Create minimal test spell data for our test
-	testSpells := []Spell{
+	testSpells := []models.Spell{
 		{
-			LookupList: LookupList{
-				GameSystem:   "midgard",
-				Name:         "Schlummer",
-				Beschreibung: "Test spell for GetSpellInfo",
-				Quelle:       "Test",
-			},
-			Stufe:    1,
-			Category: "Beherrschen",
+			GameSystem:   "midgard",
+			Name:         "Schlummer",
+			Beschreibung: "Test spell for GetSpellInfo",
+			Quelle:       "Test",
+			Stufe:        1,
+			Category:     "Beherrschen",
 		},
 		{
-			LookupList: LookupList{
-				GameSystem:   "midgard",
-				Name:         "Erkennen von Krankheit",
-				Beschreibung: "Test spell for GetSpellInfo",
-				Quelle:       "Test",
-			},
-			Stufe:    2,
-			Category: "Dweomerzauber",
+			GameSystem:   "midgard",
+			Name:         "Erkennen von Krankheit",
+			Beschreibung: "Test spell for GetSpellInfo",
+			Quelle:       "Test",
+			Stufe:        2,
+			Category:     "Dweomerzauber",
 		},
 		{
-			LookupList: LookupList{
-				GameSystem:   "midgard",
-				Name:         "Das Loblied",
-				Beschreibung: "Test spell for GetSpellInfo",
-				Quelle:       "Test",
-			},
-			Stufe:    3,
-			Category: "Zauberlied",
+			GameSystem:   "midgard",
+			Name:         "Das Loblied",
+			Beschreibung: "Test spell for GetSpellInfo",
+			Quelle:       "Test",
+			Stufe:        3,
+			Category:     "Zauberlied",
 		},
 	}
 
@@ -820,7 +817,7 @@ func TestGetSpellInfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.spellName, func(t *testing.T) {
-			school, level, err := GetSpellInfo(tt.spellName)
+			school, level, err := GetSpellInfoNewSystem(tt.spellName)
 
 			if tt.expectError {
 				if err == nil {
@@ -849,39 +846,33 @@ func TestCalcSpellLernCostWithRewards(t *testing.T) {
 	// Initialize test database with migration (but no test data since we don't have the preparedTestDB file)
 	database.SetupTestDB(true, false) // Use in-memory SQLite, no test data loading
 	defer database.ResetTestDB()
-	MigrateStructure()
+	models.MigrateStructure()
 
 	// Create minimal test spell data for our test
-	testSpells := []Spell{
+	testSpells := []models.Spell{
 		{
-			LookupList: LookupList{
-				GameSystem:   "midgard",
-				Name:         "Schlummer",
-				Beschreibung: "Test spell for GetSpellInfo",
-				Quelle:       "Test",
-			},
-			Stufe:    1,
-			Category: "Beherrschen",
+			GameSystem:   "midgard",
+			Name:         "Schlummer",
+			Beschreibung: "Test spell for GetSpellInfo",
+			Quelle:       "Test",
+			Stufe:        1,
+			Category:     "Beherrschen",
 		},
 		{
-			LookupList: LookupList{
-				GameSystem:   "midgard",
-				Name:         "Erkennen von Krankheit",
-				Beschreibung: "Test spell for GetSpellInfo",
-				Quelle:       "Test",
-			},
-			Stufe:    2,
-			Category: "Dweomer",
+			GameSystem:   "midgard",
+			Name:         "Erkennen von Krankheit",
+			Beschreibung: "Test spell for GetSpellInfo",
+			Quelle:       "Test",
+			Stufe:        2,
+			Category:     "Dweomer",
 		},
 		{
-			LookupList: LookupList{
-				GameSystem:   "midgard",
-				Name:         "Das Loblied",
-				Beschreibung: "Test spell for GetSpellInfo",
-				Quelle:       "Test",
-			},
-			Stufe:    3,
-			Category: "Zauberlied",
+			GameSystem:   "midgard",
+			Name:         "Das Loblied",
+			Beschreibung: "Test spell for GetSpellInfo",
+			Quelle:       "Test",
+			Stufe:        3,
+			Category:     "Zauberlied",
 		},
 	}
 	// Insert test data directly
@@ -933,7 +924,7 @@ func TestCalcSpellLernCostWithRewards(t *testing.T) {
 				CharacterID:    "test-character",
 			}
 
-			err := CalcSpellLernCost(costResult, tt.reward)
+			err := CalcSpellLernCostOld(costResult, tt.reward)
 			if err != nil {
 				t.Fatalf("Failed to calculate spell costs: %v", err)
 			}
@@ -970,7 +961,7 @@ func TestGetSpecialization(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := GetSpecialization(tt.characterID)
+			result := GetSpecializationOld(tt.characterID)
 			if result != tt.expectedSpec {
 				t.Errorf("Expected specialization %s, got %s", tt.expectedSpec, result)
 			}
@@ -1020,7 +1011,7 @@ func TestFindBestCategoryForSkillLearning(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			category, difficulty, err := findBestCategoryForSkillLearning(tt.skillName, tt.characterClass)
+			category, difficulty, err := FindBestCategoryForSkillLearningOld(tt.skillName, tt.characterClass)
 
 			if tt.expectError {
 				if err == nil {
@@ -1077,6 +1068,25 @@ func TestGetLernCostNextLevel(t *testing.T) {
 			expectError:  false,
 			expectedEP:   30,  // 10 * 1 * 3
 			expectedGold: 200, // 1 * 200
+		},
+		{
+			name: "Learn skill as Human Kr",
+			request: &LernCostRequest{
+				Action: "learn",
+				Type:   "skill",
+				Reward: stringPtr("default"),
+			},
+			costResult: &SkillCostResultNew{
+				CharacterClass: "Kr",
+				SkillName:      "Abrichten",
+				Category:       "Körper",
+				Difficulty:     "leicht",
+			},
+			level:        1,
+			characterTyp: "Mensch",
+			expectError:  true, // TODO Abrichten kommt im Mysterium mit dem Tiermeister
+			expectedEP:   30,   // 10 * 1 * 3
+			expectedGold: 200,  // 1 * 200
 		},
 		{
 			name: "Learn skill as Elf - should have EP bonus",
@@ -1143,7 +1153,7 @@ func TestGetLernCostNextLevel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := GetLernCostNextLevel(tt.request, tt.costResult, tt.reward, tt.level, tt.characterTyp)
+			err := GetLernCostNextLevelOld(tt.request, tt.costResult, tt.reward, tt.level, tt.characterTyp)
 
 			if tt.expectError {
 				if err == nil {

@@ -1,17 +1,16 @@
 package importer
 
 import (
-	"bamort/character"
-	"bamort/gsmaster"
+	"bamort/models"
 	"fmt"
 )
 
-func ImportChar(char CharacterImport) (*character.Char, error) {
+func ImportChar(char CharacterImport) (*models.Char, error) {
 	return nil, fmt.Errorf("char could not be imported %s", "Weil Wegen Kommt noch")
 }
 
-func CheckSkill(fertigkeit *Fertigkeit, autocreate bool) (*gsmaster.Skill, error) {
-	stammF := gsmaster.Skill{}
+func CheckSkill(fertigkeit *Fertigkeit, autocreate bool) (*models.Skill, error) {
+	stammF := models.Skill{}
 	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, fertigkeit.Name).Error
 	err := stammF.First(fertigkeit.Name)
 	if err == nil {
@@ -50,8 +49,8 @@ func CheckSkill(fertigkeit *Fertigkeit, autocreate bool) (*gsmaster.Skill, error
 	return &stammF, nil
 }
 
-func CheckSpell(zauber *Zauber, autocreate bool) (*gsmaster.Spell, error) {
-	stammF := gsmaster.Spell{}
+func CheckSpell(zauber *Zauber, autocreate bool) (*models.Spell, error) {
+	stammF := models.Spell{}
 
 	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, zauber.Name).Error
 	err := stammF.First(zauber.Name)

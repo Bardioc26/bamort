@@ -2,9 +2,7 @@ package character
 
 import (
 	"bamort/database"
-	"bamort/equipment"
 	"bamort/models"
-	"bamort/skills"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -20,17 +18,11 @@ func TestDebugPracticePoints(t *testing.T) {
 	defer database.ResetTestDB()
 
 	// Migrate the schema
-	err := MigrateStructure()
-	assert.NoError(t, err)
-
-	// Also migrate skills and equipment to avoid errors
-	err = skills.MigrateStructure()
-	assert.NoError(t, err)
-	err = equipment.MigrateStructure()
+	err := models.MigrateStructure()
 	assert.NoError(t, err)
 
 	// Create a test character manually using GORM
-	character := &Char{
+	character := &models.Char{
 		BamortBase: models.BamortBase{
 			Name: "Test Character",
 		},
@@ -57,7 +49,7 @@ func TestDebugPracticePoints(t *testing.T) {
 	t.Logf("Body: %s", w.Body.String())
 
 	// Check if the character exists in database
-	var testChar Char
+	var testChar models.Char
 	err = database.DB.First(&testChar, character.ID).Error
 	t.Logf("Character exists in DB: %v, ID: %d, Error: %v", err == nil, character.ID, err)
 }

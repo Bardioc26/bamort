@@ -2,6 +2,7 @@ package character
 
 import (
 	"bamort/gsmaster"
+	"bamort/models"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -30,7 +31,7 @@ type RewardOptions struct {
 }
 
 type SkillCostResponse struct {
-	*gsmaster.LearnCost
+	*models.LearnCost
 	SkillName    string `json:"skill_name"`
 	SkillType    string `json:"skill_type"`
 	Action       string `json:"action"`
@@ -45,13 +46,13 @@ type SkillCostResponse struct {
 	PPAvailable  int    `json:"pp_available,omitempty"` // Verfügbare Praxispunkte für diese Kategorie
 
 	// Belohnungsdetails
-	RewardApplied      string              `json:"reward_applied,omitempty"`       // Art der angewendeten Belohnung
-	OriginalCostStruct *gsmaster.LearnCost `json:"original_cost_struct,omitempty"` // Ursprüngliche Kosten ohne Belohnung
-	Savings            *gsmaster.LearnCost `json:"savings,omitempty"`              // Ersparnisse durch Belohnung
-	GoldUsedForEP      int                 `json:"gold_used_for_ep,omitempty"`     // Gold das für EP verwendet wurde
-	PPReduction        int                 `json:"pp_reduction,omitempty"`         // Reduktion der Kosten durch PP
-	OriginalCost       int                 `json:"original_cost,omitempty"`        // Ursprüngliche Kosten (vor PP-Reduktion)
-	FinalCost          int                 `json:"final_cost,omitempty"`           // Endgültige Kosten (nach PP-Reduktion)
+	RewardApplied      string            `json:"reward_applied,omitempty"`       // Art der angewendeten Belohnung
+	OriginalCostStruct *models.LearnCost `json:"original_cost_struct,omitempty"` // Ursprüngliche Kosten ohne Belohnung
+	Savings            *models.LearnCost `json:"savings,omitempty"`              // Ersparnisse durch Belohnung
+	GoldUsedForEP      int               `json:"gold_used_for_ep,omitempty"`     // Gold das für EP verwendet wurde
+	PPReduction        int               `json:"pp_reduction,omitempty"`         // Reduktion der Kosten durch PP
+	OriginalCost       int               `json:"original_cost,omitempty"`        // Ursprüngliche Kosten (vor PP-Reduktion)
+	FinalCost          int               `json:"final_cost,omitempty"`           // Endgültige Kosten (nach PP-Reduktion)
 }
 
 type MultiLevelCostResponse struct {
@@ -61,7 +62,7 @@ type MultiLevelCostResponse struct {
 	CurrentLevel   int                 `json:"current_level"`
 	TargetLevel    int                 `json:"target_level"`
 	LevelCosts     []SkillCostResponse `json:"level_costs"`
-	TotalCost      *gsmaster.LearnCost `json:"total_cost"`
+	TotalCost      *models.LearnCost   `json:"total_cost"`
 	CanAffordTotal bool                `json:"can_afford_total"`
 }
 
@@ -74,7 +75,7 @@ func GetLernCost(c *gin.Context) {
 		return
 	}
 	charID := fmt.Sprintf("%d", request.CharId)
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -84,34 +85,449 @@ func GetLernCost(c *gin.Context) {
 
 	// Verwende Klassenabkürzung wenn der Typ länger als 3 Zeichen ist
 	if len(character.Typ) > 3 {
-		costResult.CharacterClass = gsmaster.GetClassAbbreviation(character.Typ)
+		costResult.CharacterClass = gsmaster.GetClassAbbreviationOld(character.Typ)
 	} else {
 		costResult.CharacterClass = character.Typ
 	}
 
 	// Normalize skill name (trim whitespace, proper case)
 	costResult.SkillName = strings.TrimSpace(request.Name)
-	costResult.Category = gsmaster.GetSkillCategory(request.Name)
-	costResult.Difficulty = gsmaster.GetSkillDifficulty(costResult.Category, costResult.SkillName)
+
+	// Lasse Kategorie und Schwierigkeit leer, damit CalcSkillLernCost die beste Option wählt
+	// costResult.Category = gsmaster.GetSkillCategory(request.Name)
+	// costResult.Difficulty = gsmaster.GetSkillDifficulty(costResult.Category, costResult.SkillName)
 	var response []gsmaster.SkillCostResultNew
-	for i := request.CurrentLevel + 1; i <= 18; i++ {
+
+	// Für "learn" Aktion: nur eine Berechnung, da Lernkosten einmalig sind
+	if request.Action == "learn" {
 		levelResult := gsmaster.SkillCostResultNew{
 			CharacterID:    costResult.CharacterID,
 			CharacterClass: costResult.CharacterClass,
 			SkillName:      costResult.SkillName,
 			Category:       costResult.Category,
 			Difficulty:     costResult.Difficulty,
-			TargetLevel:    i,
+			TargetLevel:    1, // Lernkosten sind für das Erlernen der Fertigkeit (Level 1)
 		}
-		err := gsmaster.GetLernCostNextLevel(&request, &levelResult, request.Reward, i, character.Typ)
+		err := gsmaster.GetLernCostNextLevelOld(&request, &levelResult, request.Reward, 1, character.Typ)
 		if err != nil {
 			respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
 			return
 		}
 		response = append(response, levelResult)
+	} else {
+		// Für "improve" Aktion: berechne für jedes Level von current+1 bis 18
+		for i := request.CurrentLevel + 1; i <= 18; i++ {
+			levelResult := gsmaster.SkillCostResultNew{
+				CharacterID:    costResult.CharacterID,
+				CharacterClass: costResult.CharacterClass,
+				SkillName:      costResult.SkillName,
+				Category:       costResult.Category,
+				Difficulty:     costResult.Difficulty,
+				TargetLevel:    i,
+			}
+			err := gsmaster.GetLernCostNextLevelOld(&request, &levelResult, request.Reward, i, character.Typ)
+			if err != nil {
+				respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
+				return
+			}
+			// für die nächste Runde die PP und Gold reduzieren die zum Lernen genutzt werden sollen
+			if levelResult.PPUsed > 0 {
+				request.UsePP -= levelResult.PPUsed
+				// Sicherstellen, dass PP nicht unter 0 fallen
+				if request.UsePP < 0 {
+					request.UsePP = 0
+				}
+			}
+			if levelResult.GoldUsed > 0 {
+				request.UseGold -= levelResult.GoldUsed
+				// Sicherstellen, dass Gold nicht unter 0 fällt
+				if request.UseGold < 0 {
+					request.UseGold = 0
+				}
+			}
+			response = append(response, levelResult)
+		}
 	}
 
 	c.JSON(http.StatusOK, response)
+}
+
+// GetLernCostNewSystem verwendet das neue Datenbank-Lernkosten-System
+// und produziert die gleichen Ergebnisse wie GetLernCost.
+//
+// Unterschiede zum alten System:
+// - Verwendet Models aus models/model_learning_costs.go statt der hardkodierten learningCostsData
+// - Daten werden aus der Datenbank gelesen (learning_* Tabellen)
+// - Unterstützt die gleichen Belohnungen und Parameter wie das alte System
+// - API ist vollständig kompatibel mit GetLernCost
+//
+// Das neue System muss zuerst mit gsmaster.InitializeLearningCostsSystem() initialisiert werden.
+func GetLernCostNewSystem(c *gin.Context) {
+	// Request-Parameter abrufen
+	var request gsmaster.LernCostRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Ungültige Anfrageparameter: "+err.Error())
+		return
+	}
+
+	charID := fmt.Sprintf("%d", request.CharId)
+	var character models.Char
+	if err := character.FirstID(charID); err != nil {
+		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	// Verwende Klassenabkürzung wenn der Typ länger als 3 Zeichen ist
+	var characterClass string
+	if len(character.Typ) > 3 {
+		characterClass = gsmaster.GetClassAbbreviationNewSystem(character.Typ)
+	} else {
+		characterClass = character.Typ
+	}
+
+	// Normalize skill/spell name (trim whitespace, proper case)
+	skillName := strings.TrimSpace(request.Name)
+
+	var response []gsmaster.SkillCostResultNew
+	remainingPP := request.UsePP
+	remainingGold := request.UseGold
+
+	// Für "learn" Aktion: nur eine Berechnung, da Lernkosten einmalig sind
+	if request.Action == "learn" {
+		if request.Type == "spell" {
+			// Spell learning logic
+			spellInfo, err := models.GetSpellLearningInfoNewSystem(skillName, characterClass)
+			if err != nil {
+				respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Zauber '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))
+				return
+			}
+
+			levelResult := gsmaster.SkillCostResultNew{
+				CharacterID:    charID,
+				CharacterClass: characterClass,
+				SkillName:      skillName,
+				Category:       spellInfo.SchoolName,
+				Difficulty:     fmt.Sprintf("Stufe %d", spellInfo.SpellLevel),
+				TargetLevel:    1, // Lernkosten sind für das Erlernen des Zaubers (Level 1)
+			}
+
+			err = calculateSpellLearnCostNewSystem(&request, &levelResult, &remainingPP, &remainingGold, spellInfo)
+			if err != nil {
+				respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
+				return
+			}
+
+			response = append(response, levelResult)
+		} else {
+			// Skill learning logic
+			skillInfo, err := models.GetSkillCategoryAndDifficultyNewSystem(skillName, characterClass)
+			if err != nil {
+				respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fertigkeit '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))
+				return
+			}
+
+			levelResult := gsmaster.SkillCostResultNew{
+				CharacterID:    charID,
+				CharacterClass: characterClass,
+				SkillName:      skillName,
+				Category:       skillInfo.CategoryName,
+				Difficulty:     skillInfo.DifficultyName,
+				TargetLevel:    1, // Lernkosten sind für das Erlernen der Fertigkeit (Level 1)
+			}
+
+			err = calculateSkillLearnCostNewSystem(&request, &levelResult, &remainingPP, &remainingGold, skillInfo)
+			if err != nil {
+				respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
+				return
+			}
+
+			response = append(response, levelResult)
+		}
+	} else {
+		// Für "improve" Aktion: berechne für jedes Level von current+1 bis 18
+		// Improvement only works on skills, not spells
+		skillInfo, err := models.GetSkillCategoryAndDifficultyNewSystem(skillName, characterClass)
+		if err != nil {
+			respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fertigkeit '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))
+			return
+		}
+
+		for i := request.CurrentLevel + 1; i <= 18; i++ {
+			levelResult := gsmaster.SkillCostResultNew{
+				CharacterID:    charID,
+				CharacterClass: characterClass,
+				SkillName:      skillName,
+				Category:       skillInfo.CategoryName,
+				Difficulty:     skillInfo.DifficultyName,
+				TargetLevel:    i,
+			}
+
+			err := CalculateSkillImproveCostNewSystem(&request, &levelResult, i, &remainingPP, &remainingGold, skillInfo)
+			if err != nil {
+				respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
+				return
+			}
+			// für die nächste Runde die PP und Gold reduzieren die zum Lernen genutzt werden sollen
+			if levelResult.PPUsed > 0 {
+				request.UsePP -= levelResult.PPUsed
+				// Sicherstellen, dass PP nicht unter 0 fallen
+				if request.UsePP < 0 {
+					request.UsePP = 0
+				}
+			}
+			if levelResult.GoldUsed > 0 {
+				request.UseGold -= levelResult.GoldUsed
+				// Sicherstellen, dass Gold nicht unter 0 fällt
+				if request.UseGold < 0 {
+					request.UseGold = 0
+				}
+			}
+			response = append(response, levelResult)
+		}
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// calculateCostNewSystem berechnet die Kosten für ein Level mit dem neuen Datenbank-System
+func CalculateSkillImproveCostNewSystem(request *gsmaster.LernCostRequest, result *gsmaster.SkillCostResultNew, targetLevel int, remainingPP *int, remainingGold *int, skillInfo *models.SkillLearningInfo) error {
+	// 1. Hole die TE-Kosten für die Verbesserung vom aktuellen Level
+	teRequired, err := models.GetImprovementCost(skillInfo.SkillName, skillInfo.CategoryName, skillInfo.DifficultyName, targetLevel)
+	if err != nil {
+		return fmt.Errorf("verbesserungskosten nicht gefunden für %s (Level %d): %v", skillInfo.SkillName, targetLevel, err)
+	}
+
+	// 2. Hole die EP-Kosten pro TE für diese Klasse und Kategorie
+	if skillInfo.EPPerTE == 0 {
+		epPerTE, err := models.GetEPPerTEForClassAndCategory(result.CharacterClass, skillInfo.CategoryName)
+		if err != nil {
+			return fmt.Errorf("EP-Kosten pro TE nicht gefunden für Klasse %s, Kategorie %s: %v", result.CharacterClass, skillInfo.CategoryName, err)
+		}
+		skillInfo.EPPerTE = epPerTE
+	}
+
+	// 3. Setze die ursprünglichen TE-Kosten
+	trainCost := teRequired
+
+	// 4. Anwenden von Praxispunkten (PP) - Exakt wie im alten System
+	ppUsed := 0
+	if *remainingPP > 0 {
+		if trainCost < *remainingPP {
+			ppUsed = trainCost // Maximal so viele PP verwenden wie TE benötigt werden
+			trainCost = 0      // Wenn PP alle TE abdecken, setze trainCost auf 0
+		} else if *remainingPP > 0 {
+			ppUsed = *remainingPP // Verwende alle verfügbaren PP
+			trainCost -= ppUsed   // Reduziere TE um verwendete PP
+		}
+
+		result.PPUsed = ppUsed
+		*remainingPP -= ppUsed
+
+		if *remainingPP < 0 {
+			*remainingPP = 0
+		}
+	}
+
+	// 5. Berechne Kosten nach PP-Anwendung (wie im alten System)
+	result.LE = trainCost
+	result.EP = skillInfo.EPPerTE * trainCost
+	result.GoldCost = trainCost * 20 // Wie im alten System: 20 Gold pro TE
+
+	// 6. Anwenden von Belohnungen
+	if request.Reward != nil {
+		applyRewardNewSystem(result, request.Reward, result.EP)
+	}
+
+	// 7. Anwenden von Gold für EP (falls verfügbar) - Beschränkt auf EP/2
+	goldUsed := 0
+	if *remainingGold > 0 {
+		// 10 Gold = 1 EP, aber maximal EP/2 kann durch Gold ersetzt werden
+		maxEPFromGold := result.EP / 2
+		epFromGold := *remainingGold / 10
+
+		if epFromGold > maxEPFromGold {
+			// Beschränke auf maximal EP/2
+			epFromGold = maxEPFromGold
+			goldUsed = epFromGold * 10
+		} else {
+			// Verwende das verfügbare Gold
+			goldUsed = *remainingGold
+		}
+
+		// Reduziere EP um die durch Gold ersetzte Menge
+		result.EP -= epFromGold
+		result.GoldUsed = goldUsed
+		*remainingGold -= goldUsed
+
+		if *remainingGold < 0 {
+			*remainingGold = 0
+		}
+	}
+
+	return nil
+}
+
+// calculateSkillLearnCostNewSystem berechnet die Kosten für das Erlernen einer Fertigkeit (Action: "learn", Type: "skill")
+func calculateSkillLearnCostNewSystem(request *gsmaster.LernCostRequest, result *gsmaster.SkillCostResultNew, remainingPP *int, remainingGold *int, skillInfo *models.SkillLearningInfo) error {
+	// 1. Hole die EP-Kosten pro TE für diese Klasse und Kategorie
+	epPerTE, err := models.GetEPPerTEForClassAndCategory(result.CharacterClass, skillInfo.CategoryName)
+	if err != nil {
+		return fmt.Errorf("EP-Kosten pro TE nicht gefunden für Klasse %s, Kategorie %s: %v", result.CharacterClass, skillInfo.CategoryName, err)
+	}
+
+	// 2. Verwende die Lernkosten (LE) direkt aus der skillInfo - diese enthält bereits alle benötigten Informationen
+	learnCost := skillInfo.LearnCost
+
+	// 3. Berechne Kosten nach Lernregeln (wie im alten System)
+	result.LE = learnCost
+	result.EP = epPerTE * result.LE * 3 // Faktor 3 beim Lernen!
+	result.GoldCost = result.LE * 200   // 200 Gold pro LE (nicht 20 Gold pro TE)
+
+	// 4. Anwenden von Belohnungen
+	if request.Reward != nil {
+		applyRewardNewSystem(result, request.Reward, result.EP)
+	}
+
+	// 5. Für Skill-Lernen: Keine PP oder Gold-für-EP Anwendung erlaubt (im Gegensatz zu Spell-Lernen)
+	// PP und Gold bleiben unverändert, da sie bei Skill-Lernen nicht verwendet werden
+
+	return nil
+}
+
+// applyRewardNewSystem wendet Belohnungen auf die Kosten an (neues System)
+func applyRewardNewSystem(result *gsmaster.SkillCostResultNew, reward *string, originalEP int) {
+	if reward == nil || *reward == "" {
+		return
+	}
+
+	switch *reward {
+	case "noGold":
+		// Kostenlose Fertigkeiten: Nur Geld ist 0, EP bleiben
+		result.GoldCost = 0
+
+	case "halveep":
+		// Halbe EP für Verbesserungen
+		result.EP = result.EP / 2
+
+	case "halveepnoGold":
+		// Halbe EP und kein Gold
+		result.EP = result.EP / 2
+		result.GoldCost = 0
+
+	case "default":
+		// Keine Änderungen
+		break
+
+	default:
+		// Unbekannte Belohnung - ignorieren
+		break
+	}
+}
+
+// calculateSpellLearnCostNewSystem berechnet die Kosten für das Erlernen eines Zaubers (Action: "learn", Type: "spell")
+func calculateSpellLearnCostNewSystem(request *gsmaster.LernCostRequest, result *gsmaster.SkillCostResultNew, remainingPP *int, remainingGold *int, spellInfo *models.SpellLearningInfo) error {
+	// 1. Setze die grundlegenden Zauber-Informationen
+	result.Category = spellInfo.SchoolName
+	result.Difficulty = fmt.Sprintf("Stufe %d", spellInfo.SpellLevel)
+
+	// 2. Berechne die LE-Kosten basierend auf der Zaubergrad
+	leRequired := spellInfo.LERequired
+
+	// 3. Anwenden von PP (Practice Points): 1 PP = 1 LE Reduktion (bei Zauber-Lernen erlaubt)
+	ppUsed := 0
+	if *remainingPP > 0 {
+		if leRequired <= *remainingPP {
+			ppUsed = leRequired // Maximal so viele PP verwenden wie LE benötigt werden
+			leRequired = 0      // Wenn PP alle LE abdecken
+		} else {
+			ppUsed = *remainingPP // Verwende alle verfügbaren PP
+			leRequired -= ppUsed  // Reduziere LE um verwendete PP
+		}
+
+		result.PPUsed = ppUsed
+		*remainingPP -= ppUsed
+
+		if *remainingPP < 0 {
+			*remainingPP = 0
+		}
+	}
+
+	// 4. Setze die finalen LE-Kosten
+	result.LE = leRequired
+
+	// 5. Berechne EP-Kosten basierend auf LE und EP-pro-LE für diese Klasse/Schule
+	result.EP = result.LE * spellInfo.EPPerLE
+
+	// 6. Berechne Gold-Kosten (Beispiel: 100 Gold pro LE wie im alten System)
+	result.GoldCost = result.LE * 100
+
+	// 7. Anwenden von Belohnungen (spruchrolle, halveep, etc.)
+	if request.Reward != nil {
+		applySpellRewardNewSystem(result, request.Reward)
+	}
+
+	// 8. Gold-für-EP Konvertierung für Zauber-Lernen (erlaubt)
+	goldUsed := 0
+	if *remainingGold > 0 {
+		// 10 Gold = 1 EP, aber maximal EP/2 kann durch Gold ersetzt werden
+		maxEPFromGold := result.EP / 2
+		epFromGold := *remainingGold / 10
+
+		if epFromGold > maxEPFromGold {
+			// Beschränke auf maximal EP/2
+			epFromGold = maxEPFromGold
+			goldUsed = epFromGold * 10
+		} else {
+			// Verwende das verfügbare Gold
+			goldUsed = *remainingGold
+		}
+
+		// Reduziere EP um die durch Gold ersetzte Menge
+		result.EP -= epFromGold
+		result.GoldUsed = goldUsed
+		*remainingGold -= goldUsed
+
+		if *remainingGold < 0 {
+			*remainingGold = 0
+		}
+	}
+
+	return nil
+}
+
+// applySpellRewardNewSystem wendet zauber-spezifische Belohnungen an
+func applySpellRewardNewSystem(result *gsmaster.SkillCostResultNew, reward *string) {
+	if reward == nil || *reward == "" {
+		return
+	}
+
+	switch *reward {
+	case "spruchrolle":
+		// Spruchrolle: 20 Gold für jeden Versuch und 1/3 EP-Kosten bei Erfolg
+		result.GoldCost = 20
+		result.EP = result.EP / 3
+
+	case "halveep":
+		// Halbe EP für Zauber-Lernen
+		result.EP = result.EP / 2
+
+	case "halveepnoGold":
+		// Halbe EP und kein Gold
+		result.EP = result.EP / 2
+		result.GoldCost = 0
+
+	case "noGold":
+		// Nur Geld ist 0, EP bleiben
+		result.GoldCost = 0
+
+	case "default":
+		// Keine Änderungen
+		break
+
+	default:
+		// Unbekannte Belohnung - ignorieren
+		break
+	}
 }
 
 // GetSkillCost berechnet die Kosten zum Erlernen oder Verbessern einer Fertigkeit
@@ -120,7 +536,7 @@ func GetSkillCost(c *gin.Context) {
 	charID := c.Param("id")
 
 	// Charakter aus der Datenbank laden
-	var character Char
+	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
 		return
@@ -159,7 +575,7 @@ func GetSkillCost(c *gin.Context) {
 	}
 
 	// Single cost calculation
-	cost, originalCost, skillInfo, err := calculateSingleCost(&character, &request)
+	cost, originalCost, skillInfo, err := calculateSingleCostOld(&character, &request)
 	if err != nil {
 		respondWithError(c, http.StatusBadRequest, "Fehler bei der Kostenberechnung: "+err.Error())
 		return
@@ -168,7 +584,7 @@ func GetSkillCost(c *gin.Context) {
 	// Originalkosten berechnen (ohne PP-Reduktion)
 	originalRequest := request
 	originalRequest.UsePP = 0
-	_, _, _, err = calculateSingleCost(&character, &originalRequest)
+	_, _, _, err = calculateSingleCostOld(&character, &originalRequest)
 	if err != nil {
 		respondWithError(c, http.StatusBadRequest, "Fehler bei der ursprünglichen Kostenberechnung: "+err.Error())
 		return
@@ -196,14 +612,14 @@ func GetSkillCost(c *gin.Context) {
 
 	// Belohnungsinformationen berechnen
 	var rewardApplied string
-	var savings *gsmaster.LearnCost
+	var savings *models.LearnCost
 	var goldUsedForEP int
 
 	if request.Reward != nil && request.Reward.Type != "" {
 		rewardApplied = request.Reward.Type
 
 		// Ersparnisse berechnen
-		savings = &gsmaster.LearnCost{
+		savings = &models.LearnCost{
 			Ep:    originalCost.Ep - cost.Ep,
 			LE:    originalCost.LE - cost.LE,
 			Money: originalCost.Money - cost.Money,
@@ -243,7 +659,7 @@ func GetSkillCost(c *gin.Context) {
 }
 
 // Helper function to get current skill level from character
-func getCurrentSkillLevel(character *Char, skillName, skillType string) int {
+func getCurrentSkillLevel(character *models.Char, skillName, skillType string) int {
 	switch skillType {
 	case "skill":
 		for _, skill := range character.Fertigkeiten {
@@ -264,33 +680,34 @@ func getCurrentSkillLevel(character *Char, skillName, skillType string) int {
 	return -1
 }
 
-// Helper function to calculate single cost
-func calculateSingleCost(character *Char, request *SkillCostRequest) (*gsmaster.LearnCost, *gsmaster.LearnCost, *skillInfo, error) {
-	var cost *gsmaster.LearnCost
+// calculateSingleCostOld is deprecated. Use calculateSkillLearnCostNewSystem or calculateSpellLearnCostNewSystem instead.
+// This function uses the old hardcoded learning cost system.
+func calculateSingleCostOld(character *models.Char, request *SkillCostRequest) (*models.LearnCost, *models.LearnCost, *skillInfo, error) {
+	var cost *models.LearnCost
 	var err error
 	var info skillInfo
 
 	switch {
 	case request.Action == "learn" && request.Type == "skill":
-		cost, err = gsmaster.CalculateDetailedSkillLearningCost(request.Name, character.Typ)
+		cost, err = gsmaster.CalculateDetailedSkillLearningCostOld(request.Name, character.Typ)
 		if err == nil {
-			info = getSkillInfo(request.Name, request.Type)
+			info = GetSkillInfoCategoryAndDifficultyOld(request.Name, request.Type)
 		}
 
 	case request.Action == "improve" && request.Type == "skill":
-		cost, err = gsmaster.CalculateDetailedSkillImprovementCost(request.Name, character.Typ, request.CurrentLevel)
+		cost, err = gsmaster.CalculateDetailedSkillImprovementCostOld(request.Name, character.Typ, request.CurrentLevel)
 		if err == nil {
-			info = getSkillInfo(request.Name, request.Type)
+			info = GetSkillInfoCategoryAndDifficultyOld(request.Name, request.Type)
 		}
 
 	case request.Action == "improve" && request.Type == "weapon":
-		cost, err = gsmaster.CalculateDetailedSkillImprovementCost(request.Name, character.Typ, request.CurrentLevel)
+		cost, err = gsmaster.CalculateDetailedSkillImprovementCostOld(request.Name, character.Typ, request.CurrentLevel)
 		if err == nil {
-			info = getSkillInfo(request.Name, request.Type)
+			info = GetSkillInfoCategoryAndDifficultyOld(request.Name, request.Type)
 		}
 
 	case request.Action == "learn" && request.Type == "spell":
-		cost, err = gsmaster.CalculateDetailedSpellLearningCost(request.Name, character.Typ)
+		cost, err = gsmaster.CalculateDetailedSpellLearningCostOld(request.Name, character.Typ)
 		if err == nil {
 			info = getSpellInfo(request.Name)
 		}
@@ -315,7 +732,7 @@ func calculateSingleCost(character *Char, request *SkillCostRequest) (*gsmaster.
 		finalEP, finalLE, _ := applyPPReduction(request, cost, availablePP)
 
 		// Erstelle eine neue LearnCost mit den reduzierten Werten
-		cost = &gsmaster.LearnCost{
+		cost = &models.LearnCost{
 			Stufe: cost.Stufe,
 			LE:    finalLE,
 			Ep:    finalEP,
@@ -327,7 +744,7 @@ func calculateSingleCost(character *Char, request *SkillCostRequest) (*gsmaster.
 }
 
 // applyReward wendet Belohnungen auf die Kosten an
-func applyReward(cost *gsmaster.LearnCost, request *SkillCostRequest) *gsmaster.LearnCost {
+func applyReward(cost *models.LearnCost, request *SkillCostRequest) *models.LearnCost {
 	if request.Reward == nil || request.Reward.Type == "" {
 		return cost
 	}
@@ -377,7 +794,7 @@ func applyReward(cost *gsmaster.LearnCost, request *SkillCostRequest) *gsmaster.
 }
 
 // Helper function to calculate multi-level costs
-func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiLevelCostResponse {
+func calculateMultiLevelCost(character *models.Char, request *SkillCostRequest) *MultiLevelCostResponse {
 	if request.TargetLevel <= request.CurrentLevel {
 		return nil
 	}
@@ -400,7 +817,7 @@ func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiL
 			tempRequest.UsePP = 0
 		}
 
-		cost, originalCost, skillInfo, err := calculateSingleCost(character, &tempRequest)
+		cost, originalCost, skillInfo, err := calculateSingleCostOld(character, &tempRequest)
 		if err != nil {
 			continue
 		}
@@ -408,7 +825,7 @@ func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiL
 		// Originalkosten berechnen (ohne PP)
 		originalRequest := tempRequest
 		originalRequest.UsePP = 0
-		_, _, _, _ = calculateSingleCost(character, &originalRequest)
+		_, _, _, _ = calculateSingleCostOld(character, &originalRequest)
 
 		// PP-Informationen sammeln (fertigkeitsspezifisch)
 		availablePP := getPPForSkill(character, request.Name)
@@ -424,14 +841,14 @@ func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiL
 
 		// Belohnungsinformationen für Level berechnen
 		var rewardApplied string
-		var savings *gsmaster.LearnCost
+		var savings *models.LearnCost
 		var goldUsedForEP int
 
 		if tempRequest.Reward != nil && tempRequest.Reward.Type != "" {
 			rewardApplied = tempRequest.Reward.Type
 
 			// Ersparnisse berechnen
-			savings = &gsmaster.LearnCost{
+			savings = &models.LearnCost{
 				Ep:    originalCost.Ep - cost.Ep,
 				LE:    originalCost.LE - cost.LE,
 				Money: originalCost.Money - cost.Money,
@@ -470,7 +887,7 @@ func calculateMultiLevelCost(character *Char, request *SkillCostRequest) *MultiL
 		totalMoney += cost.Money
 	}
 
-	totalCost := &gsmaster.LearnCost{
+	totalCost := &models.LearnCost{
 		Stufe: request.TargetLevel,
 		LE:    0,
 		Ep:    totalEP,
@@ -495,8 +912,10 @@ type skillInfo struct {
 	Difficulty string
 }
 
-func getSkillInfo(skillName, skillType string) skillInfo {
-	var skill gsmaster.Skill
+// GetSkillInfoCategoryAndDifficultyOld is deprecated. Use models.GetSkillCategoryAndDifficulty instead.
+// This function uses the old hardcoded skill categorization system.
+func GetSkillInfoCategoryAndDifficultyOld(skillName, skillType string) skillInfo {
+	var skill models.Skill
 	if err := skill.First(skillName); err != nil {
 		return skillInfo{Category: "unknown", Difficulty: "unknown"}
 	}
@@ -507,28 +926,28 @@ func getSkillInfo(skillName, skillType string) skillInfo {
 
 	if category == "" {
 		// Standard-Kategorien basierend auf Skill-Namen
-		category = gsmaster.GetDefaultCategory(skillName)
+		category = gsmaster.GetDefaultCategoryOld(skillName)
 	}
 
 	if difficulty == "" {
 		// Standard-Schwierigkeit für verschiedene Skills
-		difficulty = gsmaster.GetDefaultDifficulty(skillName)
+		difficulty = gsmaster.GetDefaultDifficultyOld(skillName)
 	}
 
 	return skillInfo{Category: category, Difficulty: difficulty}
 }
 
 func getSpellInfo(spellName string) skillInfo {
-	var spell gsmaster.Spell
+	var spell models.Spell
 	if err := spell.First(spellName); err != nil {
 		return skillInfo{Category: "unknown", Difficulty: "unknown"}
 	}
 	return skillInfo{Category: spell.Category, Difficulty: strconv.Itoa(spell.Stufe)}
 }
 
-func canCharacterAfford(character *Char, cost *gsmaster.LearnCost) bool {
+func canCharacterAfford(character *models.Char, cost *models.LearnCost) bool {
 	// Check if character has enough EP
-	if character.Erfahrungsschatz.Value < cost.Ep {
+	if character.Erfahrungsschatz.EP < cost.Ep {
 		return false
 	}
 
@@ -538,7 +957,7 @@ func canCharacterAfford(character *Char, cost *gsmaster.LearnCost) bool {
 	return totalMoney >= cost.Money
 }
 
-func generateNotes(character *Char, request *SkillCostRequest, cost *gsmaster.LearnCost) string {
+func generateNotes(character *models.Char, request *SkillCostRequest, cost *models.LearnCost) string {
 	var notes []string
 
 	if request.Action == "learn" {
@@ -566,9 +985,9 @@ func generateNotes(character *Char, request *SkillCostRequest, cost *gsmaster.Le
 }
 
 // getPPForSkill ermittelt die verfügbaren Praxispunkte für eine spezifische Fertigkeit
-func getPPForSkill(character *Char, skillName string) int {
+func getPPForSkill(character *models.Char, skillName string) int {
 	// Ermittle die tatsächliche Fertigkeit (bei Zaubern die Zaubergruppe)
-	targetSkillName := getSpellCategory(skillName)
+	targetSkillName := getSpellCategoryNewSystem(skillName)
 
 	for _, fertigkeit := range character.Fertigkeiten {
 		if fertigkeit.Name == targetSkillName {
@@ -579,7 +998,7 @@ func getPPForSkill(character *Char, skillName string) int {
 }
 
 // applyPPReduction reduziert die Kosten entsprechend der verwendeten Praxispunkte
-func applyPPReduction(request *SkillCostRequest, cost *gsmaster.LearnCost, availablePP int) (int, int, int) {
+func applyPPReduction(request *SkillCostRequest, cost *models.LearnCost, availablePP int) (int, int, int) {
 	if request.UsePP <= 0 {
 		return cost.Ep, cost.LE, 0
 	}
@@ -626,7 +1045,7 @@ func applyPPReduction(request *SkillCostRequest, cost *gsmaster.LearnCost, avail
 func CalcSkillLearnCost(req *gsmaster.LernCostRequest, skillCostInfo *gsmaster.SkillCostResultNew) error {
 	// Fallback-Werte für Skills ohne definierte Kategorie/Schwierigkeit
 
-	result, err := gsmaster.CalculateSkillLearningCosts(skillCostInfo.CharacterClass, skillCostInfo.Category, skillCostInfo.Difficulty)
+	result, err := gsmaster.CalculateSkillLearningCostsOld(skillCostInfo.CharacterClass, skillCostInfo.Category, skillCostInfo.Difficulty)
 	if err != nil {
 		return err
 	}

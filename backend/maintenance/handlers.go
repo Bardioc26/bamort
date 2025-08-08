@@ -1,21 +1,19 @@
 package maintenance
 
 import (
-	"bamort/character"
 	"bamort/database"
-	"bamort/equipment"
-	"bamort/gsmaster"
-	"bamort/importer"
-	"bamort/skills"
+	"bamort/models"
 	"bamort/user"
 	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // Constants for test data management
@@ -23,15 +21,6 @@ var (
 	testDataDir    = database.TestDataDir
 	preparedTestDB = database.PreparedTestDB
 )
-
-// init function to register the test data loader and migration callback
-// This callback mechanism is necessary to avoid circular imports between database and maintenance packages
-func init() {
-	database.SetTestDataLoader(func(targetDB *gorm.DB) error {
-		return LoadPredefinedTestDataFromFile(targetDB, preparedTestDB)
-	})
-	database.SetMigrationCallback(migrateAllStructures)
-}
 
 func respondWithError(c *gin.Context, status int, message string) {
 	c.JSON(status, gin.H{"error": message})
@@ -46,332 +35,236 @@ func migrateAllStructures(db *gorm.DB) error {
 	if err := user.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate user structures: %w", err)
 	}
-	if err := character.MigrateStructure(db); err != nil {
-		return fmt.Errorf("failed to migrate character structures: %w", err)
-	}
-	if err := gsmaster.MigrateStructure(db); err != nil {
+	if err := models.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate gsmaster structures: %w", err)
 	}
-	if err := equipment.MigrateStructure(db); err != nil {
-		return fmt.Errorf("failed to migrate equipment structures: %w", err)
-	}
-	if err := skills.MigrateStructure(db); err != nil {
-		return fmt.Errorf("failed to migrate skills structures: %w", err)
-	}
-	if err := importer.MigrateStructure(db); err != nil {
+
+	/*if err := importer.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate importer structures: %w", err)
+	}*/
+	return nil
+}
+
+func migrateDataIfNeeded(db *gorm.DB) error {
+	// Kopiere categorie nach learning_category für Spells, wenn learning_category leer ist
+	err := migrateSpellLearningCategories(db)
+	if err != nil {
+		return fmt.Errorf("failed to migrate spell learning categories: %w", err)
 	}
+
+	return nil
+}
+
+// migrateSpellLearningCategories kopiert categorie-Werte in learning_category wenn diese leer sind
+func migrateSpellLearningCategories(db *gorm.DB) error {
+	// SQL-Statement um categorie nach learning_category zu kopieren, wo learning_category leer oder NULL ist
+	sql := `
+		UPDATE gsm_spells 
+		SET learning_category = category 
+		WHERE (learning_category IS NULL OR learning_category = '') 
+		AND category IS NOT NULL 
+		AND category != ''
+	`
+
+	result := db.Exec(sql)
+	if result.Error != nil {
+		return fmt.Errorf("failed to update spell learning categories: %w", result.Error)
+	}
+
+	// Log der Anzahl der aktualisierten Datensätze
+	if result.RowsAffected > 0 {
+		fmt.Printf("Updated %d spell records with learning_category from categorie\n", result.RowsAffected)
+	}
+
 	return nil
 }
 
 func MakeTestdataFromLive(c *gin.Context) {
-	db := database.ConnectDatabase()
-	if db == nil {
-		respondWithError(c, http.StatusInternalServerError, "Failed to connect to DataBase")
+	liveDB := database.ConnectDatabase()
+	if liveDB == nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to connect to live database")
 		return
 	}
-	// Setup test database
-	var testDb *gorm.DB
-	var err error
 
-	testDb, err = gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	// Live-Datenbank in SQLite-Datei kopieren
+	backupFile := preparedTestDB
+	err := copyLiveDatabaseToFile(liveDB, backupFile)
 	if err != nil {
-		respondWithError(c, http.StatusInternalServerError, "Failed to connect to test database testDb: "+err.Error())
+		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to copy database: %v", err))
 		return
-	}
-
-	// Step 1: Migrate all structures to test database
-	err = migrateAllStructures(testDb)
-	if err != nil {
-		respondWithError(c, http.StatusInternalServerError, "Failed to migrate structures to test DB: "+err.Error())
-		return
-	}
-
-	// Step 2: Copy all data from live database to test database
-	copyStats, err := copyAllDataToTestDB(db, testDb)
-	if err != nil {
-		respondWithError(c, http.StatusInternalServerError, "Failed to copy data to test DB: "+err.Error())
-		return
-	}
-
-	// Step 3: Save test database to file for reuse
-	err = saveTestDatabaseToFile(testDb, preparedTestDB)
-	if err != nil {
-		respondWithError(c, http.StatusInternalServerError, "Failed to save test DB to file: "+err.Error())
-		return
-	}
-
-	// databases are set up and data copied
-
-	// cleanup test database
-	sqlDB, err := testDb.DB()
-	if err == nil {
-		sqlDB.Close()
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":        "Test data creation from live DB completed successfully",
-		"statistics":     copyStats,
-		"test_data_file": preparedTestDB,
-		"file_size_info": "Check file system for actual size",
+		"message":        "Live database copied to file successfully",
+		"test_data_file": backupFile,
 	})
 }
 
-// copyAllDataToTestDB copies all data from the live database to the test database
-// TODO can we make it more dynamic? Maybe use reflection to get all models?
-func copyAllDataToTestDB(liveDB, testDB *gorm.DB) (map[string]int, error) {
-	stats := make(map[string]int)
-
-	// Define all the model types that need to be copied
-	// Order matters due to foreign key constraints!
-
-	// Step 1: Copy base/lookup data first (no foreign keys)
-	count, err := copyTableDataWithCount(liveDB, testDB, &user.User{})
-	if err != nil {
-		return stats, err
-	}
-	stats["users"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.Skill{})
-	if err != nil {
-		return stats, err
-	}
-	stats["gsmaster_skills"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.WeaponSkill{})
-	if err != nil {
-		return stats, err
-	}
-	stats["gsmaster_weapon_skills"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.Spell{})
-	if err != nil {
-		return stats, err
-	}
-	stats["gsmaster_spells"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.Equipment{})
-	if err != nil {
-		return stats, err
-	}
-	stats["gsmaster_equipment"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.Weapon{})
-	if err != nil {
-		return stats, err
-	}
-	stats["gsmaster_weapons"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.Container{})
-	if err != nil {
-		return stats, err
-	}
-	stats["gsmaster_containers"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.Transportation{})
-	if err != nil {
-		return stats, err
-	}
-	stats["gsmaster_transportation"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &gsmaster.Believe{})
-	if err != nil {
-		return stats, err
-	}
-	stats["gsmaster_believes"] = count
-
-	// Step 2: Copy character data (depends on nothing)
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Char{})
-	if err != nil {
-		return stats, err
-	}
-	stats["characters"] = count
-
-	// Step 3: Copy character-dependent data
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Eigenschaft{})
-	if err != nil {
-		return stats, err
-	}
-	stats["character_eigenschaften"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Lp{})
-	if err != nil {
-		return stats, err
-	}
-	stats["character_lp"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Ap{})
-	if err != nil {
-		return stats, err
-	}
-	stats["character_ap"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.B{})
-	if err != nil {
-		return stats, err
-	}
-	stats["character_b"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Merkmale{})
-	if err != nil {
-		return stats, err
-	}
-	stats["character_merkmale"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Erfahrungsschatz{})
-	if err != nil {
-		return stats, err
-	}
-	stats["character_erfahrungsschatz"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Bennies{})
-	if err != nil {
-		return stats, err
-	}
-	stats["character_bennies"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &character.Vermoegen{})
-	if err != nil {
-		return stats, err
-	}
-	stats["character_vermoegen"] = count
-
-	// Step 4: Copy skills (depends on characters)
-	count, err = copyTableDataWithCount(liveDB, testDB, &skills.Fertigkeit{})
-	if err != nil {
-		return stats, err
-	}
-	stats["skills_fertigkeiten"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &skills.Waffenfertigkeit{})
-	if err != nil {
-		return stats, err
-	}
-	stats["skills_waffenfertigkeiten"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &skills.Zauber{})
-	if err != nil {
-		return stats, err
-	}
-	stats["skills_zauber"] = count
-
-	// Step 5: Copy equipment (depends on characters)
-	count, err = copyTableDataWithCount(liveDB, testDB, &equipment.Ausruestung{})
-	if err != nil {
-		return stats, err
-	}
-	stats["equipment_ausruestung"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &equipment.Waffe{})
-	if err != nil {
-		return stats, err
-	}
-	stats["equipment_waffen"] = count
-
-	count, err = copyTableDataWithCount(liveDB, testDB, &equipment.Container{})
-	if err != nil {
-		return stats, err
-	}
-	stats["equipment_containers"] = count
-
-	return stats, nil
+// CopyLiveDatabaseToFile kopiert die MariaDB-Datenbank in eine SQLite-Datei (exported for testing)
+func CopyLiveDatabaseToFile(liveDB *gorm.DB, targetFile string) error {
+	return copyLiveDatabaseToFile(liveDB, targetFile)
 }
 
-// copyTableDataWithCount copies all records from one table to another and returns the count
-func copyTableDataWithCount(liveDB, testDB *gorm.DB, model interface{}) (int, error) {
-	// Get all records from live database using the actual model type
-	// This prevents GORM from modifying our data during Create operations
+// copyLiveDatabaseToFile kopiert die MariaDB-Datenbank in eine SQLite-Datei
+func copyLiveDatabaseToFile(liveDB *gorm.DB, targetFile string) error {
+	// Verzeichnis erstellen falls es nicht existiert
+	dir := filepath.Dir(targetFile)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("failed to create directory: %w", err)
+	}
+
+	// Backup der existierenden Datei erstellen
+	if _, err := os.Stat(targetFile); err == nil {
+		backupFile := targetFile + ".backup"
+		os.Remove(backupFile) // Alte Backup entfernen
+		if err := os.Rename(targetFile, backupFile); err != nil {
+			return fmt.Errorf("failed to backup existing file: %w", err)
+		}
+	}
+
+	// SQLite-Zieldatenbank erstellen
+	targetDB, err := gorm.Open(sqlite.Open(targetFile), &gorm.Config{})
+	if err != nil {
+		return fmt.Errorf("failed to create target SQLite database: %w", err)
+	}
+	defer func() {
+		if sqlDB, err := targetDB.DB(); err == nil {
+			sqlDB.Close()
+		}
+	}()
+
+	// Strukturen in SQLite-DB migrieren
+	if err := migrateAllStructures(targetDB); err != nil {
+		return fmt.Errorf("failed to migrate structures to SQLite: %w", err)
+	}
+
+	// Daten von MariaDB zu SQLite kopieren
+	if err := copyMariaDBToSQLite(liveDB, targetDB); err != nil {
+		return fmt.Errorf("failed to copy data from MariaDB to SQLite: %w", err)
+	}
+
+	return nil
+}
+
+// copyMariaDBToSQLite kopiert alle Daten von MariaDB zu SQLite
+func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
+	// Vollständige Liste aller Strukturen mit GORM-Tags in der richtigen Reihenfolge
+	// (Basis-Tabellen zuerst wegen Foreign Key-Abhängigkeiten)
+	tables := []interface{}{
+		// Basis-Strukturen (keine Abhängigkeiten)
+		&user.User{},
+
+		// Learning Costs System - Basis
+		&models.Source{},
+		&models.CharacterClass{},
+		&models.SkillCategory{},
+		&models.SkillDifficulty{},
+		&models.SpellSchool{},
+
+		// Learning Costs System - Abhängige Tabellen
+		&models.ClassCategoryEPCost{},
+		&models.ClassSpellSchoolEPCost{},
+		&models.SpellLevelLECost{},
+		&models.SkillCategoryDifficulty{},
+		&models.SkillImprovementCost{},
+
+		// GSMaster Basis-Daten
+		//&models.LookupList{}, // Basis für Skills, Spells, Equipment
+		&models.Skill{},
+		&models.WeaponSkill{},
+		&models.Spell{},
+		&models.Equipment{},
+		&models.Weapon{},
+		&models.Container{},
+		&models.Transportation{},
+		&models.Believe{},
+
+		// Charaktere (Basis)
+		&models.Char{},
+
+		// Charakter-Eigenschaften (abhängig von Char)
+		&models.Eigenschaft{},
+		&models.Lp{},
+		&models.Ap{},
+		&models.B{},
+		&models.Merkmale{},
+		&models.Erfahrungsschatz{},
+		&models.Bennies{},
+		&models.Vermoegen{},
+
+		// Charakter-Skills (abhängig von Char und Skills)
+		&models.SkFertigkeit{},
+		&models.SkWaffenfertigkeit{},
+		&models.SkAngeboreneFertigkeit{},
+		&models.SkZauber{},
+
+		// Charakter-Equipment (abhängig von Char und Equipment)
+		&models.EqAusruestung{},
+		&models.EqWaffe{},
+		&models.EqContainer{},
+
+		// View-Strukturen ohne eigene Tabellen werden nicht kopiert:
+		// SkillLearningInfo, SpellLearningInfo, CharList, FeChar, etc.
+	}
+
+	for _, model := range tables {
+		if err := copyTableData(mariaDB, sqliteDB, model); err != nil {
+			return fmt.Errorf("failed to copy table data for %T: %w", model, err)
+		}
+	}
+
+	return nil
+}
+
+// copyTableData kopiert alle Daten einer Tabelle von MariaDB zu SQLite
+func copyTableData(sourceDB, targetDB *gorm.DB, model interface{}) error {
+	// Anzahl der Datensätze prüfen
 	var count int64
-	if err := liveDB.Model(model).Count(&count).Error; err != nil {
-		return 0, err
+	err := sourceDB.Model(model).Count(&count).Error
+	if err != nil {
+		// If table doesn't exist, skip silently (useful for testing with partial schemas)
+		if isTableNotExistError(err) {
+			return nil
+		}
+		return err
 	}
 
-	// If no records, skip (this is normal for some tables)
 	if count == 0 {
-		return 0, nil
+		return nil // Keine Daten zu kopieren
 	}
 
-	// Process records in batches to avoid memory issues with large tables
+	// Daten in Blöcken kopieren (für große Tabellen)
 	batchSize := 100
-	totalProcessed := 0
-
 	for offset := 0; offset < int(count); offset += batchSize {
-		// Get a fresh batch of records for each iteration
 		var records []map[string]interface{}
-		if err := liveDB.Model(model).Offset(offset).Limit(batchSize).Find(&records).Error; err != nil {
-			return totalProcessed, err
+
+		// Batch aus MariaDB lesen
+		if err := sourceDB.Model(model).Offset(offset).Limit(batchSize).Find(&records).Error; err != nil {
+			return err
 		}
 
 		if len(records) == 0 {
 			break
 		}
 
-		// Insert the batch into test database
-		if err := testDB.Model(model).Create(&records).Error; err != nil {
-			// If batch insert fails, try individual inserts to identify problematic records
-			for _, record := range records {
-				if err := testDB.Model(model).Create(&record).Error; err != nil {
-					return totalProcessed, err
-				}
-				totalProcessed++
-			}
-		} else {
-			totalProcessed += len(records)
-		}
-	}
-
-	return totalProcessed, nil
-}
-
-// saveTestDatabaseToFile saves the in-memory test database to a file
-func saveTestDatabaseToFile(testDB *gorm.DB, filename string) error {
-	// Create the directory if it doesn't exist
-	dir := filepath.Dir(filename)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("failed to create directory %s: %w", dir, err)
-	}
-
-	// Handle existing file by creating a backup
-	backupFilename := filename + ".backup"
-	fileExists := false
-
-	// Check if the target file exists
-	if _, err := os.Stat(filename); err == nil {
-		fileExists = true
-		// Remove any existing backup file first
-		if _, err := os.Stat(backupFilename); err == nil {
-			if err := os.Remove(backupFilename); err != nil {
-				return fmt.Errorf("failed to remove existing backup file %s: %w", backupFilename, err)
-			}
-		}
-		// Rename existing file to backup
-		if err := os.Rename(filename, backupFilename); err != nil {
-			return fmt.Errorf("failed to create backup of existing file %s: %w", filename, err)
-		}
-	}
-
-	// For SQLite in-memory databases, we need to backup to a file
-	// We'll use SQLite's backup API through a raw SQL command
-	backupSQL := fmt.Sprintf("VACUUM INTO '%s'", filename)
-	if err := testDB.Exec(backupSQL).Error; err != nil {
-		// If VACUUM INTO fails and we created a backup, restore it
-		if fileExists {
-			if restoreErr := os.Rename(backupFilename, filename); restoreErr != nil {
-				return fmt.Errorf("failed to backup database to file: %w (and failed to restore backup: %v)", err, restoreErr)
-			}
-		}
-		return fmt.Errorf("failed to backup database to file: %w", err)
-	}
-
-	// VACUUM INTO succeeded, remove the backup file if it exists
-	if fileExists {
-		if err := os.Remove(backupFilename); err != nil {
-			// Log the error but don't fail the operation since the main task succeeded
-			fmt.Printf("Warning: failed to remove backup file %s: %v\n", backupFilename, err)
+		// Batch in SQLite einfügen mit Konflikt-Behandlung
+		// Verwende Clauses.OnConflict um bestehende Datensätze zu ersetzen
+		if err := targetDB.Model(model).Clauses(clause.OnConflict{
+			UpdateAll: true,
+		}).Create(&records).Error; err != nil {
+			return err
 		}
 	}
 
 	return nil
+}
+
+// isTableNotExistError checks if the error indicates a table doesn't exist
+func isTableNotExistError(err error) bool {
+	errorMsg := err.Error()
+	return strings.Contains(errorMsg, "no such table") ||
+		strings.Contains(errorMsg, "doesn't exist") ||
+		strings.Contains(errorMsg, "Table") && strings.Contains(errorMsg, "doesn't exist")
 }
 
 // LoadPredefinedTestDataFromFile loads predefined test data from a specific file into the provided database
@@ -469,15 +362,15 @@ func getTestDataStatistics(db *gorm.DB) (map[string]int64, error) {
 	// Count records in each table
 	tables := map[string]interface{}{
 		"users":                     &user.User{},
-		"characters":                &character.Char{},
-		"gsmaster_skills":           &gsmaster.Skill{},
-		"gsmaster_spells":           &gsmaster.Spell{},
-		"gsmaster_equipment":        &gsmaster.Equipment{},
-		"skills_fertigkeiten":       &skills.Fertigkeit{},
-		"skills_waffenfertigkeiten": &skills.Waffenfertigkeit{},
-		"skills_zauber":             &skills.Zauber{},
-		"equipment_ausruestung":     &equipment.Ausruestung{},
-		"equipment_waffen":          &equipment.Waffe{},
+		"characters":                &models.Char{},
+		"gsmaster_skills":           &models.Skill{},
+		"gsmaster_spells":           &models.Spell{},
+		"gsmaster_equipment":        &models.Equipment{},
+		"skills_fertigkeiten":       &models.SkFertigkeit{},
+		"skills_waffenfertigkeiten": &models.SkWaffenfertigkeit{},
+		"skills_zauber":             &models.SkZauber{},
+		"equipment_ausruestung":     &models.EqAusruestung{},
+		"equipment_waffen":          &models.EqWaffe{},
 	}
 
 	for name, model := range tables {
@@ -502,5 +395,41 @@ func SetupCheck(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	err = migrateDataIfNeeded(db)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to migrate data: " + err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"message": "Setup Check OK"})
 }
+
+/*
+// InitializeLearningCosts initialisiert das Lernkosten-System
+// Wird danach nicht mehr benötigt
+func InitializeLearningCosts(c *gin.Context) {
+	err := gsmaster.InitializeLearningCostsSystem()
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to initialize learning costs: %v", err))
+		return
+	}
+
+	// Validierung
+	if err := gsmaster.ValidateLearningCostsData(); err != nil {
+		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Learning costs initialized but validation failed: %v", err))
+		return
+	}
+
+	// Zusammenfassung
+	summary, err := gsmaster.GetLearningCostsSummary()
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to get summary: %v", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Learning costs system initialized successfully",
+		"summary": summary,
+	})
+}
+*/

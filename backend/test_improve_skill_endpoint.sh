@@ -12,7 +12,7 @@ curl -X GET http://localhost:8180/api/characters/20/improve/skill \
   }'
 
 echo -e "\n\nNote: This is a GET request with JSON body (unusual API design)"
-echo "The endpoint returns an array of gsmaster.LearnCost objects with fields:"
+echo "The endpoint returns an array of models.LearnCost objects with fields:"
 echo "- stufe: target level"
 echo "- ep: experience points cost"
 echo "- money: money cost"

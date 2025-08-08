@@ -11,7 +11,7 @@ func TestLerntabellenForHexer(t *testing.T) {
 	// Testfall für Menschenkenntnis als Hexer - Lernkosten
 	t.Run("Lernkosten für Menschenkenntnis als Hexer", func(t *testing.T) {
 		// Verwende die exportierte Funktion CalculateDetailedSkillLearningCost
-		result, err := CalculateDetailedSkillLearningCost("Menschenkenntnis", "Hexer")
+		result, err := CalculateDetailedSkillLearningCostOld("Menschenkenntnis", "Hexer")
 		assert.NoError(t, err, "CalculateDetailedSkillLearningCost sollte keinen Fehler zurückgeben")
 		assert.NotNil(t, result, "Ergebnis sollte nicht nil sein")
 
@@ -34,7 +34,7 @@ func TestLerntabellenForHexer(t *testing.T) {
 	t.Run("Verbesserungskosten für Menschenkenntnis als Hexer", func(t *testing.T) {
 		// Verwende die exportierte Funktion CalculateDetailedSkillImprovementCost
 		currentLevel := 10
-		result, err := CalculateDetailedSkillImprovementCost("Menschenkenntnis", "Hexer", currentLevel)
+		result, err := CalculateDetailedSkillImprovementCostOld("Menschenkenntnis", "Hexer", currentLevel)
 		assert.NoError(t, err, "CalculateDetailedSkillImprovementCost sollte keinen Fehler zurückgeben")
 		assert.NotNil(t, result, "Ergebnis sollte nicht nil sein")
 

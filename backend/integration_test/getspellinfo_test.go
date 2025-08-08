@@ -9,12 +9,9 @@ import (
 
 // TestGetSpellInfoIntegration tests the GetSpellInfo function with full database integration
 func TestGetSpellInfoIntegration(t *testing.T) {
-	// The maintenance package init() already sets up:
-	// database.SetTestDataLoader(LoadPredefinedTestDataFromFile)
-	// database.SetMigrationCallback(migrateAllStructures)
 
 	// Initialize test database with test data loading
-	database.SetupTestDB(true, true) // Use in-memory SQLite with test data
+	database.SetupTestDB(true) // Use in-memory SQLite with test data
 	defer database.ResetTestDB()
 
 	// Test with real spell names that should exist in the prepared test database
@@ -58,7 +55,7 @@ func TestGetSpellInfoIntegration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.spellName, func(t *testing.T) {
-			school, level, err := gsmaster.GetSpellInfo(tt.spellName)
+			school, level, err := gsmaster.GetSpellInfoNewSystem(tt.spellName)
 
 			if tt.expectError {
 				if err == nil {

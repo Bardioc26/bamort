@@ -2906,15 +2906,32 @@ func SearchBeliefs(c *gin.Context) {
 		return
 	}
 
-	// TODO: Datenbanksuche implementieren
-	// Dummy-Daten für Demo
-	allBeliefs := []string{
-		"Apshai", "Arthusos", "Beschützer", "Dwyllas", "Elfen",
-		"Fruchtbarkeitsgöttin", "Gaia", "Grafschafter", "Heiler",
-		"Jäger", "Kämpfer", "Lichbringer", "Meeresherr", "Natur",
-		"Ostküste", "Priester", "Rechtschaffener", "Schutzpatron",
-		"Stammesgeist", "Totengott", "Unterwelt", "Vater", "Weisheit",
-		"Xan", "Ylhoon", "Zauberer",
+	// Get game system from query parameter, default to "midgard"
+	gameSystem := c.DefaultQuery("game_system", "midgard")
+
+	// Load beliefs from database
+	believes, err := models.GetBelievesByActiveSources(gameSystem)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load beliefs from database"})
+		return
+	}
+
+	// Extract belief names and filter by query
+	var allBeliefs []string
+	for _, belief := range believes {
+		allBeliefs = append(allBeliefs, belief.Name)
+	}
+
+	// If no beliefs found in database, fall back to hardcoded list
+	if len(allBeliefs) == 0 {
+		allBeliefs = []string{
+			"Apshai", "Arthusos", "Beschützer", "Dwyllas", "Elfen",
+			"Fruchtbarkeitsgöttin", "Gaia", "Grafschafter", "Heiler",
+			"Jäger", "Kämpfer", "Lichbringer", "Meeresherr", "Natur",
+			"Ostküste", "Priester", "Rechtschaffener", "Schutzpatron",
+			"Stammesgeist", "Totengott", "Unterwelt", "Vater", "Weisheit",
+			"Xan", "Ylhoon", "Zauberer",
+		}
 	}
 
 	var results []string

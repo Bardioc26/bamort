@@ -44,7 +44,7 @@ func ConnectDatabase() *gorm.DB {
 	cfg := config.LoadConfig()
 
 	// In Test-Umgebung verwende Test-DB, sonst die konfigurierte Datenbank
-	if cfg.Environment == "test" {
+	if cfg.Environment == "test" || cfg.Testing == "yes" {
 		logger.Debug("Test-Umgebung erkannt, verwende Test-Datenbank")
 		SetupTestDB()
 	} else {

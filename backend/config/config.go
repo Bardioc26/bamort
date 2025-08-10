@@ -22,6 +22,8 @@ type Config struct {
 
 	// Environment
 	Environment string
+
+	Testing string // "yes" or "no", used to determine if we are in a test environment
 }
 
 // defaultConfig gibt die Standard-Konfiguration zurück
@@ -33,6 +35,7 @@ func defaultConfig() *Config {
 		DebugMode:    false,
 		LogLevel:     "INFO",
 		Environment:  "production",
+		Testing:      "no", // Default to "no", can be overridden in tests
 	}
 }
 
@@ -83,6 +86,12 @@ func LoadConfig() *Config {
 		if config.LogLevel == "INFO" {
 			config.LogLevel = "DEBUG"
 		}
+	}
+	// Testing  in Development
+	if testing := os.Getenv("TESTING"); testing != "" {
+		config.Testing = strings.ToLower(testing)
+	} else {
+		config.Testing = "no" // Default to "no"
 	}
 
 	return config

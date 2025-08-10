@@ -3,6 +3,7 @@ package character
 import (
 	"bamort/database"
 	"bamort/gsmaster"
+	"bamort/logger"
 	"bamort/models"
 	"strconv"
 	"strings"
@@ -23,16 +24,25 @@ type LearnRequestStruct struct {
 }
 
 func respondWithError(c *gin.Context, status int, message string) {
+	logger.Warn("HTTP Fehler %d: %s", status, message)
 	c.JSON(status, gin.H{"error": message})
 }
 
 func ListCharacters(c *gin.Context) {
+	logger.Debug("ListCharacters aufgerufen")
+
 	var characters []models.Char
 	var listOfChars []models.CharList
+
+	logger.Debug("Lade Charaktere aus der Datenbank...")
 	if err := database.DB.Find(&characters).Error; err != nil {
+		logger.Error("Fehler beim Laden der Charaktere: %s", err.Error())
 		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve characters")
 		return
 	}
+
+	logger.Debug("Gefundene Charaktere: %d", len(characters))
+
 	for i := range characters {
 		listOfChars = append(listOfChars, models.CharList{
 			BamortBase: models.BamortBase{
@@ -45,6 +55,8 @@ func ListCharacters(c *gin.Context) {
 			Owner: "test",
 		})
 	}
+
+	logger.Info("Charakterliste erfolgreich geladen: %d Charaktere", len(listOfChars))
 	c.JSON(http.StatusOK, listOfChars)
 }
 

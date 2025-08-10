@@ -2,9 +2,11 @@ package main
 
 import (
 	"bamort/character"
+	"bamort/config"
 	"bamort/database"
 	"bamort/gsmaster"
 	"bamort/importer"
+	"bamort/logger"
 	"bamort/maintenance"
 	"bamort/router"
 
@@ -18,24 +20,66 @@ import (
 // @BasePath /
 // @schemes http
 func main() {
+	// Konfiguration laden
+	cfg := config.LoadConfig()
+
+	// Logger konfigurieren
+	logger.SetDebugMode(cfg.DebugMode)
+	if cfg.LogLevel == "DEBUG" {
+		logger.SetMinLogLevel(logger.DEBUG)
+	} else if cfg.LogLevel == "WARN" {
+		logger.SetMinLogLevel(logger.WARN)
+	} else if cfg.LogLevel == "ERROR" {
+		logger.SetMinLogLevel(logger.ERROR)
+	} else {
+		logger.SetMinLogLevel(logger.INFO)
+	}
+
+	logger.Info("Bamort Server wird gestartet...")
+	logger.Debug("Debug-Modus ist aktiviert")
+	logger.Info("Environment: %s", cfg.Environment)
+	logger.Info("Server Port: %s", cfg.ServerPort)
+
+	// Gin-Modus basierend auf Environment setzen
+	if cfg.IsProduction() {
+		gin.SetMode(gin.ReleaseMode)
+		logger.Info("Gin läuft im Release-Modus")
+	} else {
+		gin.SetMode(gin.DebugMode)
+		logger.Debug("Gin läuft im Debug-Modus")
+	}
+
+	// Datenbank verbinden
+	logger.Debug("Verbinde mit Datenbank...")
 	database.ConnectDatabase()
-	//database.DB.AutoMigrate(&models.User{}, &models.Character{}) // Add other models here
+	logger.Info("Datenbankverbindung erfolgreich")
 
 	// Migrate Audit-Log table
+	logger.Debug("Führe Audit-Log Migration durch...")
 	if err := character.MigrateAuditLog(); err != nil {
+		logger.Error("Fehler bei Audit-Log Migration: %s", err.Error())
 		panic("Failed to migrate audit log table: " + err.Error())
 	}
+	logger.Debug("Audit-Log Migration erfolgreich")
 
 	r := gin.Default()
 	router.SetupGin(r)
 
-	// Routes
+	// Routes registrieren
+	logger.Debug("Registriere API-Routen...")
 	protected := router.BaseRouterGrp(r)
 	// Register your module routes
 	gsmaster.RegisterRoutes(protected)
 	character.RegisterRoutes(protected)
 	maintenance.RegisterRoutes(protected)
 	importer.RegisterRoutes(protected)
+	logger.Info("API-Routen erfolgreich registriert")
 
-	r.Run(":8180") // Start server on port 8080
+	// Server starten
+	serverAddress := cfg.GetServerAddress()
+	logger.Info("Server startet auf Adresse: %s", serverAddress)
+	if err := r.Run(serverAddress); err != nil {
+		logger.Error("Fehler beim Starten des Servers: %s", err.Error())
+		panic(err)
+	}
 }

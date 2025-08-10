@@ -12,6 +12,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// setupTestEnvironment setzt ENVIRONMENT=test für Tests
+func setupTestEnvironment(t *testing.T) {
+	original := os.Getenv("ENVIRONMENT")
+	os.Setenv("ENVIRONMENT", "test")
+	t.Cleanup(func() {
+		if original != "" {
+			os.Setenv("ENVIRONMENT", original)
+		} else {
+			os.Unsetenv("ENVIRONMENT")
+		}
+	})
+}
+
 // ReadImageAsBase64 reads an image file and returns it as a Base64 string
 // with the prefix "data:mimeType;base64,"
 func ReadImageAsBase64(filePath string) (string, error) {
@@ -746,6 +759,7 @@ func charTests(t *testing.T, char *models.Char) {
 }
 
 func TestCreateChar(t *testing.T) {
+	setupTestEnvironment(t)
 	database.SetupTestDB()
 	err := models.MigrateStructure()
 

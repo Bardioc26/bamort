@@ -13,7 +13,8 @@ type Config struct {
 	ServerPort string
 
 	// Database Konfiguration
-	DatabaseURL string
+	DatabaseURL  string
+	DatabaseType string
 
 	// Logging Konfiguration
 	DebugMode bool
@@ -26,11 +27,12 @@ type Config struct {
 // defaultConfig gibt die Standard-Konfiguration zurück
 func defaultConfig() *Config {
 	return &Config{
-		ServerPort:  "8180",
-		DatabaseURL: "",
-		DebugMode:   false,
-		LogLevel:    "INFO",
-		Environment: "production",
+		ServerPort:   "8180",
+		DatabaseURL:  "",
+		DatabaseType: "mysql",
+		DebugMode:    false,
+		LogLevel:     "INFO",
+		Environment:  "production",
 	}
 }
 
@@ -52,6 +54,9 @@ func LoadConfig() *Config {
 	// Database
 	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
 		config.DatabaseURL = dbURL
+	}
+	if dbType := os.Getenv("DATABASE_TYPE"); dbType != "" {
+		config.DatabaseType = strings.ToLower(dbType)
 	}
 
 	// Debug Mode

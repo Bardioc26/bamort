@@ -5,7 +5,21 @@ import (
 	"testing"
 )
 
+// setupTestEnvironment setzt ENVIRONMENT=test für Tests
+func setupTestEnvironment(t *testing.T) {
+	original := os.Getenv("ENVIRONMENT")
+	os.Setenv("ENVIRONMENT", "test")
+	t.Cleanup(func() {
+		if original != "" {
+			os.Setenv("ENVIRONMENT", original)
+		} else {
+			os.Unsetenv("ENVIRONMENT")
+		}
+	})
+}
+
 func TestLogLevels(t *testing.T) {
+	setupTestEnvironment(t)
 	// Test String-Representation der Log-Levels
 	tests := []struct {
 		level    LogLevel
@@ -25,6 +39,8 @@ func TestLogLevels(t *testing.T) {
 }
 
 func TestDebugModeFromEnv(t *testing.T) {
+	setupTestEnvironment(t)
+
 	// Test verschiedene Umgebungsvariablen-Werte
 	tests := []struct {
 		envValue string
@@ -55,6 +71,8 @@ func TestDebugModeFromEnv(t *testing.T) {
 }
 
 func TestMinLogLevelFromEnv(t *testing.T) {
+	setupTestEnvironment(t)
+
 	// Test verschiedene LOG_LEVEL Werte
 	tests := []struct {
 		envValue string
@@ -97,6 +115,8 @@ func TestMinLogLevelFromEnv(t *testing.T) {
 }
 
 func TestSetDebugMode(t *testing.T) {
+	setupTestEnvironment(t)
+
 	// Test Debug-Modus aktivieren
 	SetDebugMode(true)
 	if !IsDebugEnabled() {
@@ -111,6 +131,8 @@ func TestSetDebugMode(t *testing.T) {
 }
 
 func TestSetMinLogLevel(t *testing.T) {
+	setupTestEnvironment(t)
+
 	// Test verschiedene Log-Level setzen
 	levels := []LogLevel{DEBUG, INFO, WARN, ERROR}
 

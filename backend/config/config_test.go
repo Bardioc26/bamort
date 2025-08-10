@@ -5,7 +5,21 @@ import (
 	"testing"
 )
 
+// setupTestEnvironment setzt ENVIRONMENT=test für Tests und stellt es nach dem Test wieder her
+func setupTestEnvironment(t *testing.T) {
+	original := os.Getenv("ENVIRONMENT")
+	os.Setenv("ENVIRONMENT", "test")
+	t.Cleanup(func() {
+		if original != "" {
+			os.Setenv("ENVIRONMENT", original)
+		} else {
+			os.Unsetenv("ENVIRONMENT")
+		}
+	})
+}
+
 func TestLoadEnvFile(t *testing.T) {
+	setupTestEnvironment(t)
 	// Test-Datei erstellen
 	envContent := `# Test .env file
 DEBUG=true
@@ -97,6 +111,8 @@ QUOTED_VALUE='single quotes'
 }
 
 func TestEnvVariablesPrecedence(t *testing.T) {
+	setupTestEnvironment(t)
+
 	// Test, dass bereits gesetzte Umgebungsvariablen Vorrang haben
 	envContent := `DEBUG=false
 LOG_LEVEL=ERROR`
@@ -130,6 +146,8 @@ LOG_LEVEL=ERROR`
 }
 
 func TestLoadConfigWithEnvFile(t *testing.T) {
+	setupTestEnvironment(t)
+
 	// Test-Konfiguration mit .env-Datei
 	envContent := `ENVIRONMENT=development
 DEBUG=true

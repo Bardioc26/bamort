@@ -1,6 +1,8 @@
 package database
 
 import (
+	"bamort/config"
+	"bamort/logger"
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
@@ -10,6 +12,7 @@ import (
 	"log"
 
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -37,22 +40,56 @@ var (
 )
 
 func ConnectDatabase() *gorm.DB {
-	SetupTestDB()
-	/*
-		db, err := gorm.Open(sqlite.Open(PreparedTestDB), &gorm.Config{})
-		if err != nil {
-			log.Fatal("Failed to connect to database:", err)
-		}
-		DB = db
-	*/
+	// Konfiguration laden um zu entscheiden, welche Datenbank verwendet werden soll
+	cfg := config.LoadConfig()
+
+	// In Test-Umgebung verwende Test-DB, sonst die konfigurierte Datenbank
+	if cfg.Environment == "test" {
+		logger.Debug("Test-Umgebung erkannt, verwende Test-Datenbank")
+		SetupTestDB()
+	} else {
+		logger.Debug("Verwende konfigurierte Datenbank (%s)", cfg.DatabaseType)
+		return ConnectDatabaseOrig()
+	}
+
 	return DB
 }
 func ConnectDatabaseOrig() *gorm.DB {
-	dsn := "bamort:bG4)efozrc@tcp(192.168.0.5:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
-	database, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	// Konfiguration laden
+	cfg := config.LoadConfig()
+
+	logger.Debug("Datenbank-Konfiguration geladen: Type=%s, URL=%s", cfg.DatabaseType, cfg.DatabaseURL)
+
+	// Falls keine URL konfiguriert ist, verwende Standard-MySQL-Konfiguration als Fallback
+	dbURL := cfg.DatabaseURL
+	if dbURL == "" {
+		dbURL = "bamort:bG4)efozrc@tcp(192.168.0.5:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
+		logger.Warn("Keine DATABASE_URL konfiguriert, verwende Standard-MySQL-Konfiguration")
+		cfg.DatabaseType = "mysql"
+	}
+
+	var database *gorm.DB
+	var err error
+
+	// Datenbanktyp-spezifische Verbindung
+	switch cfg.DatabaseType {
+	case "mysql":
+		logger.Debug("Verbinde mit MySQL-Datenbank...")
+		database, err = gorm.Open(mysql.Open(dbURL), &gorm.Config{})
+	case "sqlite":
+		logger.Debug("Verbinde mit SQLite-Datenbank...")
+		database, err = gorm.Open(sqlite.Open(dbURL), &gorm.Config{})
+	default:
+		logger.Error("Nicht unterstützter Datenbanktyp: %s. Verwende MySQL als Fallback.", cfg.DatabaseType)
+		database, err = gorm.Open(mysql.Open(dbURL), &gorm.Config{})
+	}
+
 	if err != nil {
+		logger.Error("Fehler beim Verbinden mit der Datenbank (%s): %s", cfg.DatabaseType, err.Error())
 		log.Fatal("Failed to connect to database:", err)
 	}
+
+	logger.Info("Erfolgreich mit %s-Datenbank verbunden", cfg.DatabaseType)
 	DB = database
 	return DB
 }

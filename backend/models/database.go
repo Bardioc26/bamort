@@ -79,7 +79,6 @@ func characterMigrateStructure(db ...*gorm.DB) error {
 
 	err := targetDB.AutoMigrate(
 		&Char{},
-		&CharacterCreationSession{},
 		&Eigenschaft{},
 		&Lp{},
 		&Ap{},
@@ -88,6 +87,7 @@ func characterMigrateStructure(db ...*gorm.DB) error {
 		&Erfahrungsschatz{},
 		&Bennies{},
 		&Vermoegen{},
+		&CharacterCreationSession{},
 	)
 	if err != nil {
 		return err

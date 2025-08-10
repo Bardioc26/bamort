@@ -69,6 +69,11 @@ type CharacterCreationSpell struct {
 	Cost int    `json:"cost"`
 }
 
+func (object *CharacterCreationSession) TableName() string {
+	dbPrefix := "char"
+	return dbPrefix + "_" + "char_creation_session"
+}
+
 // Scanning methods for JSON fields in GORM
 func (a *AttributesData) Scan(value interface{}) error {
 	if value == nil {

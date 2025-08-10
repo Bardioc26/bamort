@@ -3,80 +3,99 @@
     <h2>Skills & Spells</h2>
     <p class="instruction">Select skills and spells for your character. Each category has a limited number of learning points.</p>
     
+    <!-- Debug Info -->
+    <div v-if="true" style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; font-size: 12px;">
+      <strong>Debug Info:</strong><br>
+      skillCategories.length: {{ skillCategories.length }}<br>
+      selectedCategory: {{ selectedCategory }}<br>
+      availableSkills.length: {{ availableSkills.length }}<br>
+      selectedSkills.length: {{ selectedSkills.length }}
+    </div>
+    
     <div class="skills-content">
-      <!-- Skill Categories -->
-      <div class="categories-section">
-        <h3>Skill Categories</h3>
-        <div class="categories-grid">
-          <div 
-            v-for="category in skillCategories" 
-            :key="category.name"
-            :class="['category-card', { active: selectedCategory === category.name }]"
-            @click="selectCategory(category.name)"
-            v-if="category.name !== 'zauber'"
-          >
-            <div class="category-header">
-              <h4>{{ category.display_name }}</h4>
-              <div class="points-info">
-                <span class="remaining">{{ category.points }}</span> / 
-                <span class="total">{{ category.max_points }}</span>
+      <!-- Left Column: Categories and Skills -->
+      <div class="left-column">
+        <!-- Skill Categories -->
+        <div class="categories-section">
+          <h3>Skill Categories</h3>
+          
+          <div v-if="skillCategories.length === 0" class="no-categories">
+            <p>No skill categories available. Loading...</p>
+          </div>
+          
+          <div v-else class="categories-grid">
+            <div 
+              v-for="category in skillCategories" 
+              :key="category.name"
+              :class="['category-card', { active: selectedCategory === category.name }]"
+              @click="selectCategory(category.name)"
+              v-if="category.name !== 'zauber'"
+            >
+              <div class="category-header">
+                <h4>{{ category.display_name }}</h4>
+                <div class="points-info">
+                  <span class="remaining">{{ category.points }}</span> / 
+                  <span class="total">{{ category.max_points }}</span>
+                </div>
+              </div>
+              <div class="progress-bar">
+                <div 
+                  class="progress-fill" 
+                  :style="{ width: ((category.max_points - category.points) / category.max_points * 100) + '%' }"
+                ></div>
               </div>
             </div>
-            <div class="progress-bar">
-              <div 
-                class="progress-fill" 
-                :style="{ width: ((category.max_points - category.points) / category.max_points * 100) + '%' }"
-              ></div>
-            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Skills List for Selected Category -->
-      <div v-if="selectedCategory" class="skills-section">
-        <h3>{{ getCategoryDisplayName(selectedCategory) }} Skills</h3>
-        <div class="skills-list">
-          <div 
-            v-for="skill in availableSkills" 
-            :key="skill.name"
-            class="skill-item"
-          >
-            <div class="skill-info">
-              <span class="skill-name">{{ skill.name }}</span>
-              <span class="skill-cost">Cost: {{ skill.cost }} EP</span>
-            </div>
-            <button 
-              @click="addSkill(skill)"
-              :disabled="!canAddSkill(skill)"
-              class="add-btn"
-            >
-              Add
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Selected Skills -->
-      <div class="selected-section">
-        <h3>Selected Skills</h3>
-        
-        <div v-if="selectedSkills.length > 0" class="selected-skills">
-          <div class="selected-list">
+        <!-- Skills List for Selected Category -->
+        <div v-if="selectedCategory" class="skills-section">
+          <h3>{{ getCategoryDisplayName(selectedCategory) }} Skills</h3>
+          <div class="skills-list">
             <div 
-              v-for="skill in selectedSkills" 
+              v-for="skill in availableSkills" 
               :key="skill.name"
-              class="selected-item"
+              class="skill-item"
             >
-              <span class="item-name">{{ skill.name }}</span>
-              <span class="item-category">{{ skill.category }}</span>
-              <span class="item-cost">{{ skill.cost }} EP</span>
-              <button @click="removeSkill(skill)" class="remove-btn">×</button>
+              <div class="skill-info">
+                <span class="skill-name">{{ skill.name }}</span>
+                <span class="skill-cost">Cost: {{ skill.cost }} EP</span>
+              </div>
+              <button 
+                @click="addSkill(skill)"
+                :disabled="!canAddSkill(skill)"
+                class="add-btn"
+              >
+                Add
+              </button>
             </div>
           </div>
         </div>
+      </div>
 
-        <div v-if="selectedSkills.length === 0" class="no-selection">
-          No skills selected yet. Click on a category above to start selecting skills.
+      <!-- Right Column: Selected Skills -->
+      <div class="right-column">
+        <div class="selected-section">
+          <h3>Selected Skills</h3>
+          
+          <div v-if="selectedSkills.length > 0" class="selected-skills">
+            <div class="selected-list">
+              <div 
+                v-for="skill in selectedSkills" 
+                :key="skill.name"
+                class="selected-item"
+              >
+                <span class="item-name">{{ skill.name }}</span>
+                <span class="item-category">{{ skill.category }}</span>
+                <span class="item-cost">{{ skill.cost }} EP</span>
+                <button @click="removeSkill(skill)" class="remove-btn">×</button>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="selectedSkills.length === 0" class="no-selection">
+            No skills selected yet. Click on a category above to start selecting skills.
+          </div>
         </div>
       </div>
     </div>
@@ -116,12 +135,17 @@ export default {
     }
   },
   async created() {
+    console.log('CharacterSkills created, sessionData:', this.sessionData)
+    console.log('CharacterSkills created, skillCategories:', this.skillCategories)
+    
     // Initialize with session data
     if (this.sessionData.skills) {
       this.selectedSkills = [...this.sessionData.skills]
+      console.log('Initialized selectedSkills:', this.selectedSkills)
     }
     
     this.updateCategoryPoints()
+    console.log('Updated skillCategories after points update:', this.skillCategories)
   },
   methods: {
     async selectCategory(categoryName) {
@@ -238,9 +262,21 @@ export default {
 
 .skills-content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 30px;
   margin-bottom: 30px;
+}
+
+.left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.right-column {
+  position: sticky;
+  top: 20px;
+  height: fit-content;
 }
 
 .categories-section h3, .skills-section h3, .spells-section h3, .selected-section h3 {
@@ -252,6 +288,13 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 15px;
+}
+
+.no-categories {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
 }
 
 .category-card {
@@ -386,10 +429,10 @@ export default {
 }
 
 .selected-section {
-  grid-column: span 2;
   padding: 20px;
   background-color: #f9f9f9;
   border-radius: 8px;
+  height: fit-content;
 }
 
 .selected-skills, .selected-spells {

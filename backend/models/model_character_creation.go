@@ -10,23 +10,23 @@ import (
 
 // CharacterCreationSession speichert den Fortschritt der Charakter-Erstellung
 type CharacterCreationSession struct {
-	ID            string                   `json:"id" gorm:"primaryKey"`
-	UserID        uint                     `json:"user_id" gorm:"index;not null"`
-	User          user.User                `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	Name          string                   `json:"name"`
-	Rasse         string                   `json:"rasse"`
-	Typ           string                   `json:"typ"`
-	Herkunft      string                   `json:"herkunft"`
-	Glaube        string                   `json:"glaube"`
-	Attributes    AttributesData           `json:"attributes" gorm:"type:json"`
-	DerivedValues DerivedValuesData        `json:"derived_values" gorm:"type:json"`
-	Skills        []CharacterCreationSkill `json:"skills" gorm:"type:json"`
-	Spells        []CharacterCreationSpell `json:"spells" gorm:"type:json"`
-	SkillPoints   SkillPointsData          `json:"skill_points" gorm:"type:json"`
-	CreatedAt     time.Time                `json:"created_at"`
-	UpdatedAt     time.Time                `json:"updated_at"`
-	ExpiresAt     time.Time                `json:"expires_at"`
-	CurrentStep   int                      `json:"current_step"` // 1=Basic, 2=Attributes, 3=Derived, 4=Skills
+	ID            string                  `json:"id" gorm:"primaryKey"`
+	UserID        uint                    `json:"user_id" gorm:"index;not null"`
+	User          user.User               `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Name          string                  `json:"name"`
+	Rasse         string                  `json:"rasse"`
+	Typ           string                  `json:"typ"`
+	Herkunft      string                  `json:"herkunft"`
+	Glaube        string                  `json:"glaube"`
+	Attributes    AttributesData          `json:"attributes" gorm:"type:text;serializer:json"`
+	DerivedValues DerivedValuesData       `json:"derived_values" gorm:"type:text;serializer:json"`
+	Skills        CharacterCreationSkills `json:"skills" gorm:"type:text;serializer:json"`
+	Spells        CharacterCreationSpells `json:"spells" gorm:"type:text;serializer:json"`
+	SkillPoints   SkillPointsData         `json:"skill_points" gorm:"type:text;serializer:json"`
+	CreatedAt     time.Time               `json:"created_at"`
+	UpdatedAt     time.Time               `json:"updated_at"`
+	ExpiresAt     time.Time               `json:"expires_at"`
+	CurrentStep   int                     `json:"current_step"` // 1=Basic, 2=Attributes, 3=Derived, 4=Skills
 }
 
 // AttributesData speichert die Grundwerte
@@ -67,6 +67,56 @@ type CharacterCreationSkill struct {
 type CharacterCreationSpell struct {
 	Name string `json:"name"`
 	Cost int    `json:"cost"`
+}
+
+// Slice types for GORM JSON handling
+type CharacterCreationSkills []CharacterCreationSkill
+type CharacterCreationSpells []CharacterCreationSpell
+
+// JSON scanning methods for Skills slice
+func (s *CharacterCreationSkills) Scan(value interface{}) error {
+	if value == nil {
+		*s = make([]CharacterCreationSkill, 0)
+		return nil
+	}
+
+	bytes, ok := value.([]byte)
+	if !ok {
+		*s = make([]CharacterCreationSkill, 0)
+		return nil
+	}
+
+	return json.Unmarshal(bytes, s)
+}
+
+func (s CharacterCreationSkills) Value() (interface{}, error) {
+	if len(s) == 0 {
+		return "[]", nil
+	}
+	return json.Marshal(s)
+}
+
+// JSON scanning methods for Spells slice
+func (sp *CharacterCreationSpells) Scan(value interface{}) error {
+	if value == nil {
+		*sp = make([]CharacterCreationSpell, 0)
+		return nil
+	}
+
+	bytes, ok := value.([]byte)
+	if !ok {
+		*sp = make([]CharacterCreationSpell, 0)
+		return nil
+	}
+
+	return json.Unmarshal(bytes, sp)
+}
+
+func (sp CharacterCreationSpells) Value() (interface{}, error) {
+	if len(sp) == 0 {
+		return "[]", nil
+	}
+	return json.Marshal(sp)
 }
 
 func (object *CharacterCreationSession) TableName() string {

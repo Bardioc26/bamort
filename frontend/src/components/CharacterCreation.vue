@@ -169,10 +169,64 @@ export default {
       }
     },
     
-    handleNext(data) {
+    async handleNext(data) {
+      // Merge the new data
       this.sessionData = { ...this.sessionData, ...data }
+      
+      // Save progress for current step before moving to next
+      await this.saveProgressForStep(this.currentStep, data)
+      
+      // Move to next step
       this.currentStep++
-      this.saveProgress()
+    },
+    
+    async saveProgressForStep(step, data) {
+      try {
+        const token = localStorage.getItem('token')
+        
+        let endpoint = ''
+        let payload = {}
+        
+        switch (step) {
+          case 1:
+            endpoint = `/api/characters/create-session/${this.sessionId}/basic`
+            payload = {
+              name: data.name || this.sessionData.name,
+              rasse: data.rasse || this.sessionData.rasse,
+              typ: data.typ || this.sessionData.typ,
+              herkunft: data.herkunft || this.sessionData.herkunft,
+              glaube: data.glaube || this.sessionData.glaube,
+            }
+            break
+          case 2:
+            endpoint = `/api/characters/create-session/${this.sessionId}/attributes`
+            payload = data.attributes || data
+            break
+          case 3:
+            endpoint = `/api/characters/create-session/${this.sessionId}/derived`
+            payload = data.derived_values || data
+            break
+          case 4:
+            endpoint = `/api/characters/create-session/${this.sessionId}/skills`
+            payload = {
+              skills: data.skills || this.sessionData.skills,
+              spells: data.spells || this.sessionData.spells,
+              skill_points: data.skill_points || this.sessionData.skill_points,
+            }
+            break
+        }
+        
+        if (endpoint) {
+          console.log('Saving progress for step', step, 'with payload:', payload)
+          const response = await API.put(endpoint, payload, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          console.log('Save response:', response.data)
+        }
+      } catch (error) {
+        console.error('Error saving progress for step', step, ':', error)
+        throw error // Re-throw to handle in calling function
+      }
     },
     
     handlePrevious() {
@@ -189,56 +243,8 @@ export default {
     },
     
     async saveProgress() {
-      try {
-        const token = localStorage.getItem('token')
-        
-        // Bestimme den korrekten Endpoint basierend auf dem aktuellen Schritt
-        let endpoint = ''
-        let payload = {}
-        
-        switch (this.currentStep) {
-          case 1:
-            endpoint = `/api/characters/create-session/${this.sessionId}/basic`
-            payload = {
-              name: this.sessionData.name,
-              rasse: this.sessionData.rasse,
-              typ: this.sessionData.typ,
-              herkunft: this.sessionData.herkunft,
-              glaube: this.sessionData.glaube,
-            }
-            break
-          case 2:
-            endpoint = `/api/characters/create-session/${this.sessionId}/attributes`
-            payload = this.sessionData.attributes
-            break
-          case 3:
-            endpoint = `/api/characters/create-session/${this.sessionId}/derived`
-            payload = this.sessionData.derived_values
-            break
-          case 4:
-            endpoint = `/api/characters/create-session/${this.sessionId}/skills`
-            payload = {
-              skills: this.sessionData.skills,
-              skill_points: this.sessionData.skill_points,
-            }
-            break
-          case 5:
-            endpoint = `/api/characters/create-session/${this.sessionId}/spells`
-            payload = {
-              spells: this.sessionData.spells,
-              spell_points: this.sessionData.spell_points,
-            }
-            break
-        }
-        
-        if (endpoint) {
-          await API.put(endpoint, payload, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-        }
-      } catch (error) {
-        console.error('Error saving progress:', error)
-      }
+      // Save progress for current step with current sessionData
+      await this.saveProgressForStep(this.currentStep, this.sessionData)
     },
     
     async handleFinalize() {

@@ -139,12 +139,17 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		if CheckToken(token) == nil {
+
+		user := CheckToken(token)
+		if user == nil {
 			respondWithError(c, http.StatusUnauthorized, "Unauthorized.")
 			c.Abort()
 			return
 		}
-		// Add token validation logic here
+
+		// Set user information in context
+		c.Set("userID", user.UserID)
+		c.Set("username", user.Username)
 
 		c.Next()
 	}

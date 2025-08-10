@@ -2370,14 +2370,26 @@ func calculateSkillLearningCostsOld(skill models.Skill, character models.Char, r
 
 // CreateCharacterSession erstellt eine neue Charakter-Erstellungssession
 func CreateCharacterSession(c *gin.Context) {
+	logger.Debug("CreateCharacterSession aufgerufen")
+
+	// Debug: Alle Kontext-Keys anzeigen
+	keys := make([]string, 0)
+	for key := range c.Keys {
+		keys = append(keys, fmt.Sprintf("%s=%v", key, c.Keys[key]))
+	}
+	logger.Debug("CreateCharacterSession: Verfügbare Kontext-Keys: [%s]", strings.Join(keys, ", "))
+
 	userID := c.GetUint("userID")
+	logger.Debug("CreateCharacterSession: UserID = %d", userID)
 
 	if userID == 0 {
+		logger.Warn("CreateCharacterSession: Unauthorized - UserID ist 0")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	sessionID := fmt.Sprintf("char_create_%d_%d", userID, time.Now().Unix())
+	logger.Debug("CreateCharacterSession: Generierte SessionID = %s", sessionID)
 
 	session := models.CharacterCreationSession{
 		ID:            sessionID,
@@ -2389,22 +2401,26 @@ func CreateCharacterSession(c *gin.Context) {
 		Glaube:        "",
 		Attributes:    models.AttributesData{},
 		DerivedValues: models.DerivedValuesData{},
-		Skills:        []models.CharacterCreationSkill{},
-		Spells:        []models.CharacterCreationSpell{},
+		Skills:        models.CharacterCreationSkills{},
+		Spells:        models.CharacterCreationSpells{},
 		SkillPoints:   models.SkillPointsData{},
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 		ExpiresAt:     time.Now().AddDate(0, 0, 14), // 14 Tage
 		CurrentStep:   1,
 	}
+	logger.Debug("CreateCharacterSession: Session-Struktur erstellt, ExpiresAt = %s", session.ExpiresAt.Format(time.RFC3339))
 
 	// Session in Datenbank speichern
+	logger.Debug("CreateCharacterSession: Speichere Session in Datenbank...")
 	err := database.DB.Create(&session).Error
 	if err != nil {
+		logger.Error("CreateCharacterSession: Fehler beim Erstellen der Session: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create session"})
 		return
 	}
 
+	logger.Info("CreateCharacterSession: Session erfolgreich erstellt - SessionID: %s, UserID: %d", sessionID, userID)
 	c.JSON(http.StatusCreated, gin.H{
 		"session_id": sessionID,
 		"expires_at": session.ExpiresAt,
@@ -2413,25 +2429,35 @@ func CreateCharacterSession(c *gin.Context) {
 
 // ListCharacterSessions gibt alle aktiven Sessions für einen Benutzer zurück
 func ListCharacterSessions(c *gin.Context) {
+	logger.Debug("ListCharacterSessions aufgerufen")
+
 	userID := c.GetUint("userID")
+	logger.Debug("ListCharacterSessions: UserID = %d", userID)
 
 	if userID == 0 {
+		logger.Warn("ListCharacterSessions: Unauthorized - UserID ist 0")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	// Sessions aus Datenbank laden
+	logger.Debug("ListCharacterSessions: Lade Sessions für UserID %d aus Datenbank...", userID)
 	sessions, err := models.GetUserSessions(database.DB, userID)
 	if err != nil {
+		logger.Error("ListCharacterSessions: Fehler beim Laden der Sessions: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load sessions"})
 		return
 	}
 
+	logger.Debug("ListCharacterSessions: Gefundene Sessions: %d", len(sessions))
+
 	// Sessions für Frontend formatieren
 	var formattedSessions []gin.H
-	for _, session := range sessions {
+	for i, session := range sessions {
 		// Schritt-Text bestimmen
 		progressText := getProgressText(session.CurrentStep)
+		logger.Debug("ListCharacterSessions: Formatiere Session %d - ID: %s, Step: %d, Name: %s",
+			i+1, session.ID, session.CurrentStep, session.Name)
 
 		formattedSessions = append(formattedSessions, gin.H{
 			"session_id":    session.ID,
@@ -2447,6 +2473,7 @@ func ListCharacterSessions(c *gin.Context) {
 		})
 	}
 
+	logger.Info("ListCharacterSessions: Sessions erfolgreich geladen für UserID %d - Anzahl: %d", userID, len(formattedSessions))
 	c.JSON(http.StatusOK, gin.H{
 		"sessions": formattedSessions,
 		"count":    len(formattedSessions),
@@ -2455,48 +2482,72 @@ func ListCharacterSessions(c *gin.Context) {
 
 // getProgressText gibt den Schritt-Text für die Frontend-Anzeige zurück
 func getProgressText(step int) string {
+	logger.Debug("getProgressText: Ermittle Text für Schritt %d", step)
+
+	var text string
 	switch step {
 	case 1:
-		return "Grundinformationen"
+		text = "Grundinformationen"
 	case 2:
-		return "Attribute"
+		text = "Attribute"
 	case 3:
-		return "Abgeleitete Werte"
+		text = "Abgeleitete Werte"
 	case 4:
-		return "Fertigkeiten"
+		text = "Fertigkeiten"
 	case 5:
-		return "Zauber"
+		text = "Zauber"
 	default:
-		return "Unbekannt"
+		text = "Unbekannt"
+		logger.Warn("getProgressText: Unbekannter Schritt %d", step)
 	}
+
+	logger.Debug("getProgressText: Schritt %d = '%s'", step, text)
+	return text
 }
 
 // GetCharacterSession gibt Session-Daten zurück
 func GetCharacterSession(c *gin.Context) {
+	logger.Debug("GetCharacterSession aufgerufen")
+
 	sessionID := c.Param("sessionId")
 	userID := c.GetUint("userID")
+	logger.Debug("GetCharacterSession: SessionID = %s, UserID = %d", sessionID, userID)
 
 	if userID == 0 {
+		logger.Warn("GetCharacterSession: Unauthorized - UserID ist 0")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	// Session aus Datenbank laden
+	logger.Debug("GetCharacterSession: Lade Session aus Datenbank...")
 	var session models.CharacterCreationSession
 	err := database.DB.Where("id = ? AND user_id = ?", sessionID, userID).First(&session).Error
 	if err != nil {
+		logger.Error("GetCharacterSession: Session nicht gefunden - SessionID: %s, UserID: %d, Error: %s",
+			sessionID, userID, err.Error())
 		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
 		return
 	}
 
+	logger.Debug("GetCharacterSession: Session gefunden - Name: %s, Step: %d, ExpiresAt: %s",
+		session.Name, session.CurrentStep, session.ExpiresAt.Format(time.RFC3339))
+
 	// Prüfen ob Session noch gültig ist
 	if session.ExpiresAt.Before(time.Now()) {
+		logger.Warn("GetCharacterSession: Session abgelaufen - SessionID: %s, ExpiresAt: %s",
+			sessionID, session.ExpiresAt.Format(time.RFC3339))
+
 		// Abgelaufene Session löschen
+		logger.Debug("GetCharacterSession: Lösche abgelaufene Session...")
 		database.DB.Delete(&session)
+
 		c.JSON(http.StatusGone, gin.H{"error": "Session expired"})
 		return
 	}
 
+	logger.Info("GetCharacterSession: Session erfolgreich geladen - SessionID: %s, UserID: %d, Step: %d",
+		sessionID, userID, session.CurrentStep)
 	c.JSON(http.StatusOK, session)
 }
 
@@ -2511,27 +2562,41 @@ type UpdateBasicInfoRequest struct {
 
 // UpdateCharacterBasicInfo speichert Grundinformationen
 func UpdateCharacterBasicInfo(c *gin.Context) {
+	logger.Debug("UpdateCharacterBasicInfo aufgerufen")
+
 	sessionID := c.Param("sessionId")
 	userID := c.GetUint("userID")
+	logger.Debug("UpdateCharacterBasicInfo: SessionID = %s, UserID = %d", sessionID, userID)
 
 	if userID == 0 {
+		logger.Warn("UpdateCharacterBasicInfo: Unauthorized - UserID ist 0")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	var request UpdateBasicInfoRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
+		logger.Error("UpdateCharacterBasicInfo: Ungültige Eingabedaten - %s", err.Error())
 		respondWithError(c, http.StatusBadRequest, "Ungültige Eingabedaten: "+err.Error())
 		return
 	}
 
+	logger.Debug("UpdateCharacterBasicInfo: Request-Daten - Name: %s, Rasse: %s, Typ: %s, Herkunft: %s, Glaube: %s",
+		request.Name, request.Rasse, request.Typ, request.Herkunft, request.Glaube)
+
 	// Session aus Datenbank laden
+	logger.Debug("UpdateCharacterBasicInfo: Lade Session aus Datenbank...")
 	var session models.CharacterCreationSession
 	err := database.DB.Where("id = ? AND user_id = ?", sessionID, userID).First(&session).Error
 	if err != nil {
+		logger.Error("UpdateCharacterBasicInfo: Session nicht gefunden - SessionID: %s, UserID: %d, Error: %s",
+			sessionID, userID, err.Error())
 		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
 		return
 	}
+
+	logger.Debug("UpdateCharacterBasicInfo: Aktueller Session-Status - Step: %d, Name: %s",
+		session.CurrentStep, session.Name)
 
 	// Grundinformationen aktualisieren
 	session.Name = request.Name
@@ -2542,13 +2607,19 @@ func UpdateCharacterBasicInfo(c *gin.Context) {
 	session.CurrentStep = 2
 	session.UpdatedAt = time.Now()
 
+	logger.Debug("UpdateCharacterBasicInfo: Session aktualisiert, setze CurrentStep auf 2")
+
 	// Session in Datenbank aktualisieren
+	logger.Debug("UpdateCharacterBasicInfo: Speichere Session in Datenbank...")
 	err = database.DB.Save(&session).Error
 	if err != nil {
+		logger.Error("UpdateCharacterBasicInfo: Fehler beim Speichern der Session: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update session"})
 		return
 	}
 
+	logger.Info("UpdateCharacterBasicInfo: Grundinformationen erfolgreich gespeichert - SessionID: %s, Name: %s",
+		sessionID, request.Name)
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Grundinformationen gespeichert",
 		"session_id":   sessionID,
@@ -2571,27 +2642,40 @@ type UpdateAttributesRequest struct {
 
 // UpdateCharacterAttributes speichert Grundwerte
 func UpdateCharacterAttributes(c *gin.Context) {
+	logger.Debug("UpdateCharacterAttributes aufgerufen")
+
 	sessionID := c.Param("sessionId")
 	userID := c.GetUint("userID")
+	logger.Debug("UpdateCharacterAttributes: SessionID = %s, UserID = %d", sessionID, userID)
 
 	if userID == 0 {
+		logger.Warn("UpdateCharacterAttributes: Unauthorized - UserID ist 0")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	var request UpdateAttributesRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
+		logger.Error("UpdateCharacterAttributes: Ungültige Attributswerte - %s", err.Error())
 		respondWithError(c, http.StatusBadRequest, "Ungültige Attributswerte: "+err.Error())
 		return
 	}
 
+	logger.Debug("UpdateCharacterAttributes: Attribute - ST:%d GS:%d GW:%d KO:%d IN:%d ZT:%d AU:%d PA:%d WK:%d",
+		request.ST, request.GS, request.GW, request.KO, request.IN, request.ZT, request.AU, request.PA, request.WK)
+
 	// Session aus Datenbank laden
+	logger.Debug("UpdateCharacterAttributes: Lade Session aus Datenbank...")
 	var session models.CharacterCreationSession
 	err := database.DB.Where("id = ? AND user_id = ?", sessionID, userID).First(&session).Error
 	if err != nil {
+		logger.Error("UpdateCharacterAttributes: Session nicht gefunden - SessionID: %s, UserID: %d, Error: %s",
+			sessionID, userID, err.Error())
 		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
 		return
 	}
+
+	logger.Debug("UpdateCharacterAttributes: Session geladen - CurrentStep: %d", session.CurrentStep)
 
 	// Attribute aktualisieren
 	session.Attributes = models.AttributesData{
@@ -2608,13 +2692,18 @@ func UpdateCharacterAttributes(c *gin.Context) {
 	session.CurrentStep = 3
 	session.UpdatedAt = time.Now()
 
+	logger.Debug("UpdateCharacterAttributes: Attribute gesetzt, CurrentStep auf 3 aktualisiert")
+
 	// Session in Datenbank aktualisieren
+	logger.Debug("UpdateCharacterAttributes: Speichere Session in Datenbank...")
 	err = database.DB.Save(&session).Error
 	if err != nil {
+		logger.Error("UpdateCharacterAttributes: Fehler beim Speichern der Session: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update session"})
 		return
 	}
 
+	logger.Info("UpdateCharacterAttributes: Grundwerte erfolgreich gespeichert - SessionID: %s", sessionID)
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Grundwerte gespeichert",
 		"session_id":   sessionID,
@@ -2634,27 +2723,40 @@ type UpdateDerivedValuesRequest struct {
 
 // UpdateCharacterDerivedValues speichert abgeleitete Werte
 func UpdateCharacterDerivedValues(c *gin.Context) {
+	logger.Debug("UpdateCharacterDerivedValues aufgerufen")
+
 	sessionID := c.Param("sessionId")
 	userID := c.GetUint("userID")
+	logger.Debug("UpdateCharacterDerivedValues: SessionID = %s, UserID = %d", sessionID, userID)
 
 	if userID == 0 {
+		logger.Warn("UpdateCharacterDerivedValues: Unauthorized - UserID ist 0")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	var request UpdateDerivedValuesRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
+		logger.Error("UpdateCharacterDerivedValues: Ungültige abgeleitete Werte - %s", err.Error())
 		respondWithError(c, http.StatusBadRequest, "Ungültige abgeleitete Werte: "+err.Error())
 		return
 	}
 
+	logger.Debug("UpdateCharacterDerivedValues: Werte - LP_Max:%d AP_Max:%d B_Max:%d SG:%d GG:%d GP:%d",
+		request.LP_Max, request.AP_Max, request.B_Max, request.SG, request.GG, request.GP)
+
 	// Session aus Datenbank laden
+	logger.Debug("UpdateCharacterDerivedValues: Lade Session aus Datenbank...")
 	var session models.CharacterCreationSession
 	err := database.DB.Where("id = ? AND user_id = ?", sessionID, userID).First(&session).Error
 	if err != nil {
+		logger.Error("UpdateCharacterDerivedValues: Session nicht gefunden - SessionID: %s, UserID: %d, Error: %s",
+			sessionID, userID, err.Error())
 		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
 		return
 	}
+
+	logger.Debug("UpdateCharacterDerivedValues: Session geladen - CurrentStep: %d", session.CurrentStep)
 
 	// Abgeleitete Werte aktualisieren
 	session.DerivedValues = models.DerivedValuesData{
@@ -2668,13 +2770,18 @@ func UpdateCharacterDerivedValues(c *gin.Context) {
 	session.CurrentStep = 4
 	session.UpdatedAt = time.Now()
 
+	logger.Debug("UpdateCharacterDerivedValues: Abgeleitete Werte gesetzt, CurrentStep auf 4 aktualisiert")
+
 	// Session in Datenbank aktualisieren
+	logger.Debug("UpdateCharacterDerivedValues: Speichere Session in Datenbank...")
 	err = database.DB.Save(&session).Error
 	if err != nil {
+		logger.Error("UpdateCharacterDerivedValues: Fehler beim Speichern der Session: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update session"})
 		return
 	}
 
+	logger.Info("UpdateCharacterDerivedValues: Abgeleitete Werte erfolgreich gespeichert - SessionID: %s", sessionID)
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Abgeleitete Werte gespeichert",
 		"session_id":   sessionID,
@@ -2684,34 +2791,47 @@ func UpdateCharacterDerivedValues(c *gin.Context) {
 
 // UpdateSkillsRequest
 type UpdateSkillsRequest struct {
-	Skills      []models.CharacterCreationSkill `json:"skills"`
-	Spells      []models.CharacterCreationSpell `json:"spells"`
-	SkillPoints models.SkillPointsData          `json:"skill_points"` // Verbleibende Punkte pro Kategorie
+	Skills      models.CharacterCreationSkills `json:"skills"`
+	Spells      models.CharacterCreationSpells `json:"spells"`
+	SkillPoints models.SkillPointsData         `json:"skill_points"` // Verbleibende Punkte pro Kategorie
 }
 
 // UpdateCharacterSkills speichert Fertigkeiten und Zauber
 func UpdateCharacterSkills(c *gin.Context) {
+	logger.Debug("UpdateCharacterSkills aufgerufen")
+
 	sessionID := c.Param("sessionId")
 	userID := c.GetUint("userID")
+	logger.Debug("UpdateCharacterSkills: SessionID = %s, UserID = %d", sessionID, userID)
 
 	if userID == 0 {
+		logger.Warn("UpdateCharacterSkills: Unauthorized - UserID ist 0")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	var request UpdateSkillsRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
+		logger.Error("UpdateCharacterSkills: Ungültige Fertigkeitsdaten - %s", err.Error())
 		respondWithError(c, http.StatusBadRequest, "Ungültige Fertigkeitsdaten: "+err.Error())
 		return
 	}
 
+	logger.Debug("UpdateCharacterSkills: Skills-Anzahl: %d, Spells-Anzahl: %d",
+		len(request.Skills), len(request.Spells))
+
 	// Session aus Datenbank laden
+	logger.Debug("UpdateCharacterSkills: Lade Session aus Datenbank...")
 	var session models.CharacterCreationSession
 	err := database.DB.Where("id = ? AND user_id = ?", sessionID, userID).First(&session).Error
 	if err != nil {
+		logger.Error("UpdateCharacterSkills: Session nicht gefunden - SessionID: %s, UserID: %d, Error: %s",
+			sessionID, userID, err.Error())
 		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
 		return
 	}
+
+	logger.Debug("UpdateCharacterSkills: Session geladen - CurrentStep: %d", session.CurrentStep)
 
 	// Fertigkeiten und Zauber aktualisieren
 	session.Skills = request.Skills
@@ -2720,13 +2840,19 @@ func UpdateCharacterSkills(c *gin.Context) {
 	session.CurrentStep = 5
 	session.UpdatedAt = time.Now()
 
+	logger.Debug("UpdateCharacterSkills: Skills/Spells gesetzt, CurrentStep auf 5 aktualisiert")
+
 	// Session in Datenbank aktualisieren
+	logger.Debug("UpdateCharacterSkills: Speichere Session in Datenbank...")
 	err = database.DB.Save(&session).Error
 	if err != nil {
+		logger.Error("UpdateCharacterSkills: Fehler beim Speichern der Session: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update session"})
 		return
 	}
 
+	logger.Info("UpdateCharacterSkills: Fertigkeiten erfolgreich gespeichert - SessionID: %s, Skills: %d, Spells: %d",
+		sessionID, len(request.Skills), len(request.Spells))
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Fertigkeiten gespeichert",
 		"session_id":   sessionID,
@@ -2736,28 +2862,41 @@ func UpdateCharacterSkills(c *gin.Context) {
 
 // FinalizeCharacterCreation schließt die Charakter-Erstellung ab
 func FinalizeCharacterCreation(c *gin.Context) {
+	logger.Debug("FinalizeCharacterCreation aufgerufen")
+
 	sessionID := c.Param("sessionId")
 	userID := c.GetUint("userID")
+	logger.Debug("FinalizeCharacterCreation: SessionID = %s, UserID = %d", sessionID, userID)
 
 	if userID == 0 {
+		logger.Warn("FinalizeCharacterCreation: Unauthorized - UserID ist 0")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	// Session laden
+	logger.Debug("FinalizeCharacterCreation: Lade Session aus Datenbank...")
 	var session models.CharacterCreationSession
 	err := database.DB.Where("id = ? AND user_id = ?", sessionID, userID).First(&session).Error
 	if err != nil {
+		logger.Error("FinalizeCharacterCreation: Session nicht gefunden - SessionID: %s, UserID: %d, Error: %s",
+			sessionID, userID, err.Error())
 		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
 		return
 	}
 
+	logger.Debug("FinalizeCharacterCreation: Session geladen - Name: %s, CurrentStep: %d",
+		session.Name, session.CurrentStep)
+
 	// Session validieren
 	if session.CurrentStep < 5 {
+		logger.Warn("FinalizeCharacterCreation: Charakter-Erstellung unvollständig - CurrentStep: %d (erwartet: 5)",
+			session.CurrentStep)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Character creation not complete"})
 		return
 	}
 
+	logger.Debug("FinalizeCharacterCreation: Erstelle Charakter-Struktur...")
 	// Character erstellen
 	char := models.Char{
 		BamortBase: models.BamortBase{
@@ -2808,15 +2947,26 @@ func FinalizeCharacterCreation(c *gin.Context) {
 		{Name: "Wk", Value: session.Attributes.WK},
 	}
 
+	logger.Debug("FinalizeCharacterCreation: Charakter-Struktur erstellt mit %d Eigenschaften",
+		len(char.Eigenschaften))
+
 	// Character in Datenbank speichern
+	logger.Debug("FinalizeCharacterCreation: Speichere Charakter in Datenbank...")
 	err = char.Create()
 	if err != nil {
+		logger.Error("FinalizeCharacterCreation: Fehler beim Erstellen des Charakters: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create character"})
 		return
 	}
 
+	logger.Debug("FinalizeCharacterCreation: Charakter erfolgreich erstellt mit ID: %d", char.ID)
+
 	// Session löschen
+	logger.Debug("FinalizeCharacterCreation: Lösche Session aus Datenbank...")
 	database.DB.Delete(&session)
+
+	logger.Info("FinalizeCharacterCreation: Charakter-Erstellung abgeschlossen - CharacterID: %d, SessionID: %s, Name: %s",
+		char.ID, sessionID, session.Name)
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message":      "Charakter erfolgreich erstellt",
@@ -2827,25 +2977,36 @@ func FinalizeCharacterCreation(c *gin.Context) {
 
 // DeleteCharacterSession löscht eine Session
 func DeleteCharacterSession(c *gin.Context) {
+	logger.Debug("DeleteCharacterSession aufgerufen")
+
 	sessionID := c.Param("sessionId")
 	userID := c.GetUint("userID")
+	logger.Debug("DeleteCharacterSession: SessionID = %s, UserID = %d", sessionID, userID)
 
 	if userID == 0 {
+		logger.Warn("DeleteCharacterSession: Unauthorized - UserID ist 0")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	// Session aus Datenbank löschen (nur eigene Sessions)
+	logger.Debug("DeleteCharacterSession: Lösche Session aus Datenbank...")
 	result := database.DB.Where("id = ? AND user_id = ?", sessionID, userID).Delete(&models.CharacterCreationSession{})
 	if result.Error != nil {
+		logger.Error("DeleteCharacterSession: Fehler beim Löschen der Session: %s", result.Error.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete session"})
 		return
 	}
 
 	if result.RowsAffected == 0 {
+		logger.Warn("DeleteCharacterSession: Session nicht gefunden oder bereits gelöscht - SessionID: %s, UserID: %d",
+			sessionID, userID)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
 		return
 	}
+
+	logger.Info("DeleteCharacterSession: Session erfolgreich gelöscht - SessionID: %s, UserID: %d, RowsAffected: %d",
+		sessionID, userID, result.RowsAffected)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":    "Session gelöscht",

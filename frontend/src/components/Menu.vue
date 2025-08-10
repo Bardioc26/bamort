@@ -39,6 +39,8 @@ export default {
   methods: {
     logout() {
       logout();
+      // Emit auth change event
+      window.dispatchEvent(new Event('auth-changed'));
       this.$router.push("/");
     },
   },

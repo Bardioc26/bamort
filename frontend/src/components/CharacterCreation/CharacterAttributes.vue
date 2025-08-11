@@ -65,8 +65,8 @@ export default {
         ko: 50, // Konstitution
         in: 50, // Intelligenz
         zt: 50, // Zaubertalent
-        au: 50, // Ausstrahlung
-        pa: 50, // Psi-Kraft
+        au: 50, // Ausehen
+        pa: 50, // Persönliche Ausstrahlung
         wk: 50, // Willenskraft
       },
       attributes: [
@@ -102,13 +102,13 @@ export default {
         },
         {
           key: 'au',
-          name: 'Ausstrahlung',
-          description: 'Charisma and leadership'
+          name: 'Aussehen',
+          description: 'Beautyness'
         },
         {
           key: 'pa',
-          name: 'Psi-Kraft',
-          description: 'Psychic abilities'
+          name: 'Persönliche Ausstrahlung',
+          description: 'Charisma and leadership'
         },
         {
           key: 'wk',

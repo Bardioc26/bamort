@@ -1,12 +1,12 @@
 <template>
   <div class="derived-values-form">
-    <h2>Derived Values</h2>
-    <p class="instruction">These values are calculated from your attributes. You can adjust them as needed.</p>
+    <h2>{{ $t('characters.derivedValues.title') }}</h2>
+    <p class="instruction">{{ $t('characters.derivedValues.instruction') }}</p>
     
     <form @submit.prevent="handleSubmit">
       <div class="values-grid">
         <div class="value-group" v-for="value in derivedValues" :key="value.key">
-          <label :for="value.key">{{ value.name }}</label>
+          <label :for="value.key">{{ $t(value.name) }}</label>
           <div class="value-input-group">
             <input 
               :id="value.key"
@@ -17,40 +17,40 @@
               required
             />
             <div class="value-info">
-              <span class="calculated-value">Calculated: {{ calculatedValues[value.key] }}</span>
-              <span class="value-description">{{ value.description }}</span>
+              <span class="calculated-value">{{ $t('characters.derivedValues.calculated') }}: {{ calculatedValues[value.key] }}</span>
+              <span class="value-description">{{ $t(value.description) }}</span>
             </div>
           </div>
         </div>
       </div>
 
       <div class="calculation-info">
-        <h3>Calculation Rules</h3>
+        <h3>{{ $t('characters.derivedValues.calculationRules') }}</h3>
         <div class="calculation-rules">
           <div class="rule">
-            <strong>LP (Life Points):</strong> Base formula: (KO + ST) / 2 + modifier
+            <strong>{{ $t('characters.derivedValues.lpFormula') }}:</strong> {{ $t('characters.derivedValues.lpDescription') }}
           </div>
           <div class="rule">
-            <strong>AP (Adventure Points):</strong> Base formula: (AU + WK) / 2 + modifier
+            <strong>{{ $t('characters.derivedValues.apFormula') }}:</strong> {{ $t('characters.derivedValues.apDescription') }}
           </div>
           <div class="rule">
-            <strong>B (Burden):</strong> Base formula: ST + modifier
+            <strong>{{ $t('characters.derivedValues.bFormula') }}:</strong> {{ $t('characters.derivedValues.bDescription') }}
           </div>
           <div class="rule">
-            <strong>Bennies:</strong> Base values based on character class
+            <strong>{{ $t('characters.derivedValues.benniesFormula') }}:</strong> {{ $t('characters.derivedValues.benniesDescription') }}
           </div>
         </div>
       </div>
 
       <div class="form-actions">
         <button type="button" @click="handlePrevious" class="prev-btn">
-          ← Previous: Attributes
+          ← {{ $t('characters.derivedValues.previousAttributes') }}
         </button>
         <button type="button" @click="recalculate" class="calc-btn">
-          Recalculate from Attributes
+          {{ $t('characters.derivedValues.recalculate') }}
         </button>
         <button type="submit" class="next-btn" :disabled="!isValid">
-          Next: Skills & Spells →
+          {{ $t('characters.derivedValues.nextSkills') }} →
         </button>
       </div>
     </form>
@@ -80,43 +80,43 @@ export default {
       derivedValues: [
         {
           key: 'lp_max',
-          name: 'Life Points (LP) Maximum',
-          description: 'Maximum life/health points',
+          name: 'characters.derivedValues.lpMax',
+          description: 'characters.derivedValues.lpMaxDescription',
           min: 1,
           max: 200
         },
         {
           key: 'ap_max',
-          name: 'Adventure Points (AP) Maximum',
-          description: 'Maximum adventure points for special actions',
+          name: 'characters.derivedValues.apMax',
+          description: 'characters.derivedValues.apMaxDescription',
           min: 1,
           max: 200
         },
         {
           key: 'b_max',
-          name: 'Burden (B) Maximum',
-          description: 'Maximum carrying capacity',
+          name: 'characters.derivedValues.bMax',
+          description: 'characters.derivedValues.bMaxDescription',
           min: 1,
           max: 500
         },
         {
           key: 'sg',
-          name: 'Schicksalsgunst (SG)',
-          description: 'Fate points for rerolls',
+          name: 'characters.derivedValues.sg',
+          description: 'characters.derivedValues.sgDescription',
           min: 0,
           max: 10
         },
         {
           key: 'gg',
-          name: 'Göttliche Gnade (GG)',
-          description: 'Divine grace points',
+          name: 'characters.derivedValues.gg',
+          description: 'characters.derivedValues.ggDescription',
           min: 0,
           max: 10
         },
         {
           key: 'gp',
-          name: 'Glückspunkte (GP)',
-          description: 'Luck points',
+          name: 'characters.derivedValues.gp',
+          description: 'characters.derivedValues.gpDescription',
           min: 0,
           max: 10
         },

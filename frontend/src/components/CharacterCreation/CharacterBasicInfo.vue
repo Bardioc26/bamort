@@ -34,12 +34,43 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="herkunft">{{ $t('characters.basicInfo.origin') }} {{ $t('characters.basicInfo.required') }}</label>
-        <select id="herkunft" v-model="formData.herkunft" required>
-          <option value="">{{ $t('characters.basicInfo.selectOrigin') }}</option>
-          <option v-for="origin in origins" :key="origin" :value="origin">{{ origin }}</option>
-        </select>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="herkunft">{{ $t('characters.basicInfo.origin') }} {{ $t('characters.basicInfo.required') }}</label>
+          <select id="herkunft" v-model="formData.herkunft" required>
+            <option value="">{{ $t('characters.basicInfo.selectOrigin') }}</option>
+            <option v-for="origin in origins" :key="origin" :value="origin">{{ origin }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="stand">{{ $t('characters.basicInfo.socialClass') }} {{ $t('characters.basicInfo.required') }}</label>
+          <div class="input-with-dice">
+            <select id="stand" v-model="formData.stand" required>
+              <option value="">{{ $t('characters.basicInfo.selectSocialClass') }}</option>
+              <option value="Adel">{{ $t('characters.basicInfo.nobility') }}</option>
+              <option value="Mittelschicht">{{ $t('characters.basicInfo.middleClass') }}</option>
+              <option value="Volk">{{ $t('characters.basicInfo.commonFolk') }}</option>
+              <option value="Unfrei">{{ $t('characters.basicInfo.unfree') }}</option>
+            </select>
+            <button 
+              type="button" 
+              class="dice-btn" 
+              @click="rollSocialClass"
+              :disabled="!formData.typ"
+              :title="formData.typ ? $t('characters.basicInfo.rollSocialClass') : $t('characters.basicInfo.selectClassFirst')"
+            >
+              🎲
+            </button>
+          </div>
+          <div v-if="lastSocialClassRoll" class="roll-result">
+            {{ $t('characters.basicInfo.rollResult') }}: {{ lastSocialClassRoll.roll }} 
+            <span v-if="lastSocialClassRoll.modifier !== 0">
+              ({{ lastSocialClassRoll.baseRoll }}{{ lastSocialClassRoll.modifier >= 0 ? '+' : '' }}{{ lastSocialClassRoll.modifier }})
+            </span>
+            → {{ lastSocialClassRoll.result }}
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
@@ -75,6 +106,24 @@
         </button>
       </div>
     </form>
+    
+    <!-- Roll Result Overlay -->
+    <div v-if="showOverlay && lastSocialClassRoll" class="roll-overlay" @click="hideOverlay">
+      <div class="roll-overlay-content">
+        <button class="overlay-close" @click="hideOverlay">×</button>
+        <div class="overlay-title">🎲 {{ $t('characters.basicInfo.rollResult') }}</div>
+        <div class="overlay-roll">
+          {{ lastSocialClassRoll.roll }}
+          <span v-if="lastSocialClassRoll.modifier !== 0" class="roll-breakdown">
+            ({{ lastSocialClassRoll.baseRoll }}{{ lastSocialClassRoll.modifier >= 0 ? '+' : '' }}{{ lastSocialClassRoll.modifier }})
+          </span>
+        </div>
+        <div class="overlay-result">
+          → {{ $t('characters.basicInfo.' + lastSocialClassRoll.result.toLowerCase()) || lastSocialClassRoll.result }}
+        </div>
+        <div class="overlay-hint">{{ $t('characters.basicInfo.clickToClose') }}</div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -97,6 +146,7 @@ export default {
         rasse: '',
         typ: '',
         herkunft: '',
+        stand: '',
         glaube: '',
       },
       races: [],
@@ -105,6 +155,9 @@ export default {
       beliefSearch: '',
       beliefResults: [],
       searchTimeout: null,
+      lastSocialClassRoll: null,
+      showOverlay: false,
+      overlayTimeout: null,
     }
   },
   computed: {
@@ -112,7 +165,14 @@ export default {
       return this.formData.name.length >= 2 && 
              this.formData.rasse && 
              this.formData.typ && 
-             this.formData.herkunft
+             this.formData.herkunft &&
+             this.formData.stand
+    }
+  },
+  watch: {
+    'formData.typ'() {
+      // Clear social class roll result when character class changes
+      this.lastSocialClassRoll = null
     }
   },
   async created() {
@@ -122,6 +182,7 @@ export default {
       rasse: this.sessionData.rasse || '',
       typ: this.sessionData.typ || '',
       herkunft: this.sessionData.herkunft || '',
+      stand: this.sessionData.stand || '',
       glaube: this.sessionData.glaube || '',
     }
     
@@ -130,6 +191,15 @@ export default {
     }
     
     await this.loadReferenceData()
+  },
+  beforeUnmount() {
+    // Clean up timeouts
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout)
+    }
+    if (this.overlayTimeout) {
+      clearTimeout(this.overlayTimeout)
+    }
   },
   methods: {
     async loadReferenceData() {
@@ -185,6 +255,86 @@ export default {
       this.formData.glaube = ''
       this.beliefSearch = ''
       this.beliefResults = []
+    },
+    
+    rollSocialClass() {
+      if (!this.formData.typ) {
+        return
+      }
+      
+      // Base 1d100 roll
+      const baseRoll = this.$rollNotation('1d100')
+      let modifier = 0
+      
+      // Apply class modifiers
+      switch (this.formData.typ) {
+        case 'Barde':
+        case 'Priester':
+          modifier = 20
+          break
+        case 'Druide':
+        case 'Magier':
+          modifier = 10
+          break
+        case 'Assassine':
+        case 'Händler':
+        case 'Waldläufer':
+          modifier = -10
+          break
+        case 'Spitzbube':
+          modifier = -20
+          break
+      }
+      
+      const finalRoll = baseRoll.sum + modifier
+      
+      // Determine social class based on final roll
+      let socialClass = ''
+      if (finalRoll <= 10) {
+        socialClass = 'Unfrei'
+      } else if (finalRoll <= 50) {
+        socialClass = 'Volk'
+      } else if (finalRoll <= 90) {
+        socialClass = 'Mittelschicht'
+      } else {
+        socialClass = 'Adel'
+      }
+      
+      // Set the form data
+      this.formData.stand = socialClass
+      
+      // Store roll information for display
+      this.lastSocialClassRoll = {
+        baseRoll: baseRoll.sum,
+        modifier: modifier,
+        roll: finalRoll,
+        result: socialClass
+      }
+      
+      // Show overlay notification
+      this.showRollOverlay()
+    },
+    
+    showRollOverlay() {
+      this.showOverlay = true
+      
+      // Clear existing timeout if any
+      if (this.overlayTimeout) {
+        clearTimeout(this.overlayTimeout)
+      }
+      
+      // Hide overlay after 20 seconds
+      this.overlayTimeout = setTimeout(() => {
+        this.showOverlay = false
+      }, 20000)
+    },
+    
+    hideOverlay() {
+      this.showOverlay = false
+      if (this.overlayTimeout) {
+        clearTimeout(this.overlayTimeout)
+        this.overlayTimeout = null
+      }
     },
     
     handleSubmit() {

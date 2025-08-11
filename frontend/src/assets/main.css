@@ -752,3 +752,145 @@ a,
     padding-bottom: 120px;
   }
 }
+
+/* Dice Button and Overlay Styles */
+.input-with-dice {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input-with-dice select {
+  flex: 1;
+}
+
+.dice-btn {
+  background: #4CAF50;
+  border: none;
+  border-radius: 4px;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.dice-btn:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.dice-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.roll-result {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #e8f5e8;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #2e7d2e;
+  border-left: 3px solid #4CAF50;
+}
+
+/* Roll Overlay Styles */
+.roll-overlay {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2000;
+  cursor: pointer;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.roll-overlay-content {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
+  position: relative;
+  text-align: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.overlay-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.overlay-close:hover {
+  opacity: 1;
+}
+
+.overlay-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.overlay-roll {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.roll-breakdown {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-left: 5px;
+}
+
+.overlay-result {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #ffeb3b;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.overlay-hint {
+  font-size: 12px;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .roll-overlay {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+  }
+  
+  .roll-overlay-content {
+    min-width: unset;
+  }
+}

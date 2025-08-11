@@ -20,8 +20,8 @@ import (
 // @BasePath /
 // @schemes http
 func main() {
-	// Konfiguration laden
-	cfg := config.LoadConfig()
+	// Verwende die globale Konfigurationsvariable (bereits in config.init() geladen)
+	cfg := config.Cfg
 
 	// Logger konfigurieren
 	logger.SetDebugMode(cfg.DebugMode)
@@ -38,6 +38,7 @@ func main() {
 	logger.Info("Bamort Server wird gestartet...")
 	logger.Debug("Debug-Modus ist aktiviert")
 	logger.Info("Environment: %s", cfg.Environment)
+	logger.Info("testingDB Set: %s", cfg.DevTesting)
 	logger.Info("Server Port: %s", cfg.ServerPort)
 
 	// Gin-Modus basierend auf Environment setzen
@@ -53,14 +54,6 @@ func main() {
 	logger.Debug("Verbinde mit Datenbank...")
 	database.ConnectDatabase()
 	logger.Info("Datenbankverbindung erfolgreich")
-
-	// Migrate Audit-Log table
-	logger.Debug("Führe Audit-Log Migration durch...")
-	if err := character.MigrateAuditLog(); err != nil {
-		logger.Error("Fehler bei Audit-Log Migration: %s", err.Error())
-		panic("Failed to migrate audit log table: " + err.Error())
-	}
-	logger.Debug("Audit-Log Migration erfolgreich")
 
 	r := gin.Default()
 	router.SetupGin(r)

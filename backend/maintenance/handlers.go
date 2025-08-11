@@ -1,7 +1,9 @@
 package maintenance
 
 import (
+	"bamort/config"
 	"bamort/database"
+	"bamort/logger"
 	"bamort/models"
 	"bamort/user"
 	"fmt"
@@ -28,35 +30,54 @@ func respondWithError(c *gin.Context, status int, message string) {
 
 // migrateAllStructures migrates all database structures to the provided database
 func migrateAllStructures(db *gorm.DB) error {
+	logger.Debug("Starte Migration aller Datenbankstrukturen...")
+
 	// Migrate all structures in the correct order
+	logger.Debug("Migriere Datenbankstrukturen...")
 	if err := database.MigrateStructure(db); err != nil {
+		logger.Error("Fehler beim Migrieren der Datenbankstrukturen: %s", err.Error())
 		return fmt.Errorf("failed to migrate database structures: %w", err)
 	}
+
+	logger.Debug("Migriere Benutzerstrukturen...")
 	if err := user.MigrateStructure(db); err != nil {
+		logger.Error("Fehler beim Migrieren der Benutzerstrukturen: %s", err.Error())
 		return fmt.Errorf("failed to migrate user structures: %w", err)
 	}
+
+	logger.Debug("Migriere GSMaster-Strukturen...")
 	if err := models.MigrateStructure(db); err != nil {
+		logger.Error("Fehler beim Migrieren der GSMaster-Strukturen: %s", err.Error())
 		return fmt.Errorf("failed to migrate gsmaster structures: %w", err)
 	}
 
 	/*if err := importer.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate importer structures: %w", err)
 	}*/
+
+	logger.Info("Migration aller Datenbankstrukturen erfolgreich abgeschlossen")
 	return nil
 }
 
 func migrateDataIfNeeded(db *gorm.DB) error {
+	logger.Debug("Starte Datenmigration falls erforderlich...")
+
 	// Kopiere categorie nach learning_category für Spells, wenn learning_category leer ist
+	logger.Debug("Migriere Spell Learning Categories...")
 	err := migrateSpellLearningCategories(db)
 	if err != nil {
+		logger.Error("Fehler beim Migrieren der Spell Learning Categories: %s", err.Error())
 		return fmt.Errorf("failed to migrate spell learning categories: %w", err)
 	}
 
+	logger.Info("Datenmigration erfolgreich abgeschlossen")
 	return nil
 }
 
 // migrateSpellLearningCategories kopiert categorie-Werte in learning_category wenn diese leer sind
 func migrateSpellLearningCategories(db *gorm.DB) error {
+	logger.Debug("Starte Migration der Spell Learning Categories...")
+
 	// SQL-Statement um categorie nach learning_category zu kopieren, wo learning_category leer oder NULL ist
 	sql := `
 		UPDATE gsm_spells 
@@ -66,34 +87,46 @@ func migrateSpellLearningCategories(db *gorm.DB) error {
 		AND category != ''
 	`
 
+	logger.Debug("Führe SQL-Update aus: %s", strings.ReplaceAll(sql, "\n", " "))
 	result := db.Exec(sql)
 	if result.Error != nil {
+		logger.Error("Fehler beim SQL-Update der Spell Learning Categories: %s", result.Error.Error())
 		return fmt.Errorf("failed to update spell learning categories: %w", result.Error)
 	}
 
 	// Log der Anzahl der aktualisierten Datensätze
 	if result.RowsAffected > 0 {
+		logger.Info("Updated %d spell records with learning_category from categorie", result.RowsAffected)
 		fmt.Printf("Updated %d spell records with learning_category from categorie\n", result.RowsAffected)
+	} else {
+		logger.Debug("Keine Spell-Datensätze benötigten ein Update der learning_category")
 	}
 
 	return nil
 }
 
 func MakeTestdataFromLive(c *gin.Context) {
+	logger.Info("Starte Testdaten-Erstellung aus Live-Datenbank...")
+
 	liveDB := database.ConnectDatabase()
 	if liveDB == nil {
+		logger.Error("Fehler beim Verbinden mit der Live-Datenbank")
 		respondWithError(c, http.StatusInternalServerError, "Failed to connect to live database")
 		return
 	}
+	logger.Debug("Erfolgreich mit Live-Datenbank verbunden")
 
 	// Live-Datenbank in SQLite-Datei kopieren
 	backupFile := preparedTestDB
+	logger.Info("Kopiere Live-Datenbank nach: %s", backupFile)
 	err := copyLiveDatabaseToFile(liveDB, backupFile)
 	if err != nil {
+		logger.Error("Fehler beim Kopieren der Datenbank: %s", err.Error())
 		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to copy database: %v", err))
 		return
 	}
 
+	logger.Info("Live-Datenbank erfolgreich in Datei kopiert: %s", backupFile)
 	c.JSON(http.StatusOK, gin.H{
 		"message":        "Live database copied to file successfully",
 		"test_data_file": backupFile,
@@ -107,47 +140,64 @@ func CopyLiveDatabaseToFile(liveDB *gorm.DB, targetFile string) error {
 
 // copyLiveDatabaseToFile kopiert die MariaDB-Datenbank in eine SQLite-Datei
 func copyLiveDatabaseToFile(liveDB *gorm.DB, targetFile string) error {
+	logger.Debug("Starte Kopiervorgang von Live-DB nach SQLite-Datei: %s", targetFile)
+
 	// Verzeichnis erstellen falls es nicht existiert
 	dir := filepath.Dir(targetFile)
+	logger.Debug("Erstelle Zielverzeichnis falls erforderlich: %s", dir)
 	if err := os.MkdirAll(dir, 0755); err != nil {
+		logger.Error("Fehler beim Erstellen des Verzeichnisses %s: %s", dir, err.Error())
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
 	// Backup der existierenden Datei erstellen
 	if _, err := os.Stat(targetFile); err == nil {
 		backupFile := targetFile + ".backup"
+		logger.Debug("Existierende Datei gefunden, erstelle Backup: %s", backupFile)
 		os.Remove(backupFile) // Alte Backup entfernen
 		if err := os.Rename(targetFile, backupFile); err != nil {
+			logger.Error("Fehler beim Erstellen des Backups %s: %s", backupFile, err.Error())
 			return fmt.Errorf("failed to backup existing file: %w", err)
 		}
+		logger.Debug("Backup erfolgreich erstellt")
 	}
 
 	// SQLite-Zieldatenbank erstellen
+	logger.Debug("Erstelle neue SQLite-Zieldatenbank: %s", targetFile)
 	targetDB, err := gorm.Open(sqlite.Open(targetFile), &gorm.Config{})
 	if err != nil {
+		logger.Error("Fehler beim Erstellen der SQLite-Zieldatenbank: %s", err.Error())
 		return fmt.Errorf("failed to create target SQLite database: %w", err)
 	}
 	defer func() {
 		if sqlDB, err := targetDB.DB(); err == nil {
+			logger.Debug("Schließe SQLite-Datenbankverbindung")
 			sqlDB.Close()
 		}
 	}()
 
 	// Strukturen in SQLite-DB migrieren
+	logger.Debug("Migriere Strukturen in SQLite-Datenbank...")
 	if err := migrateAllStructures(targetDB); err != nil {
+		logger.Error("Fehler beim Migrieren der Strukturen in SQLite: %s", err.Error())
 		return fmt.Errorf("failed to migrate structures to SQLite: %w", err)
 	}
 
 	// Daten von MariaDB zu SQLite kopieren
+	logger.Info("Kopiere Daten von MariaDB zu SQLite...")
 	if err := copyMariaDBToSQLite(liveDB, targetDB); err != nil {
+		logger.Error("Fehler beim Kopieren der Daten von MariaDB zu SQLite: %s", err.Error())
 		return fmt.Errorf("failed to copy data from MariaDB to SQLite: %w", err)
 	}
 
+	logger.Info("Kopiervorgang erfolgreich abgeschlossen")
 	return nil
 }
 
 // copyMariaDBToSQLite kopiert alle Daten von MariaDB zu SQLite
 func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
+	logger.Debug("Starte Kopiervorgang aller Daten von MariaDB zu SQLite...")
+
 	// Vollständige Liste aller Strukturen mit GORM-Tags in der richtigen Reihenfolge
 	// (Basis-Tabellen zuerst wegen Foreign Key-Abhängigkeiten)
 	tables := []interface{}{
@@ -207,43 +257,62 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 		// SkillLearningInfo, SpellLearningInfo, CharList, FeChar, etc.
 	}
 
-	for _, model := range tables {
+	logger.Info("Kopiere Daten für %d Tabellen...", len(tables))
+	for i, model := range tables {
+		logger.Debug("Kopiere Tabelle %d/%d: %T", i+1, len(tables), model)
 		if err := copyTableData(mariaDB, sqliteDB, model); err != nil {
+			logger.Error("Fehler beim Kopieren der Tabellendaten für %T: %s", model, err.Error())
 			return fmt.Errorf("failed to copy table data for %T: %w", model, err)
 		}
 	}
 
+	logger.Info("Alle Tabellendaten erfolgreich kopiert")
 	return nil
 }
 
 // copyTableData kopiert alle Daten einer Tabelle von MariaDB zu SQLite
 func copyTableData(sourceDB, targetDB *gorm.DB, model interface{}) error {
+	tableName := fmt.Sprintf("%T", model)
+	logger.Debug("Starte Kopiervorgang für Tabelle: %s", tableName)
+
 	// Anzahl der Datensätze prüfen
 	var count int64
 	err := sourceDB.Model(model).Count(&count).Error
 	if err != nil {
 		// If table doesn't exist, skip silently (useful for testing with partial schemas)
 		if isTableNotExistError(err) {
+			logger.Debug("Tabelle %s existiert nicht in der Quelle, überspringe", tableName)
 			return nil
 		}
+		logger.Error("Fehler beim Zählen der Datensätze für %s: %s", tableName, err.Error())
 		return err
 	}
 
 	if count == 0 {
+		logger.Debug("Tabelle %s ist leer, keine Daten zu kopieren", tableName)
 		return nil // Keine Daten zu kopieren
 	}
 
+	logger.Debug("Kopiere %d Datensätze für Tabelle %s", count, tableName)
+
 	// Daten in Blöcken kopieren (für große Tabellen)
 	batchSize := 100
+	totalBatches := (int(count) + batchSize - 1) / batchSize
+
 	for offset := 0; offset < int(count); offset += batchSize {
+		batchNum := (offset / batchSize) + 1
+		logger.Debug("Kopiere Batch %d/%d für %s (Offset: %d, Limit: %d)", batchNum, totalBatches, tableName, offset, batchSize)
+
 		var records []map[string]interface{}
 
 		// Batch aus MariaDB lesen
 		if err := sourceDB.Model(model).Offset(offset).Limit(batchSize).Find(&records).Error; err != nil {
+			logger.Error("Fehler beim Lesen von Batch %d für %s: %s", batchNum, tableName, err.Error())
 			return err
 		}
 
 		if len(records) == 0 {
+			logger.Debug("Keine weiteren Datensätze für %s", tableName)
 			break
 		}
 
@@ -252,10 +321,14 @@ func copyTableData(sourceDB, targetDB *gorm.DB, model interface{}) error {
 		if err := targetDB.Model(model).Clauses(clause.OnConflict{
 			UpdateAll: true,
 		}).Create(&records).Error; err != nil {
+			logger.Error("Fehler beim Einfügen von Batch %d für %s: %s", batchNum, tableName, err.Error())
 			return err
 		}
+
+		logger.Debug("Batch %d/%d für %s erfolgreich kopiert (%d Datensätze)", batchNum, totalBatches, tableName, len(records))
 	}
 
+	logger.Info("Tabelle %s erfolgreich kopiert (%d Datensätze total)", tableName, count)
 	return nil
 }
 
@@ -269,23 +342,32 @@ func isTableNotExistError(err error) bool {
 
 // LoadPredefinedTestDataFromFile loads predefined test data from a specific file into the provided database
 func LoadPredefinedTestDataFromFile(targetDB *gorm.DB, dataFile string) error {
+	logger.Debug("Lade vordefinierte Testdaten aus Datei: %s", dataFile)
+
 	// Check if file exists
 	if _, err := os.Stat(dataFile); os.IsNotExist(err) {
+		logger.Error("Vordefinierte Testdaten-Datei nicht gefunden: %s", dataFile)
 		return fmt.Errorf("predefined test data file not found: %s", dataFile)
 	}
+	logger.Debug("Testdaten-Datei existiert: %s", dataFile)
 
 	// Migrate structures to target DB
+	logger.Debug("Migriere Strukturen in Zieldatenbank...")
 	err := migrateAllStructures(targetDB)
 	if err != nil {
+		logger.Error("Fehler beim Migrieren der Strukturen: %s", err.Error())
 		return fmt.Errorf("failed to migrate structures: %w", err)
 	}
 
 	// Copy data from file database to target database
+	logger.Info("Kopiere Testdaten in Zieldatenbank...")
 	err = copyDataFromFileToMemory(dataFile, targetDB)
 	if err != nil {
+		logger.Error("Fehler beim Kopieren der Testdaten: %s", err.Error())
 		return fmt.Errorf("failed to copy test data to database: %w", err)
 	}
 
+	logger.Info("Vordefinierte Testdaten erfolgreich geladen")
 	return nil
 }
 
@@ -327,31 +409,44 @@ func LoadPredefinedTestData(c *gin.Context) {
 
 // copyDataFromFileToMemory copies data from a SQLite file to an in-memory database
 func copyDataFromFileToMemory(sourceFile string, targetDB *gorm.DB) error {
+	logger.Debug("Kopiere Daten von SQLite-Datei in Memory-Datenbank: %s", sourceFile)
+
 	// Copy all tables using ATTACH and INSERT
 	attachSQL := fmt.Sprintf("ATTACH DATABASE '%s' AS source", sourceFile)
+	logger.Debug("Hänge Quell-Datenbank an: %s", attachSQL)
 	if err := targetDB.Exec(attachSQL).Error; err != nil {
+		logger.Error("Fehler beim Anhängen der Quell-Datenbank: %s", err.Error())
 		return fmt.Errorf("failed to attach source database: %w", err)
 	}
 
 	// Get list of tables from source database
+	logger.Debug("Ermittle Tabellenliste aus Quell-Datenbank...")
 	var tables []string
 	if err := targetDB.Raw("SELECT name FROM source.sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").Scan(&tables).Error; err != nil {
+		logger.Error("Fehler beim Ermitteln der Tabellenliste: %s", err.Error())
 		return fmt.Errorf("failed to get table list: %w", err)
 	}
+	logger.Info("Gefundene Tabellen zum Kopieren: %d (%v)", len(tables), tables)
 
 	// Copy each table
-	for _, table := range tables {
+	for i, table := range tables {
+		logger.Debug("Kopiere Tabelle %d/%d: %s", i+1, len(tables), table)
 		copySQL := fmt.Sprintf("INSERT OR REPLACE INTO main.%s SELECT * FROM source.%s", table, table)
 		if err := targetDB.Exec(copySQL).Error; err != nil {
+			logger.Error("Fehler beim Kopieren der Tabelle %s: %s", table, err.Error())
 			return fmt.Errorf("failed to copy table %s: %w", table, err)
 		}
+		logger.Debug("Tabelle %s erfolgreich kopiert", table)
 	}
 
 	// Detach the source database
+	logger.Debug("Löse Quell-Datenbank-Verbindung...")
 	if err := targetDB.Exec("DETACH DATABASE source").Error; err != nil {
+		logger.Error("Fehler beim Lösen der Quell-Datenbank-Verbindung: %s", err.Error())
 		return fmt.Errorf("failed to detach source database: %w", err)
 	}
 
+	logger.Info("Daten erfolgreich von Datei in Memory-Datenbank kopiert")
 	return nil
 }
 
@@ -385,51 +480,54 @@ func getTestDataStatistics(db *gorm.DB) (map[string]int64, error) {
 }
 
 func SetupCheck(c *gin.Context) {
+	logger.Info("Starte Setup-Check...")
+
 	db := database.ConnectDatabase()
 	if db == nil {
+		logger.Error("Fehler beim Verbinden mit der Datenbank für Setup-Check")
 		respondWithError(c, http.StatusInternalServerError, "Failed to connect to DataBase")
 		return
 	}
+	logger.Debug("Erfolgreich mit Datenbank für Setup-Check verbunden")
+
+	logger.Debug("Führe Strukturmigration durch...")
 	err := migrateAllStructures(db)
 	if err != nil {
+		logger.Error("Fehler bei der Strukturmigration: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	logger.Debug("Führe Datenmigration durch...")
 	err = migrateDataIfNeeded(db)
 	if err != nil {
+		logger.Error("Fehler bei der Datenmigration: %s", err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to migrate data: " + err.Error()})
 		return
 	}
+
+	logger.Info("Setup-Check erfolgreich abgeschlossen")
 	c.JSON(http.StatusOK, gin.H{"message": "Setup Check OK"})
 }
 
-/*
-// InitializeLearningCosts initialisiert das Lernkosten-System
-// Wird danach nicht mehr benötigt
-func InitializeLearningCosts(c *gin.Context) {
-	err := gsmaster.InitializeLearningCostsSystem()
-	if err != nil {
-		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to initialize learning costs: %v", err))
+func ReconnectDataBase(c *gin.Context) {
+	logger.Info("Führe Datenbank-Reconnect durch...")
+
+	db := database.ConnectDatabase()
+	if db == nil {
+		logger.Error("Fehler beim Reconnect zur Datenbank")
+		respondWithError(c, http.StatusInternalServerError, "Failed to reconnect to DataBase")
 		return
 	}
 
-	// Validierung
-	if err := gsmaster.ValidateLearningCostsData(); err != nil {
-		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Learning costs initialized but validation failed: %v", err))
-		return
-	}
-
-	// Zusammenfassung
-	summary, err := gsmaster.GetLearningCostsSummary()
-	if err != nil {
-		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to get summary: %v", err))
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Learning costs system initialized successfully",
-		"summary": summary,
-	})
+	logger.Info("Datenbank-Reconnect erfolgreich")
+	c.JSON(http.StatusOK, gin.H{"message": "Database reconnected successfully"})
 }
-*/
+
+func ReloadENV(c *gin.Context) {
+	logger.Info("Starte Reload der Umgebungsvariablen...")
+
+	// Reload the environment variables
+	config.LoadConfig()
+	c.JSON(http.StatusOK, gin.H{"message": "Environment variables reloaded successfully"})
+}

@@ -40,11 +40,18 @@ var (
 )
 
 func ConnectDatabase() *gorm.DB {
-	// Konfiguration laden um zu entscheiden, welche Datenbank verwendet werden soll
-	cfg := config.LoadConfig()
+	// Verwende die globale Konfigurationsvariable
+	cfg := config.Cfg
+
+	logger.Debug("Datenbankverbindung - Environment: '%s', DevTesting: '%s'", cfg.Environment, cfg.DevTesting)
+
+	// Debug: Explizite Bedingungsauswertung
+	envIsTest := cfg.Environment == "test"
+	devTestingIsYes := cfg.DevTesting == "yes"
+	logger.Debug("Bedingungsauswertung - Environment == 'test': %v, DevTesting == 'yes': %v", envIsTest, devTestingIsYes)
 
 	// In Test-Umgebung verwende Test-DB, sonst die konfigurierte Datenbank
-	if cfg.Environment == "test" || cfg.Testing == "yes" {
+	if envIsTest || devTestingIsYes {
 		logger.Debug("Test-Umgebung erkannt, verwende Test-Datenbank")
 		SetupTestDB()
 	} else {
@@ -55,8 +62,8 @@ func ConnectDatabase() *gorm.DB {
 	return DB
 }
 func ConnectDatabaseOrig() *gorm.DB {
-	// Konfiguration laden
-	cfg := config.LoadConfig()
+	// Verwende die globale Konfigurationsvariable
+	cfg := config.Cfg
 
 	logger.Debug("Datenbank-Konfiguration geladen: Type=%s, URL=%s", cfg.DatabaseType, cfg.DatabaseURL)
 

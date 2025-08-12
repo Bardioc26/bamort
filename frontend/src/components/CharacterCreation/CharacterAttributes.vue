@@ -25,9 +25,7 @@
                 type="button" 
                 class="dice-btn" 
                 @click="rollAttribute(attr.key)"
-                :title="attr.key === 'pa' ? 'Roll PA: 1d100 + 4×(In/10) - 20' : 
-                       attr.key === 'wk' ? 'Roll WK: 1d100 + 2×(Ko/10 + In/10) - 20' : 
-                       attr.key === 'au' ? 'Roll AU: 1d100 with race restrictions (Elfen ≥81, Gnome/Zwerge ≤80)' :
+                :title="attr.key === 'au' ? 'Roll AU: 1d100 with race restrictions (Elfen ≥81, Gnome/Zwerge ≤80)' :
                        'Roll max(2d100) for ' + attr.name"
               >
                 🎲
@@ -121,8 +119,6 @@ export default {
         in: 50, // Intelligenz
         zt: 50, // Zaubertalent
         au: 50, // Ausehen
-        pa: 50, // Persönliche Ausstrahlung
-        wk: 50, // Willenskraft
       },
       attributes: [
         {
@@ -159,16 +155,6 @@ export default {
           key: 'au',
           name: 'Aussehen',
           description: 'Beauty and appearance (Race restrictions: Elfen ≥81, Gnome/Zwerge ≤80)'
-        },
-        {
-          key: 'pa',
-          name: 'Persönliche Ausstrahlung',
-          description: 'Charisma and leadership (Special: 1d100 + 4×(In/10) - 20)'
-        },
-        {
-          key: 'wk',
-          name: 'Willenskraft',
-          description: 'Mental fortitude and resistance (Special: 1d100 + 2×(Ko/10 + In/10) - 20)'
         },
       ],
       totalPoints: 0,
@@ -217,41 +203,7 @@ export default {
     rollAttribute(attributeKey) {
       let roll, rollValue, modifier = 0, rollDescription = ''
       
-      if (attributeKey === 'pa') {
-        // Special calculation for PA: PA = 1d100 + 4×(In/10) - 20
-        const baseRoll = this.$rollNotation('1d100')
-        const intelligenceBonus = Math.floor(this.formData.in / 10) * 4
-        modifier = intelligenceBonus - 20
-        rollValue = baseRoll.sum + modifier
-        
-        // Ensure PA stays within valid range (1-100)
-        rollValue = Math.max(1, Math.min(100, rollValue))
-        
-        roll = {
-          ...baseRoll,
-          selectedValue: rollValue
-        }
-        
-        rollDescription = `1d100 + 4×(${this.formData.in}/10) - 20 = ${baseRoll.sum} + ${intelligenceBonus} - 20`
-      } else if (attributeKey === 'wk') {
-        // Special calculation for WK: WK = 1d100 + 2×(Ko/10 + In/10) - 20
-        const baseRoll = this.$rollNotation('1d100')
-        const constitutionBonus = Math.floor(this.formData.ko / 10)
-        const intelligenceBonus = Math.floor(this.formData.in / 10)
-        const combinedBonus = (constitutionBonus + intelligenceBonus) * 2
-        modifier = combinedBonus - 20
-        rollValue = baseRoll.sum + modifier
-        
-        // Ensure WK stays within valid range (1-100)
-        rollValue = Math.max(1, Math.min(100, rollValue))
-        
-        roll = {
-          ...baseRoll,
-          selectedValue: rollValue
-        }
-        
-        rollDescription = `1d100 + 2×(${this.formData.ko}/10 + ${this.formData.in}/10) - 20 = ${baseRoll.sum} + 2×(${constitutionBonus} + ${intelligenceBonus}) - 20`
-      } else if (attributeKey === 'au') {
+      if (attributeKey === 'au') {
         // Standard 1d100 roll for AU with race-based restrictions
         roll = this.$rollNotation('1d100')
         rollValue = roll.sum
@@ -310,7 +262,7 @@ export default {
         result: rollValue,
         description: rollDescription,
         modifier: modifier,
-        isSpecialCalculation: attributeKey === 'pa' || attributeKey === 'wk' || attributeKey === 'au'
+        isSpecialCalculation: attributeKey === 'au'
       }
       
       // Show overlay notification

@@ -29,9 +29,26 @@ docker-compose -f docker-compose.dev.yml down
 
 ## Verfügbare Services
 
+### MariaDB (Datenbankserver)
+- **Port**: 3306 (localhost:3306)
+- **Datenbank**: bamort
+- **Benutzer**: bamort
+- **Passwort**: bG4)efozrc (Development)
+- **Root-Passwort**: root_password_dev
+- **Persistent**: ✅ Daten bleiben bei Container-Neustarts erhalten
+- **Health Check**: ✅ Backend wartet auf Datenbankbereitschaft
+
+### phpMyAdmin (Datenbank-Management)
+- **URL**: http://localhost:8082
+- **Server**: mariadb (automatisch konfiguriert)
+- **Login**: root / root_password_dev (oder bamort / bG4)efozrc)
+- **Features**: ✅ Web-basiertes Datenbank-Management
+- **Auto-Login**: ✅ Vorkonfiguriert für MariaDB-Container
+
 ### Backend (Go mit Air Live-Reloading)
-- **URL**: http://localhost:8080
-- **API-Dokumentation**: http://localhost:8080/api (falls verfügbar)
+- **URL**: http://localhost:8180
+- **API-Dokumentation**: http://localhost:8180/api (falls verfügbar)
+- **Datenbankverbindung**: Automatisch konfiguriert zu MariaDB-Container
 - **Live-Reloading**: ✅ Änderungen an Go-Dateien lösen automatisch einen Neustart aus
 - **Volume**: Backend-Code wird vom lokalen Verzeichnis gemountet
 
@@ -67,6 +84,12 @@ docker-compose -f docker-compose.dev.yml logs frontend-dev
 
 ### In Container einsteigen
 ```bash
+# MariaDB
+docker exec -it bamort-mariadb-dev mysql -u bamort -p bamort
+
+# phpMyAdmin (Web-Interface)
+# Zugriff über Browser: http://localhost:8082
+
 # Backend
 docker exec -it bamort-backend-dev sh
 
@@ -74,10 +97,52 @@ docker exec -it bamort-backend-dev sh
 docker exec -it bamort-frontend-dev sh
 ```
 
+## Datenbank-Management
+
+### Web-Interface (phpMyAdmin)
+- **URL**: http://localhost:8082
+- **Login**: 
+  - Root: `root` / `root_password_dev`
+  - User: `bamort` / `bG4)efozrc`
+- **Features**: Vollständige Datenbankverwaltung über Web-Interface
+
+### Kommandozeilen-Zugriff
+```bash
+# Mit mysql client im Container
+docker exec -it bamort-mariadb-dev mysql -u bamort -p bamort
+
+# Oder als root
+docker exec -it bamort-mariadb-dev mysql -u root -p
+```
+
+### Backup/Restore
+```bash
+# Backup erstellen
+docker exec bamort-mariadb-dev mysqldump -u bamort -pbG4)efozrc bamort > backup.sql
+
+# Backup einspielen
+docker exec -i bamort-mariadb-dev mysql -u bamort -pbG4)efozrc bamort < backup.sql
+```
+
+### Datenbank zurücksetzen
+```bash
+# Volumes löschen (alle Daten gehen verloren!)
+docker-compose -f docker-compose.dev.yml down -v
+docker-compose -f docker-compose.dev.yml up --build
+```
+
 ## Konfiguration
+
+### MariaDB
+- Version: 11.4
+- Charset: utf8mb4
+- Collation: utf8mb4_unicode_ci
+- Initialisierungsskripte: `docker/init-db/`
 
 ### Backend
 - Environment: `development`
+- Datenbanktyp: mysql (MariaDB)
+- Datenbankverbindung: Automatisch konfiguriert
 - Air-Konfiguration: `backend/.air.toml`
 - Ausgeschlossene Dateien: Tests, Uploads, temporäre Dateien
 
@@ -89,7 +154,16 @@ docker exec -it bamort-frontend-dev sh
 ## Troubleshooting
 
 ### Port bereits in Verwendung
-Stelle sicher, dass die Ports 8080 und 5173 nicht von anderen Anwendungen verwendet werden.
+Stelle sicher, dass die Ports 3306, 8080, 8082, 8180 und 5173 nicht von anderen Anwendungen verwendet werden.
+
+### Datenbankverbindungsfehler
+- Warte nach dem Start 10-15 Sekunden, bis MariaDB vollständig initialisiert ist
+- Überprüfe die Logs: `docker-compose -f docker-compose.dev.yml logs mariadb`
+
+### phpMyAdmin nicht erreichbar
+- Stelle sicher, dass Port 8082 frei ist
+- Warte bis MariaDB vollständig gestartet ist
+- Überprüfe die Logs: `docker-compose -f docker-compose.dev.yml logs phpmyadmin`
 
 ### Node_modules Probleme
 Falls es Probleme mit node_modules gibt:

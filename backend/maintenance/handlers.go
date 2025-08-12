@@ -531,3 +531,500 @@ func ReloadENV(c *gin.Context) {
 	config.LoadConfig()
 	c.JSON(http.StatusOK, gin.H{"message": "Environment variables reloaded successfully"})
 }
+
+// TransferSQLiteToMariaDB transfers data from SQLite test database to MariaDB
+func TransferSQLiteToMariaDB(c *gin.Context) {
+	logger.Info("Starte Datenübertragung von SQLite zu MariaDB...")
+
+	// Path to the SQLite source database
+	sourceFile := preparedTestDB
+
+	// Check if source file exists
+	if _, err := os.Stat(sourceFile); os.IsNotExist(err) {
+		logger.Error("SQLite-Quelldatei nicht gefunden: %s", sourceFile)
+		respondWithError(c, http.StatusNotFound, "SQLite source file not found: "+sourceFile)
+		return
+	}
+
+	logger.Debug("SQLite-Quelldatei gefunden: %s", sourceFile)
+
+	// Connect to SQLite source database
+	logger.Debug("Verbinde mit SQLite-Quelldatenbank...")
+	sourceDB, err := gorm.Open(sqlite.Open(sourceFile), &gorm.Config{})
+	if err != nil {
+		logger.Error("Fehler beim Verbinden mit SQLite-Datenbank: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to connect to SQLite source: "+err.Error())
+		return
+	}
+	defer func() {
+		if sqlDB, err := sourceDB.DB(); err == nil {
+			logger.Debug("Schließe SQLite-Datenbankverbindung")
+			sqlDB.Close()
+		}
+	}()
+	logger.Debug("SQLite-Verbindung erfolgreich")
+
+	// Connect to MariaDB target using the configured connection string
+	logger.Debug("Verbinde mit MariaDB-Zieldatenbank...")
+
+	// Temporarily override config to ensure MariaDB connection
+	originalType := config.Cfg.DatabaseType
+	originalURL := config.Cfg.DatabaseURL
+	originalEnv := config.Cfg.Environment
+
+	// Force MariaDB connection parameters
+	config.Cfg.DatabaseType = "mysql"
+	config.Cfg.DatabaseURL = "bamort:bG4)efozrc@tcp(mariadb:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
+	config.Cfg.Environment = "production" // Ensure we don't get test DB
+
+	targetDB := database.ConnectDatabaseOrig() // Use original connection method to avoid test DB
+
+	// Restore original config
+	config.Cfg.DatabaseType = originalType
+	config.Cfg.DatabaseURL = originalURL
+	config.Cfg.Environment = originalEnv
+
+	if targetDB == nil {
+		logger.Error("Fehler beim Verbinden mit MariaDB-Zieldatenbank")
+		respondWithError(c, http.StatusInternalServerError, "Failed to connect to MariaDB target")
+		return
+	}
+	logger.Debug("MariaDB-Verbindung erfolgreich")
+
+	// Migrate all structures to MariaDB first
+	logger.Debug("Migriere Strukturen in MariaDB-Datenbank...")
+	if err := migrateAllStructures(targetDB); err != nil {
+		logger.Error("Fehler beim Migrieren der Strukturen in MariaDB: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to migrate structures to MariaDB: "+err.Error())
+		return
+	}
+	logger.Debug("Strukturen erfolgreich migriert")
+
+	// Clear existing data in MariaDB (optional - be careful!)
+	clearExisting := c.Query("clear")
+	if clearExisting == "true" {
+		logger.Info("Lösche bestehende Daten in MariaDB...")
+		if err := clearMariaDBData(targetDB); err != nil {
+			logger.Error("Fehler beim Löschen bestehender Daten: %s", err.Error())
+			respondWithError(c, http.StatusInternalServerError, "Failed to clear existing data: "+err.Error())
+			return
+		}
+		logger.Debug("Bestehende Daten gelöscht")
+	}
+
+	// Copy data from SQLite to MariaDB
+	logger.Info("Kopiere Daten von SQLite zu MariaDB...")
+	if err := copySQLiteToMariaDB(sourceDB, targetDB); err != nil {
+		logger.Error("Fehler beim Kopieren der Daten von SQLite zu MariaDB: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to copy data from SQLite to MariaDB: "+err.Error())
+		return
+	}
+
+	// Get statistics about the transferred data
+	stats, err := getTestDataStatistics(targetDB)
+	if err != nil {
+		logger.Error("Fehler beim Abrufen der Datenstatistiken: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to get data statistics: "+err.Error())
+		return
+	}
+
+	logger.Info("Datenübertragung von SQLite zu MariaDB erfolgreich abgeschlossen")
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Data transfer from SQLite to MariaDB completed successfully",
+		"source_file": sourceFile,
+		"target":      "mariadb:3306/bamort",
+		"statistics":  stats,
+	})
+}
+
+// copySQLiteToMariaDB copies all data from SQLite to MariaDB
+func copySQLiteToMariaDB(sqliteDB, mariaDB *gorm.DB) error {
+	logger.Debug("Starte Kopiervorgang aller Daten von SQLite zu MariaDB...")
+
+	// Same table order as copyMariaDBToSQLite but in reverse direction
+	tables := []interface{}{
+		// Basis-Strukturen (keine Abhängigkeiten)
+		&user.User{},
+
+		// Learning Costs System - Basis
+		&models.Source{},
+		&models.CharacterClass{},
+		&models.SkillCategory{},
+		&models.SkillDifficulty{},
+		&models.SpellSchool{},
+
+		// Learning Costs System - Abhängige Tabellen
+		&models.ClassCategoryEPCost{},
+		&models.ClassSpellSchoolEPCost{},
+		&models.SpellLevelLECost{},
+		&models.SkillCategoryDifficulty{},
+		&models.SkillImprovementCost{},
+
+		// GSMaster Basis-Daten
+		&models.Skill{},
+		&models.WeaponSkill{},
+		&models.Spell{},
+		&models.Equipment{},
+		&models.Weapon{},
+		&models.Container{},
+		&models.Transportation{},
+		&models.Believe{},
+
+		// Charaktere (Basis)
+		&models.Char{},
+
+		// Charakter-Eigenschaften (abhängig von Char)
+		&models.Eigenschaft{},
+		&models.Lp{},
+		&models.Ap{},
+		&models.B{},
+		&models.Merkmale{},
+		&models.Erfahrungsschatz{},
+		&models.Bennies{},
+		&models.Vermoegen{},
+
+		// Charakter-Skills (abhängig von Char und Skills)
+		&models.SkFertigkeit{},
+		&models.SkWaffenfertigkeit{},
+		&models.SkAngeboreneFertigkeit{},
+		&models.SkZauber{},
+
+		// Charakter-Equipment (abhängig von Char und Equipment)
+		&models.EqAusruestung{},
+		&models.EqWaffe{},
+		&models.EqContainer{},
+	}
+
+	logger.Info("Kopiere Daten für %d Tabellen von SQLite zu MariaDB...", len(tables))
+	for i, model := range tables {
+		logger.Debug("Kopiere Tabelle %d/%d: %T", i+1, len(tables), model)
+		if err := copyTableDataReverse(sqliteDB, mariaDB, model); err != nil {
+			logger.Error("Fehler beim Kopieren der Tabellendaten für %T: %s", model, err.Error())
+			return fmt.Errorf("failed to copy table data for %T: %w", model, err)
+		}
+	}
+
+	logger.Info("Alle Tabellendaten erfolgreich von SQLite zu MariaDB kopiert")
+	return nil
+}
+
+// copyTableDataReverse copies all data from source to target database
+func copyTableDataReverse(sourceDB, targetDB *gorm.DB, model interface{}) error {
+	tableName := fmt.Sprintf("%T", model)
+	logger.Debug("Starte Kopiervorgang für Tabelle: %s", tableName)
+
+	// Count records in source
+	var count int64
+	err := sourceDB.Model(model).Count(&count).Error
+	if err != nil {
+		if isTableNotExistError(err) {
+			logger.Debug("Tabelle %s existiert nicht in der Quelle, überspringe", tableName)
+			return nil
+		}
+		logger.Error("Fehler beim Zählen der Datensätze für %s: %s", tableName, err.Error())
+		return err
+	}
+
+	if count == 0 {
+		logger.Debug("Tabelle %s ist leer, keine Daten zu kopieren", tableName)
+		return nil
+	}
+
+	logger.Debug("Kopiere %d Datensätze für Tabelle %s", count, tableName)
+
+	// Copy data in batches
+	batchSize := 100
+	totalBatches := (int(count) + batchSize - 1) / batchSize
+
+	for batch := 0; batch < totalBatches; batch++ {
+		offset := batch * batchSize
+		logger.Debug("Verarbeite Batch %d/%d für Tabelle %s (Offset: %d)", batch+1, totalBatches, tableName, offset)
+
+		// Create slice to hold batch data and read from source
+		var records interface{}
+
+		// Read batch from source
+		switch model.(type) {
+		case *user.User:
+			var batch []user.User
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Source:
+			var batch []models.Source
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.CharacterClass:
+			var batch []models.CharacterClass
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.SkillCategory:
+			var batch []models.SkillCategory
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.SkillDifficulty:
+			var batch []models.SkillDifficulty
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.SpellSchool:
+			var batch []models.SpellSchool
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.ClassCategoryEPCost:
+			var batch []models.ClassCategoryEPCost
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.ClassSpellSchoolEPCost:
+			var batch []models.ClassSpellSchoolEPCost
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.SpellLevelLECost:
+			var batch []models.SpellLevelLECost
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.SkillCategoryDifficulty:
+			var batch []models.SkillCategoryDifficulty
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.SkillImprovementCost:
+			var batch []models.SkillImprovementCost
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Skill:
+			var batch []models.Skill
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.WeaponSkill:
+			var batch []models.WeaponSkill
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Spell:
+			var batch []models.Spell
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Equipment:
+			var batch []models.Equipment
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Weapon:
+			var batch []models.Weapon
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Container:
+			var batch []models.Container
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Transportation:
+			var batch []models.Transportation
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Believe:
+			var batch []models.Believe
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Char:
+			var batch []models.Char
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Eigenschaft:
+			var batch []models.Eigenschaft
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Lp:
+			var batch []models.Lp
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Ap:
+			var batch []models.Ap
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.B:
+			var batch []models.B
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Merkmale:
+			var batch []models.Merkmale
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Erfahrungsschatz:
+			var batch []models.Erfahrungsschatz
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Bennies:
+			var batch []models.Bennies
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.Vermoegen:
+			var batch []models.Vermoegen
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.SkFertigkeit:
+			var batch []models.SkFertigkeit
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.SkWaffenfertigkeit:
+			var batch []models.SkWaffenfertigkeit
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.SkAngeboreneFertigkeit:
+			var batch []models.SkAngeboreneFertigkeit
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.SkZauber:
+			var batch []models.SkZauber
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.EqAusruestung:
+			var batch []models.EqAusruestung
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.EqWaffe:
+			var batch []models.EqWaffe
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.EqContainer:
+			var batch []models.EqContainer
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		default:
+			return fmt.Errorf("unsupported model type: %T", model)
+		}
+
+		// Insert batch into target database using CreateInBatches for better performance
+		if err := targetDB.Clauses(clause.OnConflict{UpdateAll: true}).CreateInBatches(records, batchSize).Error; err != nil {
+			logger.Error("Fehler beim Einfügen des Batches für Tabelle %s: %s", tableName, err.Error())
+			return fmt.Errorf("failed to insert batch for table %s: %w", tableName, err)
+		}
+
+		logger.Debug("Batch %d/%d für Tabelle %s erfolgreich verarbeitet", batch+1, totalBatches, tableName)
+	}
+
+	logger.Debug("Kopiervorgang für Tabelle %s abgeschlossen", tableName)
+	return nil
+}
+
+// clearMariaDBData clears all data from MariaDB tables (use with caution!)
+func clearMariaDBData(db *gorm.DB) error {
+	logger.Debug("Lösche alle Daten aus MariaDB-Tabellen...")
+
+	// Clear tables in reverse order due to foreign key constraints
+	tables := []interface{}{
+		&models.EqContainer{},
+		&models.EqWaffe{},
+		&models.EqAusruestung{},
+		&models.SkZauber{},
+		&models.SkAngeboreneFertigkeit{},
+		&models.SkWaffenfertigkeit{},
+		&models.SkFertigkeit{},
+		&models.Vermoegen{},
+		&models.Bennies{},
+		&models.Erfahrungsschatz{},
+		&models.Merkmale{},
+		&models.B{},
+		&models.Ap{},
+		&models.Lp{},
+		&models.Eigenschaft{},
+		&models.Char{},
+		&models.Believe{},
+		&models.Transportation{},
+		&models.Container{},
+		&models.Weapon{},
+		&models.Equipment{},
+		&models.Spell{},
+		&models.WeaponSkill{},
+		&models.Skill{},
+		&models.SkillImprovementCost{},
+		&models.SkillCategoryDifficulty{},
+		&models.SpellLevelLECost{},
+		&models.ClassSpellSchoolEPCost{},
+		&models.ClassCategoryEPCost{},
+		&models.SpellSchool{},
+		&models.SkillDifficulty{},
+		&models.SkillCategory{},
+		&models.CharacterClass{},
+		&models.Source{},
+		&user.User{},
+	}
+
+	for _, model := range tables {
+		tableName := fmt.Sprintf("%T", model)
+		logger.Debug("Lösche Daten aus Tabelle: %s", tableName)
+
+		if err := db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(model).Error; err != nil {
+			// Continue with other tables even if one fails
+			logger.Warn("Warnung beim Löschen der Tabelle %s: %s", tableName, err.Error())
+		}
+	}
+
+	logger.Debug("Alle Tabellendaten gelöscht")
+	return nil
+}

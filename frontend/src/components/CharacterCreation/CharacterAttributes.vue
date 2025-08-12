@@ -320,8 +320,9 @@ export default {
     rollAllAttributes() {
       // Roll all attributes at once
       Object.keys(this.formData).forEach(key => {
-        const roll = this.$rollNotation('max(2d100)')
-        this.formData[key] = roll.selectedValue
+        //const roll = this.$rollNotation('max(2d100)')
+        //this.formData[key] = roll.selectedValue
+        this.rollAttribute(key)
       })
       this.updateTotal()
       

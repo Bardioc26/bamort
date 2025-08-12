@@ -27,7 +27,7 @@
                 @click="rollAttribute(attr.key)"
                 :title="attr.key === 'pa' ? 'Roll PA: 1d100 + 4×(In/10) - 20' : 
                        attr.key === 'wk' ? 'Roll WK: 1d100 + 2×(Ko/10 + In/10) - 20' : 
-                       attr.key === 'au' ? 'Roll AU with race restrictions (Elfen ≥81, Gnome/Zwerge ≤80)' :
+                       attr.key === 'au' ? 'Roll AU: 1d100 with race restrictions (Elfen ≥81, Gnome/Zwerge ≤80)' :
                        'Roll max(2d100) for ' + attr.name"
               >
                 🎲
@@ -252,9 +252,9 @@ export default {
         
         rollDescription = `1d100 + 2×(${this.formData.ko}/10 + ${this.formData.in}/10) - 20 = ${baseRoll.sum} + 2×(${constitutionBonus} + ${intelligenceBonus}) - 20`
       } else if (attributeKey === 'au') {
-        // Standard max(2d100) roll for AU with race-based restrictions
-        roll = this.$rollNotation('max(2d100)')
-        rollValue = roll.selectedValue
+        // Standard 1d100 roll for AU with race-based restrictions
+        roll = this.$rollNotation('1d100')
+        rollValue = roll.sum
         
         // Apply race-based restrictions for AU (Aussehen)
         const race = this.sessionData.rasse || ''
@@ -284,7 +284,7 @@ export default {
           selectedValue: rollValue
         }
         
-        rollDescription = `max of ${roll.rolls.join(', ')}${raceRestriction}`
+        rollDescription = `1d100: ${roll.sum}${raceRestriction}`
         if (rollValue !== originalRollValue) {
           rollDescription += ` → adjusted to ${rollValue}`
         }
@@ -305,7 +305,7 @@ export default {
       this.lastAttributeRoll = {
         attribute: attributeKey,
         attributeName: attributeName,
-        rolls: roll.rolls || [roll.sum],
+        rolls: (attributeKey === 'au') ? [roll.sum] : (roll.rolls || [roll.sum]),
         roll: rollValue,
         result: rollValue,
         description: rollDescription,

@@ -260,13 +260,14 @@ export default {
         const race = this.sessionData.rasse || ''
         let minValue = 1, maxValue = 100, raceRestriction = ''
         
-        if (race === 'Elfen') {
+        if (race === 'Elf') {
           minValue = 81
           raceRestriction = ' (Elfen minimum: 81)'
-        } else if (race === 'Gnome' || race === 'Zwerge') {
+        } else if (race === 'Gnom' || race === 'Zwerg') {
           maxValue = 80
           raceRestriction = ` (${race} maximum: 80)`
         }
+        //console.log('rollvalue, minval, maxval, race:', rollValue ,minValue, maxValue, race)
         
         // Store original roll value for comparison
         const originalRollValue = rollValue
@@ -277,7 +278,7 @@ export default {
         } else if (rollValue > maxValue) {
           rollValue = maxValue
         }
-        
+        //console.log('2 rollvalue, minval, maxval, race:', rollValue ,minValue, maxValue, race)
         roll = {
           ...roll,
           selectedValue: rollValue
@@ -292,6 +293,7 @@ export default {
         roll = this.$rollNotation('max(2d100)')
         rollValue = roll.selectedValue
         rollDescription = `max of ${roll.rolls.join(', ')}`
+        //console.log('Standard max(2d100) roll for other attributes:', rollValue)
       }
       
       const attributeName = this.attributes.find(attr => attr.key === attributeKey)?.name || attributeKey

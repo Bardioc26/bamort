@@ -1,5 +1,5 @@
 <template>
-  <div class="basic-info-form">
+  <div class="basic-info-form character-creation-container">
     <h2>{{ $t('characters.basicInfo.title') }}</h2>
     
     <form @submit.prevent="handleSubmit">

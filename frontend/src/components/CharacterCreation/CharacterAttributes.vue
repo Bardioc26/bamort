@@ -1,5 +1,5 @@
 <template>
-  <div class="attributes-form">
+  <div class="attributes-form character-creation-container">
     <h2>Character Attributes</h2>
     <p class="instruction">Set the basic attributes for your character (1-100)</p>
     
@@ -317,7 +317,7 @@ export default {
 }
 </script>
 
-<style scoped>
+
 .attributes-form {
   max-width: 800px;
   margin: 0 auto;
@@ -506,4 +506,4 @@ export default {
     padding: 10px;
   }
 }
-</style>
+

@@ -1,5 +1,5 @@
 <template>
-  <div class="skills-form">
+  <div class="skills-form character-creation-container">
     <h2>Skills & Spells</h2>
     <p class="instruction">Select skills and spells for your character. Each category has a limited number of learning points.</p>
     
@@ -243,8 +243,9 @@ export default {
 
 <style scoped>
 .skills-form {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0;
 }
 
 .skills-form h2 {

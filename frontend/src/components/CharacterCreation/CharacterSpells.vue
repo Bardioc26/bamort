@@ -1,5 +1,5 @@
 <template>
-  <div class="character-spells">
+  <div class="character-spells character-creation-container">
     <h2>{{ $t('characters.create.spells.title') }}</h2>
     <p class="subtitle">{{ $t('characters.create.spells.description') }}</p>
     
@@ -217,8 +217,9 @@ export default {
 <style scoped>
 .character-spells {
   padding: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0;
 }
 
 .subtitle {

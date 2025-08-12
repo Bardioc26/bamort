@@ -296,9 +296,14 @@ export default {
 
 <style scoped>
 .character-creation {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 10px;
+}
+
+.creation-content {
+  width: 100%;
 }
 
 .creation-header {

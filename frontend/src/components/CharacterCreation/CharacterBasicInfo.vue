@@ -18,18 +18,37 @@
 
       <div class="form-row">
         <div class="form-group">
+          <label for="geschlecht">{{ $t('characters.basicInfo.gender') }} {{ $t('characters.basicInfo.required') }}</label>
+          <select id="geschlecht" v-model="formData.geschlecht" required>
+            <option value="">{{ $t('characters.basicInfo.selectGender') }}</option>
+            <option value="Männlich">{{ $t('characters.basicInfo.male') }}</option>
+            <option value="Weiblich">{{ $t('characters.basicInfo.female') }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
           <label for="rasse">{{ $t('characters.basicInfo.race') }} {{ $t('characters.basicInfo.required') }}</label>
           <select id="rasse" v-model="formData.rasse" required>
             <option value="">{{ $t('characters.basicInfo.selectRace') }}</option>
             <option v-for="race in races" :key="race" :value="race">{{ race }}</option>
           </select>
         </div>
+      </div>
 
+      <div class="form-row">
         <div class="form-group">
           <label for="typ">{{ $t('characters.basicInfo.characterClass') }} {{ $t('characters.basicInfo.required') }}</label>
           <select id="typ" v-model="formData.typ" required>
             <option value="">{{ $t('characters.basicInfo.selectClass') }}</option>
             <option v-for="cls in classes" :key="cls" :value="cls">{{ cls }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="herkunft">{{ $t('characters.basicInfo.origin') }} {{ $t('characters.basicInfo.required') }}</label>
+          <select id="herkunft" v-model="formData.herkunft" required>
+            <option value="">{{ $t('characters.basicInfo.selectOrigin') }}</option>
+            <option v-for="origin in origins" :key="origin" :value="origin">{{ origin }}</option>
           </select>
         </div>
       </div>
@@ -143,6 +162,7 @@ export default {
     return {
       formData: {
         name: '',
+        geschlecht: '',
         rasse: '',
         typ: '',
         herkunft: '',
@@ -163,6 +183,7 @@ export default {
   computed: {
     isValid() {
       return this.formData.name.length >= 2 && 
+             this.formData.geschlecht &&
              this.formData.rasse && 
              this.formData.typ && 
              this.formData.herkunft &&
@@ -179,6 +200,7 @@ export default {
     // Initialize form with session data
     this.formData = {
       name: this.sessionData.name || '',
+      geschlecht: this.sessionData.geschlecht || '',
       rasse: this.sessionData.rasse || '',
       typ: this.sessionData.typ || '',
       herkunft: this.sessionData.herkunft || '',

@@ -641,6 +641,20 @@ func TransferSQLiteToMariaDB(c *gin.Context) {
 func copySQLiteToMariaDB(sqliteDB, mariaDB *gorm.DB) error {
 	logger.Debug("Starte Kopiervorgang aller Daten von SQLite zu MariaDB...")
 
+	// Disable foreign key checks temporarily to avoid constraint issues
+	logger.Debug("Deaktiviere Foreign Key Checks...")
+	if err := mariaDB.Exec("SET FOREIGN_KEY_CHECKS = 0").Error; err != nil {
+		logger.Warn("Warnung: Konnte Foreign Key Checks nicht deaktivieren: %s", err.Error())
+	}
+
+	// Re-enable foreign key checks at the end
+	defer func() {
+		logger.Debug("Aktiviere Foreign Key Checks wieder...")
+		if err := mariaDB.Exec("SET FOREIGN_KEY_CHECKS = 1").Error; err != nil {
+			logger.Warn("Warnung: Konnte Foreign Key Checks nicht reaktivieren: %s", err.Error())
+		}
+	}()
+
 	// Same table order as copyMariaDBToSQLite but in reverse direction
 	tables := []interface{}{
 		// Basis-Strukturen (keine Abhängigkeiten)
@@ -653,14 +667,7 @@ func copySQLiteToMariaDB(sqliteDB, mariaDB *gorm.DB) error {
 		&models.SkillDifficulty{},
 		&models.SpellSchool{},
 
-		// Learning Costs System - Abhängige Tabellen
-		&models.ClassCategoryEPCost{},
-		&models.ClassSpellSchoolEPCost{},
-		&models.SpellLevelLECost{},
-		&models.SkillCategoryDifficulty{},
-		&models.SkillImprovementCost{},
-
-		// GSMaster Basis-Daten
+		// GSMaster Basis-Daten (müssen vor den abhängigen Learning Cost Tabellen kommen)
 		&models.Skill{},
 		&models.WeaponSkill{},
 		&models.Spell{},
@@ -669,6 +676,13 @@ func copySQLiteToMariaDB(sqliteDB, mariaDB *gorm.DB) error {
 		&models.Container{},
 		&models.Transportation{},
 		&models.Believe{},
+
+		// Learning Costs System - Abhängige Tabellen (nach Skills/Spells)
+		&models.ClassCategoryEPCost{},
+		&models.ClassSpellSchoolEPCost{},
+		&models.SpellLevelLECost{},
+		&models.SkillCategoryDifficulty{}, // Jetzt nach Skills
+		&models.SkillImprovementCost{},
 
 		// Charaktere (Basis)
 		&models.Char{},
@@ -977,14 +991,20 @@ func clearMariaDBData(db *gorm.DB) error {
 	logger.Debug("Lösche alle Daten aus MariaDB-Tabellen...")
 
 	// Clear tables in reverse order due to foreign key constraints
+	// (reverse of the insertion order in copySQLiteToMariaDB)
 	tables := []interface{}{
+		// Charakter-Equipment (abhängig von Char und Equipment) - zuerst löschen
 		&models.EqContainer{},
 		&models.EqWaffe{},
 		&models.EqAusruestung{},
+
+		// Charakter-Skills (abhängig von Char und Skills)
 		&models.SkZauber{},
 		&models.SkAngeboreneFertigkeit{},
 		&models.SkWaffenfertigkeit{},
 		&models.SkFertigkeit{},
+
+		// Charakter-Eigenschaften (abhängig von Char)
 		&models.Vermoegen{},
 		&models.Bennies{},
 		&models.Erfahrungsschatz{},
@@ -993,7 +1013,18 @@ func clearMariaDBData(db *gorm.DB) error {
 		&models.Ap{},
 		&models.Lp{},
 		&models.Eigenschaft{},
+
+		// Charaktere (Basis)
 		&models.Char{},
+
+		// Learning Costs System - Abhängige Tabellen (vor Skills/Spells löschen)
+		&models.SkillImprovementCost{},
+		&models.SkillCategoryDifficulty{},
+		&models.SpellLevelLECost{},
+		&models.ClassSpellSchoolEPCost{},
+		&models.ClassCategoryEPCost{},
+
+		// GSMaster Basis-Daten
 		&models.Believe{},
 		&models.Transportation{},
 		&models.Container{},
@@ -1002,16 +1033,15 @@ func clearMariaDBData(db *gorm.DB) error {
 		&models.Spell{},
 		&models.WeaponSkill{},
 		&models.Skill{},
-		&models.SkillImprovementCost{},
-		&models.SkillCategoryDifficulty{},
-		&models.SpellLevelLECost{},
-		&models.ClassSpellSchoolEPCost{},
-		&models.ClassCategoryEPCost{},
+
+		// Learning Costs System - Basis
 		&models.SpellSchool{},
 		&models.SkillDifficulty{},
 		&models.SkillCategory{},
 		&models.CharacterClass{},
 		&models.Source{},
+
+		// Basis-Strukturen (keine Abhängigkeiten) - zuletzt löschen
 		&user.User{},
 	}
 

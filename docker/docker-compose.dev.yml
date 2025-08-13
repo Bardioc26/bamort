@@ -14,7 +14,11 @@ services:
     environment:
       - GO_ENV=development
       - CGO_ENABLED=1
-      #- CGO_ENABLED=1
+      - DATABASE_TYPE=mysql
+      - DATABASE_URL=bamort:bG4)efozrc@tcp(mariadb:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local
+    depends_on:
+      mariadb:
+        condition: service_healthy
     working_dir: /app
     # Restart if Go code changes cause crash
     restart: unless-stopped
@@ -31,10 +35,49 @@ services:
       - /app/node_modules  # Prevent overwriting node_modules
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=http://localhost:8080
+      - VITE_API_URL=${VITE_API_URL:-http://192.168.0.48:8180}
     depends_on:
       - backend-dev
     restart: unless-stopped
+
+  mariadb:
+    image: mariadb:11.4
+    container_name: bamort-mariadb-dev
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: root_password_dev
+      MARIADB_DATABASE: bamort
+      MARIADB_USER: bamort
+      MARIADB_PASSWORD: bG4)efozrc
+      MARIADB_CHARSET: utf8mb4
+      MARIADB_COLLATION: utf8mb4_unicode_ci
+    volumes:
+      - ./bamort-db-dev:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      timeout: 5s
+      retries: 3
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:5.2
+    container_name: bamort-phpmyadmin-dev
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root_password_dev
+      MYSQL_ROOT_PASSWORD: root_password_dev
+      PMA_ARBITRARY: 1
+    depends_on:
+      mariadb:
+        condition: service_healthy
 
 volumes:
   go-mod-cache:

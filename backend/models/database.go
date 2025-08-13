@@ -87,6 +87,7 @@ func characterMigrateStructure(db ...*gorm.DB) error {
 		&Erfahrungsschatz{},
 		&Bennies{},
 		&Vermoegen{},
+		&CharacterCreationSession{},
 	)
 	if err != nil {
 		return err

@@ -2,6 +2,7 @@ package models
 
 import (
 	"bamort/database"
+	"bamort/user"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -74,6 +75,8 @@ type Vermoegen struct {
 
 type Char struct {
 	BamortBase
+	UserID             uint                 `gorm:"index;not null;default:1" json:"user_id"`
+	User               user.User            `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"user"`
 	Rasse              string               `json:"rasse"`
 	Typ                string               `json:"typ"`
 	Alter              int                  `json:"alter"`
@@ -83,6 +86,7 @@ type Char struct {
 	Gewicht            int                  `json:"gewicht"`
 	Glaube             string               `json:"glaube"`
 	Hand               string               `json:"hand"`
+	Public             bool                 `json:"public"`
 	Lp                 Lp                   `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"lp"`
 	Ap                 Ap                   `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"ap"`
 	B                  B                    `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"b"`
@@ -103,6 +107,7 @@ type Char struct {
 }
 type CharList struct {
 	BamortBase
+	UserID uint   `json:"user_id"`
 	Rasse  string `json:"rasse"`
 	Typ    string `json:"typ"`
 	Grad   int    `json:"grad"`
@@ -123,6 +128,7 @@ func (object *Char) TableName() string {
 
 func (object *Char) First(charName string) error {
 	err := database.DB.
+		Preload("User").
 		Preload("Lp").
 		Preload("Ap").
 		Preload("B").
@@ -148,6 +154,7 @@ func (object *Char) First(charName string) error {
 
 func (object *Char) FirstID(charID string) error {
 	err := database.DB.
+		Preload("User").
 		Preload("Lp").
 		Preload("Ap").
 		Preload("B").
@@ -169,6 +176,47 @@ func (object *Char) FirstID(charID string) error {
 		return err
 	}
 	return nil
+}
+
+// FindByUserID finds all characters belonging to a specific user
+func (object *Char) FindByUserID(userID uint) ([]Char, error) {
+	var chars []Char
+	err := database.DB.
+		Preload("User").
+		Preload("Lp").
+		Preload("Ap").
+		Preload("B").
+		Preload("Merkmale").
+		Preload("Eigenschaften").
+		Preload("Fertigkeiten").
+		Preload("Waffenfertigkeiten").
+		Preload("Zauber").
+		Preload("Bennies").
+		Preload("Vermoegen").
+		Preload("Erfahrungsschatz").
+		Preload("Waffen").
+		Preload("Behaeltnisse").
+		Preload("Transportmittel").
+		Preload("Ausruestung").
+		Where("user_id = ?", userID).
+		Find(&chars).Error
+	if err != nil {
+		return nil, err
+	}
+	return chars, nil
+}
+
+// FindCharListByUserID finds all characters belonging to a specific user for listing (minimal data)
+func FindCharListByUserID(userID uint) ([]CharList, error) {
+	var chars []CharList
+	err := database.DB.Table("char_chars").
+		Select("id, name, user_id, rasse, typ, grad, owner, public").
+		Where("user_id = ?", userID).
+		Find(&chars).Error
+	if err != nil {
+		return nil, err
+	}
+	return chars, nil
 }
 
 func (object *Char) Create() error {

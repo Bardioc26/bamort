@@ -50,4 +50,26 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	// System-Information
 	charGrp.GET("/character-classes", GetCharacterClassesHandlerOld)
 	charGrp.GET("/skill-categories", GetSkillCategoriesHandlerOld)
+
+	// Character Creation
+	charGrp.GET("/create-sessions", ListCharacterSessions)                          // Aktive Sessions für Benutzer auflisten
+	charGrp.POST("/create-session", CreateCharacterSession)                         // Neue Charakter-Erstellungssession
+	charGrp.GET("/create-session/:sessionId", GetCharacterSession)                  // Session-Daten abrufen
+	charGrp.PUT("/create-session/:sessionId/basic", UpdateCharacterBasicInfo)       // Grundinformationen speichern
+	charGrp.PUT("/create-session/:sessionId/attributes", UpdateCharacterAttributes) // Grundwerte speichern
+	charGrp.PUT("/create-session/:sessionId/derived", UpdateCharacterDerivedValues) // Abgeleitete Werte speichern
+	charGrp.PUT("/create-session/:sessionId/skills", UpdateCharacterSkills)         // Fertigkeiten speichern
+	charGrp.POST("/create-session/:sessionId/finalize", FinalizeCharacterCreation)  // Charakter-Erstellung abschließen
+	charGrp.DELETE("/create-session/:sessionId", DeleteCharacterSession)            // Session löschen
+
+	// Reference Data für Character Creation
+	charGrp.GET("/races", GetRaces)                                            // Verfügbare Rassen
+	charGrp.GET("/classes", GetCharacterClasses)                               // Verfügbare Klassen
+	charGrp.GET("/origins", GetOrigins)                                        // Verfügbare Herkünfte
+	charGrp.GET("/beliefs", SearchBeliefs)                                     // Glaube-Suche
+	charGrp.GET("/skill-categories-with-points", GetSkillCategoriesWithPoints) // Kategorien mit Lernpunkten
+
+	// Derived Values Calculation
+	charGrp.POST("/calculate-static-fields", CalculateStaticFields) // Berechnung ohne Würfelwürfe
+	charGrp.POST("/calculate-rolled-field", CalculateRolledField)   // Berechnung mit Würfelwürfen
 }

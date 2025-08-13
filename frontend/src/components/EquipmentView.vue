@@ -1,6 +1,5 @@
 <template>
-  <div class="cd-view">
-    <h2>{{ character.name }}'s Ausrüstung</h2>
+  <div class="fullwidth-container">
     <div class="cd-list">
       <table class="cd-table">
       <thead>

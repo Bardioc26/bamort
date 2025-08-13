@@ -1,35 +1,40 @@
 version: "3.8"
 services:
-  # mariadb:
-  #   image: mariadb:10.7
-  #   container_name: my_mariadb
-  #   environment:
-  #     - MYSQL_ROOT_PASSWORD=1234
-  #     - MYSQL_DATABASE=rollenspiel_db
-  #   ports:
-  #     - "3306:3306"
-  #   volumes:
-  #     - db_data:/var/lib/mysql
-  #   command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+  mariadb:
+    image: mariadb:11.4
+    container_name: bamort-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-secure_root_password}
+      MARIADB_DATABASE: bamort
+      MARIADB_USER: bamort
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-secure_user_password}
+      MARIADB_CHARSET: utf8mb4
+      MARIADB_COLLATION: utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./bamort-db:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      timeout: 5s
+      retries: 3
+
   backend:
     build: 
       context: ../backend
       dockerfile: ../docker/Dockerfile
     container_name: backend
-    # environment:
-    #   - YOUR_ENV=example    
-    # environment:
-    #   DB_HOST: mariadb
-    #   DB_USER: root
-    #   DB_PASS: 1234
-    #   DB_NAME: rollenspiel_db
+    environment:
+      - DATABASE_TYPE=mysql
+      - DATABASE_URL=bamort:${MARIADB_PASSWORD:-secure_user_password}@tcp(mariadb:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local
     ports:
-      - "8080:8080"
-    # volumes:
-    #   - ./some-local-folder:/app/some-folder
-    # You can add more configuration as needed.
-    #depends_on:
-    #  - mariadb
+      - "8180:8180"
+    depends_on:
+      mariadb:
+        condition: service_healthy
 
   frontend:
     build:
@@ -37,12 +42,30 @@ services:
       dockerfile: ../docker/Dockerfile.frontend
     container_name: frontend
     ports:
-      - "3000:80"
+      - "5173:80"
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://192.168.0.48:8180}
     depends_on:
       - backend
-    # environment:
-    #   - API_URL=http://backend:8080
-    # In your frontend code, you'd reference process.env.API_URL or similar
-    # if using environment variables at build time.
+
+  # phpMyAdmin - Database Management (commented out for production)
+  # Uncomment the following section if you need database management in production
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin:5.2
+  #   container_name: bamort-phpmyadmin
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8081:80"
+  #   environment:
+  #     PMA_HOST: mariadb
+  #     PMA_PORT: 3306
+  #     PMA_USER: root
+  #     PMA_PASSWORD: ${MARIADB_ROOT_PASSWORD:-secure_root_password}
+  #     MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-secure_root_password}
+  #     PMA_ARBITRARY: 1
+  #   depends_on:
+  #     mariadb:
+  #       condition: service_healthy
+
 volumes:
   db_data:

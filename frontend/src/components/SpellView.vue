@@ -1,14 +1,12 @@
 <template>
-  <div class="cd-view">
+  <div class="fullwidth-container">
     <!-- Header mit Lernmodus-Kontrollen -->
-    <div class="header-section">
-      <h2>{{ character.name }}'s Zauber</h2>
-      
+    <div class="page-header header-section">      
       <div class="learning-mode-controls">
         <!-- Lernmodus Toggle Button -->
         <button 
           @click="showLearnNewDialog"
-          class="btn-learning-mode"
+          class="btn btn-primary btn-learning-mode"
           title="Neuen Zauber lernen"
         >
           <span class="icon">🎓</span>
@@ -51,22 +49,17 @@
 </template>
 
 <style>
-.cd-table {
-  width: 100%;
-}
-
+/* SpellView spezifische Styles */
 .cd-table-header {
   background-color: #1da766;
   color: white;
   font-weight: bold;
 }
 
-/* Header mit Lernmodus-Kontrollen */
 .header-section {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 15px;
 }
 
 .learning-mode-controls {
@@ -75,25 +68,20 @@
   gap: 15px;
 }
 
-/* Lernmodus Toggle Button */
 .btn-learning-mode {
-  padding: 8px 16px;
-  border: 2px solid #1da766;
-  background: white;
-  color: #1da766;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
   display: flex;
   align-items: center;
   gap: 5px;
-  transition: all 0.3s ease;
-  position: relative;
+  border: 2px solid #1da766;
 }
 
 .btn-learning-mode:hover {
   background: #1da766;
   color: white;
+}
+
+.icon {
+  font-size: 1.2em;
 }
 </style>
 

@@ -655,3 +655,14 @@ func (object *Believe) Save() error {
 	}
 	return nil
 }
+
+// GetBelievesByActiveSources gibt Glaubensrichtungen nach aktiven Quellen zurück
+func GetBelievesByActiveSources(gameSystem string) ([]Believe, error) {
+	var believes []Believe
+	err := database.DB.
+		Joins("LEFT JOIN learning_sources ON gsm_believes.source_id = learning_sources.id").
+		Where("gsm_believes.game_system = ? AND (learning_sources.is_active = ? OR gsm_believes.source_id IS NULL)", gameSystem, true).
+		Order("gsm_believes.name ASC").
+		Find(&believes).Error
+	return believes, err
+}

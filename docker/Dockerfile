@@ -22,8 +22,8 @@ WORKDIR /app
 # Copy the compiled binary from builder stage
 COPY --from=builder /app/server /app
 
-# Expose port 8080 (or your backend port)
-EXPOSE 8080
+# Expose port 8180 (backend port)
+EXPOSE 8180
 
 # Run the Go server
 CMD ["./server"]

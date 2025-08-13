@@ -68,4 +68,8 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.GET("/origins", GetOrigins)                                        // Verfügbare Herkünfte
 	charGrp.GET("/beliefs", SearchBeliefs)                                     // Glaube-Suche
 	charGrp.GET("/skill-categories-with-points", GetSkillCategoriesWithPoints) // Kategorien mit Lernpunkten
+
+	// Derived Values Calculation
+	charGrp.POST("/calculate-static-fields", CalculateStaticFields) // Berechnung ohne Würfelwürfe
+	charGrp.POST("/calculate-rolled-field", CalculateRolledField)   // Berechnung mit Würfelwürfen
 }

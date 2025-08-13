@@ -294,10 +294,10 @@ export default {
       wkDescription: 'Mentale Widerstandsfähigkeit (Berechnung: 1d100 + 2×(Ko/10 + In/10) - 20)',
       lpMax: 'Lebenspunkte (LP) Maximum',
       lpMaxDescription: 'Maximale Lebens-/Gesundheitspunkte (Berechnung: 1d3 + 7 + Ko/10)',
-      apMax: 'Abenteuerpunkte (AP) Maximum',
+      apMax: 'Ausdauerpunkte (AP) Maximum',
       apMaxDescription: 'Maximale Abenteuerpunkte für spezielle Aktionen',
-      bMax: 'Belastung (B) Maximum',
-      bMaxDescription: 'Maximale Tragekapazität',
+      bMax: 'Bewegungsweite (B)',
+      bMaxDescription: 'Maximale Bewegungsweite (Berechnung: 1d6 + Modifikator je nach Rasse)',
       resistenzKoerper: 'Resistenz Körper',
       resistenzKoerperDescription: 'Körperliche Widerstandsfähigkeit (= Konstitution)',
       resistenzGeist: 'Resistenz Geist',
@@ -340,7 +340,13 @@ export default {
       benniesDescription: 'Grundwerte basierend auf Charakterklasse',
       previousAttributes: 'Zurück: Attribute',
       recalculate: 'Aus Attributen neu berechnen',
-      nextSkills: 'Weiter: Fertigkeiten & Zauber'
+      calculating: 'Berechne...',
+      nextSkills: 'Weiter: Fertigkeiten & Zauber',
+      paRollTooltip: 'PA würfeln: 1d100 + 4×(In/10) - 20',
+      wkRollTooltip: 'WK würfeln: 1d100 + 2×(Ko/10 + In/10) - 20',
+      lpRollTooltip: 'LP würfeln: 1d3 + 7 + (Ko/10)', 
+      apRollTooltip: 'AP würfeln: 3d6 + Modifikator je nach Klasse',
+      bRollTooltip: 'B würfeln: 1d6 + Modifikator je nach Rasse'
     }
   }
 }

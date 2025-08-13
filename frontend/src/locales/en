@@ -246,7 +246,13 @@ export default {
       benniesDescription: 'Base values based on character class',
       previousAttributes: 'Previous: Attributes',
       recalculate: 'Recalculate from Attributes',
-      nextSkills: 'Next: Skills & Spells'
+      calculating: 'Calculating...',
+      nextSkills: 'Next: Skills & Spells',
+      paRollTooltip: 'Roll PA: 1d100 + 4×(In/10) - 20',
+      wkRollTooltip: 'Roll WK: 1d100 + 2×(Ko/10 + In/10) - 20', 
+      lpRollTooltip: 'Roll LP: 1d3 + 7 + (Ko/10)',
+      apRollTooltip: 'Roll AP: 3d6 + modifier based on class',
+      bRollTooltip: 'Roll B: 1d6 + modifier based on race'
     }
   },
   common: {

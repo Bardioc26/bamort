@@ -14,9 +14,11 @@ type CharacterCreationSession struct {
 	UserID        uint                    `json:"user_id" gorm:"index;not null"`
 	User          user.User               `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	Name          string                  `json:"name"`
+	Geschlecht    string                  `json:"geschlecht"`
 	Rasse         string                  `json:"rasse"`
 	Typ           string                  `json:"typ"`
 	Herkunft      string                  `json:"herkunft"`
+	Stand         string                  `json:"stand"`
 	Glaube        string                  `json:"glaube"`
 	Attributes    AttributesData          `json:"attributes" gorm:"type:text;serializer:json"`
 	DerivedValues DerivedValuesData       `json:"derived_values" gorm:"type:text;serializer:json"`
@@ -38,18 +40,30 @@ type AttributesData struct {
 	IN int `json:"in"` // Intelligenz
 	ZT int `json:"zt"` // Zaubertalent
 	AU int `json:"au"` // Ausstrahlung
-	PA int `json:"pa"` // Psi-Kraft
-	WK int `json:"wk"` // Willenskraft
 }
 
 // DerivedValuesData speichert die abgeleiteten Werte
 type DerivedValuesData struct {
-	LPMax int `json:"lp_max"` // Lebenspunkte Maximum
-	APMax int `json:"ap_max"` // Abenteuerpunkte Maximum
-	BMax  int `json:"b_max"`  // Belastung Maximum
-	SG    int `json:"sg"`     // Schicksalsgunst
-	GG    int `json:"gg"`     // Göttliche Gnade
-	GP    int `json:"gp"`     // Glückspunkte
+	PA                    int `json:"pa"`                      // Persönliche Ausstrahlung
+	WK                    int `json:"wk"`                      // Willenskraft
+	LPMax                 int `json:"lp_max"`                  // Lebenspunkte Maximum
+	APMax                 int `json:"ap_max"`                  // Abenteuerpunkte Maximum
+	BMax                  int `json:"b_max"`                   // Belastung Maximum
+	ResistenzKoerper      int `json:"resistenz_koerper"`       // Resistenz Körper
+	ResistenzGeist        int `json:"resistenz_geist"`         // Resistenz Geist
+	ResistenzBonusKoerper int `json:"resistenz_bonus_koerper"` // Resistenz Bonus Körper
+	ResistenzBonusGeist   int `json:"resistenz_bonus_geist"`   // Resistenz Bonus Geist
+	Abwehr                int `json:"abwehr"`                  // Abwehr
+	AbwehrBonus           int `json:"abwehr_bonus"`            // Abwehr Bonus
+	AusdauerBonus         int `json:"ausdauer_bonus"`          // Ausdauer Bonus
+	AngriffsBonus         int `json:"angriffs_bonus"`          // Angriffs Bonus
+	Zaubern               int `json:"zaubern"`                 // Zaubern
+	ZauberBonus           int `json:"zauber_bonus"`            // Zauber Bonus
+	Raufen                int `json:"raufen"`                  // Raufen
+	SchadensBonus         int `json:"schadens_bonus"`          // Schadens Bonus
+	SG                    int `json:"sg"`                      // Schicksalsgunst
+	GG                    int `json:"gg"`                      // Göttliche Gnade
+	GP                    int `json:"gp"`                      // Glückspunkte
 }
 
 // SkillPointsData speichert die verbleibenden Lernpunkte pro Kategorie

@@ -108,6 +108,8 @@ export default {
         typ: '',
         herkunft: '',
         glaube: '',
+        geschlecht: '',
+        stand: '',
         attributes: {},
         derived_values: {},
         skills: [],
@@ -170,14 +172,20 @@ export default {
     },
     
     async handleNext(data) {
-      // Merge the new data
-      this.sessionData = { ...this.sessionData, ...data }
-      
-      // Save progress for current step before moving to next
-      await this.saveProgressForStep(this.currentStep, data)
-      
-      // Move to next step
-      this.currentStep++
+      try {
+        // Merge the new data
+        this.sessionData = { ...this.sessionData, ...data }
+        
+        // Save progress for current step before moving to next
+        await this.saveProgressForStep(this.currentStep, data)
+        
+        // Move to next step
+        this.currentStep++
+      } catch (error) {
+        console.error('Failed to save progress before moving to next step:', error)
+        console.error('Data that failed to save:', data)
+        // Don't move to next step if save failed
+      }
     },
     
     async saveProgressForStep(step, data) {
@@ -190,12 +198,21 @@ export default {
         switch (step) {
           case 1:
             endpoint = `/api/characters/create-session/${this.sessionId}/basic`
+            // Handle both old format and new basic_info format
+            const basicInfo = data.basic_info || data
             payload = {
-              name: data.name || this.sessionData.name,
-              rasse: data.rasse || this.sessionData.rasse,
-              typ: data.typ || this.sessionData.typ,
-              herkunft: data.herkunft || this.sessionData.herkunft,
-              glaube: data.glaube || this.sessionData.glaube,
+              name: basicInfo.name || this.sessionData.name || '',
+              geschlecht: basicInfo.geschlecht || this.sessionData.geschlecht || '',
+              rasse: basicInfo.rasse || this.sessionData.rasse || '',
+              typ: basicInfo.typ || this.sessionData.typ || '',
+              herkunft: basicInfo.herkunft || this.sessionData.herkunft || '',
+              stand: basicInfo.stand || this.sessionData.stand || '',
+              glaube: basicInfo.glaube || this.sessionData.glaube || '',
+            }
+            // Validate that all required fields are present
+            console.log('BasicInfo payload before sending:', payload)
+            if (!payload.name || !payload.geschlecht || !payload.rasse || !payload.typ || !payload.herkunft || !payload.stand) {
+              throw new Error(`Missing required fields: name=${payload.name}, geschlecht=${payload.geschlecht}, rasse=${payload.rasse}, typ=${payload.typ}, herkunft=${payload.herkunft}, stand=${payload.stand}`)
             }
             break
           case 2:
@@ -218,6 +235,9 @@ export default {
         
         if (endpoint) {
           console.log('Saving progress for step', step, 'with payload:', payload)
+          console.log('Original data received:', data)
+          console.log('sessionData:', this.sessionData)
+          console.log('basicInfo extraction:', data.basic_info || data)
           const response = await API.put(endpoint, payload, {
             headers: { Authorization: `Bearer ${token}` },
           })
@@ -225,6 +245,20 @@ export default {
         }
       } catch (error) {
         console.error('Error saving progress for step', step, ':', error)
+        if (error.response) {
+          console.error('Error response data:', error.response.data)
+          console.error('Error response status:', error.response.status)
+        }
+        
+        // Provide more specific error messages
+        if (error.response && error.response.status === 401) {
+          alert('Your session has expired. Please log in again.')
+        } else if (error.response && error.response.status === 400) {
+          const errorMsg = error.response.data?.error || 'Invalid data submitted'
+          alert(`Error saving character data: ${errorMsg}`)
+        } else {
+          alert('Failed to save character data. Please try again.')
+        }
         throw error // Re-throw to handle in calling function
       }
     },
@@ -237,14 +271,29 @@ export default {
       // Only allow navigation to current step or previously completed steps
       if (stepNumber <= this.currentStep) {
         this.currentStep = stepNumber
-        // Save current progress before switching steps
-        this.saveProgress()
+        // Save current progress before switching steps (no data parameter needed here)
+        this.saveProgress().catch(error => {
+          console.error('Failed to save progress during navigation:', error)
+        })
       }
     },
     
-    async saveProgress() {
-      // Save progress for current step with current sessionData
-      await this.saveProgressForStep(this.currentStep, this.sessionData)
+    async saveProgress(data = null) {
+      try {
+        // Use provided data or current sessionData as fallback
+        const dataToSave = data || this.sessionData
+        
+        // Update sessionData with new data if provided
+        if (data) {
+          this.sessionData = { ...this.sessionData, ...data }
+        }
+        
+        // Save progress for current step
+        await this.saveProgressForStep(this.currentStep, dataToSave)
+      } catch (error) {
+        console.error('Failed to save progress:', error)
+        throw error
+      }
     },
     
     async handleFinalize() {

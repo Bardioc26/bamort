@@ -2395,9 +2395,11 @@ func CreateCharacterSession(c *gin.Context) {
 		ID:            sessionID,
 		UserID:        userID,
 		Name:          "",
+		Geschlecht:    "",
 		Rasse:         "",
 		Typ:           "",
 		Herkunft:      "",
+		Stand:         "",
 		Glaube:        "",
 		Attributes:    models.AttributesData{},
 		DerivedValues: models.DerivedValuesData{},
@@ -2553,11 +2555,13 @@ func GetCharacterSession(c *gin.Context) {
 
 // UpdateCharacterBasicInfo Request
 type UpdateBasicInfoRequest struct {
-	Name     string `json:"name" binding:"required,min=2,max=50"`
-	Rasse    string `json:"rasse" binding:"required"`
-	Typ      string `json:"typ" binding:"required"`
-	Herkunft string `json:"herkunft" binding:"required"`
-	Glaube   string `json:"glaube"`
+	Name       string `json:"name" binding:"required,min=2,max=50"`
+	Geschlecht string `json:"geschlecht" binding:"required"`
+	Rasse      string `json:"rasse" binding:"required"`
+	Typ        string `json:"typ" binding:"required"`
+	Herkunft   string `json:"herkunft" binding:"required"`
+	Stand      string `json:"stand" binding:"required"`
+	Glaube     string `json:"glaube"`
 }
 
 // UpdateCharacterBasicInfo speichert Grundinformationen
@@ -2581,8 +2585,8 @@ func UpdateCharacterBasicInfo(c *gin.Context) {
 		return
 	}
 
-	logger.Debug("UpdateCharacterBasicInfo: Request-Daten - Name: %s, Rasse: %s, Typ: %s, Herkunft: %s, Glaube: %s",
-		request.Name, request.Rasse, request.Typ, request.Herkunft, request.Glaube)
+	logger.Debug("UpdateCharacterBasicInfo: Request-Daten - Name: %s, Geschlecht: %s, Rasse: %s, Typ: %s, Herkunft: %s, Stand: %s, Glaube: %s",
+		request.Name, request.Geschlecht, request.Rasse, request.Typ, request.Herkunft, request.Stand, request.Glaube)
 
 	// Session aus Datenbank laden
 	logger.Debug("UpdateCharacterBasicInfo: Lade Session aus Datenbank...")
@@ -2600,9 +2604,11 @@ func UpdateCharacterBasicInfo(c *gin.Context) {
 
 	// Grundinformationen aktualisieren
 	session.Name = request.Name
+	session.Geschlecht = request.Geschlecht
 	session.Rasse = request.Rasse
 	session.Typ = request.Typ
 	session.Herkunft = request.Herkunft
+	session.Stand = request.Stand
 	session.Glaube = request.Glaube
 	session.CurrentStep = 2
 	session.UpdatedAt = time.Now()
@@ -2636,8 +2642,6 @@ type UpdateAttributesRequest struct {
 	IN int `json:"in" binding:"required,min=1,max=100"` // Intelligenz
 	ZT int `json:"zt" binding:"required,min=1,max=100"` // Zaubertalent
 	AU int `json:"au" binding:"required,min=1,max=100"` // Ausstrahlung
-	PA int `json:"pa" binding:"required,min=1,max=100"` // Psi-Kraft
-	WK int `json:"wk" binding:"required,min=1,max=100"` // Willenskraft
 }
 
 // UpdateCharacterAttributes speichert Grundwerte
@@ -2661,8 +2665,8 @@ func UpdateCharacterAttributes(c *gin.Context) {
 		return
 	}
 
-	logger.Debug("UpdateCharacterAttributes: Attribute - ST:%d GS:%d GW:%d KO:%d IN:%d ZT:%d AU:%d PA:%d WK:%d",
-		request.ST, request.GS, request.GW, request.KO, request.IN, request.ZT, request.AU, request.PA, request.WK)
+	logger.Debug("UpdateCharacterAttributes: Attribute - ST:%d GS:%d GW:%d KO:%d IN:%d ZT:%d AU:%d",
+		request.ST, request.GS, request.GW, request.KO, request.IN, request.ZT, request.AU)
 
 	// Session aus Datenbank laden
 	logger.Debug("UpdateCharacterAttributes: Lade Session aus Datenbank...")
@@ -2686,8 +2690,6 @@ func UpdateCharacterAttributes(c *gin.Context) {
 		IN: request.IN,
 		ZT: request.ZT,
 		AU: request.AU,
-		PA: request.PA,
-		WK: request.WK,
 	}
 	session.CurrentStep = 3
 	session.UpdatedAt = time.Now()
@@ -2713,12 +2715,26 @@ func UpdateCharacterAttributes(c *gin.Context) {
 
 // UpdateDerivedValuesRequest
 type UpdateDerivedValuesRequest struct {
-	LP_Max int `json:"lp_max"` // Lebenspunkte Maximum
-	AP_Max int `json:"ap_max"` // Abenteuerpunkte Maximum
-	B_Max  int `json:"b_max"`  // Belastung Maximum
-	SG     int `json:"sg"`     // Schicksalsgunst
-	GG     int `json:"gg"`     // Göttliche Gnade
-	GP     int `json:"gp"`     // Glückspunkte
+	PA                    int `json:"pa" binding:"required,min=1,max=100"`               // Persönliche Ausstrahlung
+	WK                    int `json:"wk" binding:"required,min=1,max=100"`               // Willenskraft
+	LP_Max                int `json:"lp_max" binding:"required,min=1,max=50"`            // Lebenspunkte Maximum
+	AP_Max                int `json:"ap_max" binding:"required,min=1,max=200"`           // Abenteuerpunkte Maximum
+	B_Max                 int `json:"b_max" binding:"required,min=1,max=50"`             // Belastung Maximum
+	ResistenzKoerper      int `json:"resistenz_koerper" binding:"required,min=1,max=20"` // Resistenz Körper
+	ResistenzGeist        int `json:"resistenz_geist" binding:"required,min=1,max=20"`   // Resistenz Geist
+	ResistenzBonusKoerper int `json:"resistenz_bonus_koerper" binding:"min=-5,max=5"`    // Resistenz Bonus Körper
+	ResistenzBonusGeist   int `json:"resistenz_bonus_geist" binding:"min=-5,max=5"`      // Resistenz Bonus Geist
+	Abwehr                int `json:"abwehr" binding:"required,min=1,max=20"`            // Abwehr
+	AbwehrBonus           int `json:"abwehr_bonus" binding:"min=-5,max=5"`               // Abwehr Bonus
+	AusdauerBonus         int `json:"ausdauer_bonus" binding:"min=-50,max=50"`           // Ausdauer Bonus
+	AngriffsBonus         int `json:"angriffs_bonus" binding:"min=-5,max=5"`             // Angriffs Bonus
+	Zaubern               int `json:"zaubern" binding:"required,min=1,max=20"`           // Zaubern
+	ZauberBonus           int `json:"zauber_bonus" binding:"min=-5,max=5"`               // Zauber Bonus
+	Raufen                int `json:"raufen" binding:"required,min=1,max=20"`            // Raufen
+	SchadensBonus         int `json:"schadens_bonus" binding:"min=-10,max=10"`           // Schadens Bonus
+	SG                    int `json:"sg" binding:"min=0,max=50"`                         // Schicksalsgunst
+	GG                    int `json:"gg" binding:"min=0,max=50"`                         // Göttliche Gnade
+	GP                    int `json:"gp" binding:"min=0,max=50"`                         // Glückspunkte
 }
 
 // UpdateCharacterDerivedValues speichert abgeleitete Werte
@@ -2742,8 +2758,8 @@ func UpdateCharacterDerivedValues(c *gin.Context) {
 		return
 	}
 
-	logger.Debug("UpdateCharacterDerivedValues: Werte - LP_Max:%d AP_Max:%d B_Max:%d SG:%d GG:%d GP:%d",
-		request.LP_Max, request.AP_Max, request.B_Max, request.SG, request.GG, request.GP)
+	logger.Debug("UpdateCharacterDerivedValues: Werte - LP_Max:%d AP_Max:%d B_Max:%d PA:%d WK:%d SG:%d GG:%d GP:%d",
+		request.LP_Max, request.AP_Max, request.B_Max, request.PA, request.WK, request.SG, request.GG, request.GP)
 
 	// Session aus Datenbank laden
 	logger.Debug("UpdateCharacterDerivedValues: Lade Session aus Datenbank...")
@@ -2760,12 +2776,26 @@ func UpdateCharacterDerivedValues(c *gin.Context) {
 
 	// Abgeleitete Werte aktualisieren
 	session.DerivedValues = models.DerivedValuesData{
-		LPMax: request.LP_Max,
-		APMax: request.AP_Max,
-		BMax:  request.B_Max,
-		SG:    request.SG,
-		GG:    request.GG,
-		GP:    request.GP,
+		PA:                    request.PA,
+		WK:                    request.WK,
+		LPMax:                 request.LP_Max,
+		APMax:                 request.AP_Max,
+		BMax:                  request.B_Max,
+		ResistenzKoerper:      request.ResistenzKoerper,
+		ResistenzGeist:        request.ResistenzGeist,
+		ResistenzBonusKoerper: request.ResistenzBonusKoerper,
+		ResistenzBonusGeist:   request.ResistenzBonusGeist,
+		Abwehr:                request.Abwehr,
+		AbwehrBonus:           request.AbwehrBonus,
+		AusdauerBonus:         request.AusdauerBonus,
+		AngriffsBonus:         request.AngriffsBonus,
+		Zaubern:               request.Zaubern,
+		ZauberBonus:           request.ZauberBonus,
+		Raufen:                request.Raufen,
+		SchadensBonus:         request.SchadensBonus,
+		SG:                    request.SG,
+		GG:                    request.GG,
+		GP:                    request.GP,
 	}
 	session.CurrentStep = 4
 	session.UpdatedAt = time.Now()
@@ -2943,8 +2973,8 @@ func FinalizeCharacterCreation(c *gin.Context) {
 		{Name: "In", Value: session.Attributes.IN},
 		{Name: "Zt", Value: session.Attributes.ZT},
 		{Name: "Au", Value: session.Attributes.AU},
-		{Name: "pA", Value: session.Attributes.PA},
-		{Name: "Wk", Value: session.Attributes.WK},
+		{Name: "pA", Value: session.DerivedValues.PA}, // PA kommt aus derived values
+		{Name: "Wk", Value: session.DerivedValues.WK}, // WK kommt aus derived values
 	}
 
 	logger.Debug("FinalizeCharacterCreation: Charakter-Struktur erstellt mit %d Eigenschaften",

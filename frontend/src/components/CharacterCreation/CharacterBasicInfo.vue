@@ -147,6 +147,7 @@
 
 <script>
 import API from '../../utils/api'
+import { rollNotation } from '../../utils/randomUtils'
 
 export default {
   name: 'CharacterBasicInfo',
@@ -177,6 +178,7 @@ export default {
       lastSocialClassRoll: null,
       showOverlay: false,
       overlayTimeout: null,
+      isInitialized: false, // Flag to prevent early watcher triggers
     }
   },
   computed: {
@@ -193,25 +195,53 @@ export default {
     'formData.typ'() {
       // Clear social class roll result when character class changes
       this.lastSocialClassRoll = null
+    },
+    formData: {
+      handler(newValue) {
+        // Only save if component is fully initialized
+        if (this.isInitialized) {
+          console.log('BasicInfo: formData changed, emitting save:', newValue)
+          console.log('BasicInfo: Field validation status:')
+          console.log('  name valid:', newValue.name && newValue.name.length >= 2)
+          console.log('  geschlecht valid:', !!newValue.geschlecht)
+          console.log('  rasse valid:', !!newValue.rasse)
+          console.log('  typ valid:', !!newValue.typ)
+          console.log('  herkunft valid:', !!newValue.herkunft)
+          console.log('  stand valid:', !!newValue.stand)
+          this.$emit('save', { basic_info: newValue })
+        }
+      },
+      deep: true
     }
   },
   async created() {
-    // Initialize form with session data
+    console.log('BasicInfo: created() called, sessionData:', this.sessionData)
+    // Initialize form with session data - check both old format and new basic_info format
+    const basicInfo = this.sessionData.basic_info || {}
+    console.log('BasicInfo: extracted basicInfo:', basicInfo)
     this.formData = {
-      name: this.sessionData.name || '',
-      geschlecht: this.sessionData.geschlecht || '',
-      rasse: this.sessionData.rasse || '',
-      typ: this.sessionData.typ || '',
-      herkunft: this.sessionData.herkunft || '',
-      stand: this.sessionData.stand || '',
-      glaube: this.sessionData.glaube || '',
+      name: basicInfo.name || this.sessionData.name || '',
+      geschlecht: basicInfo.geschlecht || this.sessionData.geschlecht || '',
+      rasse: basicInfo.rasse || this.sessionData.rasse || '',
+      typ: basicInfo.typ || this.sessionData.typ || '',
+      herkunft: basicInfo.herkunft || this.sessionData.herkunft || '',
+      stand: basicInfo.stand || this.sessionData.stand || '',
+      glaube: basicInfo.glaube || this.sessionData.glaube || '',
     }
+    console.log('BasicInfo: initialized formData:', this.formData)
     
     if (this.formData.glaube) {
       this.beliefSearch = this.formData.glaube
     }
     
+    // Save initial state to ensure all fields are captured
+    console.log('BasicInfo: Initial save, formData:', this.formData)
+    this.$emit('save', { basic_info: this.formData })
+    
     await this.loadReferenceData()
+    
+    // Mark as initialized to enable watcher
+    this.isInitialized = true
   },
   beforeUnmount() {
     // Clean up timeouts
@@ -284,7 +314,7 @@ export default {
       }
       
       // Base 1d100 roll
-      const baseRoll = this.$rollNotation('1d100')
+      const baseRoll = rollNotation('1d100')
       let modifier = 0
       
       // Apply class modifiers
@@ -332,6 +362,9 @@ export default {
         result: socialClass
       }
       
+      // Save the updated form data
+      this.$emit('save', { basic_info: this.formData })
+      
       // Show overlay notification
       this.showRollOverlay()
     },
@@ -359,8 +392,24 @@ export default {
     },
     
     handleSubmit() {
+      console.log('BasicInfo: handleSubmit called')
+      console.log('BasicInfo: isValid =', this.isValid)
+      console.log('BasicInfo: formData validation:')
+      console.log('  name:', this.formData.name, '(length:', this.formData.name.length, ')')
+      console.log('  geschlecht:', this.formData.geschlecht)
+      console.log('  rasse:', this.formData.rasse)
+      console.log('  typ:', this.formData.typ)
+      console.log('  herkunft:', this.formData.herkunft)
+      console.log('  stand:', this.formData.stand)
+      console.log('  glaube:', this.formData.glaube)
+      
       if (this.isValid) {
-        this.$emit('next', this.formData)
+        console.log('BasicInfo: handleSubmit, formData:', this.formData)
+        // Save the current state before proceeding
+        this.$emit('save', { basic_info: this.formData })
+        this.$emit('next', { basic_info: this.formData })
+      } else {
+        console.warn('BasicInfo: Form is not valid, submission blocked')
       }
     },
   }

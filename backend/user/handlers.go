@@ -8,6 +8,7 @@ package user
 import (
 	"bamort/logger"
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
 	"fmt"
 	"net/http"
@@ -198,4 +199,196 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+// generateResetHash generiert einen sicheren Hash für Password-Reset
+func generateResetHash() (string, error) {
+	bytes := make([]byte, 32)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
+}
+
+// sendResetEmail simuliert das Senden einer E-Mail (hier nur Logging)
+// In einer echten Implementierung würde hier ein E-Mail-Service verwendet
+func sendResetEmail(email, username, resetHash, frontendURL string) error {
+	// Verwende die mitgegebene Frontend-URL oder fallback auf Standard
+	baseURL := frontendURL
+	if baseURL == "" {
+		baseURL = "http://localhost:3000" // Fallback, sollte aber nicht verwendet werden
+	}
+	
+	resetLink := fmt.Sprintf("%s/reset-password?token=%s", baseURL, resetHash)
+
+	logger.Info("=== PASSWORD RESET EMAIL ===")
+	logger.Info("An: %s", email)
+	logger.Info("Betreff: Passwort zurücksetzen für %s", username)
+	logger.Info("Nachricht:")
+	logger.Info("Hallo %s,", username)
+	logger.Info("")
+	logger.Info("Sie haben eine Passwort-Zurücksetzung angefordert.")
+	logger.Info("Klicken Sie auf den folgenden Link, um Ihr Passwort zurückzusetzen:")
+	logger.Info("")
+	logger.Info("%s", resetLink)
+	logger.Info("")
+	logger.Info("Dieser Link ist 14 Tage gültig.")
+	logger.Info("Falls Sie diese Anfrage nicht gestellt haben, ignorieren Sie diese E-Mail.")
+	logger.Info("")
+	logger.Info("=== END EMAIL ===")
+
+	// TODO: Hier echte E-Mail-Integration hinzufügen
+	// z.B. SendGrid, SMTP, etc.
+
+	return nil
+}
+
+// RequestPasswordReset Handler für Passwort-Reset-Anfrage
+func RequestPasswordReset(c *gin.Context) {
+	logger.Debug("Starte Passwort-Reset-Anfrage...")
+
+	var input struct {
+		Email       string `json:"email" binding:"required,email"`
+		RedirectURL string `json:"redirect_url,omitempty"` // Optionale Frontend-URL
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		logger.Error("Fehler beim Parsen der Reset-Anfrage: %s", err.Error())
+		respondWithError(c, http.StatusBadRequest, "Gültige E-Mail-Adresse erforderlich")
+		return
+	}
+
+	// Frontend-URL aus Request verwenden
+	redirectURL := input.RedirectURL
+	if redirectURL == "" {
+		// Fallback, sollte aber nicht verwendet werden, da Frontend die URL mitgeben sollte
+		redirectURL = "http://localhost:3000"
+	}
+
+	logger.Debug("Reset-Anfrage für E-Mail: %s", input.Email)
+
+	var user User
+	if err := user.FindByEmail(input.Email); err != nil {
+		// Aus Sicherheitsgründen keine Information preisgeben, ob die E-Mail existiert
+		logger.Warn("Reset-Anfrage für nicht existierende E-Mail: %s", input.Email)
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Falls ein Account mit dieser E-Mail-Adresse existiert, wurde eine Reset-E-Mail gesendet.",
+		})
+		return
+	}
+
+	// Generiere Reset-Hash
+	resetHash, err := generateResetHash()
+	if err != nil {
+		logger.Error("Fehler beim Generieren des Reset-Hashes: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Verarbeiten der Anfrage")
+		return
+	}
+
+	// Speichere Reset-Hash in der Datenbank
+	if err := user.SetPasswordResetHash(resetHash); err != nil {
+		logger.Error("Fehler beim Speichern des Reset-Hashes für Benutzer %s: %s", user.Username, err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Verarbeiten der Anfrage")
+		return
+	}
+
+	// Sende Reset-E-Mail
+	if err := sendResetEmail(user.Email, user.Username, resetHash, redirectURL); err != nil {
+		logger.Error("Fehler beim Senden der Reset-E-Mail für Benutzer %s: %s", user.Username, err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Senden der E-Mail")
+		return
+	}
+
+	logger.Info("Reset-E-Mail erfolgreich für Benutzer %s (%s) gesendet", user.Username, user.Email)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Falls ein Account mit dieser E-Mail-Adresse existiert, wurde eine Reset-E-Mail gesendet.",
+	})
+}
+
+// ResetPassword Handler für das Zurücksetzen des Passworts
+func ResetPassword(c *gin.Context) {
+	logger.Debug("Starte Passwort-Reset...")
+
+	var input struct {
+		Token       string `json:"token" binding:"required"`
+		NewPassword string `json:"new_password" binding:"required,min=6"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		logger.Error("Fehler beim Parsen der Reset-Daten: %s", err.Error())
+		respondWithError(c, http.StatusBadRequest, "Token und neues Passwort (mind. 6 Zeichen) erforderlich")
+		return
+	}
+
+	logger.Debug("Reset-Versuch mit Token: %s", input.Token[:10]+"...")
+
+	var user User
+	if err := user.FindByResetHash(input.Token); err != nil {
+		logger.Warn("Ungültiger oder abgelaufener Reset-Token verwendet")
+		respondWithError(c, http.StatusBadRequest, "Ungültiger oder abgelaufener Reset-Link")
+		return
+	}
+
+	// Zusätzliche Validierung des Tokens
+	if !user.IsResetHashValid(input.Token) {
+		logger.Warn("Reset-Token-Validierung fehlgeschlagen für Benutzer: %s", user.Username)
+		respondWithError(c, http.StatusBadRequest, "Ungültiger oder abgelaufener Reset-Link")
+		return
+	}
+
+	// Neues Passwort hashen (gleiche Methode wie bei der Registrierung)
+	hashedPassword := md5.Sum([]byte(input.NewPassword))
+	user.PasswordHash = hex.EncodeToString(hashedPassword[:])
+
+	// Reset-Hash entfernen
+	if err := user.ClearPasswordResetHash(); err != nil {
+		logger.Error("Fehler beim Entfernen des Reset-Hashes für Benutzer %s: %s", user.Username, err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Aktualisieren des Accounts")
+		return
+	}
+
+	// Passwort speichern
+	if err := user.Save(); err != nil {
+		logger.Error("Fehler beim Speichern des neuen Passworts für Benutzer %s: %s", user.Username, err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Fehler beim Aktualisieren des Passworts")
+		return
+	}
+
+	logger.Info("Passwort erfolgreich zurückgesetzt für Benutzer: %s", user.Username)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Passwort erfolgreich zurückgesetzt",
+	})
+}
+
+// ValidateResetToken Handler zur Validierung eines Reset-Tokens
+func ValidateResetToken(c *gin.Context) {
+	logger.Debug("Validiere Reset-Token...")
+
+	token := c.Param("token")
+	//token := c.Query("token")
+	if token == "" {
+		respondWithError(c, http.StatusBadRequest, "Token erforderlich")
+		return
+	}
+
+	var user User
+	if err := user.FindByResetHash(token); err != nil {
+		logger.Debug("Reset-Token nicht gefunden oder abgelaufen")
+		respondWithError(c, http.StatusBadRequest, "Ungültiger oder abgelaufener Reset-Link")
+		return
+	}
+
+	if !user.IsResetHashValid(token) {
+		logger.Debug("Reset-Token-Validierung fehlgeschlagen")
+		respondWithError(c, http.StatusBadRequest, "Ungültiger oder abgelaufener Reset-Link")
+		return
+	}
+
+	logger.Debug("Reset-Token gültig für Benutzer: %s", user.Username)
+	c.JSON(http.StatusOK, gin.H{
+		"valid":    true,
+		"username": user.Username,
+		"expires":  user.ResetPwHashExpires,
+	})
 }

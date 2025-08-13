@@ -41,6 +41,12 @@
         {{ error }}
       </div>
       
+      <div style="text-align: center; margin-top: 15px;">
+        <router-link to="/forgot-password" style="color: #007bff; text-decoration: none; font-size: 0.9em;">
+          Passwort vergessen?
+        </router-link>
+      </div>
+      
       <div style="text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #dee2e6;">
         <p>Don't have an account? <router-link to="/register" class="btn btn-secondary">Register here</router-link></p>
       </div>

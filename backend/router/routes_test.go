@@ -27,11 +27,11 @@ func setupTestRouter() *gin.Engine {
 
 func setupTestUserForRouter(t *testing.T) user.User {
 	database.SetupTestDB()
-	
+
 	// Migrate User structure to ensure reset password fields exist
 	err := user.MigrateStructure()
 	require.NoError(t, err, "Failed to migrate user structure")
-	
+
 	// Generate unique user for each test
 	randomSuffix := rand.Intn(100000)
 	testUser := user.User{
@@ -43,10 +43,10 @@ func setupTestUserForRouter(t *testing.T) user.User {
 	// Hash password like in RegisterUser
 	hashedPassword := md5.Sum([]byte(testUser.PasswordHash))
 	testUser.PasswordHash = hex.EncodeToString(hashedPassword[:])
-	
+
 	err = testUser.Create()
 	require.NoError(t, err, "Failed to create test user")
-	
+
 	return testUser
 }
 

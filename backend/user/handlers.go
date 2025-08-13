@@ -219,7 +219,7 @@ func sendResetEmail(email, username, resetHash, frontendURL string) error {
 	if baseURL == "" {
 		baseURL = "http://localhost:3000" // Fallback, sollte aber nicht verwendet werden
 	}
-	
+
 	resetLink := fmt.Sprintf("%s/reset-password?token=%s", baseURL, resetHash)
 
 	logger.Info("=== PASSWORD RESET EMAIL ===")

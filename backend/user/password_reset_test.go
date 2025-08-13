@@ -20,11 +20,11 @@ import (
 
 func setupTestUser(t *testing.T) User {
 	database.SetupTestDB()
-	
+
 	// Migrate User structure to ensure reset password fields exist
 	err := MigrateStructure()
 	require.NoError(t, err, "Failed to migrate user structure")
-	
+
 	// Generate unique email for each test to avoid conflicts
 	randomSuffix := rand.Intn(100000)
 	user := User{
@@ -36,16 +36,16 @@ func setupTestUser(t *testing.T) User {
 	// Hash password like in RegisterUser
 	hashedPassword := md5.Sum([]byte(user.PasswordHash))
 	user.PasswordHash = hex.EncodeToString(hashedPassword[:])
-	
+
 	err = user.Create()
 	require.NoError(t, err, "Failed to create test user")
-	
+
 	return user
 }
 
 func TestRequestPasswordReset_Success(t *testing.T) {
 	user := setupTestUser(t)
-	
+
 	// Setup Gin router
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
@@ -61,25 +61,25 @@ func TestRequestPasswordReset_Success(t *testing.T) {
 	// Create request
 	req, _ := http.NewRequest("POST", "/password-reset/request", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	// Execute request
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	// Assertions
 	assert.Equal(t, http.StatusOK, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
-	
+
 	assert.Contains(t, response["message"], "Falls ein Account mit dieser E-Mail-Adresse existiert")
 
 	// Check that user has reset hash set in database
 	var dbUser User
 	err = dbUser.FindByEmail(user.Email)
 	require.NoError(t, err)
-	
+
 	assert.NotNil(t, dbUser.ResetPwHash, "Reset hash should be set")
 	assert.NotNil(t, dbUser.ResetPwHashExpires, "Reset expiry should be set")
 	assert.True(t, dbUser.ResetPwHashExpires.After(time.Now()), "Reset expiry should be in future")
@@ -87,7 +87,7 @@ func TestRequestPasswordReset_Success(t *testing.T) {
 
 func TestRequestPasswordReset_WithoutRedirectURL(t *testing.T) {
 	user := setupTestUser(t)
-	
+
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	router.POST("/password-reset/request", RequestPasswordReset)
@@ -100,7 +100,7 @@ func TestRequestPasswordReset_WithoutRedirectURL(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/password-reset/request", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -110,7 +110,7 @@ func TestRequestPasswordReset_WithoutRedirectURL(t *testing.T) {
 
 func TestRequestPasswordReset_NonExistentEmail(t *testing.T) {
 	database.SetupTestDB()
-	
+
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	router.POST("/password-reset/request", RequestPasswordReset)
@@ -123,13 +123,13 @@ func TestRequestPasswordReset_NonExistentEmail(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/password-reset/request", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	// Should return success to prevent email enumeration
 	assert.Equal(t, http.StatusOK, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
@@ -138,7 +138,7 @@ func TestRequestPasswordReset_NonExistentEmail(t *testing.T) {
 
 func TestRequestPasswordReset_InvalidEmail(t *testing.T) {
 	database.SetupTestDB()
-	
+
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	router.POST("/password-reset/request", RequestPasswordReset)
@@ -151,7 +151,7 @@ func TestRequestPasswordReset_InvalidEmail(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/password-reset/request", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -161,7 +161,7 @@ func TestRequestPasswordReset_InvalidEmail(t *testing.T) {
 
 func TestValidateResetToken_Success(t *testing.T) {
 	user := setupTestUser(t)
-	
+
 	// Set reset hash
 	resetHash := "test_reset_hash_123456789"
 	err := user.SetPasswordResetHash(resetHash)
@@ -172,16 +172,16 @@ func TestValidateResetToken_Success(t *testing.T) {
 	router.GET("/password-reset/validate/:token", ValidateResetToken)
 
 	req, _ := http.NewRequest("GET", "/password-reset/validate/"+resetHash, nil)
-	
+
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	
+
 	var response map[string]interface{}
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
-	
+
 	assert.True(t, response["valid"].(bool))
 	assert.Equal(t, user.Username, response["username"])
 	assert.NotNil(t, response["expires"])
@@ -189,13 +189,13 @@ func TestValidateResetToken_Success(t *testing.T) {
 
 func TestValidateResetToken_InvalidToken(t *testing.T) {
 	database.SetupTestDB()
-	
+
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	router.GET("/password-reset/validate/:token", ValidateResetToken)
 
 	req, _ := http.NewRequest("GET", "/password-reset/validate/invalid_token", nil)
-	
+
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -204,7 +204,7 @@ func TestValidateResetToken_InvalidToken(t *testing.T) {
 
 func TestValidateResetToken_ExpiredToken(t *testing.T) {
 	user := setupTestUser(t)
-	
+
 	// Set expired reset hash
 	resetHash := "expired_reset_hash_123456789"
 	expiredTime := time.Now().Add(-1 * time.Hour) // 1 hour ago
@@ -218,7 +218,7 @@ func TestValidateResetToken_ExpiredToken(t *testing.T) {
 	router.GET("/password-reset/validate/:token", ValidateResetToken)
 
 	req, _ := http.NewRequest("GET", "/password-reset/validate/"+resetHash, nil)
-	
+
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -228,7 +228,7 @@ func TestValidateResetToken_ExpiredToken(t *testing.T) {
 func TestResetPassword_Success(t *testing.T) {
 	user := setupTestUser(t)
 	originalPassword := user.PasswordHash
-	
+
 	// Set reset hash
 	resetHash := "test_reset_hash_for_password_change"
 	err := user.SetPasswordResetHash(resetHash)
@@ -246,12 +246,12 @@ func TestResetPassword_Success(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/password-reset/reset", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	
+
 	var response map[string]interface{}
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
@@ -261,7 +261,7 @@ func TestResetPassword_Success(t *testing.T) {
 	var dbUser User
 	err = dbUser.FindByEmail(user.Email)
 	require.NoError(t, err)
-	
+
 	assert.NotEqual(t, originalPassword, dbUser.PasswordHash, "Password should have changed")
 	assert.Nil(t, dbUser.ResetPwHash, "Reset hash should be cleared")
 	assert.Nil(t, dbUser.ResetPwHashExpires, "Reset expiry should be cleared")
@@ -274,7 +274,7 @@ func TestResetPassword_Success(t *testing.T) {
 
 func TestResetPassword_InvalidToken(t *testing.T) {
 	database.SetupTestDB()
-	
+
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	router.POST("/password-reset/reset", ResetPassword)
@@ -287,7 +287,7 @@ func TestResetPassword_InvalidToken(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/password-reset/reset", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -296,7 +296,7 @@ func TestResetPassword_InvalidToken(t *testing.T) {
 
 func TestResetPassword_ShortPassword(t *testing.T) {
 	user := setupTestUser(t)
-	
+
 	resetHash := "test_reset_hash_short_password"
 	err := user.SetPasswordResetHash(resetHash)
 	require.NoError(t, err)
@@ -313,7 +313,7 @@ func TestResetPassword_ShortPassword(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/password-reset/reset", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -322,7 +322,7 @@ func TestResetPassword_ShortPassword(t *testing.T) {
 
 func TestResetPassword_ExpiredToken(t *testing.T) {
 	user := setupTestUser(t)
-	
+
 	// Set expired reset hash
 	resetHash := "expired_reset_hash_for_reset"
 	expiredTime := time.Now().Add(-1 * time.Hour) // 1 hour ago
@@ -343,7 +343,7 @@ func TestResetPassword_ExpiredToken(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/password-reset/reset", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -353,10 +353,10 @@ func TestResetPassword_ExpiredToken(t *testing.T) {
 // Test User model methods
 func TestUser_SetPasswordResetHash(t *testing.T) {
 	user := setupTestUser(t)
-	
+
 	resetHash := "test_hash_123456789"
 	err := user.SetPasswordResetHash(resetHash)
-	
+
 	assert.NoError(t, err)
 	assert.NotNil(t, user.ResetPwHash)
 	assert.Equal(t, resetHash, *user.ResetPwHash)
@@ -367,16 +367,16 @@ func TestUser_SetPasswordResetHash(t *testing.T) {
 
 func TestUser_ClearPasswordResetHash(t *testing.T) {
 	user := setupTestUser(t)
-	
+
 	// First set a reset hash
 	resetHash := "test_hash_to_clear"
 	err := user.SetPasswordResetHash(resetHash)
 	require.NoError(t, err)
 	require.NotNil(t, user.ResetPwHash)
-	
+
 	// Then clear it
 	err = user.ClearPasswordResetHash()
-	
+
 	assert.NoError(t, err)
 	assert.Nil(t, user.ResetPwHash)
 	assert.Nil(t, user.ResetPwHashExpires)
@@ -384,22 +384,22 @@ func TestUser_ClearPasswordResetHash(t *testing.T) {
 
 func TestUser_IsResetHashValid(t *testing.T) {
 	user := setupTestUser(t)
-	
+
 	resetHash := "valid_test_hash_123"
 	err := user.SetPasswordResetHash(resetHash)
 	require.NoError(t, err)
-	
+
 	// Test valid hash
 	assert.True(t, user.IsResetHashValid(resetHash))
-	
+
 	// Test invalid hash
 	assert.False(t, user.IsResetHashValid("wrong_hash"))
-	
+
 	// Test expired hash
 	expiredTime := time.Now().Add(-1 * time.Hour)
 	user.ResetPwHashExpires = &expiredTime
 	assert.False(t, user.IsResetHashValid(resetHash))
-	
+
 	// Test nil hash
 	user.ResetPwHash = nil
 	user.ResetPwHashExpires = nil
@@ -408,29 +408,29 @@ func TestUser_IsResetHashValid(t *testing.T) {
 
 func TestUser_FindByResetHash(t *testing.T) {
 	user := setupTestUser(t)
-	
+
 	resetHash := "find_by_hash_test_123"
 	err := user.SetPasswordResetHash(resetHash)
 	require.NoError(t, err)
-	
+
 	// Test finding valid hash
 	var foundUser User
 	err = foundUser.FindByResetHash(resetHash)
 	assert.NoError(t, err)
 	assert.Equal(t, user.UserID, foundUser.UserID)
 	assert.Equal(t, user.Email, foundUser.Email)
-	
+
 	// Test finding invalid hash
 	var notFoundUser User
 	err = notFoundUser.FindByResetHash("invalid_hash")
 	assert.Error(t, err)
-	
+
 	// Test finding expired hash
 	expiredTime := time.Now().Add(-1 * time.Hour)
 	user.ResetPwHashExpires = &expiredTime
 	err = user.Save()
 	require.NoError(t, err)
-	
+
 	var expiredUser User
 	err = expiredUser.FindByResetHash(resetHash)
 	assert.Error(t, err) // Should not find expired token
@@ -438,14 +438,14 @@ func TestUser_FindByResetHash(t *testing.T) {
 
 func TestUser_FindByEmail(t *testing.T) {
 	user := setupTestUser(t)
-	
+
 	// Test finding existing email
 	var foundUser User
 	err := foundUser.FindByEmail(user.Email)
 	assert.NoError(t, err)
 	assert.Equal(t, user.UserID, foundUser.UserID)
 	assert.Equal(t, user.Username, foundUser.Username)
-	
+
 	// Test finding non-existent email
 	var notFoundUser User
 	err = notFoundUser.FindByEmail("nonexistent@example.com")

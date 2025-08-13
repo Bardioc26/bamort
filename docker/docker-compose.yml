@@ -11,8 +11,8 @@ services:
       MARIADB_PASSWORD: ${MARIADB_PASSWORD:-secure_user_password}
       MARIADB_CHARSET: utf8mb4
       MARIADB_COLLATION: utf8mb4_unicode_ci
-    ports:
-      - "3306:3306"
+    #ports:
+    #  - "3306:3306"
     volumes:
       - ./bamort-db:/var/lib/mysql
       - ./init-db:/docker-entrypoint-initdb.d

@@ -1,14 +1,14 @@
 <template>
   <div class="attributes-form character-creation-container">
-    <h2>Character Attributes</h2>
-    <p class="instruction">Set the basic attributes for your character (1-100)</p>
+    <h2>{{ $t('characters.attributes.title') }}</h2>
+    <p class="instruction">{{ $t('characters.attributes.instruction') }}</p>
     
     <form @submit.prevent="handleSubmit" class="attributes-form-content">
       <div class="attributes-grid">
         <div class="attribute-group" v-for="attr in attributes" :key="attr.key">
           <div class="attribute-row">
             <label :for="attr.key" class="attribute-label">
-              {{ attr.name }} ({{ attr.key.toUpperCase() }})
+              {{ $t(`characters.attributes.${attr.key}`) }} ({{ attr.key.toUpperCase() }})
             </label>
             <div class="input-with-dice">
               <input 
@@ -19,23 +19,23 @@
                 max="100"
                 required
                 class="attribute-input"
-                @input="updateTotal"
+                @input="handleAttributeChange"
               />
               <button 
                 type="button" 
                 class="dice-btn" 
                 @click="rollAttribute(attr.key)"
-                :title="attr.key === 'au' ? 'Roll AU: 1d100 with race restrictions (Elfen ≥81, Gnome/Zwerge ≤80)' :
-                       'Roll max(2d100) for ' + attr.name"
+                :title="attr.key === 'au' ? $t('characters.attributes.rollTooltipAu') :
+                       $t('characters.attributes.rollTooltipOther') + ' ' + $t(`characters.attributes.${attr.key}`)"
               >
                 🎲
               </button>
             </div>
           </div>
-          <span class="attribute-description">{{ attr.description }}</span>
+          <span class="attribute-description">{{ $t(`characters.attributes.${attr.key}Description`) }}</span>
           <!-- Race restriction warning for AU -->
           <div v-if="attr.key === 'au' && auRaceRestriction" class="race-restriction-warning">
-            ⚠️ {{ auRaceRestriction.message }}
+            ⚠️ {{ $t(`characters.attributes.raceRestriction${auRaceRestriction.raceKey}`) }}
           </div>
           <div v-if="lastAttributeRoll && lastAttributeRoll.attribute === attr.key" class="roll-result">
             {{ attr.name }}: {{ lastAttributeRoll.roll }} 
@@ -54,22 +54,22 @@
 
       <div class="attribute-summary">
         <div class="total-points">
-          <strong>Total Points: {{ totalPoints }}</strong>
+          <strong>{{ $t('characters.attributes.totalPoints') }}: {{ totalPoints }}</strong>
         </div>
         <div class="average-points">
-          <strong>Average: {{ averagePoints.toFixed(1) }}</strong>
+          <strong>{{ $t('characters.attributes.averagePoints') }}: {{ averagePoints.toFixed(1) }}</strong>
         </div>
         <button type="button" @click="rollAllAttributes" class="roll-all-btn">
-          🎲 Roll All Attributes
+          🎲 {{ $t('characters.attributes.rollAllAttributes') }}
         </button>
       </div>
 
       <div class="form-actions">
         <button type="button" @click="handlePrevious" class="prev-btn">
-          ← Previous: Basic Info
+          ← {{ $t('characters.attributes.previousBasicInfo') }}
         </button>
         <button type="submit" class="next-btn" :disabled="!isValid">
-          Next: Derived Values →
+          {{ $t('characters.attributes.nextDerivedValues') }} →
         </button>
       </div>
     </form>
@@ -93,7 +93,7 @@
         <div class="overlay-result">
           → {{ lastAttributeRoll.attributeName }}: {{ lastAttributeRoll.result }}
         </div>
-        <div class="overlay-hint">Click to close</div>
+        <div class="overlay-hint">{{ $t('characters.attributes.clickToClose') }}</div>
       </div>
     </div>
   </div>
@@ -112,13 +112,13 @@ export default {
   data() {
     return {
       formData: {
-        st: 50, // Stärke
-        gs: 50, // Geschicklichkeit
-        gw: 50, // Gewandtheit
-        ko: 50, // Konstitution
-        in: 50, // Intelligenz
-        zt: 50, // Zaubertalent
-        au: 50, // Ausehen
+        st: 0, // Stärke
+        gs: 0, // Geschicklichkeit
+        gw: 0, // Gewandtheit
+        ko: 0, // Konstitution
+        in: 0, // Intelligenz
+        zt: 0, // Zaubertalent
+        au: 0, // Ausehen
       },
       attributes: [
         {
@@ -165,7 +165,26 @@ export default {
   },
   computed: {
     isValid() {
-      return Object.values(this.formData).every(val => val >= 1 && val <= 100)
+      // Check basic value range (1-100) for only the defined attributes
+      const definedKeys = this.attributes.map(attr => attr.key)
+      const relevantValues = definedKeys.map(key => this.formData[key])
+      const basicValid = relevantValues.every(val => val >= 1 && val <= 100)
+      
+      if (!basicValid) return false
+      
+      // Check race-specific AU restrictions
+      const race = this.sessionData.rasse || ''
+      const auValue = this.formData.au
+      
+      if (race === 'Elfen' && auValue < 81) {
+        return false // Elfen must have AU ≥ 81
+      }
+      
+      if ((race === 'Gnome' || race === 'Zwerge') && auValue > 80) {
+        return false // Gnome/Zwerge must have AU ≤ 80
+      }
+      
+      return true
     },
     averagePoints() {
       return this.totalPoints / Object.keys(this.formData).length
@@ -173,11 +192,11 @@ export default {
     auRaceRestriction() {
       const race = this.sessionData.rasse || ''
       if (race === 'Elfen') {
-        return { type: 'minimum', value: 81, message: 'Elfen must have AU ≥ 81' }
+        return { type: 'minimum', value: 81, raceKey: 'Elves' }
       } else if (race === 'Gnome') {
-        return { type: 'maximum', value: 80, message: 'Gnome must have AU ≤ 80' }
+        return { type: 'maximum', value: 80, raceKey: 'Gnomes' }
       } else if (race === 'Zwerge') {
-        return { type: 'maximum', value: 80, message: 'Zwerge must have AU ≤ 80' }
+        return { type: 'maximum', value: 80, raceKey: 'Dwarves' }
       }
       return null
     }
@@ -196,6 +215,11 @@ export default {
     }
   },
   methods: {
+    handleAttributeChange(event) {
+      // Simple update - Vue's reactivity should handle the rest
+      this.updateTotal()
+    },
+    
     updateTotal() {
       this.totalPoints = Object.values(this.formData).reduce((sum, val) => sum + (val || 0), 0)
     },
@@ -317,7 +341,7 @@ export default {
 }
 </script>
 
-
+<style scoped>
 .attributes-form {
   max-width: 800px;
   margin: 0 auto;
@@ -506,4 +530,5 @@ export default {
     padding: 10px;
   }
 }
+</style>
 

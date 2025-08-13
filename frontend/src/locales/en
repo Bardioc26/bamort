@@ -157,6 +157,40 @@ export default {
       volk: 'Common Folk',
       unfrei: 'Unfree'
     },
+    attributes: {
+      title: 'Character Attributes',
+      instruction: 'Set the basic attributes for your character (1-100)',
+      totalPoints: 'Total Points',
+      averagePoints: 'Average',
+      rollAllAttributes: 'Roll All Attributes',
+      previousBasicInfo: 'Previous: Basic Info',
+      nextDerivedValues: 'Next: Derived Values',
+      enabled: 'ENABLED',
+      disabled: 'DISABLED',
+      clickToClose: 'Click to close',
+      // Individual attributes
+      st: 'Strength',
+      stDescription: 'Physical strength and power',
+      gs: 'Dexterity', 
+      gsDescription: 'Dexterity and manual skill',
+      gw: 'Agility',
+      gwDescription: 'Agility and quick reactions',
+      ko: 'Constitution',
+      koDescription: 'Health and endurance',
+      in: 'Intelligence',
+      inDescription: 'Learning ability and logic',
+      zt: 'Spell Talent',
+      ztDescription: 'Magical talent and mana',
+      au: 'Beauty',
+      auDescription: 'Beauty and appearance (Race restrictions: Elves ≥81, Gnomes/Dwarves ≤80)',
+      // Race restrictions
+      raceRestrictionElves: 'Elves must have Beauty ≥ 81',
+      raceRestrictionGnomes: 'Gnomes must have Beauty ≤ 80', 
+      raceRestrictionDwarves: 'Dwarves must have Beauty ≤ 80',
+      // Roll tooltips
+      rollTooltipAu: 'Roll Beauty: 1d100 with race restrictions (Elves ≥81, Gnomes/Dwarves ≤80)',
+      rollTooltipOther: 'Roll max(2d100) for'
+    },
     derivedValues: {
       title: 'Derived Values',
       instruction: 'These values are calculated from your attributes. You can adjust them as needed.',

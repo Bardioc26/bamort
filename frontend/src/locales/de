@@ -251,6 +251,40 @@ export default {
       volk: 'Volk',
       unfrei: 'Unfrei'
     },
+    attributes: {
+      title: 'Charakterattribute',
+      instruction: 'Setzen Sie die Grundattribute für Ihren Charakter (1-100)',
+      totalPoints: 'Gesamtpunkte',
+      averagePoints: 'Durchschnitt',
+      rollAllAttributes: 'Alle Attribute würfeln',
+      previousBasicInfo: 'Zurück: Grundinformationen',
+      nextDerivedValues: 'Weiter: Abgeleitete Werte',
+      enabled: 'AKTIVIERT',
+      disabled: 'DEAKTIVIERT',
+      clickToClose: 'Klicken zum Schließen',
+      // Einzelne Attribute
+      st: 'Stärke',
+      stDescription: 'Körperliche Kraft und Stärke',
+      gs: 'Geschicklichkeit', 
+      gsDescription: 'Geschicklichkeit und manuelle Fertigkeiten',
+      gw: 'Gewandtheit',
+      gwDescription: 'Beweglichkeit und schnelle Reaktionen',
+      ko: 'Konstitution',
+      koDescription: 'Gesundheit und Ausdauer',
+      in: 'Intelligenz',
+      inDescription: 'Lernfähigkeit und Logik',
+      zt: 'Zaubertalent',
+      ztDescription: 'Magisches Talent und Mana',
+      au: 'Aussehen',
+      auDescription: 'Schönheit und Aussehen (Rassenbeschränkungen: Elfen ≥81, Gnome/Zwerge ≤80)',
+      // Rassenbeschränkungen
+      raceRestrictionElves: 'Elfen müssen Aussehen ≥ 81 haben',
+      raceRestrictionGnomes: 'Gnome müssen Aussehen ≤ 80 haben', 
+      raceRestrictionDwarves: 'Zwerge müssen Aussehen ≤ 80 haben',
+      // Würfel-Tooltips
+      rollTooltipAu: 'Würfle Aussehen: 1d100 mit Rassenbeschränkungen (Elfen ≥81, Gnome/Zwerge ≤80)',
+      rollTooltipOther: 'Würfle max(2d100) für'
+    },
     derivedValues: {
       title: 'Abgeleitete Werte',
       instruction: 'Diese Werte werden aus Ihren Attributen berechnet. Sie können sie nach Bedarf anpassen.',

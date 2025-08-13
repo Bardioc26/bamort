@@ -3,20 +3,61 @@
     <h2>{{ $t('characters.basicInfo.title') }}</h2>
     
     <form @submit.prevent="handleSubmit">
+      <div class="form-row">
+        <!-- 1. Name -->
+        <div class="form-group">
+          <label for="name">{{ $t('characters.basicInfo.characterName') }} {{ $t('characters.basicInfo.required') }}</label>
+          <input 
+            id="name"
+            v-model="formData.name"
+            type="text"
+            required
+            minlength="2"
+            maxlength="50"
+            :placeholder="$t('characters.basicInfo.characterNamePlaceholder')"
+          />
+        </div>
+
+        <!-- 2. Herkunft -->
+        <div class="form-group">
+          <label for="herkunft">{{ $t('characters.basicInfo.origin') }} {{ $t('characters.basicInfo.required') }}</label>
+          <select id="herkunft" v-model="formData.herkunft" required>
+            <option value="">{{ $t('characters.basicInfo.selectOrigin') }}</option>
+            <option v-for="origin in origins" :key="origin" :value="origin">{{ origin }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 3. Glaube -->
       <div class="form-group">
-        <label for="name">{{ $t('characters.basicInfo.characterName') }} {{ $t('characters.basicInfo.required') }}</label>
-        <input 
-          id="name"
-          v-model="formData.name"
-          type="text"
-          required
-          minlength="2"
-          maxlength="50"
-          :placeholder="$t('characters.basicInfo.characterNamePlaceholder')"
-        />
+        <label for="glaube">{{ $t('characters.basicInfo.religion') }}</label>
+        <div class="belief-search">
+          <input 
+            id="glaube"
+            v-model="beliefSearch"
+            type="text"
+            :placeholder="$t('characters.basicInfo.religionPlaceholder')"
+            @input="searchBeliefs"
+          />
+          <div v-if="beliefResults.length > 0" class="belief-dropdown">
+            <div 
+              v-for="belief in beliefResults" 
+              :key="belief"
+              class="belief-option"
+              @click="selectBelief(belief)"
+            >
+              {{ belief }}
+            </div>
+          </div>
+        </div>
+        <div v-if="formData.glaube" class="selected-belief">
+          {{ $t('characters.basicInfo.selected') }}: {{ formData.glaube }}
+          <button type="button" @click="clearBelief" class="clear-btn">×</button>
+        </div>
       </div>
 
       <div class="form-row">
+        <!-- 4. Geschlecht -->
         <div class="form-group">
           <label for="geschlecht">{{ $t('characters.basicInfo.gender') }} {{ $t('characters.basicInfo.required') }}</label>
           <select id="geschlecht" v-model="formData.geschlecht" required>
@@ -26,6 +67,7 @@
           </select>
         </div>
 
+        <!-- 5. Rasse -->
         <div class="form-group">
           <label for="rasse">{{ $t('characters.basicInfo.race') }} {{ $t('characters.basicInfo.required') }}</label>
           <select id="rasse" v-model="formData.rasse" required>
@@ -36,6 +78,7 @@
       </div>
 
       <div class="form-row">
+        <!-- 6. Charakterklasse -->
         <div class="form-group">
           <label for="typ">{{ $t('characters.basicInfo.characterClass') }} {{ $t('characters.basicInfo.required') }}</label>
           <select id="typ" v-model="formData.typ" required>
@@ -44,24 +87,7 @@
           </select>
         </div>
 
-        <div class="form-group">
-          <label for="herkunft">{{ $t('characters.basicInfo.origin') }} {{ $t('characters.basicInfo.required') }}</label>
-          <select id="herkunft" v-model="formData.herkunft" required>
-            <option value="">{{ $t('characters.basicInfo.selectOrigin') }}</option>
-            <option v-for="origin in origins" :key="origin" :value="origin">{{ origin }}</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="herkunft">{{ $t('characters.basicInfo.origin') }} {{ $t('characters.basicInfo.required') }}</label>
-          <select id="herkunft" v-model="formData.herkunft" required>
-            <option value="">{{ $t('characters.basicInfo.selectOrigin') }}</option>
-            <option v-for="origin in origins" :key="origin" :value="origin">{{ origin }}</option>
-          </select>
-        </div>
-
+        <!-- 7. Sozialschicht -->
         <div class="form-group">
           <label for="stand">{{ $t('characters.basicInfo.socialClass') }} {{ $t('characters.basicInfo.required') }}</label>
           <div class="input-with-dice">
@@ -89,33 +115,6 @@
             </span>
             → {{ lastSocialClassRoll.result }}
           </div>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="glaube">{{ $t('characters.basicInfo.religion') }}</label>
-        <div class="belief-search">
-          <input 
-            id="glaube"
-            v-model="beliefSearch"
-            type="text"
-            :placeholder="$t('characters.basicInfo.religionPlaceholder')"
-            @input="searchBeliefs"
-          />
-          <div v-if="beliefResults.length > 0" class="belief-dropdown">
-            <div 
-              v-for="belief in beliefResults" 
-              :key="belief"
-              class="belief-option"
-              @click="selectBelief(belief)"
-            >
-              {{ belief }}
-            </div>
-          </div>
-        </div>
-        <div v-if="formData.glaube" class="selected-belief">
-          {{ $t('characters.basicInfo.selected') }}: {{ formData.glaube }}
-          <button type="button" @click="clearBelief" class="clear-btn">×</button>
         </div>
       </div>
 
@@ -492,5 +491,119 @@ input:focus, select:focus {
 .next-btn:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+/* Social class roll styles */
+.input-with-dice {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input-with-dice select {
+  flex: 1;
+}
+
+.dice-btn {
+  padding: 10px 12px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  flex-shrink: 0;
+}
+
+.dice-btn:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.dice-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.roll-result {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #e8f5e8;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #2e7d32;
+}
+
+/* Roll overlay styles */
+.roll-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  cursor: pointer;
+}
+
+.roll-overlay-content {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  position: relative;
+  cursor: default;
+  min-width: 300px;
+}
+
+.overlay-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.overlay-close:hover {
+  color: #000;
+}
+
+.overlay-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.overlay-roll {
+  font-size: 36px;
+  font-weight: bold;
+  color: #4caf50;
+  margin: 20px 0;
+}
+
+.roll-breakdown {
+  font-size: 18px;
+  color: #666;
+  margin-left: 10px;
+}
+
+.overlay-result {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2196f3;
+  margin: 20px 0;
+}
+
+.overlay-hint {
+  font-size: 14px;
+  color: #666;
+  margin-top: 15px;
 }
 </style>

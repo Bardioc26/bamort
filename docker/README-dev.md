@@ -15,6 +15,11 @@ Diese Docker-Konfiguration ermöglicht es, die Bamort-Anwendung in einer Entwick
 
 # Oder manuell
 docker-compose -f docker-compose.dev.yml up --build
+
+# Mit benutzerdefinierten Umgebungsvariablen
+cp .env.example .env.dev
+# Bearbeite .env.dev nach Bedbedarf
+docker-compose -f docker-compose.dev.yml --env-file .env.dev up --build
 ```
 
 ## Stoppen der Entwicklungsumgebung

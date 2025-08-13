@@ -35,12 +35,24 @@
 ### Start Development Environment
 ```bash
 cd /data/dev/bamort/docker
+
+# Option 1: Use default configuration
 docker-compose -f docker-compose.dev.yml up -d
+
+# Option 2: Use custom environment variables
+cp .env.example .env.dev
+# Edit .env.dev with your settings
+docker-compose -f docker-compose.dev.yml --env-file .env.dev up -d
 ```
 
 ### Start Production Environment
 ```bash
 cd /data/dev/bamort/docker
+
+# Create .env file with your configuration
+cp .env.example .env
+# Edit .env with your settings
+
 docker-compose up -d
 ```
 

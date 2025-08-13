@@ -1,8 +1,9 @@
 import axios from 'axios'
 
 const API = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8180', // Use env variable with fallback
   //baseURL: 'http://192.168.0.48:8180', // Replace with your backend URL
-  baseURL: 'http://localhost:8180', // Replace with your backend URL
+  //baseURL: 'http://localhost:8180', // Replace with your backend URL
 })
 
 // Request interceptor to add auth token

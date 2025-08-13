@@ -35,7 +35,7 @@ services:
       - /app/node_modules  # Prevent overwriting node_modules
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=http://localhost:8080
+      - VITE_API_URL=${VITE_API_URL:-http://192.168.0.48:8180}
     depends_on:
       - backend-dev
     restart: unless-stopped

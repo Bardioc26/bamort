@@ -243,7 +243,6 @@ export default {
           maxValue = 80
           raceRestriction = ` (${race} maximum: 80)`
         }
-        //console.log('rollvalue, minval, maxval, race:', rollValue ,minValue, maxValue, race)
         
         // Store original roll value for comparison
         const originalRollValue = rollValue
@@ -254,7 +253,6 @@ export default {
         } else if (rollValue > maxValue) {
           rollValue = maxValue
         }
-        //console.log('2 rollvalue, minval, maxval, race:', rollValue ,minValue, maxValue, race)
         roll = {
           ...roll,
           selectedValue: rollValue
@@ -269,7 +267,6 @@ export default {
         roll = this.$rollNotation('max(2d100)')
         rollValue = roll.selectedValue
         rollDescription = `max of ${roll.rolls.join(', ')}`
-        //console.log('Standard max(2d100) roll for other attributes:', rollValue)
       }
       
       const attributeName = this.attributes.find(attr => attr.key === attributeKey)?.name || attributeKey
@@ -296,8 +293,6 @@ export default {
     rollAllAttributes() {
       // Roll all attributes at once
       Object.keys(this.formData).forEach(key => {
-        //const roll = this.$rollNotation('max(2d100)')
-        //this.formData[key] = roll.selectedValue
         this.rollAttribute(key)
       })
       this.updateTotal()

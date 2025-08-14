@@ -65,6 +65,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	// Reference Data für Character Creation
 	charGrp.GET("/races", GetRaces)                                            // Verfügbare Rassen
 	charGrp.GET("/classes", GetCharacterClasses)                               // Verfügbare Klassen
+	charGrp.GET("/classes/learning-points", GetCharacterClassLearningPoints)   // Lernpunkte für Charakterklasse
 	charGrp.GET("/origins", GetOrigins)                                        // Verfügbare Herkünfte
 	charGrp.GET("/beliefs", SearchBeliefs)                                     // Glaube-Suche
 	charGrp.GET("/skill-categories-with-points", GetSkillCategoriesWithPoints) // Kategorien mit Lernpunkten

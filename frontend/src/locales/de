@@ -162,7 +162,7 @@ export default {
   common: {
     loading: 'Laden...',
     cancel: 'Abbrechen',
-    revious: 'Zurück',
+    previous: 'Zurück',
     next: 'Weiter'
   },
   experience: {

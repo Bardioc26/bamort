@@ -1996,8 +1996,6 @@ func GetRewardTypesOld(c *gin.Context) {
 
 // GetAvailableSkillsNewSystem gibt alle verfügbaren Fertigkeiten mit Lernkosten zurück (POST mit LernCostRequest)
 func GetAvailableSkillsNewSystem(c *gin.Context) {
-	characterID := c.Param("id")
-
 	// Parse LernCostRequest aus POST body
 	var baseRequest gsmaster.LernCostRequest
 	if err := c.ShouldBindJSON(&baseRequest); err != nil {
@@ -2005,11 +2003,23 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 		return
 	}
 
+	// For character creation (char_id = 0), we don't need to load an existing character
 	var character models.Char
-	if err := database.DB.Preload("Fertigkeiten").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, characterID).Error; err != nil {
-		respondWithError(c, http.StatusNotFound, "Character not found")
-		return
+	learnedSkills := make(map[string]bool)
+	
+	if baseRequest.CharId != 0 {
+		// Load existing character and their learned skills
+		if err := database.DB.Preload("Fertigkeiten").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, baseRequest.CharId).Error; err != nil {
+			respondWithError(c, http.StatusNotFound, "Character not found")
+			return
+		}
+		
+		// Create map of learned skills for existing character
+		for _, skill := range character.Fertigkeiten {
+			learnedSkills[skill.Name] = true
+		}
 	}
+	// For character creation (char_id = 0), learnedSkills remains empty
 
 	// Hole alle verfügbaren Fertigkeiten aus der gsmaster Datenbank, aber filtere Placeholder aus
 	var allSkills []models.Skill
@@ -2024,12 +2034,6 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 		return
 	}
 	*/
-
-	// Erstelle eine Map der bereits gelernten Fertigkeiten
-	learnedSkills := make(map[string]bool)
-	for _, skill := range character.Fertigkeiten {
-		learnedSkills[skill.Name] = true
-	}
 
 	// Organisiere Fertigkeiten nach Kategorien
 	skillsByCategory := make(map[string][]gin.H)
@@ -2046,7 +2050,7 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 
 		// Erstelle LernCostRequest für diese Fertigkeit basierend auf der Basis-Anfrage
 		request := baseRequest
-		request.CharId = character.ID
+		request.CharId = baseRequest.CharId // Use the char_id from the request (0 for character creation)
 		request.Name = skill.Name
 		request.CurrentLevel = 0 // Nicht gelernt
 		request.TargetLevel = 1  // Auf Level 1 lernen
@@ -2054,9 +2058,19 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 		request.Action = "learn"
 
 		// Erstelle SkillCostResultNew
+		characterClass := ""
+		characterID := "0"
+		
+		if baseRequest.CharId != 0 {
+			// Use existing character data
+			characterID = fmt.Sprintf("%d", character.ID)
+			characterClass = getCharacterClassOld(&character)
+		}
+		// For character creation, we don't have a character class yet, use empty string
+		
 		levelResult := gsmaster.SkillCostResultNew{
-			CharacterID:    fmt.Sprintf("%d", character.ID),
-			CharacterClass: getCharacterClassOld(&character),
+			CharacterID:    characterID,
+			CharacterClass: characterClass,
 			SkillName:      skill.Name,
 			TargetLevel:    1,
 		}
@@ -2065,7 +2079,7 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 		remainingGold := request.UseGold
 
 		// Hole die vollständigen Skill-Informationen für die Kostenberechnung
-		skillLearningInfo, err := models.GetSkillCategoryAndDifficultyNewSystem(skill.Name, getCharacterClassOld(&character))
+		skillLearningInfo, err := models.GetSkillCategoryAndDifficultyNewSystem(skill.Name, characterClass)
 		if err != nil {
 			// Fallback für unbekannte Skills
 			skillLearningInfo = &models.SkillLearningInfo{
@@ -3164,11 +3178,351 @@ func GetSkillCategoriesWithPoints(c *gin.Context) {
 		{Name: "wissen", DisplayName: "Wissen", Points: 100, MaxPoints: 100},
 		{Name: "kampf", DisplayName: "Kampf", Points: 80, MaxPoints: 80},
 		{Name: "korper", DisplayName: "Körper", Points: 120, MaxPoints: 120},
-		{Name: "gesellschaft", DisplayName: "Gesellschaft", Points: 60, MaxPoints: 60},
-		{Name: "natur", DisplayName: "Natur", Points: 90, MaxPoints: 90},
 		{Name: "unterwelt", DisplayName: "Unterwelt", Points: 40, MaxPoints: 40},
 		{Name: "zauber", DisplayName: "Zauber", Points: 200, MaxPoints: 200},
 	}
 
 	c.JSON(http.StatusOK, gin.H{"categories": categories})
+}
+
+// LearningPointsData repräsentiert die Lernpunkte und typischen Fertigkeiten einer Charakterklasse
+type LearningPointsData struct {
+	ClassName      string         `json:"class_name"`
+	ClassCode      string         `json:"class_code"`
+	LearningPoints map[string]int `json:"learning_points"` // Kategorie -> Lernpunkte
+	WeaponPoints   int            `json:"weapon_points"`   // Waffenlernpunkte
+	SpellPoints    int            `json:"spell_points"`    // Zauberlerneinheiten (falls vorhanden)
+	TypicalSkills  []TypicalSkill `json:"typical_skills"`  // Typische Fertigkeiten
+	TypicalSpells  []string       `json:"typical_spells"`  // Typische Zauber (falls vorhanden)
+}
+
+// TypicalSkill repräsentiert eine typische Fertigkeit mit Bonus
+type TypicalSkill struct {
+	Name      string `json:"name"`
+	Bonus     int    `json:"bonus"`
+	Attribute string `json:"attribute"` // Zugehöriges Attribut (z.B. "Gs", "In")
+	Notes     string `json:"notes"`     // Zusätzliche Notizen
+}
+
+// GetCharacterClassLearningPoints gibt die Lernpunkte und typischen Fertigkeiten für eine Charakterklasse zurück
+func GetCharacterClassLearningPoints(c *gin.Context) {
+	className := c.Query("class")
+	if className == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Charakterklassen-Name ist erforderlich (Parameter 'class')"})
+		return
+	}
+
+	stand := c.Query("stand") // Optional: Unfreie, Volk, Mittelschicht, Adel
+
+	// Hole die Lernpunkte-Daten für die Klasse
+	learningData, err := getLearningPointsForClass(className, stand)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Charakterklasse nicht gefunden oder nicht unterstützt: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, learningData)
+}
+
+// getLearningPointsForClass gibt die Lernpunkte-Daten für eine bestimmte Charakterklasse zurück
+func getLearningPointsForClass(className string, stand string) (*LearningPointsData, error) {
+	// Mapping der Klassennamen zu Codes (falls notwendig)
+	classMapping := map[string]string{
+		"Assassine":           "As",
+		"Barbar":              "Bb",
+		"Glücksritter":        "Gl",
+		"Händler":             "Hä",
+		"Krieger":             "Kr",
+		"Spitzbube":           "Sp",
+		"Waldläufer":          "Wa",
+		"Barde":               "Ba",
+		"Ordenskrieger":       "Or",
+		"Druide":              "Dr",
+		"Hexer":               "Hx",
+		"Magier":              "Ma",
+		"Priester Beschützer": "PB",
+		"Priester Streiter":   "PS",
+		"Schamane":            "Sc",
+	}
+
+	classCode := classMapping[className]
+	if classCode == "" {
+		classCode = className // Falls der Name bereits ein Code ist
+	}
+
+	// Definiere die Lernpunkte-Daten basierend auf Lerntabelle_Erstellung.md
+	var data *LearningPointsData
+
+	switch classCode {
+	case "As", "Assassine":
+		data = &LearningPointsData{
+			ClassName: "Assassine",
+			ClassCode: "As",
+			LearningPoints: map[string]int{
+				"Alltag":    1,
+				"Halbwelt":  2,
+				"Sozial":    4,
+				"Unterwelt": 8,
+			},
+			WeaponPoints: 24,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Meucheln", Bonus: 8, Attribute: "Gs", Notes: ""},
+			},
+		}
+	case "Bb", "Barbar":
+		data = &LearningPointsData{
+			ClassName: "Barbar",
+			ClassCode: "Bb",
+			LearningPoints: map[string]int{
+				"Alltag":   2,
+				"Freiland": 4,
+				"Kampf":    1,
+				"Körper":   2,
+			},
+			WeaponPoints: 24,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Spurensuche", Bonus: 8, Attribute: "In", Notes: "in Heimatlandschaft"},
+				{Name: "Überleben", Bonus: 8, Attribute: "In", Notes: "in Heimatlandschaft"},
+			},
+		}
+	case "Gl", "Glücksritter":
+		data = &LearningPointsData{
+			ClassName: "Glücksritter",
+			ClassCode: "Gl",
+			LearningPoints: map[string]int{
+				"Alltag":   2,
+				"Halbwelt": 3,
+				"Sozial":   8,
+			},
+			WeaponPoints: 24,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Fechten", Bonus: 5, Attribute: "Gs", Notes: "oder beidhändiger Kampf+5 (Gs)"},
+			},
+		}
+	case "Hä", "Händler":
+		data = &LearningPointsData{
+			ClassName: "Händler",
+			ClassCode: "Hä",
+			LearningPoints: map[string]int{
+				"Alltag": 4,
+				"Sozial": 8,
+				"Wissen": 4,
+			},
+			WeaponPoints: 20,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Geschäftssinn", Bonus: 8, Attribute: "In", Notes: ""},
+			},
+		}
+	case "Kr", "Krieger":
+		data = &LearningPointsData{
+			ClassName: "Krieger",
+			ClassCode: "Kr",
+			LearningPoints: map[string]int{
+				"Alltag": 2,
+				"Kampf":  3,
+				"Körper": 1,
+			},
+			WeaponPoints: 36,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Kampf in Vollrüstung", Bonus: 5, Attribute: "St", Notes: ""},
+			},
+		}
+	case "Sp", "Spitzbube":
+		data = &LearningPointsData{
+			ClassName: "Spitzbube",
+			ClassCode: "Sp",
+			LearningPoints: map[string]int{
+				"Alltag":    2,
+				"Halbwelt":  6,
+				"Unterwelt": 12,
+			},
+			WeaponPoints: 20,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Fallenmechanik", Bonus: 8, Attribute: "Gs", Notes: "oder Geschäftssinn+8 (In)"},
+			},
+		}
+	case "Wa", "Waldläufer":
+		data = &LearningPointsData{
+			ClassName: "Waldläufer",
+			ClassCode: "Wa",
+			LearningPoints: map[string]int{
+				"Alltag":   1,
+				"Freiland": 11,
+				"Körper":   4,
+			},
+			WeaponPoints: 20,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Scharfschießen", Bonus: 5, Attribute: "Gs", Notes: ""},
+			},
+		}
+	case "Ba", "Barde":
+		data = &LearningPointsData{
+			ClassName: "Barde",
+			ClassCode: "Ba",
+			LearningPoints: map[string]int{
+				"Alltag": 2,
+				"Sozial": 4,
+				"Wissen": 4,
+			},
+			WeaponPoints: 16,
+			SpellPoints:  3,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Musizieren", Bonus: 12, Attribute: "Gs", Notes: ""},
+				{Name: "Landeskunde", Bonus: 8, Attribute: "In", Notes: "für Heimat"},
+			},
+			TypicalSpells: []string{"Zauberlieder"},
+		}
+	case "Or", "Ordenskrieger":
+		data = &LearningPointsData{
+			ClassName: "Ordenskrieger",
+			ClassCode: "Or",
+			LearningPoints: map[string]int{
+				"Alltag": 2,
+				"Kampf":  3,
+				"Wissen": 2,
+			},
+			WeaponPoints: 18,
+			SpellPoints:  3,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Athletik", Bonus: 8, Attribute: "St", Notes: "oder Meditieren+8 (Wk)"},
+			},
+			TypicalSpells: []string{"Wundertaten"},
+		}
+	case "Dr", "Druide":
+		data = &LearningPointsData{
+			ClassName: "Druide",
+			ClassCode: "Dr",
+			LearningPoints: map[string]int{
+				"Alltag":   2,
+				"Freiland": 4,
+				"Wissen":   2,
+			},
+			WeaponPoints: 6,
+			SpellPoints:  5,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Pflanzenkunde", Bonus: 8, Attribute: "In", Notes: ""},
+				{Name: "Schreiben", Bonus: 12, Attribute: "In", Notes: "für Ogam-Zeichen"},
+			},
+			TypicalSpells: []string{"Dweomer", "Tiere rufen"},
+		}
+	case "Hx", "Hexer":
+		data = &LearningPointsData{
+			ClassName: "Hexer",
+			ClassCode: "Hx",
+			LearningPoints: map[string]int{
+				"Alltag": 3,
+				"Sozial": 2,
+				"Wissen": 2,
+			},
+			WeaponPoints: 2,
+			SpellPoints:  6,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Gassenwissen", Bonus: 8, Attribute: "In", Notes: "oder Verführen+8 (pA)"},
+			},
+			TypicalSpells: []string{"Beherrschen", "Verändern", "Verwünschen", "Binden des Vertrauten"},
+		}
+	case "Ma", "Magier":
+		data = &LearningPointsData{
+			ClassName: "Magier",
+			ClassCode: "Ma",
+			LearningPoints: map[string]int{
+				"Alltag": 1,
+				"Wissen": 5,
+			},
+			WeaponPoints: 2,
+			SpellPoints:  7,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Zauberkunde", Bonus: 8, Attribute: "In", Notes: ""},
+				{Name: "Schreiben", Bonus: 12, Attribute: "In", Notes: "für Muttersprache"},
+			},
+			TypicalSpells: []string{"beliebig außer Dweomer, Wundertaten, Zauberlieder", "Erkennen von Zauberei"},
+		}
+	case "PB", "Priester Beschützer":
+		data = &LearningPointsData{
+			ClassName: "Priester Beschützer",
+			ClassCode: "PB",
+			LearningPoints: map[string]int{
+				"Alltag": 2,
+				"Sozial": 2,
+				"Wissen": 3,
+			},
+			WeaponPoints: 6,
+			SpellPoints:  5,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Menschenkenntnis", Bonus: 8, Attribute: "In", Notes: ""},
+				{Name: "Schreiben", Bonus: 12, Attribute: "In", Notes: "für Muttersprache"},
+			},
+			TypicalSpells: []string{"Wundertaten", "Heilen von Wunden"},
+		}
+	case "PS", "Priester Streiter":
+		data = &LearningPointsData{
+			ClassName: "Priester Streiter",
+			ClassCode: "PS",
+			LearningPoints: map[string]int{
+				"Alltag": 3,
+				"Kampf":  2,
+				"Wissen": 2,
+			},
+			WeaponPoints: 8,
+			SpellPoints:  5,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Erste Hilfe", Bonus: 8, Attribute: "Gs", Notes: ""},
+				{Name: "Schreiben", Bonus: 12, Attribute: "In", Notes: "für Muttersprache"},
+			},
+			TypicalSpells: []string{"Wundertaten", "Bannen von Finsterwerk", "Strahlender Panzer"},
+		}
+	case "Sc", "Schamane":
+		data = &LearningPointsData{
+			ClassName: "Schamane",
+			ClassCode: "Sc",
+			LearningPoints: map[string]int{
+				"Alltag": 2,
+				"Körper": 4,
+				"Wissen": 2,
+			},
+			WeaponPoints: 6,
+			SpellPoints:  5,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Tierkunde", Bonus: 8, Attribute: "In", Notes: ""},
+				{Name: "Überleben", Bonus: 8, Attribute: "In", Notes: "in Heimatlandschaft"},
+			},
+			TypicalSpells: []string{"Dweomer", "Wundertaten", "Austreibung des Bösen", "Bannen von Gift"},
+		}
+	default:
+		return nil, fmt.Errorf("unbekannte Charakterklasse: %s", className)
+	}
+
+	// Bonus-Lernpunkte basierend auf Stand hinzufügen
+	if stand != "" && data != nil {
+		standBonus := getStandBonusPoints(stand)
+		// Füge die Stand-Bonuspunkte zu den normalen Lernpunkten hinzu
+		for category, bonus := range standBonus {
+			if currentPoints, exists := data.LearningPoints[category]; exists {
+				data.LearningPoints[category] = currentPoints + bonus
+			} else {
+				// Falls die Kategorie noch nicht existiert, füge sie hinzu
+				data.LearningPoints[category] = bonus
+			}
+		}
+		// Speichere die Stand-Bonuspunkte auch separat für Referenz
+		//data.StandPoints = standBonus
+	}
+
+	return data, nil
+}
+
+// getStandBonusPoints gibt die Bonus-Lernpunkte basierend auf dem Stand zurück
+func getStandBonusPoints(stand string) map[string]int {
+	switch stand {
+	case "Unfreie":
+		return map[string]int{"Halbwelt": 2}
+	case "Volk":
+		return map[string]int{"Alltag": 2}
+	case "Mittelschicht":
+		return map[string]int{"Wissen": 2}
+	case "Adel":
+		return map[string]int{"Sozial": 2}
+	default:
+		return make(map[string]int)
+	}
 }

@@ -17,6 +17,6 @@ export default defineConfig({
   },
   server: {
     //port: 8080,
-    host: ['192.168.0.48', 'localhost','terrra.local'],
+    host: ['bamort.trokan.de','192.168.0.48', 'localhost','terrra.local'],
   },
 })

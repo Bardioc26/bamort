@@ -1,8 +1,11 @@
 package importer
 
 import (
+	"bamort/database"
+	"bamort/models"
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -81,4 +84,78 @@ func isValidFileType(filename string) bool {
 		}
 	}
 	return false
+}
+
+// ImportSpellCSVHandler handles HTTP requests to import spell data from CSV files
+// @Summary Import spells from CSV file
+// @Description Imports spell data from a CSV file into the database. The CSV file should contain spell information with headers matching the database fields.
+// @Tags importer
+// @Accept json
+// @Produce json
+// @Param file query string true "Path to the CSV file to import"
+// @Success 200 {object} map[string]interface{} "Import successful"
+// @Failure 400 {object} map[string]interface{} "Bad request - missing file parameter, file not found, or invalid file type"
+// @Failure 500 {object} map[string]interface{} "Internal server error - import failed"
+// @Router /api/importer/spells/csv [post]
+func ImportSpellCSVHandler(c *gin.Context) {
+	// Get the file path from query parameter
+	filePath := c.Query("file")
+	if filePath == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Missing file parameter",
+			"message": "Please provide a file path using the 'file' query parameter",
+		})
+		return
+	}
+
+	// Validate file exists and has proper extension
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "File not found",
+			"message": fmt.Sprintf("File '%s' does not exist", filePath),
+		})
+		return
+	}
+
+	// Check file extension
+	ext := strings.ToLower(filepath.Ext(filePath))
+	if ext != ".csv" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid file type",
+			"message": "Only CSV files are supported",
+		})
+		return
+	}
+
+	// Clear source cache before import to ensure fresh data
+	ClearSourceCache()
+
+	// Perform the import
+	err := ImportCsv2Spell(filePath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Import failed",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// Count imported spells for response
+	var spellCount int64
+	if countErr := database.DB.Model(&models.Spell{}).Count(&spellCount).Error; countErr != nil {
+		// If count fails, just report success without count
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "Spells imported successfully",
+			"file":    filePath,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success":      true,
+		"message":      "Spells imported successfully",
+		"file":         filePath,
+		"total_spells": spellCount,
+	})
 }

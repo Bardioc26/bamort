@@ -3,7 +3,10 @@ package importer
 import (
 	"bamort/database"
 	"bamort/models"
+	"bytes"
 	"encoding/json"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -316,5 +319,67 @@ Test Spell HTTP,ARK,3,Beherrschen`
 		err = json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err, "Should parse JSON response")
 		assert.Equal(t, "Invalid file type", response["error"], "Should return correct error")
+	})
+
+	t.Run("File upload with multipart form", func(t *testing.T) {
+		// Setup test database
+		database.SetupTestDB(true, false)
+		models.MigrateStructure()
+
+		// Create test CSV content
+		csvContent := `name,beschreibung,quelle,stufe,ap
+Test Spell Upload,Test description,ARK,1,2`
+
+		// Create temporary file
+		tmpFile, err := os.CreateTemp("", "test_spell_upload_*.csv")
+		assert.NoError(t, err, "Should create temp file")
+		defer os.Remove(tmpFile.Name())
+
+		_, err = tmpFile.WriteString(csvContent)
+		assert.NoError(t, err, "Should write CSV content")
+		tmpFile.Close()
+
+		// Create multipart form data
+		body := &bytes.Buffer{}
+		writer := multipart.NewWriter(body)
+
+		// Add file field
+		file, err := os.Open(tmpFile.Name())
+		assert.NoError(t, err, "Should open temp file")
+		defer file.Close()
+
+		part, err := writer.CreateFormFile("file", "test_spells.csv")
+		assert.NoError(t, err, "Should create form file")
+
+		_, err = io.Copy(part, file)
+		assert.NoError(t, err, "Should copy file content")
+
+		err = writer.Close()
+		assert.NoError(t, err, "Should close writer")
+
+		// Create request
+		router := gin.New()
+		router.POST("/test", ImportSpellCSVHandler)
+
+		req, err := http.NewRequest("POST", "/test", body)
+		assert.NoError(t, err, "Should create request")
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code, "Should return 200 OK")
+
+		var response map[string]interface{}
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err, "Should parse JSON response")
+		assert.True(t, response["success"].(bool), "Should be successful")
+		assert.Contains(t, response["message"], "imported successfully", "Should contain success message")
+
+		// Verify spell was imported
+		var spell models.Spell
+		err = database.DB.Where("name = ?", "Test Spell Upload").First(&spell).Error
+		assert.NoError(t, err, "Should find imported spell")
+		assert.Equal(t, "Test description", spell.Beschreibung, "Should have correct description")
 	})
 }

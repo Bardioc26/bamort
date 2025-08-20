@@ -90,48 +90,89 @@ func isValidFileType(filename string) bool {
 // @Summary Import spells from CSV file
 // @Description Imports spell data from a CSV file into the database. The CSV file should contain spell information with headers matching the database fields.
 // @Tags importer
-// @Accept json
+// @Accept multipart/form-data
 // @Produce json
-// @Param file query string true "Path to the CSV file to import"
+// @Param file formData file true "CSV file to import"
 // @Success 200 {object} map[string]interface{} "Import successful"
 // @Failure 400 {object} map[string]interface{} "Bad request - missing file parameter, file not found, or invalid file type"
 // @Failure 500 {object} map[string]interface{} "Internal server error - import failed"
 // @Router /api/importer/spells/csv [post]
 func ImportSpellCSVHandler(c *gin.Context) {
-	// Get the file path from query parameter
-	filePath := c.Query("file")
-	if filePath == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "Missing file parameter",
-			"message": "Please provide a file path using the 'file' query parameter",
-		})
-		return
+	// Try to get file from multipart form first
+	file, err := c.FormFile("file")
+	var filePath string
+
+	if err != nil {
+		// Fallback to query parameter for backward compatibility
+		filePath = c.Query("file")
+		if filePath == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":   "Missing file parameter",
+				"message": "Please provide a CSV file via multipart upload or file path using the 'file' parameter",
+			})
+			return
+		}
+
+		// Validate file exists and has proper extension
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":   "File not found",
+				"message": fmt.Sprintf("File '%s' does not exist", filePath),
+			})
+			return
+		}
+	} else {
+		// Handle uploaded file
+		// Check file extension
+		ext := strings.ToLower(filepath.Ext(file.Filename))
+		if ext != ".csv" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":   "Invalid file type",
+				"message": "Only CSV files are supported",
+			})
+			return
+		}
+
+		// Create uploads directory if it doesn't exist
+		uploadDir := "./uploads"
+		if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+			if err := os.MkdirAll(uploadDir, 0755); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":   "Failed to create upload directory",
+					"message": err.Error(),
+				})
+				return
+			}
+		}
+
+		// Save the uploaded file
+		filePath = filepath.Join(uploadDir, file.Filename)
+		if err := c.SaveUploadedFile(file, filePath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "Failed to save uploaded file",
+				"message": err.Error(),
+			})
+			return
+		}
 	}
 
-	// Validate file exists and has proper extension
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "File not found",
-			"message": fmt.Sprintf("File '%s' does not exist", filePath),
-		})
-		return
-	}
-
-	// Check file extension
-	ext := strings.ToLower(filepath.Ext(filePath))
-	if ext != ".csv" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "Invalid file type",
-			"message": "Only CSV files are supported",
-		})
-		return
+	// Check file extension for query parameter path
+	if file == nil {
+		ext := strings.ToLower(filepath.Ext(filePath))
+		if ext != ".csv" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":   "Invalid file type",
+				"message": "Only CSV files are supported",
+			})
+			return
+		}
 	}
 
 	// Clear source cache before import to ensure fresh data
 	ClearSourceCache()
 
 	// Perform the import
-	err := ImportCsv2Spell(filePath)
+	err = ImportCsv2Spell(filePath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Import failed",
@@ -147,7 +188,7 @@ func ImportSpellCSVHandler(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"success": true,
 			"message": "Spells imported successfully",
-			"file":    filePath,
+			"file":    filepath.Base(filePath),
 		})
 		return
 	}
@@ -155,7 +196,7 @@ func ImportSpellCSVHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success":      true,
 		"message":      "Spells imported successfully",
-		"file":         filePath,
+		"file":         filepath.Base(filePath),
 		"total_spells": spellCount,
 	})
 }

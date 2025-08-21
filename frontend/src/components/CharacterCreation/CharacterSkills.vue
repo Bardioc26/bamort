@@ -207,11 +207,14 @@
     </div>
 
     <!-- Debug Info (removable) -->
-    <div v-if="showDebug" class="card" style="margin-top: 20px; font-family: monospace; font-size: 12px;">
+    <div v-if="showDebug || error" class="card" style="margin-top: 20px; font-family: monospace; font-size: 12px;">
       <div class="section-header">
         <h4>Debug Information</h4>
+        <button @click="showDebug = !showDebug" class="btn btn-sm">{{ showDebug ? 'Hide' : 'Show' }} Debug</button>
       </div>
-      <pre style="margin: 0; white-space: pre-wrap; word-break: break-all;">{{ debugInfo }}</pre>
+      <div v-if="showDebug || error">
+        <pre style="margin: 0; white-space: pre-wrap; word-break: break-all;">{{ debugInfo }}</pre>
+      </div>
     </div>
   </div>
 </template>
@@ -224,14 +227,10 @@ export default {
   props: {
     sessionData: {
       type: Object,
-      required: true
-    },
-    skillCategories: {
-      type: Array,
-      default: () => []
+      required: true,
     }
   },
-  emits: ['previous', 'next', 'save'],
+  emits: ['next', 'previous', 'save'],
   data() {
     return {
       // Loading states
@@ -257,10 +256,12 @@ export default {
     }
   },
   computed: {
+    // Get character class from session data (direct access like in working version)
     characterClass() {
-      return this.sessionData?.typ || 'Unbekannt'
+      return this.sessionData?.typ || ''
     },
     
+    // Get character stand from session data (direct access like in working version)
     characterStand() {
       return this.sessionData?.stand || ''
     },
@@ -276,13 +277,30 @@ export default {
     
     debugInfo() {
       return {
+        // Session Data
+        hasSessionData: !!this.sessionData,
+        sessionDataKeys: this.sessionData ? Object.keys(this.sessionData) : null,
+        basicInfo: this.sessionData?.basic_info || null,
+        
+        // Character Info
         characterClass: this.characterClass,
         characterStand: this.characterStand,
-        learningPointsData: this.learningPointsData,
-        learningCategories: this.learningCategories,
+        
+        // Loading States
+        isLoading: this.isLoading,
+        isLoadingSkills: this.isLoadingSkills,
+        error: this.error,
+        
+        // Data States
+        hasLearningPointsData: !!this.learningPointsData,
+        learningCategories: this.learningCategories.length,
+        hasAvailableSkills: !!this.availableSkillsByCategory,
+        selectedSkillsCount: this.selectedSkills.length,
         selectedCategory: this.selectedCategory,
-        selectedSkills: this.selectedSkills,
         totalUsedPoints: this.totalUsedPoints,
+        
+        // Raw Data (for debugging)
+        learningPointsData: this.learningPointsData,
         availableSkillsByCategory: this.availableSkillsByCategory
       }
     },
@@ -339,9 +357,34 @@ export default {
       return 0
     }
   },
-  async mounted() {
-    console.log('CharacterSkills mounted with sessionData:', this.sessionData)
-    await this.initializeComponent()
+  watch: {
+    selectedSkills: {
+      handler(newSkills) {
+        // Save skills automatically when they change
+        this.$emit('save', { 
+          skills: newSkills,
+          skills_meta: {
+            totalUsedPoints: this.totalUsedPoints,
+            selectedCategory: this.selectedCategory
+          }
+        })
+      },
+      deep: true
+    }
+  },
+  created() {
+    // Initialize with existing session data if available
+    if (this.sessionData.skills && Array.isArray(this.sessionData.skills)) {
+      this.selectedSkills = [...this.sessionData.skills]
+    }
+    
+    // Restore selected category if available
+    if (this.sessionData.skills_meta?.selectedCategory) {
+      this.selectedCategory = this.sessionData.skills_meta.selectedCategory
+    }
+    
+    // Initialize component
+    this.initializeComponent()
   },
   methods: {
     async initializeComponent() {
@@ -370,6 +413,10 @@ export default {
     },
     
     async loadLearningPoints() {
+      if (!this.characterClass) {
+        throw new Error('Charakterklasse nicht verfügbar')
+      }
+      
       const params = {
         class: this.characterClass
       }
@@ -378,21 +425,14 @@ export default {
         params.stand = this.characterStand
       }
       
-      console.log('Loading learning points with params:', params)
-      
       const response = await API.get('/api/characters/classes/learning-points', { params })
       this.learningPointsData = response.data
-      
-      console.log('Learning points response:', this.learningPointsData)
       
       // Process learning points into categories
       this.processLearningPoints()
       
       // Store typical skills
       this.typicalSkills = this.learningPointsData.typical_skills || []
-      
-      console.log('Processed categories:', this.learningCategories)
-      console.log('Typical skills:', this.typicalSkills)
     },
     
     processLearningPoints() {
@@ -540,33 +580,25 @@ export default {
     // Skills methods
     async loadAvailableSkills() {
       if (!this.characterClass) {
-        console.log('No character class available for loading skills')
         return
       }
 
       this.isLoadingSkills = true
       try {
-        // Use the new simplified endpoint for character creation
-        // Make sure to use the character class abbreviation
         const requestData = {
-          characterClass: this.characterClass // Should already be the abbreviation like "Ma", "As", etc.
+          characterClass: this.characterClass
         }
-        
-        console.log('Loading skills with request:', requestData)
         
         const response = await API.post('/api/characters/available-skills-creation', requestData)
         
         if (response.data && response.data.skills_by_category) {
           this.availableSkillsByCategory = response.data.skills_by_category
-          console.log('Loaded skills by category:', this.availableSkillsByCategory)
         } else {
-          // Fallback: Generate sample skills for development
           this.generateSampleSkills()
         }
         
       } catch (error) {
         console.error('Error loading skills:', error)
-        // Fallback: Generate sample skills
         this.generateSampleSkills()
       } finally {
         this.isLoadingSkills = false
@@ -637,6 +669,27 @@ export default {
         console.log('Skill removed from selection:', skill.name)
         console.log('Updated remaining points after removal')
       }
+    },
+
+    // Navigation methods
+    handlePrevious() {
+      this.$emit('previous')
+    },
+
+    handleNext() {
+      // Save current skills before navigating
+      this.$emit('next', { 
+        skills: this.selectedSkills,
+        skills_meta: {
+          totalUsedPoints: this.totalUsedPoints,
+          selectedCategory: this.selectedCategory
+        }
+      })
+    },
+
+    retry() {
+      this.error = null
+      this.initializeComponent()
     }
   }
 }

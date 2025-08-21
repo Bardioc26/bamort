@@ -2204,7 +2204,69 @@ func GetAllSkillsWithLE() (map[string][]gin.H, error) {
 		}
 	}
 
+	// Add weapon skills to "Kampf" category
+	weaponSkills, err := GetWeaponSkillsWithLE()
+	if err == nil {
+		if _, exists := skillsByCategory["Waffen"]; !exists {
+			skillsByCategory["Waffen"] = []gin.H{}
+		}
+		skillsByCategory["Waffen"] = append(skillsByCategory["Waffen"], weaponSkills...)
+	}
+
 	return skillsByCategory, nil
+}
+
+// GetWeaponSkillsWithLE returns all weapon skills with their learning costs
+func GetWeaponSkillsWithLE() ([]gin.H, error) {
+	// Query weapon skills from gsm_weaponskills table
+	var weaponSkills []struct {
+		ID   uint   `gorm:"column:id"`
+		Name string `gorm:"column:name"`
+	}
+
+	err := database.DB.Table("gsm_weaponskills").
+		Select("id, name").
+		Where("name IS NOT NULL AND name != ''").
+		Find(&weaponSkills).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	var result []gin.H
+	for _, weapon := range weaponSkills {
+		// Get learning cost for this weapon skill
+		// For now, use default costs, but this could be enhanced to query from a learning costs table
+		leCost := getDefaultWeaponSkillCost(weapon.Name)
+
+		skillInfo := gin.H{
+			"name":       weapon.Name,
+			"leCost":     leCost,
+			"difficulty": "Normal", // Default difficulty for weapon skills
+			"type":       "weapon", // Mark as weapon skill
+		}
+
+		result = append(result, skillInfo)
+	}
+
+	return result, nil
+}
+
+// getDefaultWeaponSkillCost returns default learning costs for weapon skills
+func getDefaultWeaponSkillCost(weaponName string) int {
+	// Basic weapon skill costs - these could be made configurable or stored in database
+	switch weaponName {
+	case "Schilde":
+		return 1 // Shields are easier to learn
+	case "Einhandschwerter", "Zweihandschwerter", "Fechtwaffen":
+		return 4 // Sword skills are more expensive
+	case "Bögen", "Armbrüste":
+		return 3 // Ranged weapons
+	case "Spießwaffen", "Stielwurfwaffen":
+		return 2 // Polearms and throwing weapons
+	default:
+		return 2 // Default cost for other weapon skills
+	}
 }
 
 // GetAllSkillsWithLearningCosts returns all skills with their basic learning costs for all possible categories
@@ -3497,8 +3559,9 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Halbwelt":  2,
 				"Sozial":    4,
 				"Unterwelt": 8,
+				"Waffen":    24,
 			},
-			WeaponPoints: 24,
+			//WeaponPoints: 24,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Meucheln", Bonus: 8, Attribute: "Gs", Notes: ""},
 			},
@@ -3512,8 +3575,9 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Freiland": 4,
 				"Kampf":    1,
 				"Körper":   2,
+				"Waffen":   24,
 			},
-			WeaponPoints: 24,
+			//WeaponPoints: 24,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Spurensuche", Bonus: 8, Attribute: "In", Notes: "in Heimatlandschaft"},
 				{Name: "Überleben", Bonus: 8, Attribute: "In", Notes: "in Heimatlandschaft"},
@@ -3527,8 +3591,9 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Alltag":   2,
 				"Halbwelt": 3,
 				"Sozial":   8,
+				"Waffen":   24,
 			},
-			WeaponPoints: 24,
+			//WeaponPoints: 24,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Fechten", Bonus: 5, Attribute: "Gs", Notes: "oder beidhändiger Kampf+5 (Gs)"},
 			},
@@ -3541,8 +3606,9 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Alltag": 4,
 				"Sozial": 8,
 				"Wissen": 4,
+				"Waffen": 20,
 			},
-			WeaponPoints: 20,
+			//WeaponPoints: 20,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Geschäftssinn", Bonus: 8, Attribute: "In", Notes: ""},
 			},
@@ -3555,8 +3621,9 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Alltag": 2,
 				"Kampf":  3,
 				"Körper": 1,
+				"Waffen": 36,
 			},
-			WeaponPoints: 36,
+			//WeaponPoints: 36,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Kampf in Vollrüstung", Bonus: 5, Attribute: "St", Notes: ""},
 			},
@@ -3569,8 +3636,9 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Alltag":    2,
 				"Halbwelt":  6,
 				"Unterwelt": 12,
+				"Waffen":    20,
 			},
-			WeaponPoints: 20,
+			//WeaponPoints: 20,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Fallenmechanik", Bonus: 8, Attribute: "Gs", Notes: "oder Geschäftssinn+8 (In)"},
 			},
@@ -3583,8 +3651,9 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Alltag":   1,
 				"Freiland": 11,
 				"Körper":   4,
+				"Waffen":   20,
 			},
-			WeaponPoints: 20,
+			//WeaponPoints: 20,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Scharfschießen", Bonus: 5, Attribute: "Gs", Notes: ""},
 			},
@@ -3597,9 +3666,10 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Alltag": 2,
 				"Sozial": 4,
 				"Wissen": 4,
+				"Waffen": 16,
 			},
-			WeaponPoints: 16,
-			SpellPoints:  3,
+			//WeaponPoints: 16,
+			SpellPoints: 3,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Musizieren", Bonus: 12, Attribute: "Gs", Notes: ""},
 				{Name: "Landeskunde", Bonus: 8, Attribute: "In", Notes: "für Heimat"},
@@ -3614,9 +3684,10 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Alltag": 2,
 				"Kampf":  3,
 				"Wissen": 2,
+				"Waffen": 18,
 			},
-			WeaponPoints: 18,
-			SpellPoints:  3,
+			//WeaponPoints: 18,
+			SpellPoints: 3,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Athletik", Bonus: 8, Attribute: "St", Notes: "oder Meditieren+8 (Wk)"},
 			},
@@ -3630,9 +3701,10 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Alltag":   2,
 				"Freiland": 4,
 				"Wissen":   2,
+				"Waffen":   6,
 			},
-			WeaponPoints: 6,
-			SpellPoints:  5,
+			//WeaponPoints: 6,
+			SpellPoints: 5,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Pflanzenkunde", Bonus: 8, Attribute: "In", Notes: ""},
 				{Name: "Schreiben", Bonus: 12, Attribute: "In", Notes: "für Ogam-Zeichen"},
@@ -3647,9 +3719,10 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Alltag": 3,
 				"Sozial": 2,
 				"Wissen": 2,
+				"Waffen": 2,
 			},
-			WeaponPoints: 2,
-			SpellPoints:  6,
+			//WeaponPoints: 2,
+			SpellPoints: 6,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Gassenwissen", Bonus: 8, Attribute: "In", Notes: "oder Verführen+8 (pA)"},
 			},
@@ -3662,9 +3735,10 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 			LearningPoints: map[string]int{
 				"Alltag": 1,
 				"Wissen": 5,
+				"Waffen": 2,
 			},
-			WeaponPoints: 2,
-			SpellPoints:  7,
+			//WeaponPoints: 2,
+			SpellPoints: 7,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Zauberkunde", Bonus: 8, Attribute: "In", Notes: ""},
 				{Name: "Schreiben", Bonus: 12, Attribute: "In", Notes: "für Muttersprache"},
@@ -3679,9 +3753,10 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Alltag": 2,
 				"Sozial": 2,
 				"Wissen": 3,
+				"Waffen": 6,
 			},
-			WeaponPoints: 6,
-			SpellPoints:  5,
+			//WeaponPoints: 6,
+			SpellPoints: 5,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Menschenkenntnis", Bonus: 8, Attribute: "In", Notes: ""},
 				{Name: "Schreiben", Bonus: 12, Attribute: "In", Notes: "für Muttersprache"},
@@ -3696,9 +3771,10 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Alltag": 3,
 				"Kampf":  2,
 				"Wissen": 2,
+				"Waffen": 8,
 			},
-			WeaponPoints: 8,
-			SpellPoints:  5,
+			//WeaponPoints: 8,
+			SpellPoints: 5,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Erste Hilfe", Bonus: 8, Attribute: "Gs", Notes: ""},
 				{Name: "Schreiben", Bonus: 12, Attribute: "In", Notes: "für Muttersprache"},
@@ -3713,9 +3789,10 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 				"Alltag": 2,
 				"Körper": 4,
 				"Wissen": 2,
+				"Waffen": 6,
 			},
-			WeaponPoints: 6,
-			SpellPoints:  5,
+			//WeaponPoints: 6,
+			SpellPoints: 5,
 			TypicalSkills: []TypicalSkill{
 				{Name: "Tierkunde", Bonus: 8, Attribute: "In", Notes: ""},
 				{Name: "Überleben", Bonus: 8, Attribute: "In", Notes: "in Heimatlandschaft"},

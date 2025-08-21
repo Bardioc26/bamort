@@ -98,7 +98,7 @@
                   <div class="list-item-title">{{ skill.name }}</div>
                   <div class="list-item-details">
                     <span class="badge badge-primary">{{ skill.cost }} LE</span>
-                    <span class="badge badge-info">{{ skill.categoryDisplay }}</span>
+                    <span class="badge badge-info">{{ skill.category }}</span>
                   </div>
                 </div>
                 <div class="list-item-actions">
@@ -323,8 +323,7 @@ export default {
       const filteredSkills = categorySkills.map(skill => ({
         ...skill,
         cost: this.getSkillCost(skill),
-        category: categoryKey, // Use the actual category key from availableSkillsByCategory
-        categoryDisplay: this.getCategoryDisplayName(this.selectedCategory)
+        category: categoryKey // Use the actual category key from availableSkillsByCategory
       }))
       .filter(skill => {
         // Remove already selected skills
@@ -440,29 +439,31 @@ export default {
       
       this.learningCategories = Object.entries(learningPoints).map(([categoryKey, points]) => ({
         name: categoryKey.toLowerCase(),
-        displayName: this.getCategoryDisplayName(categoryKey),
+        displayName: categoryKey,
         totalPoints: points,
         remainingPoints: points
       }))
-    },
-    
-    getCategoryDisplayName(categoryKey) {
-      const displayNames = {
-        'Alltag': 'Alltag',
-        'Kampf': 'Kampf',
-        'Körper': 'Körper',
-        'Sozial': 'Sozial',
-        'Wissen': 'Wissen',
-        'Halbwelt': 'Halbwelt',
-        'Unterwelt': 'Unterwelt',
-        'Freiland': 'Freiland'
+      
+      // Add weapon points as separate category if available
+      if (this.learningPointsData.weapon_points && this.learningPointsData.weapon_points > 0) {
+        console.log('Adding weapon category with points:', this.learningPointsData.weapon_points)
+        this.learningCategories.push({
+          name: 'waffen',
+          displayName: 'Waffenfertigkeiten',
+          totalPoints: this.learningPointsData.weapon_points,
+          remainingPoints: this.learningPointsData.weapon_points
+        })
+      } else {
+        console.log('No weapon points found:', this.learningPointsData.weapon_points)
       }
-      return displayNames[categoryKey] || categoryKey
     },
     
     restoreSelectedSkills() {
       if (this.sessionData.skills && Array.isArray(this.sessionData.skills)) {
-        this.selectedSkills = [...this.sessionData.skills]
+        // Simply restore skills as they are
+        this.selectedSkills = this.sessionData.skills.map(skill => {
+          return { ...skill }
+        })
         console.log('Restored selected skills:', this.selectedSkills)
       }
     },
@@ -642,11 +643,11 @@ export default {
         return
       }
       
-      // Add skill to selected list with proper cost
+      // Add skill to selected list with proper cost and category
       const skillToAdd = {
         ...skill,
         cost: this.getSkillCost(skill), // Ensure cost is properly set
-        categoryDisplay: skill.category // Set category for display
+        category: skill.category // Use the category as-is
       }
       
       this.selectedSkills.push(skillToAdd)

@@ -38,3 +38,8 @@ coverage
 main
 bamort
 *.exe
+
+maintenance/testdata/*
+testdata/*_data.db
+tmp/main
+uploads/*

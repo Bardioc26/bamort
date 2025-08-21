@@ -23,228 +23,171 @@
 
     <!-- Main Content -->
     <div v-else class="skills-content">
-      <!-- Typical Skills Info -->
-      <div v-if="typicalSkills.length > 0" class="card" style="margin-bottom: 30px;">
-        <div class="section-header">
-          <h3>Empfohlene Fertigkeiten für {{ characterClass }}</h3>
-        </div>
-        <p style="color: #6c757d; margin-bottom: 15px;">
-          Die folgenden Fertigkeiten werden häufig von Charakteren Ihrer Klasse erlernt:
-        </p>
-        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-          <span 
-            v-for="skill in typicalSkills" 
-            :key="skill.name"
-            class="badge badge-info"
-            :title="`${skill.name} (${skill.attribute}) - Bonus: +${skill.bonus}`"
-          >
-            {{ skill.name }} ({{ skill.attribute }})
-          </span>
-        </div>
-      </div>
+      <!-- Three Column Layout -->
+      <div class="three-column-grid">
+        
+        <!-- Left Column: Available Skills for Selected Category -->
+        <div>
+          <div v-if="selectedCategory" class="skills-content">
+            <div class="list-container">
+              <div class="section-header" style="padding: 20px 20px 10px;">
+                <h3>{{ getSelectedCategoryName() }} - Verfügbare Fertigkeiten</h3>
+              </div>
+              
+              <!-- Loading skills -->
+              <div v-if="isLoadingSkills" class="loading-message">
+                <div class="loading-spinner"></div>
+                <p>Lade Fertigkeiten...</p>
+              </div>
 
-      <!-- Learning Points Overview -->
-      <div v-if="learningCategories.length > 0" style="margin-bottom: 30px;">
-        <div class="section-header">
-          <h3>Verfügbare Lernpunkte</h3>
+              <!-- Available skills -->
+              <div v-else-if="availableSkillsForSelectedCategory.length > 0">
+                <div 
+                  v-for="skill in availableSkillsForSelectedCategory"
+                  :key="skill.name"
+                  class="list-item"
+                  :class="{ 'opacity-50': !canAffordSkillInCategory(skill) }"
+                >
+                  <div class="list-item-content">
+                    <div class="list-item-title">{{ skill.name }}</div>
+                    <div class="list-item-details">
+                      <span class="badge badge-primary">{{ skill.cost }} LE</span>
+                      <span v-if="skill.attribute" class="badge badge-secondary">({{ skill.attribute }})</span>
+                    </div>
+                  </div>
+                  <div class="list-item-actions">
+                    <button 
+                      @click="selectSkillForLearning(skill)"
+                      :disabled="!canAffordSkillInCategory(skill)"
+                      class="btn btn-primary"
+                      style="font-size: 12px;"
+                    >
+                      Hinzufügen
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- No skills found -->
+              <div v-else class="empty-state">
+                <p>Keine Fertigkeiten für diese Kategorie gefunden.</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- No category selected -->
+          <div v-else-if="learningCategories.length > 0" class="empty-state">
+            <p>Wählen Sie eine Lernpunkte-Kategorie aus, um verfügbare Fertigkeiten zu sehen.</p>
+          </div>
         </div>
-        <div class="grid-container grid-3-columns">
-          <div 
-            v-for="category in learningCategories"
-            :key="category.name"
-            class="card"
-            :class="{
-              'border-primary': selectedCategory === category.name,
-              'border-danger': category.remainingPoints === 0,
-              'border-warning': category.remainingPoints < category.totalPoints && category.remainingPoints > 0
-            }"
-            @click="selectCategory(category.name)"
-            style="cursor: pointer;"
-          >
-            <div class="list-item-title">{{ category.displayName }}</div>
-            <div class="resource-display">
-              <div class="resource-card" style="justify-content: center; text-align: center;">
-                <div class="resource-info">
-                  <div class="resource-amount">
-                    <span style="color: #28a745; font-size: 16px;">{{ category.remainingPoints }}</span>
-                    <span style="color: #6c757d;">/</span>
-                    <span style="color: #6c757d;">{{ category.totalPoints }}</span>
-                    <span style="color: #6c757d; font-size: 12px;">LP</span>
+
+        <!-- Center Column: Selected Skills -->
+        <div>
+          <div class="list-container">
+            <div class="section-header" style="padding: 20px 20px 10px;">
+              <h3>Gewählte Fertigkeiten</h3>
+            </div>
+            
+            <div v-if="selectedSkills.length > 0">
+              <div 
+                v-for="skill in selectedSkills"
+                :key="skill.name"
+                class="list-item"
+              >
+                <div class="list-item-content">
+                  <div class="list-item-title">{{ skill.name }}</div>
+                  <div class="list-item-details">
+                    <span class="badge badge-primary">{{ skill.cost }} LE</span>
+                    <span class="badge badge-info">{{ skill.categoryDisplay }}</span>
+                  </div>
+                </div>
+                <div class="list-item-actions">
+                  <button 
+                    @click="removeSkill(skill)"
+                    class="btn btn-danger"
+                    style="width: 30px; height: 30px; border-radius: 50%; padding: 0;"
+                    title="Fertigkeit entfernen"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Summary -->
+              <div class="card" style="margin: 15px 20px;">
+                <div class="resource-card" style="justify-content: center;">
+                  <div class="resource-info" style="text-align: center;">
+                    <div class="resource-label">Gesamt verbrauchte LE:</div>
+                    <div class="resource-amount">{{ totalUsedPoints }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-else class="empty-state">
+              <p>Noch keine Fertigkeiten gewählt.</p>
+              <p style="font-style: italic; margin-top: 10px; font-size: 14px; color: #6c757d;">Wählen Sie eine Kategorie und fügen Sie Fertigkeiten hinzu.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Learning Points + Typical Skills -->
+        <div>
+          <!-- Learning Points Overview -->
+          <div v-if="learningCategories.length > 0" style="margin-bottom: 30px;">
+            <div class="section-header">
+              <h3>Verfügbare Lernpunkte</h3>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+              <div 
+                v-for="category in learningCategories"
+                :key="category.name"
+                class="card"
+                :class="{
+                  'border-primary': selectedCategory === category.name,
+                  'border-danger': category.remainingPoints === 0,
+                  'border-warning': category.remainingPoints < category.totalPoints && category.remainingPoints > 0
+                }"
+                @click="selectCategory(category.name)"
+                style="cursor: pointer;"
+              >
+                <div class="list-item-title">{{ category.displayName }}</div>
+                <div class="resource-display">
+                  <div class="resource-card" style="justify-content: center; text-align: center;">
+                    <div class="resource-info">
+                      <div class="resource-amount">
+                        <span style="color: #28a745; font-size: 16px;">{{ category.remainingPoints }}</span>
+                        <span style="color: #6c757d;">/</span>
+                        <span style="color: #6c757d;">{{ category.totalPoints }}</span>
+                        <span style="color: #6c757d; font-size: 12px;">LE</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Skills Selection -->
-      <div v-if="selectedCategory" class="skills-content">
-        <div class="list-container">
-          <div class="section-header" style="padding: 20px 20px 10px;">
-            <h3>{{ getSelectedCategoryName() }} - Verfügbare Fertigkeiten</h3>
-          </div>
-          
-          <!-- Loading skills -->
-          <div v-if="isLoadingSkills" class="loading-message">
-            <div class="loading-spinner"></div>
-            <p>Lade Fertigkeiten...</p>
-          </div>
-
-          <!-- Available skills -->
-          <div v-else-if="availableSkills.length > 0">
-            <div 
-              v-for="skill in availableSkills"
-              :key="skill.name"
-              class="list-item"
-              :class="{ 'opacity-50': !canAddSkill(skill) }"
-            >
-              <div class="list-item-content">
-                <div class="list-item-title">{{ skill.name }}</div>
-                <div class="list-item-details">
-                  <span class="badge badge-primary">{{ skill.cost }} LP</span>
-                  <span v-if="skill.attribute" class="badge badge-secondary">({{ skill.attribute }})</span>
-                </div>
-              </div>
-              <div class="list-item-actions">
-                <button 
-                  @click="addSkill(skill)"
-                  :disabled="!canAddSkill(skill)"
-                  class="btn btn-primary"
-                  style="font-size: 12px;"
-                >
-                  Hinzufügen
-                </button>
-              </div>
+          <!-- Typical Skills Info -->
+          <div v-if="typicalSkills.length > 0" class="card">
+            <div class="section-header">
+              <h3>Empfohlene Fertigkeiten für {{ characterClass }}</h3>
+            </div>
+            <p style="color: #6c757d; margin-bottom: 15px;">
+              Die folgenden Fertigkeiten werden häufig von Charakteren Ihrer Klasse erlernt:
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <span 
+                v-for="skill in typicalSkills" 
+                :key="skill.name"
+                class="badge badge-info"
+                :title="`${skill.name} (${skill.attribute}) - Bonus: +${skill.bonus}`"
+              >
+                {{ skill.name }} ({{ skill.attribute }})
+              </span>
             </div>
           </div>
-
-          <!-- No skills found -->
-          <div v-else class="empty-state">
-            <p>Keine Fertigkeiten für diese Kategorie gefunden.</p>
-          </div>
         </div>
-
-        <!-- Selected Skills -->
-        <div class="list-container">
-          <div class="section-header" style="padding: 20px 20px 10px;">
-            <h3>Gewählte Fertigkeiten</h3>
-          </div>
-          
-          <div v-if="selectedSkills.length > 0">
-            <div 
-              v-for="skill in selectedSkills"
-              :key="skill.name"
-              class="list-item"
-            >
-              <div class="list-item-content">
-                <div class="list-item-title">{{ skill.name }}</div>
-                <div class="list-item-details">
-                  <span class="badge badge-primary">{{ skill.cost }} LP</span>
-                  <span class="badge badge-info">{{ skill.categoryDisplay }}</span>
-                </div>
-              </div>
-              <div class="list-item-actions">
-                <button 
-                  @click="removeSkill(skill)"
-                  class="btn btn-danger"
-                  style="width: 30px; height: 30px; border-radius: 50%; padding: 0;"
-                  title="Fertigkeit entfernen"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-            
-            <!-- Summary -->
-            <div class="card" style="margin: 15px 20px;">
-              <div class="resource-card" style="justify-content: center;">
-                <div class="resource-info" style="text-align: center;">
-                  <div class="resource-label">Gesamt verbrauchte LP:</div>
-                  <div class="resource-amount">{{ totalUsedPoints }}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div v-else class="empty-state">
-            <p>Noch keine Fertigkeiten gewählt.</p>
-            <p style="font-style: italic; margin-top: 10px; font-size: 14px; color: #6c757d;">Wählen Sie eine Kategorie und fügen Sie Fertigkeiten hinzu.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Available Skills Section -->
-      <div v-if="!isLoadingSkills && learningCategories.length > 0" style="margin-top: 30px;">
-        <div class="section-header">
-          <h3>Verfügbare Fertigkeiten</h3>
-        </div>
-        <p style="color: #6c757d; margin-bottom: 20px;">
-          Wählen Sie aus den verfügbaren Fertigkeiten für jede Kategorie:
-        </p>
-
-        <!-- Category Filter -->
-        <div class="form-row" style="margin-bottom: 20px; gap: 10px; flex-wrap: wrap;">
-          <button 
-            @click="setSkillCategoryFilter(null)"
-            class="btn"
-            :class="selectedSkillCategoryFilter === null ? 'btn-primary' : 'btn-secondary'"
-          >
-            Alle Kategorien
-          </button>
-          <button 
-            v-for="category in availableSkillCategories" 
-            :key="category"
-            @click="setSkillCategoryFilter(category)"
-            class="btn"
-            :class="selectedSkillCategoryFilter === category ? 'btn-primary' : 'btn-secondary'"
-          >
-            {{ category }}
-          </button>
-        </div>
-
-        <!-- Skills Loading State -->
-        <div v-if="isLoadingSkills" class="loading-message">
-          <div class="loading-spinner"></div>
-          <p>Lade verfügbare Fertigkeiten...</p>
-        </div>
-
-        <!-- Skills List -->
-        <div v-else-if="filteredAvailableSkills.length > 0" class="list-container">
-          <div 
-            v-for="skill in filteredAvailableSkills" 
-            :key="skill.name"
-            class="list-item"
-            style="display: flex; justify-content: space-between; align-items: center;"
-            :class="{ 'opacity-50': !canAffordSkill(skill) }"
-          >
-            <div>
-              <div style="font-weight: 600; color: #2c3e50;">{{ skill.name }}</div>
-              <div style="display: flex; gap: 15px; font-size: 14px; color: #6c757d; margin-top: 4px;">
-                <span>{{ skill.category }}</span>
-                <span style="color: #007acc; font-weight: 500;">{{ skill.epCost }} EP</span>
-                <span style="color: #28a745; font-weight: 500;">{{ skill.goldCost }} GS</span>
-              </div>
-            </div>
-            <button 
-              @click="selectSkillForLearning(skill)"
-              class="btn btn-primary"
-              :disabled="!canAffordSkill(skill) || isSkillSelected(skill)"
-            >
-              {{ isSkillSelected(skill) ? '✓' : '→' }}
-            </button>
-          </div>
-        </div>
-
-        <!-- No Skills Available -->
-        <div v-else-if="!isLoadingSkills" class="empty-state">
-          <p>Keine Fertigkeiten verfügbar für die gewählte Kategorie.</p>
-        </div>
-      </div>
-
-      <!-- No category selected -->
-      <div v-else-if="learningCategories.length > 0" class="empty-state">
-        <p>Wählen Sie eine Lernpunkte-Kategorie aus, um verfügbare Fertigkeiten zu sehen.</p>
       </div>
     </div>
 
@@ -308,7 +251,6 @@ export default {
       
       // Available skills fetching
       availableSkillsByCategory: null,
-      selectedSkillCategoryFilter: null,
       
       // Debug
       showDebug: false // Set to true for debugging
@@ -345,44 +287,56 @@ export default {
       }
     },
 
-    availableSkillCategories() {
-      if (!this.availableSkillsByCategory) return []
-      return Object.keys(this.availableSkillsByCategory)
-    },
-
-    filteredAvailableSkills() {
-      if (!this.availableSkillsByCategory) return []
-      
-      let allSkills = []
-      
-      // Collect all skills from all categories
-      Object.keys(this.availableSkillsByCategory).forEach(category => {
-        this.availableSkillsByCategory[category].forEach(skill => {
-          allSkills.push({
-            ...skill,
-            category: category
-          })
-        })
-      })
-      
-      // Apply category filter
-      if (this.selectedSkillCategoryFilter) {
-        allSkills = allSkills.filter(skill => skill.category === this.selectedSkillCategoryFilter)
+    // Skills for the selected category (from Learning Points section)
+    availableSkillsForSelectedCategory() {
+      if (!this.selectedCategory || !this.availableSkillsByCategory) {
+        return []
       }
       
-      // Remove already selected skills
-      const selectedSkillNames = this.selectedSkills.map(s => s.name)
-      allSkills = allSkills.filter(skill => !selectedSkillNames.includes(skill.name))
+      // Try to find the matching category key
+      const categoryKey = this.findCategoryKey(this.selectedCategory)
+      if (!categoryKey) {
+        return []
+      }
       
-      return allSkills
+      // Get skills from the selected category
+      const categorySkills = this.availableSkillsByCategory[categoryKey] || []
+      
+      const filteredSkills = categorySkills.map(skill => ({
+        ...skill,
+        cost: this.getSkillCost(skill),
+        category: categoryKey, // Use the actual category key from availableSkillsByCategory
+        categoryDisplay: this.getCategoryDisplayName(this.selectedCategory)
+      }))
+      .filter(skill => {
+        // Remove already selected skills
+        const selectedSkillNames = this.selectedSkills.map(s => s.name)
+        return !selectedSkillNames.includes(skill.name)
+      })
+      .filter(skill => this.canAffordSkillInCategory(skill))
+      .sort((a, b) => {
+        const aLeCost = this.getSkillCost(a)
+        const bLeCost = this.getSkillCost(b)
+        
+        // First sort by LE cost (ascending)
+        if (aLeCost !== bLeCost) {
+          return aLeCost - bLeCost
+        }
+        
+        // If costs are equal, sort alphabetically
+        return a.name.localeCompare(b.name)
+      })
+      
+      return filteredSkills
     },
 
     totalSelectedEP() {
-      return this.selectedSkills.reduce((total, skill) => total + (skill.epCost || 0), 0)
+      return this.selectedSkills.reduce((total, skill) => total + this.getSkillCost(skill), 0)
     },
 
     totalSelectedGold() {
-      return this.selectedSkills.reduce((total, skill) => total + (skill.goldCost || 0), 0)
+      // For character creation, we only track learning costs, not gold costs
+      return 0
     }
   },
   async mounted() {
@@ -457,12 +411,8 @@ export default {
         'Alltag': 'Alltag',
         'Kampf': 'Kampf',
         'Körper': 'Körper',
-        'Gesellschaft': 'Gesellschaft',
         'Sozial': 'Sozial',
-        'Natur': 'Natur',
         'Wissen': 'Wissen',
-        'Handwerk': 'Handwerk',
-        'Gaben': 'Gaben',
         'Halbwelt': 'Halbwelt',
         'Unterwelt': 'Unterwelt',
         'Freiland': 'Freiland'
@@ -489,101 +439,70 @@ export default {
           cat.name === skill.category?.toLowerCase()
         )
         if (category && skill.cost) {
-          category.remainingPoints = Math.max(0, category.remainingPoints - skill.cost)
+          category.remainingPoints = Math.max(0, category.remainingPoints - this.getSkillCost(skill))
         }
       })
     },
     
     async selectCategory(categoryName) {
       this.selectedCategory = categoryName
-      await this.loadSkillsForCategory(categoryName)
-    },
-    
-    async loadSkillsForCategory(categoryName) {
-      try {
-        this.isLoadingSkills = true
-        
-        // Create request for skills in this category
-        const request = {
-          char_id: 0, // New character - send as number, not string
-          name: '', // Will be set for each skill individually
-          current_level: 0,
-          target_level: 1,
-          type: 'skill',
-          action: 'learn',
-          use_pp: 0,
-          use_gold: 0,
-          reward: 'default',
-          characterClass: this.characterClass,
-          category: categoryName
-        }
-        
-        console.log('Loading skills for category:', categoryName, 'with request:', request)
-        
-        const response = await API.post('/api/characters/available-skills-new', request, {
-          headers: { 
-            Authorization: `Bearer ${localStorage.getItem('token')}` 
-          }
-        })
-        
-        this.availableSkills = (response.data.skills || []).map(skill => ({
-          ...skill,
-          category: categoryName,
-          categoryDisplay: this.getCategoryDisplayName(categoryName)
-        }))
-        
-        console.log('Loaded skills for category:', this.availableSkills)
-        
-      } catch (error) {
-        console.error('Error loading skills:', error)
-        // Provide fallback dummy data for development
-        this.availableSkills = [
-          { 
-            name: 'Beispiel Fertigkeit 1', 
-            cost: 30, 
-            category: categoryName,
-            categoryDisplay: this.getCategoryDisplayName(categoryName),
-            attribute: 'In'
-          },
-          { 
-            name: 'Beispiel Fertigkeit 2', 
-            cost: 40, 
-            category: categoryName,
-            categoryDisplay: this.getCategoryDisplayName(categoryName),
-            attribute: 'Gs'
-          }
-        ]
-      } finally {
-        this.isLoadingSkills = false
-      }
+      // Skills are now provided by computed property availableSkillsForSelectedCategory
     },
     
     getSelectedCategoryName() {
       const category = this.learningCategories.find(cat => cat.name === this.selectedCategory)
       return category ? category.displayName : this.selectedCategory
     },
-    
-    canAddSkill(skill) {
-      // Check if skill is already selected
-      const alreadySelected = this.selectedSkills.some(s => s.name === skill.name)
-      if (alreadySelected) return false
+
+    findCategoryKey(selectedCategoryName) {
+      if (!this.availableSkillsByCategory) return null
       
-      // Check if category has enough points
-      const category = this.learningCategories.find(cat => 
-        cat.name === skill.category?.toLowerCase()
+      // Try to find by learning category mapping first (most likely scenario)
+      const learningCategory = this.learningCategories?.find(cat => cat.name === selectedCategoryName)
+      if (learningCategory && this.availableSkillsByCategory[learningCategory.displayName]) {
+        return learningCategory.displayName
+      }
+      
+      // Try direct match
+      if (this.availableSkillsByCategory[selectedCategoryName]) {
+        return selectedCategoryName
+      }
+      
+      // Try case-insensitive search
+      const availableKeys = Object.keys(this.availableSkillsByCategory)
+      const foundKey = availableKeys.find(key => 
+        key.toLowerCase() === selectedCategoryName.toLowerCase()
       )
-      if (!category) return false
       
-      return category.remainingPoints >= (skill.cost || 0)
+      return foundKey || null
     },
-    
-    addSkill(skill) {
-      if (!this.canAddSkill(skill)) return
+
+    getSkillCost(skill) {
+      // Unified method to get skill cost from various possible properties
+      return skill.cost || skill.learnCost || skill.leCost || 0
+    },
+
+    canAffordSkillInCategory(skill) {
+      // Check if character has enough learning points in the skill's category
+      // Handle both displayName format (e.g., "Sozial") and internal name format (e.g., "sozial")
+      let category = this.learningCategories.find(cat => 
+        cat.displayName === skill.category
+      )
       
-      this.selectedSkills.push({ ...skill })
-      this.updateRemainingPoints()
+      // If not found by displayName, try by internal name
+      if (!category) {
+        category = this.learningCategories.find(cat => 
+          cat.name === skill.category?.toLowerCase()
+        )
+      }
       
-      console.log('Added skill:', skill.name, 'Selected skills:', this.selectedSkills)
+      if (!category) {
+        console.warn('No learning category found for skill:', skill.name, 'category:', skill.category)
+        return false
+      }
+      
+      const skillCost = this.getSkillCost(skill)
+      return category.remainingPoints >= skillCost
     },
     
     removeSkill(skill) {
@@ -627,22 +546,15 @@ export default {
 
       this.isLoadingSkills = true
       try {
-        // Create request similar to SkillLearnDialog
+        // Use the new simplified endpoint for character creation
+        // Make sure to use the character class abbreviation
         const requestData = {
-          char_id: 0, // New character - send as number, not string
-          name: '', // Will be set for each skill individually
-          current_level: 0,
-          target_level: 1,
-          type: 'skill',
-          action: 'learn',
-          use_pp: 0,
-          use_gold: 0,
-          reward: 'default'
+          characterClass: this.characterClass // Should already be the abbreviation like "Ma", "As", etc.
         }
         
         console.log('Loading skills with request:', requestData)
         
-        const response = await API.post('/api/characters/available-skills-new', requestData)
+        const response = await API.post('/api/characters/available-skills-creation', requestData)
         
         if (response.data && response.data.skills_by_category) {
           this.availableSkillsByCategory = response.data.skills_by_category
@@ -665,33 +577,22 @@ export default {
       // Fallback for testing
       this.availableSkillsByCategory = {
         'Körperliche Fertigkeiten': [
-          { name: 'Klettern', epCost: 100, goldCost: 50 },
-          { name: 'Schwimmen', epCost: 80, goldCost: 40 },
-          { name: 'Springen', epCost: 60, goldCost: 30 }
+          { name: 'Klettern', learnCost: 50 },
+          { name: 'Schwimmen', learnCost: 40 },
+          { name: 'Springen', learnCost: 30 }
         ],
         'Geistige Fertigkeiten': [
-          { name: 'Erste Hilfe', epCost: 120, goldCost: 60 },
-          { name: 'Naturkunde', epCost: 150, goldCost: 75 },
-          { name: 'Menschenkenntnis', epCost: 130, goldCost: 65 }
+          { name: 'Erste Hilfe', learnCost: 60 },
+          { name: 'Naturkunde', learnCost: 75 },
+          { name: 'Menschenkenntnis', learnCost: 65 }
         ],
         'Handwerkliche Fertigkeiten': [
-          { name: 'Bogenbau', epCost: 200, goldCost: 100 },
-          { name: 'Schmieden', epCost: 250, goldCost: 125 }
+          { name: 'Bogenbau', learnCost: 100 },
+          { name: 'Schmieden', learnCost: 125 }
         ]
       }
       
       console.log('Generated sample skills:', this.availableSkillsByCategory)
-    },
-
-    setSkillCategoryFilter(categoryName) {
-      this.selectedSkillCategoryFilter = categoryName
-      console.log('Skill category filter set to:', categoryName)
-    },
-
-    canAffordSkill(skill) {
-      // For character creation, we don't have actual EP/Gold yet
-      // This is more of a placeholder for the UI
-      return true
     },
 
     isSkillSelected(skill) {
@@ -703,16 +604,38 @@ export default {
         return // Already selected
       }
       
-      // Add skill to selected list
-      this.selectedSkills.push({ ...skill })
-      console.log('Skill selected for learning:', skill.name)
+      // Check if the skill can be afforded
+      if (!this.canAffordSkillInCategory(skill)) {
+        console.log('Cannot afford skill:', skill.name)
+        return
+      }
+      
+      // Add skill to selected list with proper cost
+      const skillToAdd = {
+        ...skill,
+        cost: this.getSkillCost(skill), // Ensure cost is properly set
+        categoryDisplay: skill.category // Set category for display
+      }
+      
+      this.selectedSkills.push(skillToAdd)
+      
+      // Update remaining points for all categories
+      this.updateRemainingPoints()
+      
+      console.log('Skill selected for learning:', skill.name, 'Cost:', skillToAdd.cost)
+      console.log('Updated remaining points')
     },
 
     removeSkillFromSelection(skill) {
       const index = this.selectedSkills.findIndex(s => s.name === skill.name)
       if (index !== -1) {
         this.selectedSkills.splice(index, 1)
+        
+        // Update remaining points for all categories after removal
+        this.updateRemainingPoints()
+        
         console.log('Skill removed from selection:', skill.name)
+        console.log('Updated remaining points after removal')
       }
     }
   }
@@ -721,6 +644,38 @@ export default {
 
 <style scoped>
 /* Minimal custom styles - most styling comes from main.css */
+
+/* Override global fullwidth-page padding to achieve true full-width */
+.fullwidth-page {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  box-sizing: border-box !important;
+}
+
+/* Add minimal padding only where needed */
+.page-header {
+  padding: 15px 20px;
+  margin-bottom: 20px;
+}
+
+/* Full-width three column grid layout */
+.three-column-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 30px;
+  margin: 0 20px 30px 20px; /* Add horizontal margins for content readability */
+  width: calc(100vw - 40px); /* Use viewport width minus margins */
+  max-width: calc(100vw - 40px);
+  box-sizing: border-box;
+}
+
+/* Ensure grid takes full available width */
+.skills-content {
+  width: 100%;
+  max-width: 100%;
+}
 
 /* Utility classes for dynamic styling that can't be expressed in main.css */
 .opacity-50 {
@@ -741,5 +696,20 @@ export default {
 .border-danger {
   border-color: #dc3545 !important;
   background-color: #ffebee;
+}
+
+/* Responsive behavior for smaller screens */
+@media (max-width: 1200px) {
+  .three-column-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .three-column-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
 }
 </style>

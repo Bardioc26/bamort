@@ -2006,14 +2006,14 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 	// For character creation (char_id = 0), we don't need to load an existing character
 	var character models.Char
 	learnedSkills := make(map[string]bool)
-	
+
 	if baseRequest.CharId != 0 {
 		// Load existing character and their learned skills
 		if err := database.DB.Preload("Fertigkeiten").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, baseRequest.CharId).Error; err != nil {
 			respondWithError(c, http.StatusNotFound, "Character not found")
 			return
 		}
-		
+
 		// Create map of learned skills for existing character
 		for _, skill := range character.Fertigkeiten {
 			learnedSkills[skill.Name] = true
@@ -2060,14 +2060,14 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 		// Erstelle SkillCostResultNew
 		characterClass := ""
 		characterID := "0"
-		
+
 		if baseRequest.CharId != 0 {
 			// Use existing character data
 			characterID = fmt.Sprintf("%d", character.ID)
 			characterClass = getCharacterClassOld(&character)
 		}
 		// For character creation, we don't have a character class yet, use empty string
-		
+
 		levelResult := gsmaster.SkillCostResultNew{
 			CharacterID:    characterID,
 			CharacterClass: characterClass,
@@ -2089,13 +2089,27 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 			}
 		}
 
-		// Berechne Lernkosten mit calculateSkillLearnCostNewSystem
-		err = calculateSkillLearnCostNewSystem(&request, &levelResult, &remainingPP, &remainingGold, skillLearningInfo)
-		epCost := 10000   // Fallback-Wert
-		goldCost := 50000 // Fallback-Wert
-		if err == nil {
-			epCost = levelResult.EP
-			goldCost = levelResult.GoldCost
+		// For character creation (CharId = 0), use learning costs instead of improvement costs
+		var epCost, goldCost int
+		if baseRequest.CharId == 0 {
+			// Character creation: use basic learning costs from skillLearningInfo
+			learnCost := skillLearningInfo.LearnCost
+			if learnCost == 0 {
+				learnCost = 50 // Default learning cost
+			}
+
+			// For character creation, costs are much lower - just the basic learning cost
+			epCost = learnCost * 2   // Simple formula: learning cost * 2 for EP
+			goldCost = learnCost * 5 // Simple formula: learning cost * 5 for gold
+		} else {
+			// Existing character improvement: use the full system
+			err = calculateSkillLearnCostNewSystem(&request, &levelResult, &remainingPP, &remainingGold, skillLearningInfo)
+			epCost = 10000   // Fallback-Wert for improvements
+			goldCost = 50000 // Fallback-Wert for improvements
+			if err == nil {
+				epCost = levelResult.EP
+				goldCost = levelResult.GoldCost
+			}
 		}
 
 		skillInfo := gin.H{
@@ -2115,6 +2129,226 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"skills_by_category": skillsByCategory,
 	})
+}
+
+// GetAvailableSkillsForCreation returns skills with learning costs for character creation
+func GetAvailableSkillsForCreation(c *gin.Context) {
+	var request struct {
+		CharacterClass string `json:"characterClass" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		logger.Warn("HTTP Fehler 400: Ungültige Anfrageparameter: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Ungültige Anfrageparameter",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	logger.Info("GetAvailableSkillsForCreation - CharacterClass: %s", request.CharacterClass)
+
+	// Get all available skills with their learning costs
+	skillsByCategory, err := GetAllSkillsWithLE()
+	if err != nil {
+		logger.Error("Fehler beim Abrufen der Fertigkeiten: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Fehler beim Abrufen der Fertigkeiten",
+		})
+		return
+	}
+
+	logger.Info("GetAvailableSkillsForCreation - Gefundene Kategorien: %d", len(skillsByCategory))
+
+	c.JSON(http.StatusOK, gin.H{
+		"skills_by_category": skillsByCategory,
+	})
+}
+func GetAllSkillsWithLE() (map[string][]gin.H, error) {
+	// Get all skill categories from database
+	var skillCategories []models.SkillCategory
+	if err := database.DB.Find(&skillCategories).Error; err != nil {
+		return nil, err
+	}
+
+	skillsByCategory := make(map[string][]gin.H)
+
+	// For each category, find all skills that can be learned in that category
+	for _, category := range skillCategories {
+		skillsByCategory[category.Name] = []gin.H{}
+
+		// Query all skill-category-difficulty combinations for this category
+		var skillCategoryDifficulties []models.SkillCategoryDifficulty
+		err := database.DB.Preload("Skill").Preload("SkillDifficulty").
+			Where("skill_category_id = ?", category.ID).
+			Find(&skillCategoryDifficulties).Error
+
+		if err != nil {
+			continue // Skip this category if there's an error
+		}
+
+		// For each skill in this category, add it with its LE cost and difficulty
+		for _, scd := range skillCategoryDifficulties {
+			// Skip Placeholder skills
+			if category.Name == "Unbekannt" || scd.Skill.Name == "Placeholder" || scd.Skill.InnateSkill {
+				continue
+			}
+
+			skillInfo := gin.H{
+				"name":       scd.Skill.Name,
+				"leCost":     scd.LearnCost,
+				"difficulty": scd.SkillDifficulty.Name,
+			}
+
+			skillsByCategory[category.Name] = append(skillsByCategory[category.Name], skillInfo)
+		}
+	}
+
+	return skillsByCategory, nil
+}
+
+// GetAllSkillsWithLearningCosts returns all skills with their basic learning costs for all possible categories
+func GetAllSkillsWithLearningCosts(characterClass string) (map[string][]gin.H, error) {
+	skills, err := models.SelectSkills("", "")
+	if err != nil {
+		return nil, err
+	}
+
+	skillsByCategory := make(map[string][]gin.H)
+
+	// Define all possible categories for skills
+	allCategories := []string{"Alltag", "Kampf", "Körper", "Sozial", "Wissen", "Halbwelt", "Unterwelt", "Freiland", "Sonstige"}
+
+	for _, skill := range skills {
+		// Skip Placeholder skills
+		if skill.Name == "Placeholder" {
+			continue
+		}
+
+		// First, always add to the skill's original category
+		originalCategory := skill.Category
+		if originalCategory == "" {
+			originalCategory = "Sonstige"
+		}
+
+		// Try to get the best category and learning cost for this skill and character class
+		bestCategory, difficulty, err := gsmaster.FindBestCategoryForSkillLearningOld(skill.Name, characterClass)
+
+		var learnCost int
+		if err == nil && bestCategory != "" {
+			// Use the difficulty as a basis for learning cost
+			switch difficulty {
+			case "Leicht":
+				learnCost = 1
+			case "Normal":
+				learnCost = 2
+			case "Schwer":
+				learnCost = 4
+			case "Sehr Schwer":
+				learnCost = 10
+			default:
+				learnCost = 50 // Default fallback
+			}
+
+			// Add to the best category
+			skillInfo := gin.H{
+				"name":      skill.Name,
+				"learnCost": learnCost,
+			}
+			skillsByCategory[bestCategory] = append(skillsByCategory[bestCategory], skillInfo)
+
+			// If the best category is different from original, also add to original with higher cost
+			if bestCategory != originalCategory {
+				skillInfoOriginal := gin.H{
+					"name":      skill.Name,
+					"learnCost": learnCost * 2, // Higher cost for non-optimal category
+				}
+				skillsByCategory[originalCategory] = append(skillsByCategory[originalCategory], skillInfoOriginal)
+			}
+		} else {
+			// Fallback: add to original category only
+			skillInfo := gin.H{
+				"name":      skill.Name,
+				"learnCost": 50, // Default learning cost
+			}
+			skillsByCategory[originalCategory] = append(skillsByCategory[originalCategory], skillInfo)
+		}
+
+		// Try to add skill to other logical categories with higher costs
+		// This allows more flexibility in character creation
+		for _, category := range allCategories {
+			if category == bestCategory || category == originalCategory {
+				continue // Already added
+			}
+
+			// Only add to certain categories if it makes sense
+			if shouldSkillBeInCategory(skill.Name, category) {
+				higherCost := learnCost
+				if higherCost == 0 {
+					higherCost = 50
+				}
+				higherCost = higherCost * 3 // Much higher cost for cross-category learning
+
+				skillInfo := gin.H{
+					"name":      skill.Name,
+					"learnCost": higherCost,
+				}
+				skillsByCategory[category] = append(skillsByCategory[category], skillInfo)
+			}
+		}
+	}
+
+	return skillsByCategory, nil
+}
+
+// shouldSkillBeInCategory determines if a skill should be available in a given category
+func shouldSkillBeInCategory(skillName, category string) bool {
+	// Define which skills can appear in which categories
+	skillCategoryMap := map[string][]string{
+		// Physical skills can appear in multiple categories
+		"Athletik":  {"Körper", "Kampf", "Freiland"},
+		"Klettern":  {"Körper", "Freiland", "Alltag"},
+		"Schwimmen": {"Körper", "Freiland", "Alltag"},
+		"Laufen":    {"Körper", "Kampf", "Freiland"},
+		"Akrobatik": {"Körper", "Kampf"},
+
+		// Combat skills
+		"Dolch":   {"Kampf", "Halbwelt"},
+		"Schwert": {"Kampf"},
+		"Bogen":   {"Kampf", "Freiland"},
+
+		// Social skills
+		"Menschenkenntnis": {"Sozial", "Halbwelt"},
+		"Verführen":        {"Sozial", "Halbwelt"},
+		"Anführen":         {"Sozial", "Kampf"},
+
+		// Knowledge skills
+		"Schreiben":  {"Wissen", "Alltag"},
+		"Sprache":    {"Wissen", "Sozial"},
+		"Naturkunde": {"Wissen", "Freiland"},
+
+		// Stealth and underworld
+		"Schleichen": {"Halbwelt", "Freiland", "Kampf"},
+		"Tarnen":     {"Halbwelt", "Freiland", "Kampf"},
+		"Stehlen":    {"Halbwelt"},
+
+		// Survival and wilderness
+		"Überleben":    {"Freiland", "Alltag"},
+		"Spurensuche":  {"Freiland", "Halbwelt"},
+		"Orientierung": {"Freiland", "Alltag"},
+	}
+
+	categories, exists := skillCategoryMap[skillName]
+	if !exists {
+		return false // Only add skills we explicitly define
+	}
+
+	for _, cat := range categories {
+		if cat == category {
+			return true
+		}
+	}
+	return false
 }
 
 // GetAvailableSpellsNewSystem gibt alle verfügbaren Zauber mit Lernkosten zurück (POST mit LernCostRequest)

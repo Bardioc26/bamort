@@ -256,3 +256,296 @@ func TestImproveSkillHandler(t *testing.T) {
 		assert.Contains(t, response["error"], "Charakter nicht gefunden")
 	})
 }
+
+func TestGetAvailableSkillsNewSystem(t *testing.T) {
+	// Setup test environment
+	original := os.Getenv("ENVIRONMENT")
+	os.Setenv("ENVIRONMENT", "test")
+	t.Cleanup(func() {
+		if original != "" {
+			os.Setenv("ENVIRONMENT", original)
+		} else {
+			os.Unsetenv("ENVIRONMENT")
+		}
+	})
+
+	// Setup test database
+	database.SetupTestDB(true, true)
+	defer database.ResetTestDB()
+
+	err := models.MigrateStructure()
+	assert.NoError(t, err)
+
+	t.Run("GetAvailableSkillsForCharacterCreation", func(t *testing.T) {
+		// Test data - the exact request format for character creation
+		requestData := map[string]interface{}{
+			"CharId":        0,
+			"name":          "",
+			"current_level": 0,
+			"target_level":  1,
+			"type":          "skill",
+			"action":        "learn",
+			"use_pp":        0,
+			"use_gold":      0,
+			"reward":        "default",
+		}
+
+		requestBody, err := json.Marshal(requestData)
+		assert.NoError(t, err)
+
+		// Create test request
+		req, _ := http.NewRequest("POST", "/api/characters/available-skills-new", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+
+		// Call the handler
+		GetAvailableSkillsNewSystem(c)
+
+		// Verify response
+		assert.Equal(t, http.StatusOK, w.Code, "Should return 200 OK for character creation request")
+
+		var response map[string]interface{}
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+
+		// Check response structure
+		assert.Contains(t, response, "skills_by_category", "Response should contain skills_by_category")
+
+		skillsByCategory, ok := response["skills_by_category"].(map[string]interface{})
+		assert.True(t, ok, "skills_by_category should be a map")
+
+		// Verify we have reasonable costs for character creation
+		assert.Greater(t, len(skillsByCategory), 0, "Should have at least some skill categories")
+
+		// Check that costs are reasonable for character creation (not the high fallback values)
+		for _, skills := range skillsByCategory {
+			if skillsList, ok := skills.([]interface{}); ok {
+				for _, skill := range skillsList {
+					if skillMap, ok := skill.(map[string]interface{}); ok {
+						epCost := skillMap["epCost"].(float64)
+						goldCost := skillMap["goldCost"].(float64)
+
+						// Verify costs are reasonable for character creation (not fallback values)
+						assert.Less(t, epCost, 1000.0, "EP cost should be reasonable for character creation")
+						assert.Less(t, goldCost, 1000.0, "Gold cost should be reasonable for character creation")
+						assert.Greater(t, epCost, 0.0, "EP cost should be positive")
+						assert.Greater(t, goldCost, 0.0, "Gold cost should be positive")
+					}
+				}
+			}
+		}
+		assert.Greater(t, len(skillsByCategory), 0, "Should return at least some skill categories")
+
+		// Check that each category contains skills with proper structure
+		for categoryName, categorySkills := range skillsByCategory {
+			assert.NotEmpty(t, categoryName, "Category name should not be empty")
+
+			skillsArray, ok := categorySkills.([]interface{})
+			assert.True(t, ok, "Category skills should be an array")
+
+			if len(skillsArray) > 0 {
+				// Check first skill structure
+				firstSkill, ok := skillsArray[0].(map[string]interface{})
+				assert.True(t, ok, "Skill should be a map")
+
+				// Verify skill has required fields
+				assert.Contains(t, firstSkill, "name", "Skill should have name field")
+				assert.Contains(t, firstSkill, "epCost", "Skill should have epCost field")
+				assert.Contains(t, firstSkill, "goldCost", "Skill should have goldCost field")
+
+				// Verify field types
+				assert.IsType(t, "", firstSkill["name"], "Name should be string")
+				assert.IsType(t, float64(0), firstSkill["epCost"], "epCost should be numeric")
+				assert.IsType(t, float64(0), firstSkill["goldCost"], "goldCost should be numeric")
+			}
+		}
+	})
+
+	t.Run("GetAvailableSkillsInvalidRequest", func(t *testing.T) {
+		// Test with missing required fields (type, action, reward)
+		requestData := map[string]interface{}{
+			"CharId":        0, // CharId 0 is valid for character creation
+			"name":          "",
+			"current_level": 0,
+			"target_level":  1,
+			// Missing "type", "action", and "reward" - should fail
+			"use_pp":   0,
+			"use_gold": 0,
+		}
+
+		requestBody, err := json.Marshal(requestData)
+		assert.NoError(t, err)
+
+		req, _ := http.NewRequest("POST", "/api/characters/available-skills-new", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+
+		GetAvailableSkillsNewSystem(c)
+
+		// Should return 400 Bad Request for missing required fields
+		assert.Equal(t, http.StatusBadRequest, w.Code, "Should return 400 for missing required fields")
+
+		var response map[string]interface{}
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Contains(t, response, "error")
+		assert.True(t, len(response["error"].(string)) > 0, "Error message should not be empty")
+	})
+
+	t.Run("GetAvailableSkillsInvalidRewardType", func(t *testing.T) {
+		// Test with invalid reward type
+		requestData := map[string]interface{}{
+			"CharId":        0,
+			"name":          "",
+			"current_level": 0,
+			"target_level":  1,
+			"type":          "skill",
+			"action":        "learn",
+			"use_pp":        0,
+			"use_gold":      0,
+			"reward":        "invalid",
+		}
+
+		requestBody, err := json.Marshal(requestData)
+		assert.NoError(t, err)
+
+		req, _ := http.NewRequest("POST", "/api/characters/available-skills-new", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+
+		GetAvailableSkillsNewSystem(c)
+
+		// Should return 400 Bad Request for invalid reward type
+		assert.Equal(t, http.StatusBadRequest, w.Code, "Should return 400 for invalid reward type")
+
+		var response map[string]interface{}
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Contains(t, response, "error")
+	})
+}
+
+// TestGetAvailableSkillsForCreation tests the character creation skills endpoint
+func TestGetAvailableSkillsForCreation(t *testing.T) {
+	// Setup test database
+	database.SetupTestDB(true, true)
+	defer database.ResetTestDB()
+
+	tests := []struct {
+		name           string
+		characterClass string
+		expectStatus   int
+		expectError    bool
+	}{
+		{
+			name:           "ValidCharacterClass",
+			characterClass: "As",
+			expectStatus:   http.StatusOK,
+			expectError:    false,
+		},
+		{
+			name:           "MagierCharacterClass",
+			characterClass: "Ma",
+			expectStatus:   http.StatusOK,
+			expectError:    false,
+		},
+		{
+			name:           "EmptyCharacterClass",
+			characterClass: "",
+			expectStatus:   http.StatusBadRequest,
+			expectError:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create request
+			requestData := gin.H{
+				"characterClass": tt.characterClass,
+			}
+			requestBody, _ := json.Marshal(requestData)
+
+			// Create HTTP request
+			req, _ := http.NewRequest("POST", "/api/characters/available-skills-creation", bytes.NewBuffer(requestBody))
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", "Bearer test-token")
+
+			// Create response recorder
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = req
+
+			// Call the handler directly (it will handle JSON parsing internally)
+			GetAvailableSkillsForCreation(c)
+
+			// Verify response
+			assert.Equal(t, tt.expectStatus, w.Code)
+
+			if !tt.expectError {
+				var response map[string]interface{}
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				assert.NoError(t, err)
+
+				// Check response structure
+				assert.Contains(t, response, "skills_by_category")
+
+				skillsByCategory, ok := response["skills_by_category"].(map[string]interface{})
+				assert.True(t, ok)
+				assert.Greater(t, len(skillsByCategory), 0, "Should have at least some skill categories")
+
+				// Verify skills have learnCost field
+				hasNonDefaultCost := false
+				for categoryName, skills := range skillsByCategory {
+					if skillsList, ok := skills.([]interface{}); ok {
+						for _, skill := range skillsList {
+							if skillMap, ok := skill.(map[string]interface{}); ok {
+								assert.Contains(t, skillMap, "name", "Skill should have name")
+								assert.Contains(t, skillMap, "learnCost", "Skill should have learnCost")
+
+								learnCost := skillMap["learnCost"].(float64)
+								assert.Greater(t, learnCost, 0.0, "Learn cost should be positive")
+								assert.Less(t, learnCost, 500.0, "Learn cost should be reasonable for character creation")
+
+								// Check if we have skills with non-default costs
+								if learnCost != 50 {
+									hasNonDefaultCost = true
+								}
+
+								// Log individual skill costs for debugging
+								if tt.characterClass == "Ma" {
+									t.Logf("Skill: %s, Category: %s, LearnCost: %.0f", skillMap["name"], categoryName, learnCost)
+								}
+							}
+						}
+						if tt.characterClass == "Ma" {
+							break // Only log first category for Ma
+						}
+					}
+					_ = categoryName // Mark as used
+				}
+
+				// For Ma class, we should get some skills with different costs than the default 50
+				if tt.characterClass == "Ma" {
+					// This is more of an informational test - we want to see what costs we get
+					t.Logf("Ma class - has skills with non-default costs: %v", hasNonDefaultCost)
+				} // Log some sample data for verification
+				t.Logf("Character creation skills loaded for class %s: %d categories", tt.characterClass, len(skillsByCategory))
+			} else {
+				// For error cases, verify error response
+				var response map[string]interface{}
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				assert.NoError(t, err)
+				assert.Contains(t, response, "error")
+			}
+		})
+	}
+}

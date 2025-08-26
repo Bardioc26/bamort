@@ -76,7 +76,7 @@ type Vermoegen struct {
 type Char struct {
 	BamortBase
 	UserID             uint                 `gorm:"index;not null;default:1" json:"user_id"`
-	User               user.User            `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"user"`
+	User               user.User            `gorm:"foreignKey:UserID;references:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"user"`
 	Rasse              string               `json:"rasse"`
 	Typ                string               `json:"typ"`
 	Alter              int                  `json:"alter"`

@@ -5,6 +5,7 @@ import (
 	"bamort/gsmaster"
 	"bamort/logger"
 	"bamort/models"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -2131,6 +2132,57 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 	})
 }
 
+// getCharacterClassCode converts a character class name to its code using the database
+func getCharacterClassCode(className string) (string, error) {
+	var characterClass models.CharacterClass
+	err := characterClass.FirstByName(className)
+	if err != nil {
+		return "", fmt.Errorf("character class '%s' not found: %w", className, err)
+	}
+	return characterClass.Code, nil
+}
+
+func GetAvailableSpellsForCreation(c *gin.Context) {
+	var request struct {
+		CharacterClass string `json:"characterClass" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&request); err != nil {
+		logger.Warn("HTTP Fehler 400: Ungültige Anfrageparameter: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Ungültige Anfrageparameter",
+			"details": err.Error(),
+		})
+		return
+	}
+	logger.Info("GetAvailableSpellsForCreation - CharacterClass: %s", request.CharacterClass)
+
+	// Convert character class name to code
+	characterClassCode, err := getCharacterClassCode(request.CharacterClass)
+	if err != nil {
+		logger.Error("Fehler beim Konvertieren der Charakterklasse: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("Unbekannte Charakterklasse: %s", request.CharacterClass),
+		})
+		return
+	}
+
+	// Get all available spells with their learning costs
+	spellsByCategory, err := GetAllSpellsWithLE(characterClassCode, 2)
+	if err != nil {
+		logger.Error("Fehler beim Abrufen der Zauber: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Fehler beim Abrufen der Zauber",
+		})
+		return
+	}
+
+	logger.Info("GetAvailableSpellsForCreation - Gefundene Kategorien: %d", len(spellsByCategory))
+
+	c.JSON(http.StatusOK, gin.H{
+		"spells_by_category": spellsByCategory,
+	})
+}
+
 // GetAvailableSkillsForCreation returns skills with learning costs for character creation
 func GetAvailableSkillsForCreation(c *gin.Context) {
 	var request struct {
@@ -2164,6 +2216,163 @@ func GetAvailableSkillsForCreation(c *gin.Context) {
 		"skills_by_category": skillsByCategory,
 	})
 }
+
+func GetAllSpellsWithLE(characterClass string, maxLevel int) (map[string][]gin.H, error) {
+	// Create mapping of character classes to allowed learning categories
+	allowedLearningCategories := getCharacterClassSpellSchoolMapping()
+
+	// Check if character class has allowed spell schools
+
+	allowedSchools, exists := allowedLearningCategories[characterClass]
+	if !exists {
+		return map[string][]gin.H{}, nil // Return empty map if class can't learn spells
+	}
+
+	// Get all spells from database with level filter
+	var spells []models.Spell
+	err := database.DB.Where("stufe <= ? AND learning_category != '' AND learning_category IS NOT NULL", maxLevel).Find(&spells).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch spells: %w", err)
+	}
+
+	// Group spells by category (using LearningCategory field)
+	spellsByCategory := make(map[string][]gin.H)
+
+	for _, spell := range spells {
+		// Check if this character class can learn this spell school
+		if !allowedSchools[spell.LearningCategory] {
+			continue // Skip spells from schools this class can't learn
+		}
+
+		// Calculate learning cost for this spell
+		leCost := getSpellLECost(spell.Stufe)
+
+		spellData := gin.H{
+			"id":                spell.ID,
+			"name":              spell.Name,
+			"level":             spell.Stufe,
+			"school":            spell.Category,         // Display category
+			"learning_category": spell.LearningCategory, // Internal category for learning
+			"description":       spell.Beschreibung,
+			"le_cost":           leCost,
+			"ap":                spell.AP,
+			"art":               spell.Art,
+			"zauberdauer":       spell.Zauberdauer,
+			"reichweite":        spell.Reichweite,
+			"wirkungsziel":      spell.Wirkungsziel,
+			"wirkungsbereich":   spell.Wirkungsbereich,
+			"wirkungsdauer":     spell.Wirkungsdauer,
+		}
+
+		// Use LearningCategory for grouping
+		category := spell.LearningCategory
+		spellsByCategory[category] = append(spellsByCategory[category], spellData)
+	}
+
+	// Sort spells within each category by level, then by name
+	for category := range spellsByCategory {
+		spells := spellsByCategory[category]
+		sort.Slice(spells, func(i, j int) bool {
+			levelI := spells[i]["level"].(int)
+			levelJ := spells[j]["level"].(int)
+			if levelI != levelJ {
+				return levelI < levelJ
+			}
+			nameI := spells[i]["name"].(string)
+			nameJ := spells[j]["name"].(string)
+			return nameI < nameJ
+		})
+		spellsByCategory[category] = spells
+	}
+
+	return spellsByCategory, nil
+}
+
+// getCharacterClassSpellSchoolMapping returns the mapping of character classes to allowed spell schools
+func getCharacterClassSpellSchoolMapping() map[string]map[string]bool {
+	return map[string]map[string]bool{
+		"Ma": { // Magier
+			"Beherrschen": true,
+			"Bewegen":     true,
+			"Dweomer":     true,
+			"Erkennen":    true,
+			"Erschaffen":  true,
+			"Verändern":   true,
+			"Zerstören":   true,
+		},
+		"Hx": { // Hexer
+			"Beherrschen": true,
+			"Dweomer":     true,
+			"Erkennen":    true,
+			"Verändern":   true,
+		},
+		"Dr": { // Druide
+			"Bewegen":    true,
+			"Erkennen":   true,
+			"Erschaffen": true,
+			"Verändern":  true,
+		},
+		"Sc": { // Schamane
+			"Beherrschen": true,
+			"Erkennen":    true,
+			"Verändern":   true,
+		},
+		"PB": { // Priester Beschützer
+			"Dweomer":   true,
+			"Erkennen":  true,
+			"Verändern": true,
+		},
+		"PS": { // Priester Streiter
+			"Dweomer":   true,
+			"Erkennen":  true,
+			"Verändern": true,
+		},
+		"Ba": { // Barde
+			"Beherrschen": true,
+			"Dweomer":     true,
+			"Erkennen":    true,
+		},
+		"Or": { // Ordenskrieger
+			"Dweomer":  true,
+			"Erkennen": true,
+		},
+	}
+}
+
+// getSpellLECost returns the learning cost in LE for a given spell level from the database
+func getSpellLECost(level int) int {
+	var spellLECost models.SpellLevelLECost
+
+	// Query the database for the LE cost for this level
+	err := database.DB.Where("level = ? AND game_system = ?", level, "midgard").First(&spellLECost).Error
+	if err != nil {
+		// If not found in database, fall back to standard Midgard costs
+		spellLECosts := map[int]int{
+			1:  1,
+			2:  2,
+			3:  3,
+			4:  4,
+			5:  5,
+			6:  6,
+			7:  8,
+			8:  10,
+			9:  12,
+			10: 15,
+			11: 18,
+			12: 21,
+		}
+
+		if cost, exists := spellLECosts[level]; exists {
+			return cost
+		}
+
+		// Final fallback for unknown levels
+		return level
+	}
+
+	return spellLECost.LERequired
+}
+
 func GetAllSkillsWithLE() (map[string][]gin.H, error) {
 	// Get all skill categories from database
 	var skillCategories []models.SkillCategory
@@ -3464,21 +3673,6 @@ type SkillCategoryWithPoints struct {
 	DisplayName string `json:"display_name"`
 	Points      int    `json:"points"`
 	MaxPoints   int    `json:"max_points"`
-}
-
-// GetSkillCategoriesWithPoints gibt Kategorien mit Lernpunkten zurück
-func GetSkillCategoriesWithPoints(c *gin.Context) {
-	// TODO: Basierend auf Charakter-Klasse und -Typ berechnen
-	categories := []SkillCategoryWithPoints{
-		{Name: "alltag", DisplayName: "Alltag", Points: 150, MaxPoints: 150},
-		{Name: "wissen", DisplayName: "Wissen", Points: 100, MaxPoints: 100},
-		{Name: "kampf", DisplayName: "Kampf", Points: 80, MaxPoints: 80},
-		{Name: "korper", DisplayName: "Körper", Points: 120, MaxPoints: 120},
-		{Name: "unterwelt", DisplayName: "Unterwelt", Points: 40, MaxPoints: 40},
-		{Name: "zauber", DisplayName: "Zauber", Points: 200, MaxPoints: 200},
-	}
-
-	c.JSON(http.StatusOK, gin.H{"categories": categories})
 }
 
 // LearningPointsData repräsentiert die Lernpunkte und typischen Fertigkeiten einer Charakterklasse

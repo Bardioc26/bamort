@@ -2137,7 +2137,10 @@ func getCharacterClassCode(className string) (string, error) {
 	var characterClass models.CharacterClass
 	err := characterClass.FirstByName(className)
 	if err != nil {
-		return "", fmt.Errorf("character class '%s' not found: %w", className, err)
+		err := characterClass.FirstByCode(className)
+		if err != nil {
+			return "", fmt.Errorf("character class '%s' not found: %w", className, err)
+		}
 	}
 	return characterClass.Code, nil
 }
@@ -2177,6 +2180,14 @@ func GetAvailableSpellsForCreation(c *gin.Context) {
 	}
 
 	logger.Info("GetAvailableSpellsForCreation - Gefundene Kategorien: %d", len(spellsByCategory))
+
+	if len(spellsByCategory) == 0 {
+		logger.Warn("GetAvailableSpellsForCreation - Keine Zauber für Klasse %s gefunden", request.CharacterClass)
+		c.JSON(http.StatusNotFound, gin.H{
+			"spells_by_category": map[string][]gin.H{},
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"spells_by_category": spellsByCategory,
@@ -2219,18 +2230,37 @@ func GetAvailableSkillsForCreation(c *gin.Context) {
 
 func GetAllSpellsWithLE(characterClass string, maxLevel int) (map[string][]gin.H, error) {
 	// Create mapping of character classes to allowed learning categories
-	allowedLearningCategories := getCharacterClassSpellSchoolMapping()
+	allowedCategories := getCharacterClassSpellSchoolMapping()
+	allowedLearningCategories := getCharacterClassSpellLearningCategoriesMapping()
 
 	// Check if character class has allowed spell schools
 
-	allowedSchools, exists := allowedLearningCategories[characterClass]
+	allowedSchools, exists := allowedCategories[characterClass]
 	if !exists {
 		return map[string][]gin.H{}, nil // Return empty map if class can't learn spells
+	}
+	allowedSpellType, exists := allowedLearningCategories[characterClass]
+	if !exists {
+		return map[string][]gin.H{}, nil // Return empty map if class can't learn spells
+	}
+	// Extract allowed school names and spell types from maps
+	var allowedSchoolNames []string
+	for school, allowed := range allowedSchools {
+		if allowed {
+			allowedSchoolNames = append(allowedSchoolNames, school)
+		}
+	}
+
+	var allowedSpellTypeNames []string
+	for spellType, allowed := range allowedSpellType {
+		if allowed {
+			allowedSpellTypeNames = append(allowedSpellTypeNames, spellType)
+		}
 	}
 
 	// Get all spells from database with level filter
 	var spells []models.Spell
-	err := database.DB.Where("stufe <= ? AND learning_category != '' AND learning_category IS NOT NULL", maxLevel).Find(&spells).Error
+	err := database.DB.Where("stufe <= ? AND category in (?) and learning_category in (?)  AND category IS NOT NULL AND learning_category IS NOT NULL", maxLevel, allowedSchoolNames, allowedSpellTypeNames).Find(&spells).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch spells: %w", err)
 	}
@@ -2240,9 +2270,9 @@ func GetAllSpellsWithLE(characterClass string, maxLevel int) (map[string][]gin.H
 
 	for _, spell := range spells {
 		// Check if this character class can learn this spell school
-		if !allowedSchools[spell.LearningCategory] {
-			continue // Skip spells from schools this class can't learn
-		}
+		//if !allowedSchools[spell.Category] || !allowedSpellType[spell.LearningCategory] {
+		//	continue // Skip spells from schools this class can't learn
+		//}
 
 		// Calculate learning cost for this spell
 		leCost := getSpellLECost(spell.Stufe)
@@ -2287,6 +2317,46 @@ func GetAllSpellsWithLE(characterClass string, maxLevel int) (map[string][]gin.H
 
 	return spellsByCategory, nil
 }
+func getCharacterClassSpellLearningCategoriesMapping() map[string]map[string]bool {
+	return map[string]map[string]bool{
+		"Ma": { // Magier
+			"Spruch": true,
+			//"Salz":      true,
+			//"Runenstab": true,
+		},
+		"Hx": { // Hexer
+			"Spruch": true,
+			"Salz":   true,
+			//"Runenstab": true,
+		},
+		"Dr": { // Druide
+			"Spruch": true,
+			//"Salz":      true,
+			//"Runenstab": true,
+			"Dweomer": true,
+		},
+		"Sc": { // Schamane
+			"Spruch": true,
+			//"Salz":      true,
+			//"Runenstab": true,
+			"Dweomer": true,
+		},
+		"PB": { // Priester Beschützer
+			"Salz":      true,
+			"Wundertat": true,
+		},
+		"PS": { // Priester Streiter
+			"Salz":      true,
+			"Wundertat": true,
+		},
+		"Ba": { // Barde
+			"Lied": true,
+		},
+		"Or": { // Ordenskrieger
+			"Wundertat": true,
+		},
+	}
+}
 
 // getCharacterClassSpellSchoolMapping returns the mapping of character classes to allowed spell schools
 func getCharacterClassSpellSchoolMapping() map[string]map[string]bool {
@@ -2302,9 +2372,12 @@ func getCharacterClassSpellSchoolMapping() map[string]map[string]bool {
 		},
 		"Hx": { // Hexer
 			"Beherrschen": true,
-			"Dweomer":     true,
+			"Zerstören":   true,
 			"Erkennen":    true,
 			"Verändern":   true,
+			"Erschaffen":  true,
+			"Bewegen":     true,
+			"Formen":      true,
 		},
 		"Dr": { // Druide
 			"Bewegen":    true,

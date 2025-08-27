@@ -10,6 +10,7 @@ import (
 
 	"bamort/database"
 	"bamort/models"
+	"bamort/user"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -539,6 +540,122 @@ func TestGetAvailableSkillsForCreation(t *testing.T) {
 					t.Logf("Ma class - has skills with non-default costs: %v", hasNonDefaultCost)
 				} // Log some sample data for verification
 				t.Logf("Character creation skills loaded for class %s: %d categories", tt.characterClass, len(skillsByCategory))
+			} else {
+				// For error cases, verify error response
+				var response map[string]interface{}
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				assert.NoError(t, err)
+				assert.Contains(t, response, "error")
+			}
+		})
+	}
+}
+
+func TestGetAvailableSpellsForCreation(t *testing.T) {
+	// Setup test database
+	database.SetupTestDB(true, true)
+	defer database.ResetTestDB()
+
+	tests := []struct {
+		name           string
+		characterClass string
+		expectStatus   int
+		expectError    bool
+		findspells     bool
+	}{
+		{
+			name:           "ValidCharacterClass",
+			characterClass: "As",
+			expectStatus:   http.StatusNotFound,
+			expectError:    false,
+			findspells:     false,
+		},
+		{
+			name:           "MagierCharacterClass",
+			characterClass: "Ma",
+			expectStatus:   http.StatusOK,
+			expectError:    false,
+			findspells:     true,
+		},
+		{
+			name:           "NonMagicCharacterClass",
+			characterClass: "Kr",
+			expectStatus:   http.StatusNotFound,
+			expectError:    true,
+			findspells:     false,
+		},
+		{
+			name:           "EmptyCharacterClass",
+			characterClass: "",
+			expectStatus:   http.StatusBadRequest,
+			expectError:    true,
+			findspells:     false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create request
+			requestData := gin.H{
+				"characterClass": tt.characterClass,
+			}
+			requestBody, _ := json.Marshal(requestData)
+
+			u := user.User{}
+			u.FirstId(1)
+			token := user.GenerateToken(&u)
+
+			// Create HTTP request
+			req, _ := http.NewRequest("POST", "/api/characters/available-spells-creation", bytes.NewBuffer(requestBody))
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", "Bearer "+token)
+
+			// Create response recorder
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = req
+
+			// Call the handler directly (it will handle JSON parsing internally)
+			GetAvailableSpellsForCreation(c)
+
+			// Verify response
+			assert.Equal(t, tt.expectStatus, w.Code)
+
+			if !tt.expectError {
+				var response map[string]interface{}
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				assert.NoError(t, err)
+
+				// Check response structure
+				assert.Contains(t, response, "spells_by_category")
+
+				spellsByCategory, ok := response["spells_by_category"].(map[string]interface{})
+				assert.True(t, ok)
+				if tt.findspells {
+					assert.Greater(t, len(spellsByCategory), 0, "Should have at least some spell categories")
+
+					// Verify spells have learnCost field
+					for categoryName, spells := range spellsByCategory {
+						if spellsList, ok := spells.([]interface{}); ok {
+							for _, spell := range spellsList {
+								if spellMap, ok := spell.(map[string]interface{}); ok {
+									assert.Contains(t, spellMap, "name", "Spell should have name")
+									assert.Contains(t, spellMap, "le_cost", "Spell should have learnCost")
+
+									learnCost := spellMap["le_cost"].(float64)
+									assert.Greater(t, learnCost, 0.0, "Learn cost should be positive")
+									assert.Less(t, learnCost, 500.0, "Learn cost should be reasonable for character creation")
+								}
+							}
+						}
+						_ = categoryName // Mark as used
+					}
+					// Log some sample data for verification
+					t.Logf("Character creation spells loaded for class %s: %d categories", tt.characterClass, len(spellsByCategory))
+				} else {
+					assert.Equal(t, len(spellsByCategory), 0, "Should not have any spell categories")
+				}
+
 			} else {
 				// For error cases, verify error response
 				var response map[string]interface{}

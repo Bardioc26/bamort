@@ -12,6 +12,7 @@ import (
 type Eigenschaft struct {
 	ID          uint   `gorm:"index" json:"id"`
 	CharacterID uint   `gorm:"primaryKey" json:"character_id"`
+	UserID      uint   `gorm:"index" json:"user_id"`
 	Name        string `gorm:"primaryKey" json:"name"`
 	Value       int    `json:"value"`
 }
@@ -82,8 +83,11 @@ type Char struct {
 	Alter              int                  `json:"alter"`
 	Anrede             string               `json:"anrede"`
 	Grad               int                  `json:"grad"`
+	Gender             string               `json:"gender"`
+	SocialClass        string               `json:"social_class"`
 	Groesse            int                  `json:"groesse"`
 	Gewicht            int                  `json:"gewicht"`
+	Herkunft           string               `json:"origin"`
 	Glaube             string               `json:"glaube"`
 	Hand               string               `json:"hand"`
 	Public             bool                 `json:"public"`

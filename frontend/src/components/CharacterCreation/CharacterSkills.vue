@@ -360,13 +360,7 @@ export default {
     selectedSkills: {
       handler(newSkills) {
         // Save skills automatically when they change
-        this.$emit('save', { 
-          skills: newSkills,
-          skills_meta: {
-            totalUsedPoints: this.totalUsedPoints,
-            selectedCategory: this.selectedCategory
-          }
-        })
+        this.saveSkillsToSession()
       },
       deep: true
     }
@@ -385,7 +379,22 @@ export default {
     // Initialize component
     this.initializeComponent()
   },
+  beforeUnmount() {
+    // Ensure skills are saved when component is about to be unmounted
+    this.saveSkillsToSession()
+  },
   methods: {
+    saveSkillsToSession() {
+      // Save skills to session data via emit
+      this.$emit('save', { 
+        skills: this.selectedSkills,
+        skills_meta: {
+          totalUsedPoints: this.totalUsedPoints,
+          selectedCategory: this.selectedCategory
+        }
+      })
+    },
+    
     async initializeComponent() {
       try {
         this.isLoading = true

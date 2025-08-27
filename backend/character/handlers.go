@@ -437,9 +437,11 @@ func UpdateCharacterWealth(c *gin.Context) {
 	// Aktualisiere oder erstelle Vermögen
 	if character.Vermoegen.ID == 0 {
 		// Erstelle neues Vermögen
+		userID := c.GetUint("userID")
 		character.Vermoegen = models.Vermoegen{
 			BamortCharTrait: models.BamortCharTrait{
 				CharacterID: character.ID,
+				UserID:      userID,
 			},
 			Goldstücke:   getValueOrDefault(req.Goldstücke, 0),
 			Silberstücke: getValueOrDefault(req.Silberstücke, 0),
@@ -3529,6 +3531,7 @@ func FinalizeCharacterCreation(c *gin.Context) {
 		Typ:    session.Typ,
 		Glaube: session.Glaube,
 		Public: false, // Default to private
+		Grad:   1,     // Default starting grade
 
 		// Lebenspunkte
 		Lp: models.Lp{
@@ -3547,9 +3550,18 @@ func FinalizeCharacterCreation(c *gin.Context) {
 			Max:   session.DerivedValues.BMax,
 			Value: session.DerivedValues.BMax,
 		},
+		Vermoegen: models.Vermoegen{
+			BamortCharTrait: models.BamortCharTrait{
+				UserID: userID,
+			},
+			Goldstücke: 80,
+		},
 
 		// Bennies (Glückspunkte, etc.)
 		Bennies: models.Bennies{
+			BamortCharTrait: models.BamortCharTrait{
+				UserID: userID,
+			},
 			Gg: session.DerivedValues.GG,
 			Gp: session.DerivedValues.GP,
 			Sg: session.DerivedValues.SG,
@@ -3558,26 +3570,107 @@ func FinalizeCharacterCreation(c *gin.Context) {
 
 	// Eigenschaften (Attribute) hinzufügen
 	char.Eigenschaften = []models.Eigenschaft{
-		{Name: "St", Value: session.Attributes.ST},
-		{Name: "Gs", Value: session.Attributes.GS},
-		{Name: "Gw", Value: session.Attributes.GW},
-		{Name: "Ko", Value: session.Attributes.KO},
-		{Name: "In", Value: session.Attributes.IN},
-		{Name: "Zt", Value: session.Attributes.ZT},
-		{Name: "Au", Value: session.Attributes.AU},
-		{Name: "pA", Value: session.DerivedValues.PA}, // PA kommt aus derived values
-		{Name: "Wk", Value: session.DerivedValues.WK}, // WK kommt aus derived values
+		{UserID: userID, Name: "St", Value: session.Attributes.ST},
+		{UserID: userID, Name: "Gs", Value: session.Attributes.GS},
+		{UserID: userID, Name: "Gw", Value: session.Attributes.GW},
+		{UserID: userID, Name: "Ko", Value: session.Attributes.KO},
+		{UserID: userID, Name: "In", Value: session.Attributes.IN},
+		{UserID: userID, Name: "Zt", Value: session.Attributes.ZT},
+		{UserID: userID, Name: "Au", Value: session.Attributes.AU},
+		{UserID: userID, Name: "pA", Value: session.DerivedValues.PA}, // PA kommt aus derived values
+		{UserID: userID, Name: "Wk", Value: session.DerivedValues.WK}, // WK kommt aus derived values
 	}
 
 	logger.Debug("FinalizeCharacterCreation: Charakter-Struktur erstellt mit %d Eigenschaften",
 		len(char.Eigenschaften))
+
+	// Fertigkeiten aus der Session übertragen
+	logger.Debug("FinalizeCharacterCreation: Übertrage %d Fertigkeiten", len(session.Skills))
+	for _, skill := range session.Skills {
+		// Suche den Initialwert der Fertigkeit aus der Datenbank
+		dbSkill := models.Skill{}
+		err := dbSkill.First(skill.Name)
+		if err != nil {
+			logger.Warn("FinalizeCharacterCreation: Konnte Fertigkeit '%s' nicht in der Datenbank finden, verwende Level %d", skill.Name, skill.Level)
+		}
+
+		// Verwende den Initialwert aus der Datenbank wenn verfügbar, sonst fallback auf Session-Level
+		initialValue := skill.Level // Fallback
+		if err == nil {
+			initialValue = dbSkill.Initialwert
+			logger.Debug("FinalizeCharacterCreation: Verwende Initialwert %d für Fertigkeit '%s'", initialValue, skill.Name)
+		}
+
+		// Unterscheide zwischen normalen Fertigkeiten und Waffenfertigkeiten
+		if skill.Category == "Waffen" || skill.Category == "waffen" {
+			dbWPSkill := models.WeaponSkill{}
+			err := dbWPSkill.First(skill.Name)
+			if err != nil {
+				logger.Warn("FinalizeCharacterCreation: Konnte WaffenFertigkeit '%s' nicht in der Datenbank finden, verwende Level %d", skill.Name, skill.Level)
+			}
+			// Verwende den Initialwert aus der Datenbank wenn verfügbar, sonst fallback auf Session-Level
+			initialValue := skill.Level // Fallback
+			if err == nil {
+				initialValue = dbWPSkill.Initialwert
+				logger.Debug("FinalizeCharacterCreation: Verwende Initialwert %d für Fertigkeit '%s'", initialValue, skill.Name)
+			}
+			// Waffenfertigkeit
+			weaponSkill := models.SkWaffenfertigkeit{
+				SkFertigkeit: models.SkFertigkeit{
+					BamortCharTrait: models.BamortCharTrait{
+						BamortBase: models.BamortBase{
+							Name: skill.Name,
+						},
+						UserID: userID,
+					},
+					Fertigkeitswert: initialValue,
+					Improvable:      true,
+					Category:        skill.Category,
+				},
+			}
+			char.Waffenfertigkeiten = append(char.Waffenfertigkeiten, weaponSkill)
+		} else {
+			// Normale Fertigkeit
+			normalSkill := models.SkFertigkeit{
+				BamortCharTrait: models.BamortCharTrait{
+					BamortBase: models.BamortBase{
+						Name: skill.Name,
+					},
+					CharacterID: char.ID,
+					UserID:      userID,
+				},
+				Fertigkeitswert: initialValue,
+				Improvable:      true,
+				Category:        skill.Category,
+			}
+			char.Fertigkeiten = append(char.Fertigkeiten, normalSkill)
+		}
+	}
+
+	// Zauber aus der Session übertragen
+	logger.Debug("FinalizeCharacterCreation: Übertrage %d Zauber", len(session.Spells))
+	for _, spell := range session.Spells {
+		zauber := models.SkZauber{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: spell.Name,
+				},
+				CharacterID: char.ID,
+				UserID:      userID,
+			},
+		}
+		char.Zauber = append(char.Zauber, zauber)
+	}
+
+	logger.Debug("FinalizeCharacterCreation: Charakter vollständig erstellt - %d Fertigkeiten, %d Waffenfertigkeiten, %d Zauber",
+		len(char.Fertigkeiten), len(char.Waffenfertigkeiten), len(char.Zauber))
 
 	// Character in Datenbank speichern
 	logger.Debug("FinalizeCharacterCreation: Speichere Charakter in Datenbank...")
 	err = char.Create()
 	if err != nil {
 		logger.Error("FinalizeCharacterCreation: Fehler beim Erstellen des Charakters: %s", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create character"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create character: " + err.Error()})
 		return
 	}
 
@@ -3669,10 +3762,10 @@ func GetCharacterClasses(c *gin.Context) {
 	// If no classes found in database, fall back to hardcoded list
 	if len(classNames) == 0 {
 		classNames = []string{
-			"Abenteurer", "Assassine", "Barbar", "Barde", "Bauer",
-			"Glückspriester", "Heiler", "Händler", "Kämpfer", "Krieger",
-			"Magier", "Ordenskrieger", "Priester", "Schamane", "Seefahrer",
-			"Späher", "Thaumaturg", "Waldläufer", "Zauberer", "Zaubersänger",
+			"Assassine", "Barbar", "Barde",
+			"Heiler", "Händler", "Kämpfer", "Krieger",
+			"Magier", "Ordenskrieger", "Priester Beschützer", "Schamane", "Skalde",
+			"Magister", "Thaumaturg", "Waldläufer", "Zauberer",
 		}
 	}
 
@@ -3683,10 +3776,10 @@ func GetCharacterClasses(c *gin.Context) {
 func GetOrigins(c *gin.Context) {
 	// TODO: Aus Datenbank laden
 	origins := []string{
-		"Alba", "Aran", "Buluga", "Cangebiet", "Chryseia", "Dwerunlande",
+		"Alba", "Aran", "Buluga", "Chryseia",
 		"Eschar", "Fuardain", "Ikenga", "KanThaiPan", "Küstenstaaten",
 		"Medjis", "Moravod", "Nahuatlan", "Rawindra", "Scharidis",
-		"Tegarisch Gebiete", "Valian", "Waeland", "Ywerddon",
+		"Tegarisch Steppe", "Valian", "Waeland", "Ywerddon",
 	}
 
 	c.JSON(http.StatusOK, gin.H{"origins": origins})

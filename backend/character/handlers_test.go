@@ -3,6 +3,7 @@ package character
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 func TestImproveSkillHandler(t *testing.T) {
@@ -665,4 +667,284 @@ func TestGetAvailableSpellsForCreation(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestFinalizeCharacterCreation(t *testing.T) {
+	// Setup test environment
+	original := os.Getenv("ENVIRONMENT")
+	os.Setenv("ENVIRONMENT", "test")
+	t.Cleanup(func() {
+		if original != "" {
+			os.Setenv("ENVIRONMENT", original)
+		} else {
+			os.Unsetenv("ENVIRONMENT")
+		}
+	})
+
+	// Setup test database
+	database.SetupTestDB(true, true)
+	defer database.ResetTestDB()
+
+	err := models.MigrateStructure()
+	assert.NoError(t, err)
+	// Create test user (bebe)
+	testUser := user.User{}
+	testUser.FirstId(1)
+	/*
+		{
+			UserID:   1,
+			Username: "bebe",
+			Email:    "frank@wuenscheonline.de",
+		}
+		err = database.DB.Create(&testUser).Error
+		assert.NoError(t, err)
+	*/
+	// Create test character creation session with data from testdata
+	testSession := models.CharacterCreationSession{
+		ID:     "char_create_1_1756326371",
+		UserID: 1,
+		Name:   "wergw5 z ",
+		Rasse:  "Mensch",
+		Typ:    "Priester Streiter",
+		Attributes: models.AttributesData{
+			ST: 89,
+			GS: 64,
+			GW: 77,
+			KO: 71,
+			IN: 87,
+			ZT: 44,
+			AU: 87,
+		},
+		DerivedValues: models.DerivedValuesData{
+			PA:                    33,
+			WK:                    27,
+			LPMax:                 11,
+			APMax:                 14,
+			BMax:                  26,
+			ResistenzKoerper:      11,
+			ResistenzGeist:        11,
+			ResistenzBonusKoerper: 0,
+			ResistenzBonusGeist:   0,
+			Abwehr:                11,
+			AbwehrBonus:           0,
+			AusdauerBonus:         11,
+			AngriffsBonus:         0,
+			Zaubern:               11,
+			ZauberBonus:           0,
+			Raufen:                8,
+			SchadensBonus:         3,
+			SG:                    0,
+			GG:                    0,
+			GP:                    0,
+		},
+		Skills: models.CharacterCreationSkills{
+			{Name: "Klettern", Level: 0, Category: "Alltag", Cost: 1},
+			{Name: "Reiten", Level: 0, Category: "Alltag", Cost: 1},
+			{Name: "Sprache", Level: 0, Category: "Alltag", Cost: 1},
+			{Name: "Athletik", Level: 0, Category: "Kampf", Cost: 2},
+			{Name: "Spießwaffen", Level: 0, Category: "Waffen", Cost: 2},
+			{Name: "Stielwurfwaffen", Level: 0, Category: "Waffen", Cost: 2},
+			{Name: "Waffenloser Kampf", Level: 0, Category: "Waffen", Cost: 2},
+			{Name: "Stichwaffen", Level: 0, Category: "Waffen", Cost: 2},
+			{Name: "Heilkunde", Level: 0, Category: "Wissen", Cost: 2},
+			{Name: "Naturkunde", Level: 0, Category: "Wissen", Cost: 2},
+		},
+		Spells: models.CharacterCreationSpells{
+			{Name: "Göttlicher Schutz v. d. Bösen", Cost: 1},
+			{Name: "Erkennen der Aura", Cost: 1},
+			{Name: "Heiliger Zorn", Cost: 1},
+			{Name: "Blutmeisterschaft", Cost: 1},
+		},
+		SkillPoints: models.SkillPointsData{},
+		CurrentStep: 5,
+		Geschlecht:  "Männlich",
+		Herkunft:    "Aran",
+		Stand:       "Mittelschicht",
+		Glaube:      "",
+	}
+	err = database.DB.Create(&testSession).Error
+	assert.NoError(t, err)
+
+	t.Run("FinalizeCharacterCreation with valid session", func(t *testing.T) {
+		// Create the HTTP request to finalize the character creation
+		// Using the session ID from the test data: 'char_create_1_1756326371'
+		req, err := http.NewRequest("POST", "/api/characters/sessions/char_create_1_1756326371/finalize", nil)
+		assert.NoError(t, err)
+
+		// Create response recorder
+		w := httptest.NewRecorder()
+
+		// Create Gin context with userID set to 1 (bebe user)
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", uint(1)) // Set the userID for bebe user
+		c.Params = gin.Params{
+			gin.Param{Key: "sessionId", Value: "char_create_1_1756326371"},
+		}
+
+		// Call the FinalizeCharacterCreation handler
+		FinalizeCharacterCreation(c)
+
+		// Log the response for debugging
+		t.Logf("Response Status: %d", w.Code)
+		t.Logf("Response Body: %s", w.Body.String())
+
+		// Check if we got a successful response
+		assert.Equal(t, http.StatusCreated, w.Code, "Status code should be 201 Created")
+
+		// Parse and validate response
+		var response map[string]interface{}
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err, "Response should be valid JSON")
+
+		// Validate expected response structure
+		assert.Contains(t, response, "message", "Response should contain success message")
+		assert.Contains(t, response, "character_id", "Response should contain character_id")
+		assert.Contains(t, response, "session_id", "Response should contain session_id")
+
+		// Validate response values
+		assert.Equal(t, "Charakter erfolgreich erstellt", response["message"])
+		assert.Equal(t, "char_create_1_1756326371", response["session_id"])
+
+		// Verify that a character was actually created
+		characterID := response["character_id"]
+		assert.NotNil(t, characterID, "Character ID should not be nil")
+
+		// Verify character exists in database
+		var createdChar models.Char
+		err = database.DB.Preload("Fertigkeiten").Preload("Waffenfertigkeiten").Preload("Zauber").
+			First(&createdChar, "id = ?", characterID).Error
+		assert.NoError(t, err, "Created character should exist in database")
+
+		// Validate character data based on the session data
+		assert.Equal(t, "wergw5 z ", createdChar.Name, "Character name should match session")
+		assert.Equal(t, "Mensch", createdChar.Rasse, "Character race should match session")
+		assert.Equal(t, "Priester Streiter", createdChar.Typ, "Character type should match session")
+		assert.Equal(t, "Aran", createdChar.Herkunft, "Character origin should match session")
+		assert.Equal(t, "Männlich", createdChar.Gender, "Character gender should match session")
+		assert.Equal(t, "Mittelschicht", createdChar.SocialClass, "Character status should match session")
+
+		// Validate attributes
+		assert.Equal(t, 9, len(createdChar.Eigenschaften), "Should have 9 attributes (ST, GS, GW, KO, IN, ZT, AU, pA, WK)")
+
+		// Create a map for easier attribute validation
+		attrMap := make(map[string]int)
+		for _, attr := range createdChar.Eigenschaften {
+			attrMap[attr.Name] = attr.Value
+		}
+
+		// Validate each attribute matches the session data
+		assert.Equal(t, 87, attrMap["IN"], "Intelligence should match session")
+		assert.Equal(t, 74, attrMap["ST"], "Strength should match session")
+		assert.Equal(t, 65, attrMap["GS"], "Dexterity should match session")
+		assert.Equal(t, 76, attrMap["GW"], "Agility should match session")
+		assert.Equal(t, 58, attrMap["KO"], "Constitution should match session")
+		assert.Equal(t, 83, attrMap["ZT"], "Magic Talent should match session")
+		assert.Equal(t, 69, attrMap["AU"], "Charisma should match session")
+		assert.Equal(t, 59, attrMap["pA"], "Personal Charisma should match session")
+		assert.Equal(t, 72, attrMap["WK"], "Willpower should match session")
+
+		// Validate derived values
+		assert.Equal(t, 17, createdChar.Lp.Max, "LP Max should match session")
+		assert.Equal(t, 17, createdChar.Lp.Value, "LP Value should equal Max initially")
+		assert.Equal(t, 33, createdChar.Ap.Max, "AP Max should match session")
+		assert.Equal(t, 33, createdChar.Ap.Value, "AP Value should equal Max initially")
+		assert.Equal(t, 8, createdChar.B.Max, "B Max should match session")
+		assert.Equal(t, 8, createdChar.B.Value, "B Value should equal Max initially")
+
+		// Validate skills were transferred (session has 10 skills: 6 regular skills + 4 weapon skills)
+		// Regular skills: Klettern, Reiten, Sprache, Athletik, Heilkunde, Naturkunde (6)
+		// Weapon skills: Spießwaffen, Stielwurfwaffen, Waffenloser Kampf, Stichwaffen (4)
+		assert.Equal(t, 6, len(createdChar.Fertigkeiten), "Should have 6 regular skills")
+		assert.Equal(t, 4, len(createdChar.Waffenfertigkeiten), "Should have 4 weapon skills")
+
+		// Validate that skills use database initial values (not session levels which were 0)
+		// Check a few specific skills exist
+		skillNames := make([]string, len(createdChar.Fertigkeiten))
+		for i, skill := range createdChar.Fertigkeiten {
+			skillNames[i] = skill.Name
+		}
+		assert.Contains(t, skillNames, "Klettern", "Should contain Klettern skill")
+		assert.Contains(t, skillNames, "Reiten", "Should contain Reiten skill")
+		assert.Contains(t, skillNames, "Athletik", "Should contain Athletik skill")
+		assert.Contains(t, skillNames, "Heilkunde", "Should contain Heilkunde skill")
+
+		// Check weapon skills
+		weaponSkillNames := make([]string, len(createdChar.Waffenfertigkeiten))
+		for i, skill := range createdChar.Waffenfertigkeiten {
+			weaponSkillNames[i] = skill.Name
+		}
+		assert.Contains(t, weaponSkillNames, "Spießwaffen", "Should contain Spießwaffen weapon skill")
+		assert.Contains(t, weaponSkillNames, "Stichwaffen", "Should contain Stichwaffen weapon skill")
+
+		// Validate spells were transferred (session has 4 spells)
+		assert.Equal(t, 4, len(createdChar.Zauber), "Should have 4 spells")
+
+		// Validate spell names
+		spellNames := make([]string, len(createdChar.Zauber))
+		for i, spell := range createdChar.Zauber {
+			spellNames[i] = spell.Name
+		}
+		assert.Contains(t, spellNames, "Göttlicher Schutz v. d. Bösen", "Should contain Göttlicher Schutz v. d. Bösen spell")
+		assert.Contains(t, spellNames, "Erkennen der Aura", "Should contain Erkennen der Aura spell")
+		assert.Contains(t, spellNames, "Heiliger Zorn", "Should contain Heiliger Zorn spell")
+		assert.Contains(t, spellNames, "Blutmeisterschaft", "Should contain Blutmeisterschaft spell")
+
+		// Verify session was deleted after successful creation
+		var deletedSession models.CharacterCreationSession
+		err = database.DB.Where("id = ?", "char_create_1_1756326371").First(&deletedSession).Error
+		assert.Error(t, err, "Session should be deleted after character creation")
+		assert.True(t, errors.Is(err, gorm.ErrRecordNotFound), "Session should not be found in database")
+
+		t.Logf("Character successfully created with ID: %.0f", characterID)
+		t.Logf("Character name: %s", createdChar.Name)
+		t.Logf("Character has %d skills, %d weapon skills, %d spells",
+			len(createdChar.Fertigkeiten), len(createdChar.Waffenfertigkeiten), len(createdChar.Zauber))
+	})
+
+	t.Run("FinalizeCharacterCreation with invalid session", func(t *testing.T) {
+		req, err := http.NewRequest("POST", "/api/characters/sessions/nonexistent_session/finalize", nil)
+		assert.NoError(t, err)
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", uint(1))
+		c.Params = gin.Params{
+			gin.Param{Key: "sessionId", Value: "nonexistent_session"},
+		}
+
+		FinalizeCharacterCreation(c)
+
+		assert.Equal(t, http.StatusNotFound, w.Code, "Should return 404 for non-existent session")
+
+		var response map[string]interface{}
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Contains(t, response, "error")
+		assert.Equal(t, "Session not found", response["error"])
+	})
+
+	t.Run("FinalizeCharacterCreation with unauthorized user", func(t *testing.T) {
+		req, err := http.NewRequest("POST", "/api/characters/sessions/char_create_1_1756326371/finalize", nil)
+		assert.NoError(t, err)
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", uint(0)) // Invalid userID
+		c.Params = gin.Params{
+			gin.Param{Key: "sessionId", Value: "char_create_1_1756326371"},
+		}
+
+		FinalizeCharacterCreation(c)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code, "Should return 401 for unauthorized user")
+
+		var response map[string]interface{}
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Contains(t, response, "error")
+		assert.Equal(t, "Unauthorized", response["error"])
+	})
 }

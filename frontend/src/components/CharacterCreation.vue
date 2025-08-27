@@ -244,7 +244,7 @@ export default {
           alert('Your session has expired. Please log in again.')
         } else if (error.response && error.response.status === 400) {
           const errorMsg = error.response.data?.error || 'Invalid data submitted'
-          alert(`Error saving character data: ${errorMsg}`)
+          //alert(`Error saving character data: ${errorMsg}`)
         } //else {
           //alert('Failed to save character data. Please try again.')
         //}
@@ -285,10 +285,37 @@ export default {
       }
     },
     
+    getUserIdFromToken() {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) return null
+        
+        // Decode JWT token to get user ID
+        const base64Url = token.split('.')[1]
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        }).join(''))
+        
+        const payload = JSON.parse(jsonPayload)
+        return payload.user_id || payload.userID || payload.sub || null
+      } catch (error) {
+        console.error('Error decoding token:', error)
+        return null
+      }
+    },
+    
     async handleFinalize() {
       try {
         const token = localStorage.getItem('token')
-        const response = await API.post(`/api/characters/create-session/${this.sessionId}/finalize`, {}, {
+        const userId = this.getUserIdFromToken()
+        
+        const requestBody = {}
+        if (userId) {
+          requestBody.user_id = userId
+        }
+        
+        const response = await API.post(`/api/characters/create-session/${this.sessionId}/finalize`, requestBody, {
           headers: { Authorization: `Bearer ${token}` },
         })
         

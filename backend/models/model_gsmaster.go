@@ -15,6 +15,7 @@ type BamortBase struct {
 type BamortCharTrait struct {
 	BamortBase
 	CharacterID uint `gorm:"index" json:"character_id"`
+	UserID      uint `gorm:"index" json:"user_id"`
 }
 
 type Magisch struct {

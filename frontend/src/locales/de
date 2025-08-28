@@ -88,6 +88,9 @@ export default {
     bonus:'Bonus',
     pp:'AP',
     quelle:'Quelle',
+    import: 'Import',
+    selectCsv: 'CSV auswählen',
+    system: 'System'
   },
   spells: {
     learn: {

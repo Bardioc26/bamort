@@ -20,8 +20,8 @@
                 <th class="cd-table-header">{{ $t('weapon.id') }}</th>
                 <!-- <th class="cd-table-header">{{ $t('weapon.category') }}<button @click="sortBy('category')">-{{ sortField === 'category' ? (sortAsc ? '↑' : '↓') : '' }}</button></th> -->
                 <th class="cd-table-header">{{ $t('weapon.name') }} <button @click="sortBy('name')">-{{ sortField === 'name' ? (sortAsc ? '↑' : '↓') : '' }}</button></th>
-                <th class="cd-table-header">{{ $t('weapon.gewicht') }}</th>
-                <th class="cd-table-header">{{ $t('weapon.wert') }}</th>
+                <th class="cd-table-header">{{ $t('weapon.weight') }}</th>
+                <th class="cd-table-header">{{ $t('weapon.value') }}</th>
                 <th class="cd-table-header">{{ $t('weapon.damage') }}</th>
                 <th class="cd-table-header">{{ $t('weapon.description') }}</th>
                 <th class="cd-table-header">{{ $t('weapon.quelle') }}</th>

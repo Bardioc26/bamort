@@ -88,6 +88,9 @@ export default {
     bonus:'Bonus',
     pp:'AP',
     quelle:'Source',
+    import: 'Import',
+    selectCsv: 'select CSV',
+    system: 'System'
   },
   spells: {
     learn: {
@@ -127,7 +130,7 @@ export default {
     bonus:'Bonus',
     contained_in:'contained in',
     personal_item:'Pers',
-    quelle:'Quelle',
+    quelle:'Source',
     system:'System',
   },
   Weapons:'Waffen',

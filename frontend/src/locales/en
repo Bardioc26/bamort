@@ -347,5 +347,32 @@ export default {
       apRollTooltip: 'Roll AP: 3d6 + modifier based on class',
       bRollTooltip: 'Roll B: 1d6 + modifier based on race'
     }
+  },
+  audit: {
+    title: 'Audit Log',
+    filter_by_field: 'Filter by Field',
+    all_fields: 'All Fields',
+    experience_points: 'Experience Points',
+    gold: 'Gold',
+    silver: 'Silver',
+    copper: 'Copper',
+    filter_by_date: 'Time Period',
+    all_time: 'All Time',
+    today: 'Today',
+    this_week: 'This Week',
+    this_month: 'This Month',
+    custom_range: 'Custom Range',
+    group_by_date: 'Group by Date',
+    refresh: 'Refresh',
+    loading: 'Loading...',
+    statistics: 'Statistics',
+    no_entries: 'Keine Einträge',
+    total_changes: 'Gesamtänderungen',
+    ep_spent: 'EP ausgegeben',
+    ep_gained: 'EP erhalten',
+    gold_spent: 'Gold ausgegeben',
+    gold_gained: 'Gold erhalten',
+    reason: 'Reason',
+    notes: 'Notes'
   }
 }

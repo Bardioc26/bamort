@@ -86,6 +86,7 @@
     
     <!-- Audit Log -->
     <AuditLogView 
+      ref="auditLog"
       v-if="character" 
       :character="character"
     />
@@ -172,6 +173,13 @@ export default {
     }
   },
   methods: {
+    refreshAuditLog() {
+      // Refresh the audit log after EP or gold changes
+      if (this.$refs.auditLog && this.$refs.auditLog.loadAuditLog) {
+        this.$refs.auditLog.loadAuditLog();
+      }
+    },
+    
     async addExperience() {
       if (!this.experienceAmount || this.experienceAmount <= 0 || this.isLoading) return;
       
@@ -266,6 +274,9 @@ export default {
           this.$set(this.character, 'erfahrungsschatz', { value: newValue });
         }
 
+        // Refresh the audit log to show the change
+        this.refreshAuditLog();
+
         // Emit event to parent component to refresh character data
         this.$emit('character-updated');
         
@@ -307,6 +318,9 @@ export default {
         } else {
           this.$set(this.character, 'vermoegen', { goldstücke: newValue, silberstücke: 0, kupferstücke: 0 });
         }
+
+        // Refresh the audit log to show the change
+        this.refreshAuditLog();
 
         // Emit event to parent component to refresh character data
         this.$emit('character-updated');

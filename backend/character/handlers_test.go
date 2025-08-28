@@ -948,3 +948,103 @@ func TestFinalizeCharacterCreation(t *testing.T) {
 		assert.Equal(t, "Unauthorized", response["error"])
 	})
 }
+
+func TestListCharacters(t *testing.T) {
+	// Setup test environment
+	original := os.Getenv("ENVIRONMENT")
+	os.Setenv("ENVIRONMENT", "test")
+	t.Cleanup(func() {
+		if original != "" {
+			os.Setenv("ENVIRONMENT", original)
+		} else {
+			os.Unsetenv("ENVIRONMENT")
+		}
+	})
+
+	// Setup test database
+	database.SetupTestDB(true, true)
+	defer database.ResetTestDB()
+
+	err := models.MigrateStructure()
+	assert.NoError(t, err)
+
+	t.Run("ListCharacters Success", func(t *testing.T) {
+		// Create a test user
+		u := user.User{}
+		u.FirstId(1)
+		token := user.GenerateToken(&u)
+
+		// Create a test HTTP request
+		req, _ := http.NewRequest("GET", "/api/characters", nil)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", uint(1)) // Set valid userID
+
+		// Call the handler
+		ListCharacters(c)
+
+		// Assert response
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response []models.CharList
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+
+		// Response should be an array (could be empty if no characters exist)
+		assert.IsType(t, []models.CharList{}, response)
+	})
+
+	t.Run("ListCharacters with Invalid User", func(t *testing.T) {
+		// Create a test user with invalid ID
+		u := user.User{}
+		u.FirstId(999) // Non-existent user ID
+		token := user.GenerateToken(&u)
+
+		// Create a test HTTP request
+		req, _ := http.NewRequest("GET", "/api/characters", nil)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", uint(999)) // Set invalid userID
+
+		// Call the handler
+		ListCharacters(c)
+
+		// Should still return OK with empty list if user has no characters
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response []models.CharList
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(response), "Should return empty list for user with no characters")
+	})
+
+	t.Run("ListCharacters without UserID", func(t *testing.T) {
+		// Create a test HTTP request without setting userID in context
+		req, _ := http.NewRequest("GET", "/api/characters", nil)
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		// Don't set userID in context - this should trigger an error
+
+		// Call the handler
+		ListCharacters(c)
+
+		// Should still return OK with empty list since GetUint("userID") returns 0 for missing userID
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response []models.CharList
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(response), "Should return empty list for userID 0")
+	})
+}

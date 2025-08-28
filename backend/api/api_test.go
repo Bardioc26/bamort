@@ -102,7 +102,7 @@ func TestListCharacters(t *testing.T) {
 	assert.Equal(t, 1, int(listOfCharacter[0].ID)) // Check the simulated ID
 	assert.Equal(t, "Krieger", listOfCharacter[0].Typ)
 	assert.Equal(t, 3, listOfCharacter[0].Grad)
-	assert.Equal(t, "test", listOfCharacter[0].Owner)
+	assert.Equal(t, "bebe", listOfCharacter[0].Owner)
 	assert.Equal(t, false, listOfCharacter[0].Public)
 
 }

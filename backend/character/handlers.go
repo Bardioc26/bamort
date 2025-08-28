@@ -32,30 +32,35 @@ func respondWithError(c *gin.Context, status int, message string) {
 func ListCharacters(c *gin.Context) {
 	logger.Debug("ListCharacters aufgerufen")
 
-	var characters []models.Char
-	var listOfChars []models.CharList
+	//var characters []models.Char
+	//var listOfChars []models.CharList
 
 	logger.Debug("Lade Charaktere aus der Datenbank...")
-	if err := database.DB.Find(&characters).Error; err != nil {
+	//if err := database.DB.Find(&characters).Error; err != nil {
+	listOfChars, err := models.FindCharListByUserID(c.GetUint("userID"))
+	if err != nil {
+
 		logger.Error("Fehler beim Laden der Charaktere: %s", err.Error())
 		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve characters")
 		return
 	}
 
-	logger.Debug("Gefundene Charaktere: %d", len(characters))
+	logger.Debug("Gefundene Charaktere: %d", len(listOfChars))
 
-	for i := range characters {
-		listOfChars = append(listOfChars, models.CharList{
-			BamortBase: models.BamortBase{
-				ID:   characters[i].ID,
-				Name: characters[i].Name,
-			},
-			Rasse: characters[i].Rasse,
-			Typ:   characters[i].Typ,
-			Grad:  characters[i].Grad,
-			Owner: "test",
-		})
-	}
+	/*
+		for i := range characters {
+			listOfChars = append(listOfChars, models.CharList{
+				BamortBase: models.BamortBase{
+					ID:   characters[i].ID,
+					Name: characters[i].Name,
+				},
+				Rasse: characters[i].Rasse,
+				Typ:   characters[i].Typ,
+				Grad:  characters[i].Grad,
+				Owner: characters[i].User.Username,
+			})
+		}
+	*/
 
 	logger.Info("Charakterliste erfolgreich geladen: %d Charaktere", len(listOfChars))
 	c.JSON(http.StatusOK, listOfChars)

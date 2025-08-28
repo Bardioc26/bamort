@@ -1,26 +1,5 @@
 version: "3.8"
 services:
-  mariadb:
-    image: mariadb:11.4
-    container_name: bamort-mariadb
-    restart: unless-stopped
-    environment:
-      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-secure_root_password}
-      MARIADB_DATABASE: bamort
-      MARIADB_USER: bamort
-      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-secure_user_password}
-      MARIADB_CHARSET: utf8mb4
-      MARIADB_COLLATION: utf8mb4_unicode_ci
-    ports:
-      - "3306:3306"
-    volumes:
-      - ./bamort-db:/var/lib/mysql
-      - ./init-db:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      start_period: 10s
-      timeout: 5s
-      retries: 3
 
   backend:
     build: 
@@ -35,6 +14,7 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+    restart: unless-stopped
 
   frontend:
     build:
@@ -44,9 +24,36 @@ services:
     ports:
       - "5173:80"
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://192.168.0.48:8180}
+      - VITE_API_URL=${VITE_API_URL:-http://bamort.trokan.de:8180}
+      - BASE_URL=http://bamort.trokan.de:8180
+      - PORT=8180
+      - ENVIRONMENT=production
+      - DATABASE_TYPE=mysql
+      - DATABASE_URL=bamort:bG4)efozrc@tcp(mariadb:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local
     depends_on:
       - backend
+
+  mariadb:
+    image: mariadb:11.4
+    container_name: bamort-mariadb
+    restart: unless-stopped
+    #ports:
+    #  - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-secure_root_password}
+      MARIADB_DATABASE: bamort
+      MARIADB_USER: bamort
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-secure_user_password}
+      MARIADB_CHARSET: utf8mb4
+      MARIADB_COLLATION: utf8mb4_unicode_ci
+    volumes:
+      - ./bamort-db:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      timeout: 5s
+      retries: 3
 
   # phpMyAdmin - Database Management (commented out for production)
   # Uncomment the following section if you need database management in production

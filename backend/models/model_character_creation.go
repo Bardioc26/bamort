@@ -12,7 +12,7 @@ import (
 type CharacterCreationSession struct {
 	ID            string                  `json:"id" gorm:"primaryKey"`
 	UserID        uint                    `json:"user_id" gorm:"index;not null"`
-	User          user.User               `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	User          user.User               `json:"user" gorm:"foreignKey:UserID;references:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	Name          string                  `json:"name"`
 	Geschlecht    string                  `json:"geschlecht"`
 	Rasse         string                  `json:"rasse"`

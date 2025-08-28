@@ -183,7 +183,6 @@ export default {
         this.currentStep++
       } catch (error) {
         console.error('Failed to save progress before moving to next step:', error)
-        console.error('Data that failed to save:', data)
         // Don't move to next step if save failed
       }
     },
@@ -210,7 +209,6 @@ export default {
               glaube: basicInfo.glaube || this.sessionData.glaube || '',
             }
             // Validate that all required fields are present
-            console.log('BasicInfo payload before sending:', payload)
             if (!payload.name || !payload.geschlecht || !payload.rasse || !payload.typ || !payload.herkunft || !payload.stand) {
               throw new Error(`Missing required fields: name=${payload.name}, geschlecht=${payload.geschlecht}, rasse=${payload.rasse}, typ=${payload.typ}, herkunft=${payload.herkunft}, stand=${payload.stand}`)
             }
@@ -234,31 +232,22 @@ export default {
         }
         
         if (endpoint) {
-          console.log('Saving progress for step', step, 'with payload:', payload)
-          console.log('Original data received:', data)
-          console.log('sessionData:', this.sessionData)
-          console.log('basicInfo extraction:', data.basic_info || data)
           const response = await API.put(endpoint, payload, {
             headers: { Authorization: `Bearer ${token}` },
           })
-          console.log('Save response:', response.data)
         }
       } catch (error) {
         console.error('Error saving progress for step', step, ':', error)
-        if (error.response) {
-          console.error('Error response data:', error.response.data)
-          console.error('Error response status:', error.response.status)
-        }
         
         // Provide more specific error messages
         if (error.response && error.response.status === 401) {
           alert('Your session has expired. Please log in again.')
         } else if (error.response && error.response.status === 400) {
           const errorMsg = error.response.data?.error || 'Invalid data submitted'
-          alert(`Error saving character data: ${errorMsg}`)
-        } else {
-          alert('Failed to save character data. Please try again.')
-        }
+          //alert(`Error saving character data: ${errorMsg}`)
+        } //else {
+          //alert('Failed to save character data. Please try again.')
+        //}
         throw error // Re-throw to handle in calling function
       }
     },
@@ -296,17 +285,44 @@ export default {
       }
     },
     
+    getUserIdFromToken() {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) return null
+        
+        // Decode JWT token to get user ID
+        const base64Url = token.split('.')[1]
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        }).join(''))
+        
+        const payload = JSON.parse(jsonPayload)
+        return payload.user_id || payload.userID || payload.sub || null
+      } catch (error) {
+        console.error('Error decoding token:', error)
+        return null
+      }
+    },
+    
     async handleFinalize() {
       try {
         const token = localStorage.getItem('token')
-        const response = await API.post(`/api/characters/create-session/${this.sessionId}/finalize`, {}, {
+        const userId = this.getUserIdFromToken()
+        
+        const requestBody = {}
+        if (userId) {
+          requestBody.user_id = userId
+        }
+        
+        const response = await API.post(`/api/characters/create-session/${this.sessionId}/finalize`, requestBody, {
           headers: { Authorization: `Bearer ${token}` },
         })
         
         const characterId = response.data.character_id
         
         // Success message
-        alert('Character successfully created!')
+        //alert('Character successfully created!')
         
         // Navigate to character view or back to character list
         this.$router.push(`/character/${characterId}`)

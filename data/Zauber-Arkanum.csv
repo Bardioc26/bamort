@@ -1,0 +1,377 @@
+Nr,game_system,name,Beschreibung,Quelle,source_id,page_number,bonus,stufe,ap,Art,Zauberdauer,Reichweite,Wirkungsziel,Wirkungsbereich,Wirkungsdauer,Ursprung,Category,learning_category,Agens,Reagens,Material (Kosten)
+,,,,,,,,,,,,,,,,,,,,,
+1,Midgard,Angst,,Ark,2,,,2,2 je Wesen,Wort,Augenblick,30 m,Geist,max 10 Wesen,10 min,dr,Beherrschen,Spruch,Feuer,Wasser,0
+2,Midgard,Anstacheln,,Ark,2,,,2,2,Wort,10 sec,30 m,Geist,1 Wesen,2 h,dä,Beherrschen,Spruch,Luft,Wasser,0
+3,Midgard,Anziehen,,Ark,2,,,2,2,Wort,10 sec,30 m,Geist,1 Wesen,6 h,dä,Beherrschen,Spruch,Wasser,Wasser,0
+4,Midgard,Auffrischen,,Ark,2,,,1,1,Geste,10 sec,15 m,Umgebung,1 Objekt,30 min,dr,Formen,Spruch,Magan,Metall,0
+5,Midgard,Auflösung,,Ark,2,,,12,8,Geste,30 sec,30 m,Umgebung,1 m Umkreis,"2 min, k",dä,Zerstören,Spruch,Magan,Metall,"Moder, Staub, Knochenmehl, Rostflocken (20 GS)"
+6,Midgard,Auskühlen,,Ark,2,,,4,2,Geste,10 sec,15 m,Körper,1 Wesen,2 min,el,Verändern,Spruch,Eis,Erde,0
+7,Midgard,Bannen von Kälte,,Ark,2,,,5,4,Geste,10 min,0 m,Umgebung,3 m Umkreis,8 h,el,Zerstören,Spruch,Feuer,Eis,Holzkohlestück (1 SS)
+8,Midgard,Bannen von Licht,,Ark,2,,,2,1,Wort,Augenblick,0 m,Umgebung,9 m Umkreis,10 min,gö,Zerstören,Spruch,Eis,Feuer,0
+9,Midgard,Bannen von Zauberwerk,,Ark,2,,,4,4,Wort,2 min,15 m,Umgebung,1 Wesen/Objekt,0,dä,Zerstören,Spruch,Metall,Magan,0
+10,Midgard,Beeinflussen,,Ark,2,,,5,3,Wort,10 sec,15 m,Geist,1 Wesen,10 min,dä,Beherrschen,Spruch,Feuer,Luft,0
+11,Midgard,Befestigen,,Ark,2,,,2,2,Geste,1 min,Berührung,Umgebung,1 Objekt,1 Monat,dä,Bewegen,Spruch,Magan,Metall,"""eigener Speichel"""
+12,Midgard,Besänftigen,,Ark,2,,,3,1 je Grad,Wort,10 sec,30 m,Geist,1 Wesen,0,dä,Beherrschen,Spruch,Wasser,Wasser,0
+13,Midgard,Beschleunigen,,Ark,2,,,6,6,Geste,10 sec,15 m,Körper,1 Wesen,1 min,dä,Verändern,Spruch,Magan,Erde,0
+14,Midgard,Binden des Vertrauten,,Ark,2,,,6,3,Gedanke,Augenblick,Berührung,Geist,1 km Umkreis,2 h,dä,Beherrschen,Spruch,Wasser,Wasser,0
+15,Midgard,Blaue Bannsphäre,,Ark,2,,,3,2,Geste,20 sec,0 m,Geist,3 m Umkreis,2 min,gö,Beherrschen,Spruch,Luft,Eis,0
+16,Midgard,Blauer Zwingkreis,,Ark,2,,,7,4,Geste,20 sec,30 m,Geist,6 m Umkreis,10 min,gö,Beherrschen,Spruch,Luft,Eis,Eichenholzreif (20 GS)
+17,Midgard,Blenden,,Ark,2,,,8,4,Geste,Augenblick,9 m Umkreis,Umgebung,-,1 min,gö,Erschaffen,Spruch,Feuer,Feuer,0
+18,Midgard,Blendwerk,,Ark,2,,,8,4,Geste,10 sec,50 m,Geist,1 Wesen/Objekt,1W6x10 min,dä,Beherrschen,Spruch,Magan,Feuer,Goldstaub (50 GS)
+19,Midgard,Blitze schleudern,,Ark,2,,,6,2 je Blitz,Geste,10 sec,200 m,Umgebung,1-10 Strahlen,0,dä,Erschaffen,Spruch,Luft,Feuer,getrocknetes Zitteraalherz (5 GS)
+20,Midgard,Böser Blick,,Ark,2,,,4,2,Gedanke,10 sec,15 m,Körper,1 Wesen,∞,sm,Zerstören,Spruch,Eis,Holz,0
+21,Midgard,Brot und Wasser,,Ark,2,,,1,3,Gedanke,10 min,0 m,Umgebung,-,0,dä,Erschaffen,Spruch,Holz,Wasser,Mehlstaub und Wassertropfen (1 GS)
+22,Midgard,Dämonenfeuer,,Ark,2,,,5,3,Geste,10 sec,30 m,Umgebung,Strahl,"2 min, k",dä,Erschaffen,Spruch,Magan,Magan,Phosphor (50 GS)
+23,Midgard,Dämonenkugeln,,Ark,2,,,6,4,Geste,10 sec,50 m,Umgebung,Strahl,"2 min, k",dä,Erschaffen,Spruch,Magan,Magan,Phosphor (50 GS)
+24,Midgard,Dämonenschwert,,Ark,2,,,6,4,Geste,10 sec,0 m,Umgebung,-,2 min,dä,Erschaffen,Spruch,Magan,Magan,Phosphor (50 GS)
+25,Midgard,Dämonische Zaubermacht,,Ark,2,,,3,1,Wort,10 min,-,Körper,Zauberer,10 min,dä,Verändern,Spruch,Magan,Wasser,0
+26,Midgard,Deckmantel,,Ark,2,,,7,6,Geste,10 sec,0 m,Umgebung,6 m Umkreis,"8 h, k",dä,Zerstören,Spruch,Magan,Magan,Goldreif (50 GS)
+27,Midgard,Dinge verbergen,,Ark,2,,,1,1,Gedanke,10 min,Berührung,Geist,1 Objekt,12 h,dä,Zerstören,Spruch,Magan,Magan,0
+28,Midgard,Dinge wiederfinden,,Ark,2,,,1,1,Gedanke,10 min,unbegrenzt,Geist,1 Objekt,10 min,dä,Erkennen,Spruch,Magan,Metall,0
+29,Midgard,Donnerkeil,,Ark,2,,,8,4,Geste,10 sec,50 m,Umgebung,Strahl,0,dä,Erschaffen,Spruch,Luft,Feuer,Murmeln aus Donnerechsenhorn (50 GS)
+30,Midgard,Drittes Auge,,Ark,2,,,1,1,Geste,10 sec,0 m,Umgebung,100 m Umkreis,10 min,el,Erkennen,Spruch,Magan,Feuer,Kristallauge (10 GS)
+31,Midgard,Dschungelwand,,Ark,2,,,4,1 je m Breite,Geste,10 sec,15 m,Umgebung,-,10 min,el,Erschaffen,Spruch,Holz,Holz,Smaragd (50 GS)
+32,Midgard,Eisenhaut,,Ark,2,,,7,4,Geste,20 sec,Berührung,Körper,1 Wesen,2 min,dä,Verändern,Spruch,Metall,Erde,Eisenpulver (20 GS)
+33,Midgard,Eisiger Nebel,,Ark,2,,,3,1 je m²,Geste,10 sec,50 m,Umgebung,3 m Umkreis,1 min,el,Erschaffen,Spruch,Eis,Eis,Bergkristall (20 GS)
+34,Midgard,Eiswand,,Ark,2,,,4,1 je m Breite,Geste,10 sec,15 m,Umgebung,-,10 min,el,Erschaffen,Spruch,Eis,Eis,Diamant (50 GS)
+35,Midgard,Eiswandlung,,Ark,2,,,5,3,Geste,10 sec,200 m,Umgebung,bis zu 10 m³,var,el,Formen,Spruch,Wasser,Eis,reinstes Wasser (50 GS)
+36,Midgard,Elementenwandlung,,Ark,2,,,5,6,Geste,var,5 m,Umgebung,bis zu 1 m³,∞,el,Formen,Spruch,Ausgangselement,Zielelement,Edelstein (100 GS)
+37,Midgard,Entgiften,,Ark,2,,,4,2,Wort,30 sec,3 m,Umgebung,1 Objekt,0,dr,Zerstören,Spruch,Magan,Eis,0
+38,Midgard,Erdbeben,,Ark,2,,,9,6,Geste,1 min,0 m,Umgebung,1 km Umkreis,10 min,el,Bewegen,Spruch,Erde,Erde,0
+39,Midgard,Erdfessel,,Ark,2,,,5,3,Geste,Augenblick,50 m,Umgebung,1 m Umkreis,2 min,el,Bewegen,Spruch,Erde,Erde,Honig-Erd-Gemisch (5 GS)
+40,Midgard,Erdwandlung,,Ark,2,,,9,6,Geste,20 sec,Berührung,Umgebung,1 m³,∞,el,Formen,Spruch,Erde,Erde,Bernstein (100 GS)
+41,Midgard,Erkennen von Leben,,Ark,2,,,1,1,Gedanke,Augenblick,0 m,Geist,15 m Kegel,1 min,dä,Erkennen,Spruch,Magan,Wasser,0
+42,Midgard,Erkennen von Zauberei,,Ark,2,,,4,2,Gedanke,Augenblick,15 m,Geist,1 m²,0,dä,Erkennen,Spruch,Magan,Magan,0
+43,Midgard,Erscheinungen,,Ark,2,,,10,6,Geste,20 sec,30 m,Geist,3 m Umkreis,"2 min, k",dä,Beherrschen,Spruch,Magan,Feuer,Blütenstaub vom blauen Mohn (100 GS)
+44,Midgard,Erwecken,,Ark,2,,,5,3,Geste,10 sec,30 m,Körper,1 Wesen,2 min,sm,Verändern,Spruch,Eis,Erde,0
+45,Midgard,Felsenfaust,,Ark,2,,,2,1,Geste,10 sec,Berührung,Körper,1 Wesen,2 min,el,Verändern,Spruch,Erde,Erde,Kieselstein (1 SS)
+46,Midgard,Fesselbann,,Ark,2,,,6,2 je Grad,Geste,10 sec,30 m,Körper,1 Wesen,"10 min, k",gö,Erschaffen,Spruch,Luft,Magan,Fadenstück einer Riesenspinne (50 GS)
+47,Midgard,Feuerfinger,,Ark,2,,,1,1,Geste,Augenblick,0 m,Umgebung,Zauberer,"2 min, k",el,Erschaffen,Spruch,Feuer,Feuer,0
+48,Midgard,Feuerkugel,,Ark,2,,,3,2,Geste,10 sec,50 m,Umgebung,3 m Umkreis,"2 min, k",el,Erschaffen,Spruch,Feuer,Feuer,Blutstein (30 GS)
+49,Midgard,Feuerlanze,,Ark,2,,,6,3,Geste,10 sec,50 m,Umgebung,Strahl,0,el,Erschaffen,Spruch,Feuer,Feuer,Korallenstück (20 GS)
+50,Midgard,Feuerlauf,,Ark,2,,,5,3,Gedanke,10 sec,-,Körper,1 Wesen,10 min,el,Verändern,Spruch,Erde,Erde,0
+51,Midgard,Feuermeisterschaft,,Ark,2,,,9,6,Geste ,20 sec,30 m,Umgebung,2 m Umkreis,2 min,el,Formen,Spruch,Feuer,Feuer,Stück einer Drachenzunge (100 GS)
+52,Midgard,Feuerregen,,Ark,2,,,12,18,Geste,30 sec,100 m,Umgebung,30 m Umkreis,"1 min, k",el,Erschaffen,Spruch,Feuer,Feuer,Basaltstaub und Rubinsplitter (100 GS)
+53,Midgard,Feuerring,,Ark,2,,,8,4,Geste,20 sec,0 m,Umgebung,6 m Umkreis,30 min,el,Erschaffen,Spruch,Feuer,Feuer,Zwergdrachenflügel und Zauberöl (100 GS)
+54,Midgard,Feuerschild,,Ark,2,,,6,3,Geste,10 sec,15 m,Umgebung,-,2 min,el,Erschaffen,Spruch,Eis,Eis,Diamantstaub (20 GS)
+55,Midgard,Feuerwand,,Ark,2,,,4,1 je m Breite,Geste,10 sec,15 m,Umgebung,-,10 min,el,Erschaffen,Spruch,Feuer,Feuer,Rubin (50 GS)
+56,Midgard,Flammende Hand,,Ark,2,,,3,2,Geste ,10 sec,0 m,Umgebung,Zauberer,2 min,el,Erschaffen,Spruch,Feuer,Feuer,0
+57,Midgard,Flammenklinge,,Ark,2,,,6,4,Geste,1 min,Berührung,Umgebung,1 Objekt,10 min,el,Formen,Spruch,Feuer,Metall,"""Klinge aus Alchimistenmetall"""
+58,Midgard,Flammenkreis,,Ark,2,,,2,1,Geste,Augenblick,Berührung,Umgebung,1 Wesen,2 min,dr,Erschaffen,Spruch,Holz,Holz,Zunder (1 SS)
+59,Midgard,Flammenteppich,,Ark,2,,,5,1 je m²,Geste,10 sec,50 m,Umgebung,bis zu 10 m²,1 min,el,Erschaffen,Spruch,Feuer,Feuer,Feuertopas (20 GS)
+60,Midgard,Flicken,,Ark,2,,,1,1,Geste,10 sec,Berührung,Umgebung,1 Objekt,10 min,dr,Formen,Spruch,Magan,Metall,0
+61,Midgard,Fliegen,,Ark,2,,,11,9,Geste,30 sec,-,Körper,Zauberer,"1 h, k",dä,Bewegen,Spruch,Luft,Erde,Greifenschwungfeder (100 GS)
+62,Midgard,Freundesauge,,Ark,2,,,7,4,Gedanke,10 sec,500 m,Geist,1 Wesen,"30 min, k",dä,Beherrschen,Spruch,Wasser,Feuer,0
+63,Midgard,Frostball,,Ark,2,,,2,1,Geste,10 sec,200 m,Umgebung,Strahl,0,el,Erschaffen,Spruch,Eis,Eis,Silberperle oder Bergkristall (10 GS)
+64,Midgard,Funkenregen,,Ark,2,,,7,2 je Grad,Geste,10 sec,30 m,Geist,1 Wesen,1 min,dä,Beherrschen,Spruch,Feuer,Feuer,Sternenstaub (20 GS)
+65,Midgard,Geisterhorn,,Ark,2,,,1,1,Geste,10 sec,0 m,Umgebung,100 m Umkreis,10 min,dä,Erkennen,Spruch,Magan,Eis,Kristallpyramide (10 GS)
+66,Midgard,Geistersperre,,Ark,2,,,6,1 je 5 m² Fläche,Geste,10 sec,Berührung,Umgebung,bis zu 100 m²,8 h,dä,Erschaffen,Spruch,Metall,Metall,Eisenspäne (10 GS)
+67,Midgard,Geistesschild,,Ark,2,,,6,var,Gedanke,Augenblick,-,Geist,Zauberer,10 min,dä,Zerstören,Spruch,Feuer,Magan,0
+68,Midgard,Geräusche dämpfen,,Ark,2,,,2,1,Geste,Augenblick,0 m,Umgebung,3 m Umkreis,5 min,dä,Formen,Spruch,Metall,Luft,0
+69,Midgard,Goldener Panzer,,Ark,2,,,4,2,Geste,10 sec,Berührung,Umgebung,1 Wesen,2 min,dä,Formen,Spruch,Metall,Metall,Goldstaub (50 GS)
+70,Midgard,Goldene Sphäre,,Ark,2,,,4,2,Geste,20 sec,0 m,Umgebung,3 m Umkreis,2 min,gö,Zerstören,Spruch,Metall,Magan,0
+71,Midgard,Graue Hand,,Ark,2,,,10,7,Geste,10 sec,Berührung,Körper,1 Wesen,0,sm,Zerstören,Spruch,Eis,Erde,0
+72,Midgard,Hagel,,Ark,2,,,12,12,Geste,30 sec,100 m,Umgebung,30 m Umkreis,"2 min, k",el,Erschaffen,Spruch,Eis,Eis,Wasser und Diamantsplitter (50 GS)
+73,Midgard,Hauch der Betäubung,,Ark,2,,,5,3,Geste,Augenblick,0 m,Umgebung,bis zu 18 m Umkreis,1 min,dä,Erschaffen,Spruch,Eis,Holz,getrocknetes Vampirmoos (10 GS)
+74,Midgard,Hauch der Verwesung,,Ark,2,,,4,2,Geste,Augenblick,0 m,Umgebung,bis zu 18 m Umkreis,1 min,dä,Erschaffen,Spruch,Eis,Erde,Stinkmorschelasche (2 GS)
+75,Midgard,Hauch des Winters,,Ark,2,,,1,1,Geste,Augenblick,0 m,Umgebung,12 m Umkreis,10 min,el,Formen,Spruch,Eis,Luft,Schneewolfhaare (20 GS)
+76,Midgard,Heimfeder,,Ark,2,,,3,2,Geste,1 min,3 m,Umgebung,1 Objekt,30 min,dr,Erkennen,Spruch,Wasser,Luft,"Taubenschwungfeder (5 SS) und ""Wasser"""
+77,Midgard,Heranholen,,Ark,2,,,1,1,Geste,10 sec,30 m,Umgebung,1 Objekt,10 sec,dä,Bewegen,Spruch,Luft,Metall,0
+78,Midgard,Hexenstreich,,Ark,2,,,5,2,Geste,10 sec,15 m,Körper,1 Wesen,∞,dä,Verändern,Spruch,Magan,Erde,0
+79,Midgard,Himmelsleiter,,Ark,2,,,9,6,Geste,1 min,50 m,Umgebung,-,10 min,gö,Erschaffen,Spruch,Metall,Feuer,0
+80,Midgard,Hitzeschutz,,Ark,2,,,2,1,Gedanke,Augenblick,-,Körper,Zauberer,2 min,dä,Verändern,Spruch,Wasser,Erde,0
+81,Midgard,Höhenblick,,Ark,2,,,3,2,Geste,10 sec,50 m,Umgebung,-,"1 min, k", dä,Bewegen,Spruch,Luft,Feuer,Auge eines Greifvogels (50 GS)
+82,Midgard,Hören der Geister,,Ark,2,,,5,1 je 10 sec Dauer,Gedanke,10 sec,0 m,Körper,6 m Umkreis,10 sec je Grad,dä,Erkennen,Spruch,Eis,Luft,0
+83,Midgard,Hören von Fernem,,Ark,2,,,1,1,Gedanke,1 min,Berührung,Körper,1 Wesen,10 min,dä,Verändern,Spruch,Magan,Wasser,0
+84,Midgard,Hörnerklang,,Ark,2,,,2,1,Wort,Augenblick,0 m,Umgebung,2 km Umkreis,10 sec,dä,Formen,Spruch,Magan,Luft,0
+85,Midgard,Juwelenauge,,Ark,2,,,5,2,Geste,10 sec,500 m,Umgebung,1 Objekt,30 min,dä,Bewegen,Spruch,Erde,Feuer,"""2 Greifenaugenhälften"""
+86,Midgard,Kälteschutz,,Ark,2,,,2,1,Gedanke,Augenblick,-,Körper,Zauberer,2 min,dä,Verändern,Spruch,Feuer,Erde,0
+87,Midgard,Kraft entziehen,,Ark,2,,,2,1,Geste,Augenblick,Berührung,Körper,1 Wesen,0,sm,Zerstören,Spruch,Eis,Feuer,0
+88,Midgard,Kraftraub,,Ark,2,,,3,2,Geste,10 sec,30 m,Umgebung,1 m²,"2 min, k",dä,Zerstören,Spruch,Magan,Feuer,0
+89,Midgard,Lähmung,,Ark,2,,,10,8,Geste,20 sec,30 m,Körper,1 Wesen,24 h,dä,Verändern,Spruch,Metall,Erde,Basiliskenschuppe (100 GS)
+90,Midgard,Lauschen,,Ark,2,,,1,1,Gedanke,1 min,30 cm,Umgebung,-,"10 min, k",dä,Formen,Spruch,Magan,Metall,0
+91,Midgard,Lichtbrücke,,Ark,2,,,8,4,Geste,1 min,50 m,Umgebung,-,10 min,gö,Erschaffen,Spruch,Metall,Feuer,0
+92,Midgard,Lichtrunen,,Ark,2,,,2,1,Geste,10 min,Berührung,Umgebung,1 m²,∞,dä,Formen,Spruch,Feuer,Metall,Nachtmarderhaarpinsel (50 GS)
+93,Midgard,Liebeszauber,,Ark,2,,,8,4,Geste,1 h,-,Geist,1 Wesen,∞,dä,Beherrschen,Spruch,Wasser,Wasser,"""Liebestrank"" oder ""Locke"""
+94,Midgard,Liniensicht,,Ark,2,,,1,1,Gedanke,Augenblick,bis zu 5 km,Geist,Zauberer,10 sec,dr,Erkennen,Spruch,Magan,Holz,0
+95,Midgard,Luftlauf,,Ark,2,,,7,4,Gedanke,20 sec,-,Körper,Zauberer,"2 min, k",el,Bewegen,Spruch,Luft,Erde,0
+96,Midgard,Luftsphäre,,Ark,2,,,8,4,Geste,20 sec,0 m,Umgebung,3 m Umkreis,1 h,el,Erschaffen,Spruch,Luft,Luft,Perle (100 GS)
+97,Midgard,Macht über das Selbst,,Ark,2,,,1,1,Gedanke,10 sec,-,Körper,Zauberer,"24 h, k",dä,Beherrschen,Spruch,Metall,Feuer,0
+98,Midgard,Macht über die belebte Natur,,Ark,2,,,4,2 je Grad,Wort,10 sec,30 m,Geist,1 Wesen je Grad,mind. 2 h,dä,Beherrschen,Spruch,Magan,Wasser,0
+99,Midgard,Macht über die Sinne,,Ark,2,,,2,1 je Variation,Geste,10 sec,50 m,Geist,Zauberer,2-10 min,dä,Beherrschen,Spruch,Magan,Feuer,0
+100,Midgard,Macht über Leben,,Ark,2,,,9,mind. 8,Geste,10 sec,6 m,Körper,1 Wesen,2 min,dä,Zerstören,Spruch,Eis,Erde,0
+101,Midgard,Macht über magische Wesen,,Ark,2,,,7,3 je Grad,Wort,20 sec,30 m,Geist,1 Wesen je Grad,var,dä,Beherrschen,Spruch,Magan,Magan,0
+102,Midgard,Macht über Menschen,,Ark,2,,,6,3 je Grad,Wort,20 sec,30 m,Geist,1 Wesen je Grad,var,dä,Beherrschen,Spruch,Magan,Luft,0
+103,Midgard,Macht über Unbelebtes,,Ark,2,,,3,2,Geste,Augenblick,30 m,Umgebung,-,10 sec,dä,Bewegen,Spruch,Feuer,Metall,0
+104,Midgard,Mag. Kreis des Bewachens,,Ark,2,,,6,6,Geste,30 min,0 m,Umgebung,10 m Umkreis,∞,dä,Erkennen,Spruch,Magan,Magan,"""Wächterwürfel"""
+105,Midgard,Mag. Kreis des Verschleierns,,Ark,2,,,6,6,Geste,30 min,0 m,Umgebung,10 m Umkreis,∞,dä,Zerstören,Spruch,Magan,Magan,"""Wächterwürfel"""
+106,Midgard,Mag. Kreis des Widerstehens,,Ark,2,,,6,6,Geste,30 min,0 m,Umgebung,10 m Umkreis,∞,dä,Formen,Spruch,Magan,Wasser,"""Wächterwürfel"""
+107,Midgard,"Magischer Kreis, klein",,Ark,2,,,6,6,Geste,10 min,0 m,Umgebung,6 m Umkreis,8 h,dr,Erkennen,Spruch,Magan,Magan,"mit Eisendraht umwickelte Zweige von Eiche, Esche und Weißdorn (10 GS)"
+108,Midgard,Marmorhaut,,Ark,2,,,5,3,Geste,10 sec,Berührung,Körper,1 Wesen,10 min,el,Verändern,Spruch,Erde,Erde,Marmorstaub (1 GS)
+109,Midgard,Mitfühlen,,Ark,2,,,2,1,Gedanke,Augenblick,500 m,Geist,1 Wesen,"30 min, k",dä,Erkennen,Spruch,Wasser,Wasser,0
+110,Midgard,Namenloses Grauen,,Ark,2,,,8,4 je Wesen,Geste,20 sec,30 m,Geist,1-3 Wesen,2 min,dä,Beherrschen,Spruch,Eis,Wasser,Schweiß von Alpträumenden (20 GS)
+111,Midgard,Nebel schaffen,,Ark,2,,,7,4,Geste,20 sec,0 m,Umgebung,50 m Umkreis,30 min,el,Erschaffen,Spruch,Wasser,Wasser,versiegeltes Fläschchen voll Nebel (10 GS)
+112,Midgard,Nebel wecken,,Ark,2,,,3,2,Geste,10 sec,0 m,Umgebung,500 m Umkreis,-,el,Formen,Spruch,Wasser,Luft,Staub (1 GS)
+113,Midgard,Person wiederfinden,,Ark,2,,,3,2,Gedanke,10 min,unbegrenzt,Geist,1 Wesen,10 min,dä,Erkennen,Spruch,Magan,Luft,0
+114,Midgard,Pestklaue,,Ark,2,,,10,5,Geste,Augenblick,Berührung,Körper,1 Wesen,0,sm,Zerstören,Spruch,Eis,Erde,Pestkrötenklaue (50 GS)
+115,Midgard,Pflanzenfessel,,Ark,2,,,6,4,Geste,20 sec,50 m,Umgebung,10 m Umkreis,2 min,dr,Bewegen,Spruch,Feuer,Holz,Samenmischung (10 GS)
+116,Midgard,Rauchwolke,,Ark,2,,,4,2,Geste,10 sec,30 m,Umgebung,9 m Umkreis,10 min,el,Formen,Spruch,Feuer,Luft,Asche und Zunder (1 GS)
+117,Midgard,Reaktionsschnelle,,Ark,2,,,2,1,Geste,30 sec,30 m,Geist,1 Wesen,10 min,dä,Verändern,Spruch,Magan,Feuer,0
+118,Midgard,Reise der Seele,,Ark,2,,,8,6,Gedanke,30 min,-,Geist,Zauberer,var,dr,Bewegen,Spruch,Luft,Feuer,0
+119,Midgard,Rost,,Ark,2,,,1,2,Geste,Augenblick,Berührung,Umgebung,1 Objekt,0,dä,Formen,Spruch,Eis,Metall,0
+120,Midgard,Schallwächter,,Ark,2,,,3,2,Geste,10 sec,15 m,Geist,Zauberer,10 min,el,Erkennen,Spruch,Magan,Luft,Golddrahtreif (10 GS)
+121,Midgard,Scharfblick,,Ark,2,,,1,1,Gedanke,1 min,Berührung,Körper,1 Wesen,10 min,dä,Verändern,Spruch,Magan,Feuer,0
+122,Midgard,Schattenrobe,,Ark,2,,,3,2,Wort,10 sec,-,Umgebung,Zauberer,10 min,dä,Formen,Spruch,Magan,Feuer,0
+123,Midgard,Schattenschrecken,,Ark,2,,,7,4,Geste,20 sec,0 m,Umgebung,100 m Umkreis,30 min,dä,Bewegen,Spruch,Eis,Feuer,0
+124,Midgard,Schatten verstärken,,Ark,2,,,1,1,Geste,Augenblick,0 m,Umgebung,15 m Umkreis,10 min,dä,Formen,Spruch,Eis,Feuer,0
+125,Midgard,Schlaf,,Ark,2,,,5,4 je Wesen,Geste,10 sec,30 m,Körper,bis zu 6 Wesen,8 h,dä,Beherrschen,Spruch,Magan,Wasser,Lotusblütenstaub (10 GS)
+126,Midgard,Schlangenbiss,,Ark,2,,,7,4,Wort,10 sec,Berührung,Körper,1 Wesen,2 min,dä,Verändern,Spruch,Eis,Holz,Schlangengift (20 GS)
+127,Midgard,Schlummer,,Ark,2,,,1,2 je Wesen,Geste,10 sec,30 m,Körper,bis zu 6 Wesen,30 min,dä,Beherrschen,Spruch,Magan,Wasser,Baldrianwurzel (5 GS)
+128,Midgard,Schmerzen,,Ark,2,,,4,2,Geste,10 sec,30 m,Körper,1 Wesen,1 min,dä,Zerstören,Spruch,Magan,Feuer,Silber- oder Knochennadel (5 GS)
+129,Midgard,Schrumpfen,,Ark,2,,,6,6,Geste,20 sec,Berührung,Körper,1 Wesen,10 min,dä,Verändern,Spruch,Holz,Erde,0
+130,Midgard,Schutzgeste,,Ark,2,,,5,2,Geste ,Augenblick,-,Körper,Zauberer,0,gö,Verändern,Spruch,Metall,Erde,0
+131,Midgard,Schwäche,,Ark,2,,,1,1 je Wesen,Geste,Augenblick,30 m,Körper,1-10 Wesen,2 min,dä,Verändern,Spruch,Magan,Erde,Eschenrinde (1 GS)
+132,Midgard,Schwarze Sphäre,,Ark,2,,,7,var,Gedanke,20 sec,0 m,Umgebung,5 m Umkreis,10 min,dä,Zerstören,Spruch,Magan,Wasser,0
+133,Midgard,Schwarze Zone,,Ark,2,,,8,var,Gedanke,Augenblick,0 m,Umgebung,5 m Umkreis,10 min,dä,Zerstören,Spruch,Magan,Magan,0
+134,Midgard,Schweben,,Ark,2,,,9,6,Geste,20 sec,-,Körper,Zauberer,1 min,dä,Bewegen,Spruch,Luft,Erde,Kolibriflügel (100 GS)
+135,Midgard,Schwerelosigkeit,,Ark,2,,,5,4,Geste,1 min,Berührung,Umgebung,1 Objekt,0,el,Bewegen,Spruch,Luft,Metall,0
+136,Midgard,Seelenkompass,,Ark,2,,,3,2,Geste,1 min,6 km,Geist,1 Wesen,10 min,dä,Erkennen,Spruch,Feuer,Luft,"Silbernadel (10 GS) und ""Haar der Zielperson"""
+137,Midgard,Sehen in Dunkelheit,,Ark,2,,,3,2,Gedanke,1 min,50 m,Körper,Zauberer,30 min,dä,Verändern,Spruch,Feuer,Feuer,0
+138,Midgard,Sehen von Verborgenem,,Ark,2,,,3,1,Gedanke,1 min,30 cm,Umgebung,-,"10 min, k",dä,Formen,Spruch,Magan,Metall,0
+139,Midgard,Silberne Bannsphäre,,Ark,2,,,4,2,Geste,20 sec,0 m,Geist,3 m Umkreis,2 min,gö,Beherrschen,Spruch,Luft,Feuer,0
+140,Midgard,Silberner Zwingkreis,,Ark,2,,,8,4,Geste,20 sec,30 m,Geist,6 m Umkreis,10 min,gö,Beherrschen,Spruch,Luft,Feuer,Silberreif (50 GS)
+141,Midgard,Silberstaub,,Ark,2,,,2,1,Geste,Augenblick,Berührung,Umgebung,1 Wesen,2 min,dä,Erschaffen,Spruch,Magan,Metall,Silberstaub (2 GS)
+142,Midgard,Spruch intensivieren,,Ark,2,,,9,6,Gedanke,10 sec,-,Geist,Zauberer,30 sec,dä,Verändern,Spruch,Magan,Magan,0
+143,Midgard,Stärke,,Ark,2,,,2,1 je Wesen,Geste,Augenblick,30 m,Körper,1-10 Wesen,2 min,dä,Verändern,Spruch,Magan,Erde,getrockneter Fliegenpilz (1 GS)
+144,Midgard,Steinkugel,,Ark,2,,,4,3,Geste,10 sec,50 m,Umgebung,3 m Umkreis,"2 min, k",el,Erschaffen,Spruch,Erde,Erde,Diamant (50 GS)
+145,Midgard,Steinwand,,Ark,2,,,4,1 je m,Geste,10 sec,15 m,Umgebung,-,10 min,el,Erschaffen,Spruch,Erde,Erde,Bernstein (50 GS)
+146,Midgard,Stille,,Ark,2,,,3,2,Geste,Augenblick,0 m,Umgebung,3 m Umkreis,1 min,dä,Formen,Spruch,Metall,Luft,pulverisierte Eulenfedern (2 GS)
+147,Midgard,Stimmenwerfen,,Ark,2,,,2,1,Gedanke,Augenblick,15 m,Umgebung,-,2 min,dä,Bewegen,Spruch,Magan,Luft,0
+148,Midgard,Sturmhand,,Ark,2,,,8,4,Geste,10 sec,Berührung,Körper,1 Wesen,0,el,Bewegen,Spruch,Luft,Erde,0
+149,Midgard,Sturmwind,,Ark,2,,,10,6,Geste,20 sec,0 m,Umgebung,30 m Kegel,"2 min, k",el,Bewegen,Spruch,Luft,Luft,0
+150,Midgard,Sumpfboden,,Ark,2,,,3,1,Geste,10 sec,50 m,Umgebung,15 m Umkreis,2 min,el,Formen,Spruch,Wasser,Erde,Wasserlinsen (1 GS)
+151,Midgard,Thursenstein,,Ark,2,,,9,6,Geste,10 sec,Berührung,Umgebung,1 Objekt,10 sec,dr,Formen,Spruch,Erde,Erde,"""Zauberkiesel"""
+152,Midgard,Tierisches Handeln,,Ark,2,,,9,6 je Wesen,Geste,20 sec,30 m,Geist,1-3 Wesen,var,dä,Beherrschen,Spruch,Wasser,Luft,Tierblutmischung (50 GS)
+153,Midgard,Tiersprache,,Ark,2,,,7,4,Wort,20 sec,15 m,Körper,Zauberer,2 min,dr,Erkennen,Spruch,Wasser,Luft,0
+154,Midgard,Todeshauch,,Ark,2,,,5,3,Geste,Augenblick,0 m,Umgebung,bis zu 18 m Umkreis,1 min,dä,Erschaffen,Spruch,Eis,Wasser,Fliegenpilzasche (1 GS)
+155,Midgard,Todeskeule,,Ark,2,,,6,3,Geste,10 sec,Berührung,Umgebung,1 Objekt,2 min,dä,Formen,Spruch,Eis,Erde,"""Oberschenkelknochen"""
+156,Midgard,Todeszauber,,Ark,2,,,11,1 je Schadenspunkt,Wort,20 sec,30 m,Körper,1 Wesen,0,dä,Zerstören,Spruch,Eis,Holz,0
+157,Midgard,Torwandeln,,Ark,2,,,8,4,Geste,10 min,Berührung,Umgebung,30 cm,1 min,el,Formen,Spruch,Magan,Holz,0
+158,Midgard,Umkehrschild,,Ark,2,,,9,6 je Seite,Geste,30 sec,-,Umgebung,Zauberer,2 min,dä,Erschaffen,Spruch,Metall,Magan,versilberte Drachenschuppe (100 GS)
+159,Midgard,Ungezieferplage,,Ark,2,,,4,2,Wort,30 sec,0 m,Geist,1 Schwarm,2 min,dä,Beherrschen,Spruch,Magan,Wasser,0
+160,Midgard,Unsichtbarkeit,,Ark,2,,,4,4,Wort,10 sec,-,Körper,Zauberer,"10 min, k",dä,Verändern,Spruch,Luft,Metall,0
+161,Midgard,Verdorren,,Ark,2,,,6,5,Geste,10 sec,Berührung,Körper,1 Wesen,∞,sm,Verändern,Spruch,Eis,Erde,0
+162,Midgard,Vereisen,,Ark,2,,,9,7,Geste,10 sec,Berührung,Körper,1 Wesen,∞,dä,Verändern,Spruch,Eis,Erde,0
+163,Midgard,Vergiften,,Ark,2,,,4,2,Wort,30 sec,3 m,Körper,1 Wesen,0,sm,Zerstören,Spruch,Eis,Erde,0
+164,Midgard,Vergrößern,,Ark,2,,,5,6,Geste,20 sec,Berührung,Umgebung,1 Objekt,10 min,dä,Formen,Spruch,Magan,Metall,0
+165,Midgard,Verkleinern,,Ark,2,,,5,6,Geste,20 sec,Berührung,Umgebung,1 Objekt,10 min,dä,Formen,Spruch,Magan,Metall,0
+166,Midgard,Verlangsamen,,Ark,2,,,4,2,Geste,10 sec,15 m,Körper,1 Wesen,1 min,dä,Verändern,Spruch,Metall,Erde,Blei (20 GS)
+167,Midgard,Vermehren,,Ark,2,,,1,2,Geste,10 sec,15 m,Umgebung,1 Objekt,30 min,dr,Formen,Spruch,Magan,Metall,0
+168,Midgard,Verschmutzen,,Ark,2,,,2,2,Geste,10 sec,15 m,Umgebung,1 Objekt,0,dr,Formen,Spruch,Magan,Metall,0
+169,Midgard,Versetzen,,Ark,2,,,8,2 je Wesen,Geste,20 sec,500 m,Umgebung,1-6 Wesen,24 h,dä,Bewegen,Spruch,Magan,Metall,Phosphorkreide (200 GS)
+170,Midgard,Versteinern,,Ark,2,,,10,8,Geste,10 sec,Berührung,Körper,1 Wesen,∞,sm,Verändern,Spruch,Erde,Erde,0
+171,Midgard,Vertieren,,Ark,2,,,5,3,Geste,10 sec,30 m,Geist,1 Wesen,10 min,dä,Beherrschen,Spruch,Wasser,Luft,Tierspeichelmischung (20 GS)
+172,Midgard,Verursachen von Krankheit,,Ark,2,,,4,2,Geste,Augenblick,Berührung,Körper,1 Wesen,3W6 Tage,dä,Verändern,Spruch,Eis,Erde,0
+173,Midgard,Verursachen schw. Wunden,,Ark,2,,,5,3,Geste,Augenblick,Berührung,Körper,1 Wesen,0,sm,Zerstören,Spruch,Eis,Erde,0
+174,Midgard,Verursachen von Wunden,,Ark,2,,,3,1,Geste,Augenblick,Berührung,Körper,1 Wesen,0,sm,Zerstören,Spruch,Eis,Erde,0
+175,Midgard,Verwandlung,,Ark,2,,,11,mind. 9,Geste,30 sec,Berührung,Körper,1 Wesen,∞,dä,Verändern,Spruch,Holz,Erde,"""Kern des Großen Kürbis"" (100 GS)"
+176,Midgard,Verwirren,,Ark,2,,,2,1 je Grad,Geste,Augenblick,30 m,Geist,1 Wesen,10 sec,dä,Beherrschen,Spruch,Magan,Feuer,0
+177,Midgard,Verwünschen,,Ark,2,,,4,2 je Wesen,Wort,10 sec,15 m,Körper,bis zu 6 Wesen,30 min,dä,Verändern,Spruch,Luft,Wasser,0
+178,Midgard,Verzweiflung,,Ark,2,,,8,5,Geste,10 sec,Berührung,Geist,1 Wesen,1 h,dä,Verändern,Spruch,Magan,Luft,in Alkohol gelöste Kräutermischung (50 GS)
+179,Midgard,Wachsen,,Ark,2,,,6,6,Geste,20 sec,Berührung,Körper,1 Wesen,10 min,dä,Verändern,Spruch,Holz,Erde,0
+180,Midgard,Wahnsinn,,Ark,2,,,9,7,Geste,20 sec,15 m,Geist,1 Wesen,∞,dä,Zerstören,Spruch,Magan,Luft,Birkenrinde und Blüten des Wahnsinnkrautes (50 GS)
+181,Midgard,Wahrsehen,,Ark,2,,,9,6,Geste,20 sec,15 m,Geist,3 m Umkreis,10 min,gö,Erkennen,Spruch,Magan,Magan,vierblättriger Klee (10 GS)
+182,Midgard,Wandwandeln,,Ark,2,,,9,6,Geste,10 min,Berührung,Umgebung,-,1 min,el,Formen,Spruch,Magan,Erde,0
+183,Midgard,Warnung,,Ark,2,,,3,2,Geste,10 sec,0 m,Geist,15 m Umkreis,10 min,dä,Erkennen,Spruch,Luft,Eis,Einhornhaar und Espenholz (50 GS)
+184,Midgard,Wasseratmen,,Ark,2,,,3,2,Geste,10 sec,Berührung,Körper,1 Wesen,8 h,el,Verändern,Spruch,Luft,Wasser,0
+185,Midgard,Wasserlauf,,Ark,2,,,5,3,Gedanke,20 sec,-,Körper,Zauberer,10 min,el,Bewegen,Spruch,Wasser,Erde,0
+186,Midgard,Wassermeisterschaft,,Ark,2,,,10,6,Geste,20 sec,-,Umgebung,1 Wesen/Objekt,1 h,el,Bewegen,Spruch,Wasser,Wasser,Perle (100 GS)
+187,Midgard,Wasserstrahl,,Ark,2,,,8,4,Geste,20 sec,5 m,Umgebung,Strahl,"1 min, k",el,Erschaffen,Spruch,Wasser,Wasser,Riesenkrakentrichter (100 GS)
+188,Midgard,Wasserwandlung,,Ark,2,,,7,4,Geste,20 sec,200 m,Umgebung,bis zu 10 m³,var,el,Formen,Spruch,Eis,Wasser,reines Eis (50 GS)
+189,Midgard,Windmeisterschaft,,Ark,2,,,8,4,Geste,20 sec,0 m,Umgebung,1 km Umkreis,1 h,el,Bewegen,Spruch,Luft,Luft,Sturmvogelfedern (10 GS)
+190,Midgard,Windstoß,,Ark,2,,,2,1,Geste,Augenblick,0 m,Umgebung,30 m Kegel,10 sec,el,Bewegen,Spruch,Luft,Luft,0
+191,Midgard,Wirbelwind,,Ark,2,,,12,9,Geste,30 sec,0 m,Umgebung,3-6 m Umkreis,"2 min, k",el,Bewegen,Spruch,Luft,Luft,0
+192,Midgard,Zauberauge,,Ark,2,,,8,4,Geste,20 sec,500 m,Umgebung,-,"30 min, k",dä,Bewegen,Spruch,Luft,Feuer,Auge eines Toten (50 GS)
+193,Midgard,Zauberhand,,Ark,2,,,8,4,Geste,20 sec,50 m,Umgebung,1 Wesen,"1 min, k",dä,Formen,Spruch,Erde,Luft,Wachspuppe (20 GS)
+194,Midgard,Zauberschild,,Ark,2,,,7,4 je Seite,Geste,20 sec,-,Umgebung,Zauberer,2 min,dä,Erschaffen,Spruch,Metall,Magan,Drachenschuppe (100 GS)
+195,Midgard,Zauberschlaf,,Ark,2,,,8,6 je Wesen,Geste,10 sec,30 m,Körper,bis zu 6 Wesen,24 h,dä,Beherrschen,Spruch,Magan,Wasser,Lotusblütenstaub und Blutrosendorn (20 GS)
+196,Midgard,Zauberschloss,,Ark,2,,,2,1,Geste,10 sec,Berührung,Umgebung,1 Objekt,12 h,dä,Bewegen,Spruch,Metall,Holz,Silberschlüssel (50 GS)
+197,Midgard,Zauberschlüssel,,Ark,2,,,3,2,Geste,10 sec,Berührung,Umgebung,1 Objekt,0,dä,Bewegen,Spruch,Magan,Holz,Springwurzspan (50 GS)
+198,Midgard,Zauberschmiede,,Ark,2,,,5,3-9,Geste,1 min,Berührung,Umgebung,1 Objekt,10 min,dä,Formen,Spruch,Magan,Metall,"""Waffe aus Alchimistenmetall"""
+199,Midgard,Zauberstimme,,Ark,2,,,3,2,Geste,10 min,50 m,Umgebung,-,12 h,dä,Erschaffen,Spruch,Magan,Luft,Papageienzunge (20 GS)
+200,Midgard,Zauberwirklichkeit,,Ark,2,,,12,9,Geste,3 h,50 m,Geist,6 m Umkreis,30 min,dä,Beherrschen,Spruch,Magan,Feuer,"Blütenstaub, Essenzen, Edelmetallsplitter (200 GS)"
+201,Midgard,Zauberzunge,,Ark,2,,,7,4,Geste,1 min,-,Geist,Zauberer,30 min,dä,Erkennen,Spruch,Luft,Luft,Papageienhirn und -zunge (50 GS)
+202,Midgard,Zielsuche,,Ark,2,,,5,2,Geste,10 sec,Berührung,Umgebung,1 Objekt,10 min,dr,Formen,Spruch,Luft,Holz,0
+203,Midgard,Zweite Haut,,Ark,2,,,8,var,Gedanke,Augenblick,-,Körper,Zauberer,10 min,dä,Zerstören,Spruch,Erde,Magan,0
+204,Midgard,Zwiesprache,,Ark,2,,,2,1,Wort,Augenblick,500 m,Körper,Zauberer,"10 min, k",dä,Erkennen,Spruch,Feuer,Luft,0
+,,,,,,,,,,,,,,,,,,,,,
+205,Midgard,Allheilung,,Ark,2,,,9,6,Geste,30 min,Berührung,Körper,1 Wesen,0,gö,Erschaffen,Wundertat,Holz,Erde,0
+206,Midgard,Arm der Götter,,Ark,2,,,3,2,Geste,10 sec,-,Körper,Zauberer,2 min,gö,Verändern,Wundertat,Metall,Holz,0
+207,Midgard,Austreibung des Bösen,,Ark,2,,,4,5,Wort,10 sec,15 m,Körper,1 Wesen,0,gö,Bewegen,Wundertat,Magan,Feuer,0
+208,Midgard,Bannen von Dunkelheit,,Ark,2,,,2,1,Wort,Augenblick,0 m,Umgebung,9 m Umkreis,10 min,gö,Erschaffen,Wundertat,Feuer,Feuer,0
+209,Midgard,Bannen von Finsterwerk,,Ark,2,,,4,4,Wort,10 sec,15 m,Umgebung,1 Wesen/Objekt,0,gö,Zerstören,Wundertat,Magan,Magan,0
+210,Midgard,Bannen von Gift,,Ark,2,,,4,4,Wort,10 sec,3m,Körper,1 Wesen,0,dr,Zerstören,Wundertat,Holz,Eis,0
+211,Midgard,Beruhigen,,Ark,2,,,5,1 je Grad,Wort,10 sec,0 m,Geist,15 m Umkreis,0,gö,Beherrschen,Wundertat,Luft,Wasser,0
+212,Midgard,Blutmeisterschaft,,Ark,2,,,2,1 + 1 je Wunde,Gedanke,10 sec,-,Körper,Zauberer,60 min,gö,Verändern,Wundertat,Erde,Holz,0
+213,Midgard,Erheben der Toten,,Ark,2,,,12,alle,Wort,6 h,1 m,Körper,1 Wesen,0,gö,Erschaffen,Wundertat,Luft,Holz,0
+214,Midgard,Erholung,,Ark,2,,,4,4,Geste,20 sec,Berührung,Körper,1 Wesen,0,gö,Erschaffen,Wundertat,Luft,Feuer,0
+215,Midgard,Erkennen der Aura,,Ark,2,,,2,1,Gedanke,Augenblick,0 m,Geist,30 m Kegel,0,gö,Erkennen,Wundertat,Luft,Luft,0
+216,Midgard,Erkennen von Besessenheit,,Ark,2,,,3,2,Gedanke,10 sec,0 m,Geist,30 m Kegel,10 sec,gö,Erkennen,Wundertat,Luft,Feuer,0
+217,Midgard,Erkennen von Krankheit,,Ark,2,,,2,1,Gedanke,10 min,Berührung,Geist,1 Wesen,0,dr,Erkennen,Wundertat,Luft,Eis,0
+218,Midgard,Goldene Wehr,,Ark,2,,,5,3,Geste,1 min,Berührung,Umgebung,1 Objekt,10 min,gö,Formen,Wundertat,Luft,Metall,"""geweihte Waffe"""
+219,Midgard,Gottesgabe,,Ark,2,,,5,4,Geste,1 min,0 m,Körper,Zauberer,10 min,gö,Verändern,Wundertat,Luft,Wasser,0
+220,Midgard,Göttliche Eingebung,,Ark,2,,,8,4,Gedanke,30 min,-,Geist,Zauberer,10 min,gö,Erkennen,Wundertat,Luft,Luft,0
+221,Midgard,Göttlicher Blitz,,Ark,2,,,5,3,Geste,10 sec,30 m,Umgebung,Strahl,"2 min, k",gö,Erschaffen,Wundertat,Luft,Feuer,0
+222,Midgard,Göttlicher Schirm,,Ark,2,,,4,2,Geste,10 sec,0 m,Umgebung,3 m Umkreis,"2 min, k",gö,Zerstören,Wundertat,Metall,Magan,0
+223,Midgard,Göttlicher Schutz v. d. Bösen,,Ark,2,,,1,2,Wort,10 min,-,Körper,Zauberer,1 h,gö,Verändern,Wundertat,Luft,Wasser,0
+224,Midgard,Göttlicher Schutz vor Magie,,Ark,2,,,5,3 je Person,Wort,5 min,0 m,Körper,6 m Umkreis,1 h,gö,Verändern,Wundertat,Metall,Wasser,0
+225,Midgard,Handauflegen,,Ark,2,,,2,1,Geste,10 sec,Berührung,Körper,1 Wesen,0,gö,Erschaffen,Wundertat,Luft,Feuer,0
+226,Midgard,Heilen schwerer Wunden,,Ark,2,,,6,4,Geste,10 min,Berührung,Körper,1 Wesen,0,gö,Erschaffen,Wundertat,Holz,Erde,0
+227,Midgard,Heilen von Krankheit,,Ark,2,,,4,2,Geste,10 min,Berührung,Körper,1 Wesen,0,gö,Zerstören,Wundertat,Holz,Eis,0
+228,Midgard,Heilen von Wunden,,Ark,2,,,4,3,Geste,1 min,Berührung,Körper,1 Wesen,0,gö,Erschaffen,Wundertat,Luft,Erde,0
+229,Midgard,Heiliger Zorn,,Ark,2,,,2,2,Gedanke,Augenblick,-,Körper,Zauberer,2 min,gö,Verändern,Wundertat,Luft,Erde,0
+230,Midgard,Heiliges Wort,,Ark,2,,,7,6,Wort,10 sec,0 m,Körper,9 m Umkreis,var,gö,Zerstören,Wundertat,Metall,Magan,0
+231,Midgard,Himmlicher Beschützer,,Ark,2,,,4,3,Geste,1 min,Berührung,Umgebung,1 Wesen,bis zu 10 min,gö,Bewegen,Wundertat,Luft,Erde,0
+232,Midgard,Himmlicher Helfer,,Ark,2,,,4,3-9,Wort,10 sec,2 km,Geist,1-10 Wesen,10 min,gö,Beherrschen,Wundertat,Magan,Wasser,0
+233,Midgard,Reinigen,,Ark,2,,,1,1,Geste,10 min,1 m,Umgebung,1 kg,0,gö,Zerstören,Wundertat,Holz,Eis,0
+234,Midgard,Rüstung der Rechtschaffenen,,Ark,2,,,8,5,Geste,20 sec,Berührung,Körper,Zauberer,2 min,gö,Verändern,Wundertat,Luft,Erde,0
+235,Midgard,Schützende Hülle,,Ark,2,,,2,1 + 1 je 10 sec,Wort,10 sec,-,Körper,Zauberer,"var, k",gö,Erschaffen,Wundertat,Feuer,Holz,0
+236,Midgard,Schwingenkeule,,Ark,2,,,2,1,Geste,10 sec,Berührung,Umgebung,1 Objekt,2 min,gö,Formen,Wundertat,Luft,Holz,"""Wurfkeule aus Holz"""
+237,Midgard,Seelenheilung,,Ark,2,,,4,2,Wort,10 min,3 m,Geist,1 Wesen,0,gö,Verändern,Wundertat,Holz,Luft,0
+238,Midgard,Segnen,,Ark,2,,,3,2,Geste,1 min,Berührung,Körper,1 Wesen,10 min,gö,Verändern,Wundertat,Luft,Wasser,0
+239,Midgard,Strahlender Panzer,,Ark,2,,,4,2,Geste,10 sec,Berührung,Umgebung,Zauberer,2 min,gö,Formen,Wundertat,Feuer,Metall,0
+240,Midgard,Verfluchen,,Ark,2,,,3,2,Wort,10 sec,15 m,Körper,1 Wesen,10 min,gö,Verändern,Wundertat,Luft,Wasser,0
+241,Midgard,Vision,,Ark,2,,,6,alle (mind. 3),Geste,6 h,-,Geist,Zauberer,1 h,gö,Erkennen,Wundertat,Wasser,Luft,"""Lebensmittel, Kräute, Pulver"" (20 GS)"
+242,Midgard,Waffensegen,,Ark,2,,,5,3-9,Geste,1 min,Berührung,Umgebung,1 Objekt,10 min,gö,Formen,Wundertat,Luft,Metall,0
+243,Midgard,Waffenwirbel,,Ark,2,,,6,6,Wort,10 sec,-,Körper,Zauberer,1 min,gö,Verändern,Wundertat,Luft,Erde,0
+244,Midgard,Wagemut,,Ark,2,,,3,2,Geste,10 sec,15 m,Geist,1 Wesen,2 min,gö,Verändern,Wundertat,Luft,Feuer,0
+245,Midgard,Wort des Lebens,,Ark,2,,,8,6,Wort,10 sec,0 m,Körper,9 m Umkreis,var,gö,Zerstören,Wundertat,Holz,Eis,0
+246,Midgard,Wort der Trauer,,Ark,2,,,8,6,Wort,10 sec,0 m,Geist,9 m Umkreis,var,gö,Zerstören,Wundertat,Luft,Eis,0
+,,,,,,,,,,,,,,,,,,,,,
+247,Midgard,Bärenwut,,Ark,2,,,2,2,Geste,Augenblick,-,Körper,Zauberer,2 min,dr,Verändern,Dweomerzauber,Holz,Erde,"""eigenes Blut"""
+248,Midgard,Bannen von Gift,,Ark,2,,,4,4,Wort,10 sec,3 m,Körper,1 Wesen,0,dr,Zerstören,Dweomerzauber,Holz,Eis,-
+249,Midgard,Baum,,Ark,2,,,2,1,Gedanke,Augenblick,-,Körper,Zauberer,90 min,dr,Verändern,Dweomerzauber,Holz,Erde,-
+250,Midgard,Elfenfeuer,,Ark,2,,,5,3,Geste,10 sec,30 m,Umgebung,Strahl,"2 min, k",dr,Erschaffen,Dweomerzauber,Holz,Holz,Turmalin (50 GS)
+251,Midgard,Elfenklinge,,Ark,2,,,5,2,Geste,10 sec,Berührung,Umgebung,1 Objekt,10 min,dr,Formen,Dweomerzauber,Holz,Metall,"""Waffe mit Elfenstahlklinge"""
+252,Midgard,Entgiften,,Ark,2,,,4,2,Wort,30 sec,3 m,Umgebung,1 Objekt,0,dr,Zerstören,Dweomerzauber,Holz,Eis,-
+253,Midgard,Erkennen von Gift,,Ark,2,,,4,2,Gedanke,Augenblick,15 m,Geist,1 m²,0,dr,Erkennen,Dweomerzauber,Holz,Eis,-
+254,Midgard,Erkennen von Krankheit,,Ark,2,,,2,1,Gedanke,10 min,Berührung,Geist,1 Wesen,0,dr,Erkennen,Dweomerzauber,Holz,Eis,-
+255,Midgard,Fährtendurft,,Ark,2,,,3,1 je Wesen,Geste,1 min,Berührung,Körper,1-6 Wesen,30 min,dr,Verändern,Dweomerzauber,Holz,Erde,Tierkot (1 GS)
+256,Midgard,Feenfluch,,Ark,2,,,5,2,Geste,10 sec,15 m,Körper,1 Wesen,∞,dr,Verändern,Dweomerzauber,Holz,Erde,-
+257,Midgard,Feenschutz,,Ark,2,,,6,6,Geste,10 min,30 m,Geist,bis zu 7 Wesen,8 h,dr,Verändern,Dweomerzauber,Holz,Luft,"Zweige von Eiche, Esche und Weißdorn (2 GS), ""Stück Kaltes Eisen"""
+258,Midgard,Feenschwert,,Ark,2,,,6,4,Geste,10 sec,0 m,Umgebung,-,2 min,dr,Erschaffen,Dweomerzauber,Holz,Holz,Turmalin (50 GS)
+259,Midgard,Feuerbienen,,Ark,2,,,6,4,Geste,10 sec,50 m,Umgebung,Strahl,"2 min, k",dr,Erschaffen,Dweomerzauber,Holz,Holz,Turmalin (50 GS)
+260,Midgard,Grüne Hand,,Ark,2,,,9,6,Geste,20 sec,Berührung,Umgebung,Pflanzen,2 min,dr,Formen,Dweomerzauber,Holz,Holz,"pulverisierte Wurzeln, Frühlingsregen (20 GS)"
+261,Midgard,Kraftspende,,Ark,2,,,1,1,Geste,Augenblick,30 m,Körper,1 Wesen,0,dr,Bewegen,Dweomerzauber,Holz,Feuer,-
+262,Midgard,Laufen wie der Wind,,Ark,2,,,5,3,Geste,10 sec,-,Körper,Zauberer,10 min,dr,Verändern,Dweomerzauber,Holz,Erde,-
+263,Midgard,Lebensflammen,,Ark,2,,,3,1 je Wesen,Geste,10 sec,Berührung,Umgebung,bis zu 6 Wesen,2 min,dr,Erschaffen,Dweomerzauber,Holz,Holz,Zunder (1 SS)
+264,Midgard,Lebenskeule,,Ark,2,,,5,2,Geste,10 sec,Berührung,Umgebung,1 Objekt,2 min,dr,Formen,Dweomerzauber,Holz,Holz,"""Waffe aus Holz"""
+265,Midgard,Lebensrettung,,Ark,2,,,5,3,Geste,1 min,Berührung,Körper,1 Wesen,0,dr,Erschaffen,Dweomerzauber,Holz,Erde,-
+266,Midgard,Lebensstärkung,,Ark,2,,,4,4,Geste,20 sec,Berührung,Körper,1 Wesen,30 min,dr,Erschaffen,Dweomerzauber,Holz,Feuer,-
+267,Midgard,Lindern von Entkräftung,,Ark,2,,,7,5,Geste,10 min,Berührung,Körper,1 Wesen,0,dr,Erschaffen,Dweomerzauber,Holz,Feuer,-
+268,Midgard,Lindern von Krankheit,,Ark,2,,,3,2,Geste,10 min,Berührung,Körper,1 Wesen,0,dr,Zerstören,Dweomerzauber,Holz,Eis,-
+269,Midgard,Linienlesen,,Ark,2,,,1,1,Gedanke,Augenblick,bis zu 5 km,Geist,Zauberer,10 sec,dr,Erkennen,Dweomerzauber,Holz,Holz,-
+270,Midgard,Linienwanderung,,Ark,2,,,8,4,Gedanke,20 sec,-,Körper,Zauberer,1 h,dr,Bewegen,Dweomerzauber,Luft,Feuer,-
+271,Midgard,Mutlosigkeit,,Ark,2,,,2,2 je Wesen,Wort,Augenblick,30 m,Geist,bis zu 10 Wesen,10 min,dr,Beherrschen,Dweomerzauber,Holz,Wasser,-
+272,Midgard,Naturgeist rufen,,Ark,2,,,4,3,Geste,5 min,500 m,Geist,-,2 min,dr,Beherrschen,Dweomerzauber,Holz,Holz,"""Weißdornpfeife"" bzw. ""Schamanentrommel"""
+273,Midgard,Rindenhaut,,Ark,2,,,4,2,Geste,10 sec,Berührung,Körper,1 Wesen,10 min,dr,Verändern,Dweomerzauber,Holz,Erde,Eichenrinde (2 SS)
+274,Midgard,Ring des Lebens,,Ark,2,,,5,4,Geste,Augenblick,0 m,Umgebung,bis zu 18 m Umkreis,1 min,dr,Zerstören,Dweomerzauber,Holz,Eis,Samen des Lebenskrautes (5 GS)
+275,Midgard,Schlachtenwahnsinn,,Ark,2,,,8,6,Geste,10 sec,-,Körper,Zauberer,1 min,dr,Verändern,Dweomerzauber,Holz,Erde,-
+276,Midgard,Schnellheilung,,Ark,2,,,6,4,Geste,10 min,Berührung,Körper,1 Wesen,0,dr,Erschaffen,Dweomerzauber,Holz,Erde,-
+277,Midgard,Schutzgeist,,Ark,2,,,5,3,Geste,10 sec,-,Umgebung,Zauberer,bis zu 30 min,dr,Bewegen,Dweomerzauber,Luft,Erde,-
+278,Midgard,Schwarm,,Ark,2,,,4,2,Wort,10 sec,50 m,Umgebung,-,"1 min, k",dr,Bewegen,Dweomerzauber,Holz,Erde,-
+279,Midgard,Tiere rufen,,Ark,2,,,5,3-9,Wort,10 sec,2 km,Geist,1-10 Wesen,10 min,dr,Beherrschen,Dweomerzauber,Holz,Wasser,-
+280,Midgard,Tiergestalt,,Ark,2,,,9,6,Geste,20 sec,-,Körper,Zauberer,∞,dr,Verändern,Dweomerzauber,Wasser,Erde,"Fellstück, Feder usw. (1 GS)"
+281,Midgard,Tierischer Helfer,,Ark,2,,,4,2 je Grad,Wort,10 sec,30 m,Geist,1 Wesen je Grad,mind. 2 h,dr,Beherrschen,Dweomerzauber,Holz,Wasser,-
+282,Midgard,Wandeln wie der Wind,,Ark,2,,,2,1,Geste,Augenblick,0 m,Umgebung,1 m Umkreis,10 min,dr,Formen,Dweomerzauber,Holz,Erde,Flugsamen verschiedener Pflanzen (5 SS)
+283,Midgard,Wittern,,Ark,2,,,3,2,Geste,10 sec,-,Körper,Zauberer,30 min,dr,Verändern,Dweomerzauber,Holz,Erde,Spürhundhaare (5 GS)
+284,Midgard,Wundersame Tarnung,,Ark,2,,,2,1,Gedanke,Augenblick,-,Umgebung,Zauberer,30 min,dr,Formen,Dweomerzauber,Holz,Erde,-
+285,Midgard,Zähmen,,Ark,2,,,2,1 je Grad,Wort,10 sec,30 m,Geist,1 Wesen je Grad,2 h,dr,Beherrschen,Dweomerzauber,Holz,Wasser,-
+286,Midgard,Zaubersprung,,Ark,2,,,3,2,Geste,10 sec,-,Körper,Zauberer,10 sec,dr,Verändern,Dweomerzauber,Holz,Erde,-
+287,Midgard,Zeichen des Lebens,,Ark,2,,,8,6,Geste,20 sec,0,Körper,9 m Umkreis,10 min,dr,Zerstören,Dweomerzauber,Holz,Eis,-
+,,,,,,,,,,,,,,,,,,,,,
+288,Midgard,Das Lied des Erinnerns,,Ark,2,,,7,2,-,1 min,-,Geist,15 m Umkreis,0,-,Verändern,Zauberlied,Magan,Luft,"Harfe oder Laute, Stimme"
+289,Midgard,Das Lied der Feier,,Ark,2,,,1,0,-,1 min,-,Geist,30 m Umkreis,30 min,-,Verändern,Zauberlied,Luft,Luft,"Flöte, Harfe oder Laute"
+290,Midgard,Das Lied des Fesselns,,Ark,2,,,3,2,-,Augenblick,-,Geist,30 m Umkreis,3 min,-,Beherrschen,Zauberlied,Luft,Luft,"Flöte, Harfe oder Laute"
+291,Midgard,Das Lied des Friedens,,Ark,2,,,10,2,-,1 min,-,Geist,15 m Umkreis,10 min,-,Beherrschen,Zauberlied,Metall,Wasser,"Harfe oder Laute, Stimme"
+292,Midgard,Das Lied des Grauens,,Ark,2,,,9,4,-,1 min,-,Geist,200 m Kegel,1 min,-,Beherrschen,Zauberlied,Eis,Wasser,"Flöte, Stimme"
+293,Midgard,Das Lied der Liebe,,Ark,2,,,7,0,-,1 min,15 m,Geist,1 Wesen,∞,-,Beherrschen,Zauberlied,Wasser,Wasser,"Harfe oder Laute, Stimme"
+294,Midgard,Das Lied der Lockung,,Ark,2,,,8,2,-,1 min,-,Geist,200 m Kegel,1 min,-,Beherrschen,Zauberlied,Magan,Wasser,Flöte
+295,Midgard,Das Lied der Ruhe,,Ark,2,,,3,2,-,1 min,-,Geist,30 m Umkreis,2 h,-,Beherrschen,Zauberlied,Wasser,Wasser,"Flöte, Harfe oder Laute"
+296,Midgard,Das Lied des Spottes,,Ark,2,,,3,2,-,3 min,-,Geist,30 m Umkreis,∞,-,Verändern,Zauberlied,Luft,Luft,"Harfe oder Laute, Stimme"
+297,Midgard,Das Lied der Tanzlust,,Ark,2,,,5,2,-,1 min,-,Geist,30 m Umkreis,1 min,-,Beherrschen,Zauberlied,Magan,Erde,Flöte
+298,Midgard,Das Lied der Tapferkeit,,Ark,2,,,1,0,-,10 min,-,Geist,15 m Umkreis,30 min,-,Verändern,Zauberlied,Luft,Luft,"Flöte, Harfe oder Laute, Stimme"
+299,Midgard,Das Lied der verborgenen Kraft,,Ark,2,,,6,2,-,1 min,-,Körper,15 m Umkreis,0,-,Verändern,Zauberlied,Magan,Feuer,"Flöte, Stimme"
+300,Midgard,Das Lied der Verführung,,Ark,2,,,3,2,-,1 min,5 m,Geist,1 Wesen,6 h,-,Beherrschen,Zauberlied,Wasser,Wasser,"Harfe oder Laute, Stimme"
+301,Midgard,Das Lied des Vergessens,,Ark,2,,,7,2,-,1 min,-,Geist,15 m Umkreis,∞,-,Verändern,Zauberlied,Magan,Luft,"Harfe oder Laute, Stimme"
+302,Midgard,Das Lied der Verzweiflung,,Ark,2,,,7,4,-,3 min,15 m,Geist,1 Wesen,30 min,-,Verändern,Zauberlied,Magan,Luft,"Flöte, Harfe oder Laute, Stimme"
+303,Midgard,Das Lied des Wagemuts,,Ark,2,,,3,2,-,1 min,-,Geist,15 m Umkreis,30 min,-,Verändern,Zauberlied,Luft,Feuer,"Flöte, Harfe oder Laute, Stimme"
+304,Midgard,Das Lied des Wahnsinns,,Ark,2,,,9,4,-,3 min,-,Geist,30 m Umkreis,∞,-,Zerstören,Zauberlied,Magan,Luft,"Flöte, Stimme"
+305,Midgard,Das Lied des Zorns,,Ark,2,,,11,2,-,1 min,-,Geist,30 m Umkreis,2 min,-,Beherrschen,Zauberlied,Wasser,Wasser,"Flöte, Stimme"
+306,Midgard,Das Lied der Zwietracht,,Ark,2,,,10,2,-,1 min,-,Geist,15 m Umkreis,10 min,-,Beherrschen,Zauberlied,Magan,Wasser,"Harfe oder Laute, Stimme"
+307,Midgard,Das Loblied,,Ark,2,,,3,2,-,1 min,-,Geist,30 m Umkreis,1-3 Tage,-,Verändern,Zauberlied,Luft,Luft,"Harfe oder Laute, Stimme"
+308,Midgard,Der betäubende Gesang,,Ark,2,,,6,4,-,3 min,-,Geist,15 m Umkreis,1 min,-,Beherrschen,Zauberlied,Magan,Wasser,"Harfe oder Laute, Stimme"
+309,Midgard,Der einschläfernde Gesang,,Ark,2,,,4,2,-,3 min,-,Geist,15 m Umkreis,1 min,-,Beherrschen,Zauberlied,Magan,Wasser,"Harfe oder Laute, Stimme"
+310,Midgard,Der frohlockende Gesang,,Ark,2,,,4,2,-,1 min,-,Geist,15 m Umkreis,1 min,-,Verändern,Zauberlied,Luft,Luft,"Harfe oder Laute, Stimme"
+311,Midgard,Der traurige Gesang,,Ark,2,,,4,2,-,1 min,-,Geist,15 m Umkreis,1 min,-,Verändern,Zauberlied,Magan,Luft,"Harfe oder Laute, Stimme"
+312,Midgard,Der verunsichernde Gesang,,Ark,2,,,3,2,-,1 min,-,Geist,15 m Umkreis,1 min,-,Beherrschen,Zauberlied,Feuer,Luft,"Flöte, Harfe oder Laute, Stimme"
+313,Midgard,Die anfeuernde Ballade,,Ark,2,,,2,2,-,1 min,50 m,Körper,1 Wesen,1 min,-,Verändern,Zauberlied,Magan,Luft,Flöte
+314,Midgard,Die stählende Ballade,,Ark,2,,,2,2,-,1 min,-,Geist,15 m Umkreis,1 min,-,Verändern,Zauberlied,Metall,Luft,"Flöte, Harfe oder Laute, Stimme"
+315,Midgard,Die Hymne der Ordnung,,Ark,2,,,6,2,-,Augenblick,-,Umgebung,15 m Umkreis,1 min,-,Zerstören,Zauberlied,Metall,Magan,"Flöte, Harfe oder Laute, Stimme"
+316,Midgard,Die Klänge der Genesung,,Ark,2,,,6,2,-,1 min,-,Körper,15 m Umkreis,0,-,Verändern,Zauberlied,Magan,Erde,"Flöte, Harfe oder Laute, Stimme"
+317,Midgard,Die Klänge der Linderung,,Ark,2,,,5,1,-,5 min,15 m,Geist,1 Wesen,0,-,Verändern,Zauberlied,Metall,Luft,"Harfe oder Laute, Stimme"
+318,Midgard,Die Klänge des Zusammenwachsens,,Ark,2,,,5,2,-,3 min,-,Körper,15 m Umkreis,0,-,Verändern,Zauberlied,Magan,Erde,"Flöte, Harfe oder Laute, Stimme"
+319,Midgard,Die überzeugende Stimme,,Ark,2,,,5,2,-,1 min,15 m,Geist,1 Wesen,2 min,-,Beherrschen,Zauberlied,Feuer,Luft,Stimme
+,,,,,,,,,,,,,,,,,,,,,
+320,Midgard,Automat schaffen,,ARKE,6,,,10,9,Geste,1 h,Berührung,Umgebung,1 Objekt,∞,dä,Formen,Spruch,Magan,Metall,"""Metallstatue"" (10.000 GS)"
+321,Midgard,Bannen des Todes,,ARKE,6,,,12,alle (mind. 9),Geste,6 h,-,Körper,Zauberer,0,sm,Verändern,Spruch,Eis,Erde,"""Mensch, frisches Katzenherz"""
+321,Midgard,Dämonische Eingebung,,ARKE,6,,,7,4,Gedanke,30 min,-,Geist,Zauberer,10 min,dä,Erkennen,Spruch,Magan,Luft,0
+322,Midgard,Eismeisterschaft,,ARKE,6,,,10,9,Geste,30 sec,0 m,Umgebung,1 m Umkreis,1 h,el,Bewegen,Spruch,Wasser,Eis,"geschnitzter, in Silber gefasster Eisbärzahn (100 GS)"
+322,Midgard,Erdmeisterschaft,,ARKE,6,,,11,9,Geste,30 sec,0 m,Umgebung,1 m Umkreis,1 h,el,Bewegen,Spruch,Wasser,Erde,Maulwurffell (2 GS)
+323,Midgard,Heimstein,,ARKE,6,,,12,alle (mind. 9),Geste,24 h,0 m,Umgebung,50 m Umkreis,∞,dä,Zerstören,Spruch,Magan,Magan,"""Urgesteinsbrocken, Edelmetalle"" (500 GS)"
+323,Midgard,Hexenritt,,ARKE,6,,,8,4 je  Grad,Geste,20 sec,Berührung,Geist,1 Wesen,6 h,sm,Beherrschen,Spruch,Eis,Feuer,Zaumzeug aus passenden Knochen und Leder (100 GS)
+324,Midgard,Kuss der Verpflichtung,,ARKE,6,,,11,4 je Grad,Geste,10 sec,Berührung,Geist,1 Wesen,∞,dä,Beherrschen,Spruch,Magan,Luft,0
+324,Midgard,Macht über die Zeit,,ARKE,6,,,11,18,Geste,30 min,15 m,Umgebung,2 m Umkreis,∞,dä,Zerstören,Spruch,Metall,Holz,0
+325,Midgard,Modeln,,ARKE,6,,,5,4,Geste,10 sec,15 m,Umgebung,1 Objekt,2 min,dä,Formen,Spruch,Magan,Metall,0
+325,Midgard,Pforte,,ARKE,6,,,10,9,Geste,30 min,3 m,Umgebung,2 × 1 m Umkreis,8 h,dä,Formen,Spruch,Magan,Metall,"""zwei Hexagone"" (200 GS)"
+326,Midgard,Regenzauber,,ARKE,6,,,5,6 je 500 m Radius,Geste,10 min,0 m,Umgebung,variabler Umkreis,variabel,el,Erschaffen,Spruch,Magan,Wasser,Pulvermischung (500 GS)
+326,Midgard,Reise in der Zeit,,ARKE,6,,,10,9 je Stufe,Gedanke,30 min,-,Geist,Zauberer,variabel,dä,Bewegen,Spruch,Luft,Feuer,0
+327,Midgard,Reise zu den Sphären,,ARKE,6,,,11,18,Geste,30 min,-,Körper,1-6 Wesen,0,dä,Bewegen,Spruch,Feuer,Metall,"""Polygon"" (200 GS)"
+327,Midgard,Silberblick,,ARKE,6,,,4,3,Geste,10 sec,0 m,Körper,30 m Kegel,10 sec,gö,Erkennen,Spruch,Magan,Wasser,Finger oder Ohr eines Hexers (500 GS)
+328,Midgard,Sturmflut,,ARKE,6,,,10,6,Geste,1 min,0 m,Umgebung,2 km Kegel,10 min,el,Bewegen,Spruch,Wasser,Wasser,Peitsche mit Fischlederschnur (20 GS)
+328,Midgard,Tor,,ARKE,6,,,12,12,Geste,1h,3 m,Umgebung,2 × 1 m Umkreis,1 Monat,dä,Formen,Spruch,Magan,Metall,"""zwei Hexagone"" (200 GS)"
+329,Midgard,Ungeheuer rufen,,ARKE,6,,,4,2,Wort,10 sec,2 km,Geist,1 Wesen,10 min,sm,Beherrschen,Spruch,Magan,Magan,0
+329,Midgard,Verfaulen,,ARKE,6,,,1,1,Geste,Augenblick,Berührung,Umgebung,1 kg,0,sm,Zerstören,Spruch,Eis,Holz,0
+330,Midgard,Verjüngen,,ARKE,6,,,12,alle (mind. 9),Geste,6 h,1 m,Körper,1 Wesen,0,dr,Verändern,Spruch,Holz,Erde,"""Phönixei"" (5000 GS)"
+330,Midgard,Wassertor,,ARKE,6,,,7,4,Geste,10 min,500 km,Umgebung,2000 Liter Wasser,10 sec,el,Bewegen,Spruch,Magan,Wasser,Fettkreide (200 GS)
+331,Midgard,Weltentor,,ARKE,6,,,12,36,Geste,6 h,3 m,Umgebung,2 × 1 m Umkreis,1 Monat,dä,Formen,Spruch,Magan,Metall,"""zwei Polygone"" (400 GS)"
+331,Midgard,Wetterzauber,,ARKE,6,,,6,6 je 500 m Radius,Geste,10 min,0 m,Umgebung,variabler Umkreis,variabel,el,Formen,Spruch,Magan,Luft,Pulvermischung (500 GS)
+,Midgard,,,,,,,,,,,,,,,,,,,,
+332,Midgard,Austreibung des Guten,,ARKE,6,,,4,5,Wort,10 sec,15 m,Körper,1 Wesen,0,dä,Bewegen,Wundertat,Magan,Feuer,0
+333,Midgard,Bannen von Götterwerk,,ARKE,6,,,4,4,Wort,10 sec,15 m,Umgebung,1 Wesen/Objekt,0,sm,Zerstören,Wundertat,Magan,Magan,0
+334,Midgard,Blutsbrüderschaft stiften,,ARKE,6,,,8,4,Geste,1 h,Berührung,Geist,2 Wesen,0,gö,Erschaffen,Wundertat,Wasser,Luft,0
+335,Midgard,Geisterlauf,,ARKE,6,,,5,4 je Wesen,Geste,30 min,3 m,Körper,bis zu 7 Wesen,variabel,gö,Bewegen,Wundertat,Luft,Metall,"""Gewänder, Totem- oder Ahnensymbole"""
+336,Midgard,Göttliche Strafe,,ARKE,6,,,10,6,Gedanke,1 min,500 km,Geist,1 Wesen/Objekt,∞,gö,Erkennen,Wundertat,Luft,Luft,0
+337,Midgard,Golem schaffen,,ARKE,6,,,12,alle (mind. 9),Geste,12 h,Berührung,Umgebung,1 Objekt,∞,gö,Formen,Wundertat,Holz,Erde,"""Statue"" (1000 GS)"
+338,Midgard,Leuchtspur,,ARKE,6,,,5,3,Geste,1 min,Berührung,Geist,Zauberer,6 h,gö,Erkennen,Wundertat,Feuer,Feuer,Phosphor und konservierte Glühwürmchen (100 GS)
+339,Midgard,Rauchbild,,ARKE,6,,,8,4,Geste,10 min,1 m,Geist,Zauberer,5 min,gö,Erkennen,Wundertat,Feuer,Feuer,Regenbogenpulver (100 GS)
+340,Midgard,Verbotenes Wort,,ARKE,6,,,7,6,Wort,10 sec,0 m,Körper,9 m Umkreis,variabel,sm,Zerstören,Wundertat,Magan,Metall,0
+341,Midgard,Verpflichtung,,ARKE,6,,,11,alle (mind. 9),Wort,30 sec,15 m,Geist,1 Wesen,∞,gö,Beherrschen,Wundertat,Luft,Luft,0
+342,Midgard,Weihestein,,ARKE,6,,,12,alle (mind. 9),Geste,24 h,0 m,Umgebung,50 m Umkreis,∞,gö,Zerstören,Wundertat,Magan,Magan,"""Urgesteinsbrocken"" oder ""Reliquie"" (100 GS)"
+343,Midgard,Wiederkehr,,ARKE,6,,,11,alle (mind. 9),Wort,6 h,-,Geist,1 Wesen,∞,gö,Bewegen,Wundertat,Erde,Luft,0
+,,,,,6,,,,,,,,,,,,,,,,
+344,Midgard,Baumkämpfer,,ARKE,6,,,11,9,Wort,30 sec,50 m,Körper,1 Objekt,1 h,dr,Verändern,Dweomerzauber,Feuer,Holz,0
+345,Midgard,Baumwächter,,ARKE,6,,,12,12,Wort,60 min,1 km,Körper,1 Objekt,∞,dr,Erschaffen,Dweomerzauber,Feuer,Holz,0
+346,Midgard,Druidentor,,ARKE,6,,,9,9,Geste,30 min,3 m,Umgebung,2 × 1 m Umkreis,10 min,dr,Formen,Dweomerzauber,Holz,Metall,"""2 Steinkreise, Labyrinthe oder Hügelgräber druidischen Ursprungs"""
+347,Midgard,Feenstreich,,ARKE,6,,,5,4,Geste,10 sec,15 m,Umgebung,1 Objekt,2 min,dr,Formen,Dweomerzauber,Magan,Metall,0
+348,Midgard,Geas,,ARKE,6,,,10,alle (mind. 9),Wort,30 sec,15 m,Geist,1 Wesen,∞,dr,Beherrschen,Dweomerzauber,Holz,Luft,0
+349,Midgard,Hort der Natur,,ARKE,6,,,12,alle (mind. 9),Geste,24 h,0 m,Umgebung,200 m Umkreis,∞,dr,Zerstören,Dweomerzauber,Holz,Eis,"""bearbeitete Steine"""
+350,Midgard,Kunterbuntfische,,ARKE,6,,,4,2,Geste,10 sec,30 m,Umgebung,1 Wesen,1 min,dr,Bewegen,Dweomerzauber,Holz,Erde,7 Fischschuppen (2 SS)
+351,Midgard,Pflanzenmann,,ARKE,6,,,7,4,Geste,20 sec,200 m,Umgebung,-,10 min,dr,Beherrschen,Dweomerzauber,Holz,Holz,0
+351,Midgard,Rascheln wie der Wind,,ARKE,6,,,1,1,Geste,Augenblick,15 m,Umgebung,1 Wesen,1 h,dr,Formen,Dweomerzauber,Holz,Erde,3 trockene Herbstblätter
+352,Midgard,Seelenfreundschaft stiften,,ARKE,6,,,8,4,Geste,1 h,Berührung,Geist,2 Wesen,0,dr,Erschaffen,Dweomerzauber,Wasser,Luft,0
+352,Midgard,Seelenrückkehr,,ARKE,6,,,11,alle (mind. 9),Wort,6 h,-,Geist,1 Wesen,∞,dr,Bewegen,Dweomerzauber,Erde,Luft,0
+353,Midgard,Zeitlosigkeit,,ARKE,6,,,11,18,Geste,30 min,15 m,Umgebung,2 m Umkreis,∞,dr,Zerstören,Dweomerzauber,Holz,Holz,0
+353,Midgard,,,,,,,,,,,,,,,,,,,,
+354,Midgard,Der große Seiltrick,,ARKE,6,,,10,6,0,3 min,-,Umgebung,1 Wesen,6 h,0,Bewegen,Wundertat,Magan,Metall,Flöte
+355,Midgard,Der kleine Seiltrick,,ARKE,6,,,8,4,0,3 min,500 m,Umgebung,1 wesen,5 min,0,Bewegen,Wundertat,Magan,Metall,Flöte

@@ -1,10 +1,12 @@
 # =========== 1) Build stage ===========
 FROM golang:1.24-alpine AS builder
 
-# Create and set working directory
+# Install necessary packages for CGO and SQLite
+RUN apk add --no-cache gcc musl-dev sqlite-dev
+
 WORKDIR /app
 
-# Copy go.mod and go.sum first, then download dependencies
+# Copy go.mod and go.sum first
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -12,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go binary
-RUN go build -o server main.go
+RUN go build -v -o server cmd/main.go
 
 # =========== 2) Runtime stage ===========
 FROM alpine:3.18
@@ -22,7 +24,7 @@ WORKDIR /app
 # Copy the compiled binary from builder stage
 COPY --from=builder /app/server /app
 
-# Expose port 8180 (backend port)
+# Expose port
 EXPOSE 8180
 
 # Run the Go server

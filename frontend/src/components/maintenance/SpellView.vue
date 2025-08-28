@@ -1,15 +1,48 @@
 <template>
   <div class="header-section">
     <h2>{{ $t('maintenance') }}</h2>
-      <!-- Add search input -->
-      <div class="search-box">
-        <input
-          type="text"
-          v-model="searchTerm"
-          :placeholder="`${$t('search')} ${$t('Spell')}...`"
-        />
-      </div>
+    <!-- Add search input -->
+    <div class="search-box">
+      <input
+        type="text"
+        v-model="searchTerm"
+        :placeholder="`${$t('search')} ${$t('Spell')}...`"
+      />
     </div>
+  </div>
+  
+  <!-- Import CSV Section -->
+  <div class="import-section">
+    <h3>{{ $t('spell.import') || 'Import Spells' }}</h3>
+    <div class="file-upload">
+      <input
+        ref="fileInput"
+        type="file"
+        accept=".csv"
+        @change="handleFileSelect"
+        style="display: none;"
+      />
+      <button 
+        @click="$refs.fileInput.click()"
+        :disabled="importing"
+        class="upload-btn"
+      >
+        {{ importing ? ($t('spell.importing') || 'Importing...') : ($t('spell.selectCsv') || 'Select CSV File') }}
+      </button>
+      <span v-if="selectedFile" class="file-name">{{ selectedFile.name }}</span>
+    </div>
+    <button 
+      v-if="selectedFile && !importing"
+      @click="importSpells"
+      class="import-btn"
+    >
+      {{ $t('spell.import') || 'Import Spells' }}
+    </button>
+    <div v-if="importResult" class="import-result" :class="importResult.success ? 'success' : 'error'">
+      {{ importResult.message }}
+      <span v-if="importResult.total_spells"> ({{ importResult.total_spells }} spells total)</span>
+    </div>
+  </div>
 
   <div class="cd-view">
     <div class="cd-list">
@@ -95,18 +128,84 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.3rem;
+  margin-bottom: 1rem;
   height: fit-content;
   padding: 0.5rem;
+  border-bottom: 1px solid #ddd;
 }
+
 .search-box {
-  margin-bottom: 1rem;
+  margin-left: auto;
 }
+
 .search-box input {
-  padding: 0.2rem;
-  width: 200px;
+  padding: 0.5rem;
+  width: 250px;
   border: 1px solid #ddd;
   border-radius: 4px;
+}
+
+.import-section {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  border: 2px solid #1da766;
+  border-radius: 8px;
+  background-color: #f8fcfa;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.import-section h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.file-upload {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.upload-btn, .import-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #1da766;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.upload-btn:hover, .import-btn:hover {
+  background-color: #166d4a;
+}
+
+.upload-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.file-name {
+  font-style: italic;
+  color: #666;
+}
+
+.import-result {
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+}
+
+.import-result.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.import-result.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 .tables-container {
   display: flex;
@@ -153,7 +252,10 @@ export default {
       sortField: 'name',
       sortAsc: true,
       editingIndex: -1,
-      editedItem: null
+      editedItem: null,
+      selectedFile: null,
+      importing: false,
+      importResult: null
     }
   },
   computed: {
@@ -228,7 +330,77 @@ export default {
         } catch (error) {
           console.error('Failed to update spell:', error);
         }
+      },
+    handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file && file.type === 'text/csv') {
+        this.selectedFile = file;
+        this.importResult = null;
+      } else {
+        this.selectedFile = null;
+        this.importResult = {
+          success: false,
+          message: 'Please select a valid CSV file.'
+        };
       }
+    },
+    async importSpells() {
+      if (!this.selectedFile) {
+        this.importResult = {
+          success: false,
+          message: 'Please select a CSV file first.'
+        };
+        return;
+      }
+
+      this.importing = true;
+      this.importResult = null;
+
+      try {
+        const formData = new FormData();
+        formData.append('file', this.selectedFile);
+
+        const response = await API.post('/api/importer/spells/csv', formData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+
+        this.importResult = {
+          success: true,
+          message: response.data.message,
+          total_spells: response.data.total_spells
+        };
+
+        // Refresh the spells data after successful import
+        await this.refreshSpellsData();
+
+      } catch (error) {
+        console.error('Failed to import spells:', error);
+        this.importResult = {
+          success: false,
+          message: error.response?.data?.message || 'Import failed. Please try again.'
+        };
+      } finally {
+        this.importing = false;
+      }
+    },
+    async refreshSpellsData() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await API.get('/api/maintenance', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        // Update the spells data
+        if (response.data.spells) {
+          this.mdata.spells = response.data.spells;
+        }
+      } catch (error) {
+        console.error('Failed to refresh spells data:', error);
+      }
+    }
   }
 };
 </script>

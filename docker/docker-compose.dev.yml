@@ -1,5 +1,4 @@
 version: "3.8"
-
 services:
   backend-dev:
     build:
@@ -44,8 +43,8 @@ services:
     image: mariadb:11.4
     container_name: bamort-mariadb-dev
     restart: unless-stopped
-    ports:
-      - "3306:3306"
+    #ports:
+    #  - "3306:3306"
     environment:
       MARIADB_ROOT_PASSWORD: root_password_dev
       MARIADB_DATABASE: bamort

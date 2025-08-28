@@ -35,9 +35,6 @@
             </span>
           </div>
         </router-link>
-        <div class="list-item-actions">
-          <button @click="goToAusruestung(character.character_id)" class="btn btn-secondary">{{ $t('characters.list.manage_equipment') }}</button>
-        </div>
       </div>
     </div>
   </div>

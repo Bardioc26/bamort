@@ -5,6 +5,7 @@ import (
 	"bamort/gsmaster"
 	"bamort/logger"
 	"bamort/models"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -436,9 +437,11 @@ func UpdateCharacterWealth(c *gin.Context) {
 	// Aktualisiere oder erstelle Vermögen
 	if character.Vermoegen.ID == 0 {
 		// Erstelle neues Vermögen
+		userID := c.GetUint("userID")
 		character.Vermoegen = models.Vermoegen{
 			BamortCharTrait: models.BamortCharTrait{
 				CharacterID: character.ID,
+				UserID:      userID,
 			},
 			Goldstücke:   getValueOrDefault(req.Goldstücke, 0),
 			Silberstücke: getValueOrDefault(req.Silberstücke, 0),
@@ -1996,8 +1999,6 @@ func GetRewardTypesOld(c *gin.Context) {
 
 // GetAvailableSkillsNewSystem gibt alle verfügbaren Fertigkeiten mit Lernkosten zurück (POST mit LernCostRequest)
 func GetAvailableSkillsNewSystem(c *gin.Context) {
-	characterID := c.Param("id")
-
 	// Parse LernCostRequest aus POST body
 	var baseRequest gsmaster.LernCostRequest
 	if err := c.ShouldBindJSON(&baseRequest); err != nil {
@@ -2005,11 +2006,23 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 		return
 	}
 
+	// For character creation (char_id = 0), we don't need to load an existing character
 	var character models.Char
-	if err := database.DB.Preload("Fertigkeiten").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, characterID).Error; err != nil {
-		respondWithError(c, http.StatusNotFound, "Character not found")
-		return
+	learnedSkills := make(map[string]bool)
+
+	if baseRequest.CharId != 0 {
+		// Load existing character and their learned skills
+		if err := database.DB.Preload("Fertigkeiten").Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, baseRequest.CharId).Error; err != nil {
+			respondWithError(c, http.StatusNotFound, "Character not found")
+			return
+		}
+
+		// Create map of learned skills for existing character
+		for _, skill := range character.Fertigkeiten {
+			learnedSkills[skill.Name] = true
+		}
 	}
+	// For character creation (char_id = 0), learnedSkills remains empty
 
 	// Hole alle verfügbaren Fertigkeiten aus der gsmaster Datenbank, aber filtere Placeholder aus
 	var allSkills []models.Skill
@@ -2024,12 +2037,6 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 		return
 	}
 	*/
-
-	// Erstelle eine Map der bereits gelernten Fertigkeiten
-	learnedSkills := make(map[string]bool)
-	for _, skill := range character.Fertigkeiten {
-		learnedSkills[skill.Name] = true
-	}
 
 	// Organisiere Fertigkeiten nach Kategorien
 	skillsByCategory := make(map[string][]gin.H)
@@ -2046,7 +2053,7 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 
 		// Erstelle LernCostRequest für diese Fertigkeit basierend auf der Basis-Anfrage
 		request := baseRequest
-		request.CharId = character.ID
+		request.CharId = baseRequest.CharId // Use the char_id from the request (0 for character creation)
 		request.Name = skill.Name
 		request.CurrentLevel = 0 // Nicht gelernt
 		request.TargetLevel = 1  // Auf Level 1 lernen
@@ -2054,9 +2061,19 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 		request.Action = "learn"
 
 		// Erstelle SkillCostResultNew
+		characterClass := ""
+		characterID := "0"
+
+		if baseRequest.CharId != 0 {
+			// Use existing character data
+			characterID = fmt.Sprintf("%d", character.ID)
+			characterClass = getCharacterClassOld(&character)
+		}
+		// For character creation, we don't have a character class yet, use empty string
+
 		levelResult := gsmaster.SkillCostResultNew{
-			CharacterID:    fmt.Sprintf("%d", character.ID),
-			CharacterClass: getCharacterClassOld(&character),
+			CharacterID:    characterID,
+			CharacterClass: characterClass,
 			SkillName:      skill.Name,
 			TargetLevel:    1,
 		}
@@ -2065,7 +2082,7 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 		remainingGold := request.UseGold
 
 		// Hole die vollständigen Skill-Informationen für die Kostenberechnung
-		skillLearningInfo, err := models.GetSkillCategoryAndDifficultyNewSystem(skill.Name, getCharacterClassOld(&character))
+		skillLearningInfo, err := models.GetSkillCategoryAndDifficultyNewSystem(skill.Name, characterClass)
 		if err != nil {
 			// Fallback für unbekannte Skills
 			skillLearningInfo = &models.SkillLearningInfo{
@@ -2075,13 +2092,27 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 			}
 		}
 
-		// Berechne Lernkosten mit calculateSkillLearnCostNewSystem
-		err = calculateSkillLearnCostNewSystem(&request, &levelResult, &remainingPP, &remainingGold, skillLearningInfo)
-		epCost := 10000   // Fallback-Wert
-		goldCost := 50000 // Fallback-Wert
-		if err == nil {
-			epCost = levelResult.EP
-			goldCost = levelResult.GoldCost
+		// For character creation (CharId = 0), use learning costs instead of improvement costs
+		var epCost, goldCost int
+		if baseRequest.CharId == 0 {
+			// Character creation: use basic learning costs from skillLearningInfo
+			learnCost := skillLearningInfo.LearnCost
+			if learnCost == 0 {
+				learnCost = 50 // Default learning cost
+			}
+
+			// For character creation, costs are much lower - just the basic learning cost
+			epCost = learnCost * 2   // Simple formula: learning cost * 2 for EP
+			goldCost = learnCost * 5 // Simple formula: learning cost * 5 for gold
+		} else {
+			// Existing character improvement: use the full system
+			err = calculateSkillLearnCostNewSystem(&request, &levelResult, &remainingPP, &remainingGold, skillLearningInfo)
+			epCost = 10000   // Fallback-Wert for improvements
+			goldCost = 50000 // Fallback-Wert for improvements
+			if err == nil {
+				epCost = levelResult.EP
+				goldCost = levelResult.GoldCost
+			}
 		}
 
 		skillInfo := gin.H{
@@ -2101,6 +2132,569 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"skills_by_category": skillsByCategory,
 	})
+}
+
+// getCharacterClassCode converts a character class name to its code using the database
+func getCharacterClassCode(className string) (string, error) {
+	var characterClass models.CharacterClass
+	err := characterClass.FirstByName(className)
+	if err != nil {
+		err := characterClass.FirstByCode(className)
+		if err != nil {
+			return "", fmt.Errorf("character class '%s' not found: %w", className, err)
+		}
+	}
+	return characterClass.Code, nil
+}
+
+func GetAvailableSpellsForCreation(c *gin.Context) {
+	var request struct {
+		CharacterClass string `json:"characterClass" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&request); err != nil {
+		logger.Warn("HTTP Fehler 400: Ungültige Anfrageparameter: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Ungültige Anfrageparameter",
+			"details": err.Error(),
+		})
+		return
+	}
+	logger.Info("GetAvailableSpellsForCreation - CharacterClass: %s", request.CharacterClass)
+
+	// Convert character class name to code
+	characterClassCode, err := getCharacterClassCode(request.CharacterClass)
+	if err != nil {
+		logger.Error("Fehler beim Konvertieren der Charakterklasse: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("Unbekannte Charakterklasse: %s", request.CharacterClass),
+		})
+		return
+	}
+
+	// Get all available spells with their learning costs
+	spellsByCategory, err := GetAllSpellsWithLE(characterClassCode, 2)
+	if err != nil {
+		logger.Error("Fehler beim Abrufen der Zauber: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Fehler beim Abrufen der Zauber",
+		})
+		return
+	}
+
+	logger.Info("GetAvailableSpellsForCreation - Gefundene Kategorien: %d", len(spellsByCategory))
+
+	if len(spellsByCategory) == 0 {
+		logger.Warn("GetAvailableSpellsForCreation - Keine Zauber für Klasse %s gefunden", request.CharacterClass)
+		c.JSON(http.StatusNotFound, gin.H{
+			"spells_by_category": map[string][]gin.H{},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"spells_by_category": spellsByCategory,
+	})
+}
+
+// GetAvailableSkillsForCreation returns skills with learning costs for character creation
+func GetAvailableSkillsForCreation(c *gin.Context) {
+	var request struct {
+		CharacterClass string `json:"characterClass" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		logger.Warn("HTTP Fehler 400: Ungültige Anfrageparameter: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Ungültige Anfrageparameter",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	logger.Info("GetAvailableSkillsForCreation - CharacterClass: %s", request.CharacterClass)
+
+	// Get all available skills with their learning costs
+	skillsByCategory, err := GetAllSkillsWithLE()
+	if err != nil {
+		logger.Error("Fehler beim Abrufen der Fertigkeiten: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Fehler beim Abrufen der Fertigkeiten",
+		})
+		return
+	}
+
+	logger.Info("GetAvailableSkillsForCreation - Gefundene Kategorien: %d", len(skillsByCategory))
+
+	c.JSON(http.StatusOK, gin.H{
+		"skills_by_category": skillsByCategory,
+	})
+}
+
+func GetAllSpellsWithLE(characterClass string, maxLevel int) (map[string][]gin.H, error) {
+	// Create mapping of character classes to allowed learning categories
+	allowedCategories := getCharacterClassSpellSchoolMapping()
+	allowedLearningCategories := getCharacterClassSpellLearningCategoriesMapping()
+
+	// Check if character class has allowed spell schools
+
+	allowedSchools, exists := allowedCategories[characterClass]
+	if !exists {
+		return map[string][]gin.H{}, nil // Return empty map if class can't learn spells
+	}
+	allowedSpellType, exists := allowedLearningCategories[characterClass]
+	if !exists {
+		return map[string][]gin.H{}, nil // Return empty map if class can't learn spells
+	}
+	// Extract allowed school names and spell types from maps
+	var allowedSchoolNames []string
+	for school, allowed := range allowedSchools {
+		if allowed {
+			allowedSchoolNames = append(allowedSchoolNames, school)
+		}
+	}
+
+	var allowedSpellTypeNames []string
+	for spellType, allowed := range allowedSpellType {
+		if allowed {
+			allowedSpellTypeNames = append(allowedSpellTypeNames, spellType)
+		}
+	}
+
+	// Get all spells from database with level filter
+	var spells []models.Spell
+	err := database.DB.Where("stufe <= ? AND category in (?) and learning_category in (?)  AND category IS NOT NULL AND learning_category IS NOT NULL", maxLevel, allowedSchoolNames, allowedSpellTypeNames).Find(&spells).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch spells: %w", err)
+	}
+
+	// Group spells by category (using LearningCategory field)
+	spellsByCategory := make(map[string][]gin.H)
+
+	for _, spell := range spells {
+		// Check if this character class can learn this spell school
+		//if !allowedSchools[spell.Category] || !allowedSpellType[spell.LearningCategory] {
+		//	continue // Skip spells from schools this class can't learn
+		//}
+
+		// Calculate learning cost for this spell
+		leCost := getSpellLECost(spell.Stufe)
+
+		spellData := gin.H{
+			"id":                spell.ID,
+			"name":              spell.Name,
+			"level":             spell.Stufe,
+			"school":            spell.Category,         // Display category
+			"learning_category": spell.LearningCategory, // Internal category for learning
+			"description":       spell.Beschreibung,
+			"le_cost":           leCost,
+			"ap":                spell.AP,
+			"art":               spell.Art,
+			"zauberdauer":       spell.Zauberdauer,
+			"reichweite":        spell.Reichweite,
+			"wirkungsziel":      spell.Wirkungsziel,
+			"wirkungsbereich":   spell.Wirkungsbereich,
+			"wirkungsdauer":     spell.Wirkungsdauer,
+		}
+
+		// Use LearningCategory for grouping
+		category := spell.LearningCategory
+		spellsByCategory[category] = append(spellsByCategory[category], spellData)
+	}
+
+	// Sort spells within each category by level, then by name
+	for category := range spellsByCategory {
+		spells := spellsByCategory[category]
+		sort.Slice(spells, func(i, j int) bool {
+			levelI := spells[i]["level"].(int)
+			levelJ := spells[j]["level"].(int)
+			if levelI != levelJ {
+				return levelI < levelJ
+			}
+			nameI := spells[i]["name"].(string)
+			nameJ := spells[j]["name"].(string)
+			return nameI < nameJ
+		})
+		spellsByCategory[category] = spells
+	}
+
+	return spellsByCategory, nil
+}
+func getCharacterClassSpellLearningCategoriesMapping() map[string]map[string]bool {
+	return map[string]map[string]bool{
+		"Ma": { // Magier
+			"Spruch": true,
+			//"Salz":      true,
+			//"Runenstab": true,
+		},
+		"Hx": { // Hexer
+			"Spruch": true,
+			"Salz":   true,
+			//"Runenstab": true,
+		},
+		"Dr": { // Druide
+			"Spruch": true,
+			//"Salz":      true,
+			//"Runenstab": true,
+			"Dweomer": true,
+		},
+		"Sc": { // Schamane
+			"Spruch": true,
+			//"Salz":      true,
+			//"Runenstab": true,
+			"Dweomer": true,
+		},
+		"PB": { // Priester Beschützer
+			"Salz":      true,
+			"Wundertat": true,
+		},
+		"PS": { // Priester Streiter
+			"Salz":      true,
+			"Wundertat": true,
+		},
+		"Ba": { // Barde
+			"Lied": true,
+		},
+		"Or": { // Ordenskrieger
+			"Wundertat": true,
+		},
+	}
+}
+
+// getCharacterClassSpellSchoolMapping returns the mapping of character classes to allowed spell schools
+func getCharacterClassSpellSchoolMapping() map[string]map[string]bool {
+	return map[string]map[string]bool{
+		"Ma": { // Magier
+			"Beherrschen": true,
+			"Bewegen":     true,
+			"Dweomer":     true,
+			"Erkennen":    true,
+			"Erschaffen":  true,
+			"Verändern":   true,
+			"Zerstören":   true,
+		},
+		"Hx": { // Hexer
+			"Beherrschen": true,
+			"Zerstören":   true,
+			"Erkennen":    true,
+			"Verändern":   true,
+			"Erschaffen":  true,
+			"Bewegen":     true,
+			"Formen":      true,
+		},
+		"Dr": { // Druide
+			"Bewegen":    true,
+			"Erkennen":   true,
+			"Erschaffen": true,
+			"Verändern":  true,
+		},
+		"Sc": { // Schamane
+			"Beherrschen": true,
+			"Erkennen":    true,
+			"Verändern":   true,
+		},
+		"PB": { // Priester Beschützer
+			"Dweomer":   true,
+			"Erkennen":  true,
+			"Verändern": true,
+		},
+		"PS": { // Priester Streiter
+			"Dweomer":   true,
+			"Erkennen":  true,
+			"Verändern": true,
+		},
+		"Ba": { // Barde
+			"Beherrschen": true,
+			"Dweomer":     true,
+			"Erkennen":    true,
+		},
+		"Or": { // Ordenskrieger
+			"Dweomer":  true,
+			"Erkennen": true,
+		},
+	}
+}
+
+// getSpellLECost returns the learning cost in LE for a given spell level from the database
+func getSpellLECost(level int) int {
+	var spellLECost models.SpellLevelLECost
+
+	// Query the database for the LE cost for this level
+	err := database.DB.Where("level = ? AND game_system = ?", level, "midgard").First(&spellLECost).Error
+	if err != nil {
+		// If not found in database, fall back to standard Midgard costs
+		spellLECosts := map[int]int{
+			1:  1,
+			2:  2,
+			3:  3,
+			4:  4,
+			5:  5,
+			6:  6,
+			7:  8,
+			8:  10,
+			9:  12,
+			10: 15,
+			11: 18,
+			12: 21,
+		}
+
+		if cost, exists := spellLECosts[level]; exists {
+			return cost
+		}
+
+		// Final fallback for unknown levels
+		return level
+	}
+
+	return spellLECost.LERequired
+}
+
+func GetAllSkillsWithLE() (map[string][]gin.H, error) {
+	// Get all skill categories from database
+	var skillCategories []models.SkillCategory
+	if err := database.DB.Find(&skillCategories).Error; err != nil {
+		return nil, err
+	}
+
+	skillsByCategory := make(map[string][]gin.H)
+
+	// For each category, find all skills that can be learned in that category
+	for _, category := range skillCategories {
+		skillsByCategory[category.Name] = []gin.H{}
+
+		// Query all skill-category-difficulty combinations for this category
+		var skillCategoryDifficulties []models.SkillCategoryDifficulty
+		err := database.DB.Preload("Skill").Preload("SkillDifficulty").
+			Where("skill_category_id = ?", category.ID).
+			Find(&skillCategoryDifficulties).Error
+
+		if err != nil {
+			continue // Skip this category if there's an error
+		}
+
+		// For each skill in this category, add it with its LE cost and difficulty
+		for _, scd := range skillCategoryDifficulties {
+			// Skip Placeholder skills
+			if category.Name == "Unbekannt" || scd.Skill.Name == "Placeholder" || scd.Skill.InnateSkill {
+				continue
+			}
+
+			skillInfo := gin.H{
+				"name":       scd.Skill.Name,
+				"leCost":     scd.LearnCost,
+				"difficulty": scd.SkillDifficulty.Name,
+			}
+
+			skillsByCategory[category.Name] = append(skillsByCategory[category.Name], skillInfo)
+		}
+	}
+
+	// Add weapon skills to "Kampf" category
+	weaponSkills, err := GetWeaponSkillsWithLE()
+	if err == nil {
+		if _, exists := skillsByCategory["Waffen"]; !exists {
+			skillsByCategory["Waffen"] = []gin.H{}
+		}
+		skillsByCategory["Waffen"] = append(skillsByCategory["Waffen"], weaponSkills...)
+	}
+
+	return skillsByCategory, nil
+}
+
+// GetWeaponSkillsWithLE returns all weapon skills with their learning costs
+func GetWeaponSkillsWithLE() ([]gin.H, error) {
+	// Query weapon skills from gsm_weaponskills table
+	var weaponSkills []struct {
+		ID   uint   `gorm:"column:id"`
+		Name string `gorm:"column:name"`
+	}
+
+	err := database.DB.Table("gsm_weaponskills").
+		Select("id, name").
+		Where("name IS NOT NULL AND name != ''").
+		Find(&weaponSkills).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	var result []gin.H
+	for _, weapon := range weaponSkills {
+		// Get learning cost for this weapon skill
+		// For now, use default costs, but this could be enhanced to query from a learning costs table
+		leCost := getDefaultWeaponSkillCost(weapon.Name)
+
+		skillInfo := gin.H{
+			"name":       weapon.Name,
+			"leCost":     leCost,
+			"difficulty": "Normal", // Default difficulty for weapon skills
+			"type":       "weapon", // Mark as weapon skill
+		}
+
+		result = append(result, skillInfo)
+	}
+
+	return result, nil
+}
+
+// getDefaultWeaponSkillCost returns default learning costs for weapon skills
+func getDefaultWeaponSkillCost(weaponName string) int {
+	// Basic weapon skill costs - these could be made configurable or stored in database
+	switch weaponName {
+	case "Schilde":
+		return 1 // Shields are easier to learn
+	case "Einhandschwerter", "Zweihandschwerter", "Fechtwaffen":
+		return 4 // Sword skills are more expensive
+	case "Bögen", "Armbrüste":
+		return 3 // Ranged weapons
+	case "Spießwaffen", "Stielwurfwaffen":
+		return 2 // Polearms and throwing weapons
+	default:
+		return 2 // Default cost for other weapon skills
+	}
+}
+
+// GetAllSkillsWithLearningCosts returns all skills with their basic learning costs for all possible categories
+func GetAllSkillsWithLearningCosts(characterClass string) (map[string][]gin.H, error) {
+	skills, err := models.SelectSkills("", "")
+	if err != nil {
+		return nil, err
+	}
+
+	skillsByCategory := make(map[string][]gin.H)
+
+	// Define all possible categories for skills
+	allCategories := []string{"Alltag", "Kampf", "Körper", "Sozial", "Wissen", "Halbwelt", "Unterwelt", "Freiland", "Sonstige"}
+
+	for _, skill := range skills {
+		// Skip Placeholder skills
+		if skill.Name == "Placeholder" {
+			continue
+		}
+
+		// First, always add to the skill's original category
+		originalCategory := skill.Category
+		if originalCategory == "" {
+			originalCategory = "Sonstige"
+		}
+
+		// Try to get the best category and learning cost for this skill and character class
+		bestCategory, difficulty, err := gsmaster.FindBestCategoryForSkillLearningOld(skill.Name, characterClass)
+
+		var learnCost int
+		if err == nil && bestCategory != "" {
+			// Use the difficulty as a basis for learning cost
+			switch difficulty {
+			case "Leicht":
+				learnCost = 1
+			case "Normal":
+				learnCost = 2
+			case "Schwer":
+				learnCost = 4
+			case "Sehr Schwer":
+				learnCost = 10
+			default:
+				learnCost = 50 // Default fallback
+			}
+
+			// Add to the best category
+			skillInfo := gin.H{
+				"name":      skill.Name,
+				"learnCost": learnCost,
+			}
+			skillsByCategory[bestCategory] = append(skillsByCategory[bestCategory], skillInfo)
+
+			// If the best category is different from original, also add to original with higher cost
+			if bestCategory != originalCategory {
+				skillInfoOriginal := gin.H{
+					"name":      skill.Name,
+					"learnCost": learnCost * 2, // Higher cost for non-optimal category
+				}
+				skillsByCategory[originalCategory] = append(skillsByCategory[originalCategory], skillInfoOriginal)
+			}
+		} else {
+			// Fallback: add to original category only
+			skillInfo := gin.H{
+				"name":      skill.Name,
+				"learnCost": 50, // Default learning cost
+			}
+			skillsByCategory[originalCategory] = append(skillsByCategory[originalCategory], skillInfo)
+		}
+
+		// Try to add skill to other logical categories with higher costs
+		// This allows more flexibility in character creation
+		for _, category := range allCategories {
+			if category == bestCategory || category == originalCategory {
+				continue // Already added
+			}
+
+			// Only add to certain categories if it makes sense
+			if shouldSkillBeInCategory(skill.Name, category) {
+				higherCost := learnCost
+				if higherCost == 0 {
+					higherCost = 50
+				}
+				higherCost = higherCost * 3 // Much higher cost for cross-category learning
+
+				skillInfo := gin.H{
+					"name":      skill.Name,
+					"learnCost": higherCost,
+				}
+				skillsByCategory[category] = append(skillsByCategory[category], skillInfo)
+			}
+		}
+	}
+
+	return skillsByCategory, nil
+}
+
+// shouldSkillBeInCategory determines if a skill should be available in a given category
+func shouldSkillBeInCategory(skillName, category string) bool {
+	// Define which skills can appear in which categories
+	skillCategoryMap := map[string][]string{
+		// Physical skills can appear in multiple categories
+		"Athletik":  {"Körper", "Kampf", "Freiland"},
+		"Klettern":  {"Körper", "Freiland", "Alltag"},
+		"Schwimmen": {"Körper", "Freiland", "Alltag"},
+		"Laufen":    {"Körper", "Kampf", "Freiland"},
+		"Akrobatik": {"Körper", "Kampf"},
+
+		// Combat skills
+		"Dolch":   {"Kampf", "Halbwelt"},
+		"Schwert": {"Kampf"},
+		"Bogen":   {"Kampf", "Freiland"},
+
+		// Social skills
+		"Menschenkenntnis": {"Sozial", "Halbwelt"},
+		"Verführen":        {"Sozial", "Halbwelt"},
+		"Anführen":         {"Sozial", "Kampf"},
+
+		// Knowledge skills
+		"Schreiben":  {"Wissen", "Alltag"},
+		"Sprache":    {"Wissen", "Sozial"},
+		"Naturkunde": {"Wissen", "Freiland"},
+
+		// Stealth and underworld
+		"Schleichen": {"Halbwelt", "Freiland", "Kampf"},
+		"Tarnen":     {"Halbwelt", "Freiland", "Kampf"},
+		"Stehlen":    {"Halbwelt"},
+
+		// Survival and wilderness
+		"Überleben":    {"Freiland", "Alltag"},
+		"Spurensuche":  {"Freiland", "Halbwelt"},
+		"Orientierung": {"Freiland", "Alltag"},
+	}
+
+	categories, exists := skillCategoryMap[skillName]
+	if !exists {
+		return false // Only add skills we explicitly define
+	}
+
+	for _, cat := range categories {
+		if cat == category {
+			return true
+		}
+	}
+	return false
 }
 
 // GetAvailableSpellsNewSystem gibt alle verfügbaren Zauber mit Lernkosten zurück (POST mit LernCostRequest)
@@ -2937,6 +3531,7 @@ func FinalizeCharacterCreation(c *gin.Context) {
 		Typ:    session.Typ,
 		Glaube: session.Glaube,
 		Public: false, // Default to private
+		Grad:   1,     // Default starting grade
 
 		// Lebenspunkte
 		Lp: models.Lp{
@@ -2955,9 +3550,18 @@ func FinalizeCharacterCreation(c *gin.Context) {
 			Max:   session.DerivedValues.BMax,
 			Value: session.DerivedValues.BMax,
 		},
+		Vermoegen: models.Vermoegen{
+			BamortCharTrait: models.BamortCharTrait{
+				UserID: userID,
+			},
+			Goldstücke: 80,
+		},
 
 		// Bennies (Glückspunkte, etc.)
 		Bennies: models.Bennies{
+			BamortCharTrait: models.BamortCharTrait{
+				UserID: userID,
+			},
 			Gg: session.DerivedValues.GG,
 			Gp: session.DerivedValues.GP,
 			Sg: session.DerivedValues.SG,
@@ -2966,26 +3570,107 @@ func FinalizeCharacterCreation(c *gin.Context) {
 
 	// Eigenschaften (Attribute) hinzufügen
 	char.Eigenschaften = []models.Eigenschaft{
-		{Name: "St", Value: session.Attributes.ST},
-		{Name: "Gs", Value: session.Attributes.GS},
-		{Name: "Gw", Value: session.Attributes.GW},
-		{Name: "Ko", Value: session.Attributes.KO},
-		{Name: "In", Value: session.Attributes.IN},
-		{Name: "Zt", Value: session.Attributes.ZT},
-		{Name: "Au", Value: session.Attributes.AU},
-		{Name: "pA", Value: session.DerivedValues.PA}, // PA kommt aus derived values
-		{Name: "Wk", Value: session.DerivedValues.WK}, // WK kommt aus derived values
+		{UserID: userID, Name: "St", Value: session.Attributes.ST},
+		{UserID: userID, Name: "Gs", Value: session.Attributes.GS},
+		{UserID: userID, Name: "Gw", Value: session.Attributes.GW},
+		{UserID: userID, Name: "Ko", Value: session.Attributes.KO},
+		{UserID: userID, Name: "In", Value: session.Attributes.IN},
+		{UserID: userID, Name: "Zt", Value: session.Attributes.ZT},
+		{UserID: userID, Name: "Au", Value: session.Attributes.AU},
+		{UserID: userID, Name: "pA", Value: session.DerivedValues.PA}, // PA kommt aus derived values
+		{UserID: userID, Name: "Wk", Value: session.DerivedValues.WK}, // WK kommt aus derived values
 	}
 
 	logger.Debug("FinalizeCharacterCreation: Charakter-Struktur erstellt mit %d Eigenschaften",
 		len(char.Eigenschaften))
+
+	// Fertigkeiten aus der Session übertragen
+	logger.Debug("FinalizeCharacterCreation: Übertrage %d Fertigkeiten", len(session.Skills))
+	for _, skill := range session.Skills {
+		// Suche den Initialwert der Fertigkeit aus der Datenbank
+		dbSkill := models.Skill{}
+		err := dbSkill.First(skill.Name)
+		if err != nil {
+			logger.Warn("FinalizeCharacterCreation: Konnte Fertigkeit '%s' nicht in der Datenbank finden, verwende Level %d", skill.Name, skill.Level)
+		}
+
+		// Verwende den Initialwert aus der Datenbank wenn verfügbar, sonst fallback auf Session-Level
+		initialValue := skill.Level // Fallback
+		if err == nil {
+			initialValue = dbSkill.Initialwert
+			logger.Debug("FinalizeCharacterCreation: Verwende Initialwert %d für Fertigkeit '%s'", initialValue, skill.Name)
+		}
+
+		// Unterscheide zwischen normalen Fertigkeiten und Waffenfertigkeiten
+		if skill.Category == "Waffen" || skill.Category == "waffen" {
+			dbWPSkill := models.WeaponSkill{}
+			err := dbWPSkill.First(skill.Name)
+			if err != nil {
+				logger.Warn("FinalizeCharacterCreation: Konnte WaffenFertigkeit '%s' nicht in der Datenbank finden, verwende Level %d", skill.Name, skill.Level)
+			}
+			// Verwende den Initialwert aus der Datenbank wenn verfügbar, sonst fallback auf Session-Level
+			initialValue := skill.Level // Fallback
+			if err == nil {
+				initialValue = dbWPSkill.Initialwert
+				logger.Debug("FinalizeCharacterCreation: Verwende Initialwert %d für Fertigkeit '%s'", initialValue, skill.Name)
+			}
+			// Waffenfertigkeit
+			weaponSkill := models.SkWaffenfertigkeit{
+				SkFertigkeit: models.SkFertigkeit{
+					BamortCharTrait: models.BamortCharTrait{
+						BamortBase: models.BamortBase{
+							Name: skill.Name,
+						},
+						UserID: userID,
+					},
+					Fertigkeitswert: initialValue,
+					Improvable:      true,
+					Category:        skill.Category,
+				},
+			}
+			char.Waffenfertigkeiten = append(char.Waffenfertigkeiten, weaponSkill)
+		} else {
+			// Normale Fertigkeit
+			normalSkill := models.SkFertigkeit{
+				BamortCharTrait: models.BamortCharTrait{
+					BamortBase: models.BamortBase{
+						Name: skill.Name,
+					},
+					CharacterID: char.ID,
+					UserID:      userID,
+				},
+				Fertigkeitswert: initialValue,
+				Improvable:      true,
+				Category:        skill.Category,
+			}
+			char.Fertigkeiten = append(char.Fertigkeiten, normalSkill)
+		}
+	}
+
+	// Zauber aus der Session übertragen
+	logger.Debug("FinalizeCharacterCreation: Übertrage %d Zauber", len(session.Spells))
+	for _, spell := range session.Spells {
+		zauber := models.SkZauber{
+			BamortCharTrait: models.BamortCharTrait{
+				BamortBase: models.BamortBase{
+					Name: spell.Name,
+				},
+				CharacterID: char.ID,
+				UserID:      userID,
+			},
+		}
+		char.Zauber = append(char.Zauber, zauber)
+	}
+
+	logger.Debug("FinalizeCharacterCreation: Charakter vollständig erstellt - %d Fertigkeiten, %d Waffenfertigkeiten, %d Zauber",
+		len(char.Fertigkeiten), len(char.Waffenfertigkeiten), len(char.Zauber))
 
 	// Character in Datenbank speichern
 	logger.Debug("FinalizeCharacterCreation: Speichere Charakter in Datenbank...")
 	err = char.Create()
 	if err != nil {
 		logger.Error("FinalizeCharacterCreation: Fehler beim Erstellen des Charakters: %s", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create character"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create character: " + err.Error()})
 		return
 	}
 
@@ -3077,10 +3762,10 @@ func GetCharacterClasses(c *gin.Context) {
 	// If no classes found in database, fall back to hardcoded list
 	if len(classNames) == 0 {
 		classNames = []string{
-			"Abenteurer", "Assassine", "Barbar", "Barde", "Bauer",
-			"Glückspriester", "Heiler", "Händler", "Kämpfer", "Krieger",
-			"Magier", "Ordenskrieger", "Priester", "Schamane", "Seefahrer",
-			"Späher", "Thaumaturg", "Waldläufer", "Zauberer", "Zaubersänger",
+			"Assassine", "Barbar", "Barde",
+			"Heiler", "Händler", "Kämpfer", "Krieger",
+			"Magier", "Ordenskrieger", "Priester Beschützer", "Schamane", "Skalde",
+			"Magister", "Thaumaturg", "Waldläufer", "Zauberer",
 		}
 	}
 
@@ -3091,10 +3776,10 @@ func GetCharacterClasses(c *gin.Context) {
 func GetOrigins(c *gin.Context) {
 	// TODO: Aus Datenbank laden
 	origins := []string{
-		"Alba", "Aran", "Buluga", "Cangebiet", "Chryseia", "Dwerunlande",
+		"Alba", "Aran", "Buluga", "Chryseia",
 		"Eschar", "Fuardain", "Ikenga", "KanThaiPan", "Küstenstaaten",
 		"Medjis", "Moravod", "Nahuatlan", "Rawindra", "Scharidis",
-		"Tegarisch Gebiete", "Valian", "Waeland", "Ywerddon",
+		"Tegarisch Steppe", "Valian", "Waeland", "Ywerddon",
 	}
 
 	c.JSON(http.StatusOK, gin.H{"origins": origins})
@@ -3156,19 +3841,359 @@ type SkillCategoryWithPoints struct {
 	MaxPoints   int    `json:"max_points"`
 }
 
-// GetSkillCategoriesWithPoints gibt Kategorien mit Lernpunkten zurück
-func GetSkillCategoriesWithPoints(c *gin.Context) {
-	// TODO: Basierend auf Charakter-Klasse und -Typ berechnen
-	categories := []SkillCategoryWithPoints{
-		{Name: "alltag", DisplayName: "Alltag", Points: 150, MaxPoints: 150},
-		{Name: "wissen", DisplayName: "Wissen", Points: 100, MaxPoints: 100},
-		{Name: "kampf", DisplayName: "Kampf", Points: 80, MaxPoints: 80},
-		{Name: "korper", DisplayName: "Körper", Points: 120, MaxPoints: 120},
-		{Name: "gesellschaft", DisplayName: "Gesellschaft", Points: 60, MaxPoints: 60},
-		{Name: "natur", DisplayName: "Natur", Points: 90, MaxPoints: 90},
-		{Name: "unterwelt", DisplayName: "Unterwelt", Points: 40, MaxPoints: 40},
-		{Name: "zauber", DisplayName: "Zauber", Points: 200, MaxPoints: 200},
+// LearningPointsData repräsentiert die Lernpunkte und typischen Fertigkeiten einer Charakterklasse
+type LearningPointsData struct {
+	ClassName      string         `json:"class_name"`
+	ClassCode      string         `json:"class_code"`
+	LearningPoints map[string]int `json:"learning_points"` // Kategorie -> Lernpunkte
+	WeaponPoints   int            `json:"weapon_points"`   // Waffenlernpunkte
+	SpellPoints    int            `json:"spell_points"`    // Zauberlerneinheiten (falls vorhanden)
+	TypicalSkills  []TypicalSkill `json:"typical_skills"`  // Typische Fertigkeiten
+	TypicalSpells  []string       `json:"typical_spells"`  // Typische Zauber (falls vorhanden)
+}
+
+// TypicalSkill repräsentiert eine typische Fertigkeit mit Bonus
+type TypicalSkill struct {
+	Name      string `json:"name"`
+	Bonus     int    `json:"bonus"`
+	Attribute string `json:"attribute"` // Zugehöriges Attribut (z.B. "Gs", "In")
+	Notes     string `json:"notes"`     // Zusätzliche Notizen
+}
+
+// GetCharacterClassLearningPoints gibt die Lernpunkte und typischen Fertigkeiten für eine Charakterklasse zurück
+func GetCharacterClassLearningPoints(c *gin.Context) {
+	className := c.Query("class")
+	if className == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Charakterklassen-Name ist erforderlich (Parameter 'class')"})
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"categories": categories})
+	stand := c.Query("stand") // Optional: Unfreie, Volk, Mittelschicht, Adel
+
+	// Hole die Lernpunkte-Daten für die Klasse
+	learningData, err := getLearningPointsForClass(className, stand)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Charakterklasse nicht gefunden oder nicht unterstützt: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, learningData)
+}
+
+// getLearningPointsForClass gibt die Lernpunkte-Daten für eine bestimmte Charakterklasse zurück
+func getLearningPointsForClass(className string, stand string) (*LearningPointsData, error) {
+	// Mapping der Klassennamen zu Codes (falls notwendig)
+	classMapping := map[string]string{
+		"Assassine":           "As",
+		"Barbar":              "Bb",
+		"Glücksritter":        "Gl",
+		"Händler":             "Hä",
+		"Krieger":             "Kr",
+		"Spitzbube":           "Sp",
+		"Waldläufer":          "Wa",
+		"Barde":               "Ba",
+		"Ordenskrieger":       "Or",
+		"Druide":              "Dr",
+		"Hexer":               "Hx",
+		"Magier":              "Ma",
+		"Priester Beschützer": "PB",
+		"Priester Streiter":   "PS",
+		"Schamane":            "Sc",
+	}
+
+	classCode := classMapping[className]
+	if classCode == "" {
+		classCode = className // Falls der Name bereits ein Code ist
+	}
+
+	// Definiere die Lernpunkte-Daten basierend auf Lerntabelle_Erstellung.md
+	var data *LearningPointsData
+
+	switch classCode {
+	case "As", "Assassine":
+		data = &LearningPointsData{
+			ClassName: "Assassine",
+			ClassCode: "As",
+			LearningPoints: map[string]int{
+				"Alltag":    1,
+				"Halbwelt":  2,
+				"Sozial":    4,
+				"Unterwelt": 8,
+				"Waffen":    24,
+			},
+			//WeaponPoints: 24,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Meucheln", Bonus: 8, Attribute: "Gs", Notes: ""},
+			},
+		}
+	case "Bb", "Barbar":
+		data = &LearningPointsData{
+			ClassName: "Barbar",
+			ClassCode: "Bb",
+			LearningPoints: map[string]int{
+				"Alltag":   2,
+				"Freiland": 4,
+				"Kampf":    1,
+				"Körper":   2,
+				"Waffen":   24,
+			},
+			//WeaponPoints: 24,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Spurensuche", Bonus: 8, Attribute: "In", Notes: "in Heimatlandschaft"},
+				{Name: "Überleben", Bonus: 8, Attribute: "In", Notes: "in Heimatlandschaft"},
+			},
+		}
+	case "Gl", "Glücksritter":
+		data = &LearningPointsData{
+			ClassName: "Glücksritter",
+			ClassCode: "Gl",
+			LearningPoints: map[string]int{
+				"Alltag":   2,
+				"Halbwelt": 3,
+				"Sozial":   8,
+				"Waffen":   24,
+			},
+			//WeaponPoints: 24,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Fechten", Bonus: 5, Attribute: "Gs", Notes: "oder beidhändiger Kampf+5 (Gs)"},
+			},
+		}
+	case "Hä", "Händler":
+		data = &LearningPointsData{
+			ClassName: "Händler",
+			ClassCode: "Hä",
+			LearningPoints: map[string]int{
+				"Alltag": 4,
+				"Sozial": 8,
+				"Wissen": 4,
+				"Waffen": 20,
+			},
+			//WeaponPoints: 20,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Geschäftssinn", Bonus: 8, Attribute: "In", Notes: ""},
+			},
+		}
+	case "Kr", "Krieger":
+		data = &LearningPointsData{
+			ClassName: "Krieger",
+			ClassCode: "Kr",
+			LearningPoints: map[string]int{
+				"Alltag": 2,
+				"Kampf":  3,
+				"Körper": 1,
+				"Waffen": 36,
+			},
+			//WeaponPoints: 36,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Kampf in Vollrüstung", Bonus: 5, Attribute: "St", Notes: ""},
+			},
+		}
+	case "Sp", "Spitzbube":
+		data = &LearningPointsData{
+			ClassName: "Spitzbube",
+			ClassCode: "Sp",
+			LearningPoints: map[string]int{
+				"Alltag":    2,
+				"Halbwelt":  6,
+				"Unterwelt": 12,
+				"Waffen":    20,
+			},
+			//WeaponPoints: 20,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Fallenmechanik", Bonus: 8, Attribute: "Gs", Notes: "oder Geschäftssinn+8 (In)"},
+			},
+		}
+	case "Wa", "Waldläufer":
+		data = &LearningPointsData{
+			ClassName: "Waldläufer",
+			ClassCode: "Wa",
+			LearningPoints: map[string]int{
+				"Alltag":   1,
+				"Freiland": 11,
+				"Körper":   4,
+				"Waffen":   20,
+			},
+			//WeaponPoints: 20,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Scharfschießen", Bonus: 5, Attribute: "Gs", Notes: ""},
+			},
+		}
+	case "Ba", "Barde":
+		data = &LearningPointsData{
+			ClassName: "Barde",
+			ClassCode: "Ba",
+			LearningPoints: map[string]int{
+				"Alltag": 2,
+				"Sozial": 4,
+				"Wissen": 4,
+				"Waffen": 16,
+			},
+			//WeaponPoints: 16,
+			SpellPoints: 3,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Musizieren", Bonus: 12, Attribute: "Gs", Notes: ""},
+				{Name: "Landeskunde", Bonus: 8, Attribute: "In", Notes: "für Heimat"},
+			},
+			TypicalSpells: []string{"Zauberlieder"},
+		}
+	case "Or", "Ordenskrieger":
+		data = &LearningPointsData{
+			ClassName: "Ordenskrieger",
+			ClassCode: "Or",
+			LearningPoints: map[string]int{
+				"Alltag": 2,
+				"Kampf":  3,
+				"Wissen": 2,
+				"Waffen": 18,
+			},
+			//WeaponPoints: 18,
+			SpellPoints: 3,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Athletik", Bonus: 8, Attribute: "St", Notes: "oder Meditieren+8 (Wk)"},
+			},
+			TypicalSpells: []string{"Wundertaten"},
+		}
+	case "Dr", "Druide":
+		data = &LearningPointsData{
+			ClassName: "Druide",
+			ClassCode: "Dr",
+			LearningPoints: map[string]int{
+				"Alltag":   2,
+				"Freiland": 4,
+				"Wissen":   2,
+				"Waffen":   6,
+			},
+			//WeaponPoints: 6,
+			SpellPoints: 5,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Pflanzenkunde", Bonus: 8, Attribute: "In", Notes: ""},
+				{Name: "Schreiben", Bonus: 12, Attribute: "In", Notes: "für Ogam-Zeichen"},
+			},
+			TypicalSpells: []string{"Dweomer", "Tiere rufen"},
+		}
+	case "Hx", "Hexer":
+		data = &LearningPointsData{
+			ClassName: "Hexer",
+			ClassCode: "Hx",
+			LearningPoints: map[string]int{
+				"Alltag": 3,
+				"Sozial": 2,
+				"Wissen": 2,
+				"Waffen": 2,
+			},
+			//WeaponPoints: 2,
+			SpellPoints: 6,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Gassenwissen", Bonus: 8, Attribute: "In", Notes: "oder Verführen+8 (pA)"},
+			},
+			TypicalSpells: []string{"Beherrschen", "Verändern", "Verwünschen", "Binden des Vertrauten"},
+		}
+	case "Ma", "Magier":
+		data = &LearningPointsData{
+			ClassName: "Magier",
+			ClassCode: "Ma",
+			LearningPoints: map[string]int{
+				"Alltag": 1,
+				"Wissen": 5,
+				"Waffen": 2,
+			},
+			//WeaponPoints: 2,
+			SpellPoints: 7,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Zauberkunde", Bonus: 8, Attribute: "In", Notes: ""},
+				{Name: "Schreiben", Bonus: 12, Attribute: "In", Notes: "für Muttersprache"},
+			},
+			TypicalSpells: []string{"beliebig außer Dweomer, Wundertaten, Zauberlieder", "Erkennen von Zauberei"},
+		}
+	case "PB", "Priester Beschützer":
+		data = &LearningPointsData{
+			ClassName: "Priester Beschützer",
+			ClassCode: "PB",
+			LearningPoints: map[string]int{
+				"Alltag": 2,
+				"Sozial": 2,
+				"Wissen": 3,
+				"Waffen": 6,
+			},
+			//WeaponPoints: 6,
+			SpellPoints: 5,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Menschenkenntnis", Bonus: 8, Attribute: "In", Notes: ""},
+				{Name: "Schreiben", Bonus: 12, Attribute: "In", Notes: "für Muttersprache"},
+			},
+			TypicalSpells: []string{"Wundertaten", "Heilen von Wunden"},
+		}
+	case "PS", "Priester Streiter":
+		data = &LearningPointsData{
+			ClassName: "Priester Streiter",
+			ClassCode: "PS",
+			LearningPoints: map[string]int{
+				"Alltag": 3,
+				"Kampf":  2,
+				"Wissen": 2,
+				"Waffen": 8,
+			},
+			//WeaponPoints: 8,
+			SpellPoints: 5,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Erste Hilfe", Bonus: 8, Attribute: "Gs", Notes: ""},
+				{Name: "Schreiben", Bonus: 12, Attribute: "In", Notes: "für Muttersprache"},
+			},
+			TypicalSpells: []string{"Wundertaten", "Bannen von Finsterwerk", "Strahlender Panzer"},
+		}
+	case "Sc", "Schamane":
+		data = &LearningPointsData{
+			ClassName: "Schamane",
+			ClassCode: "Sc",
+			LearningPoints: map[string]int{
+				"Alltag": 2,
+				"Körper": 4,
+				"Wissen": 2,
+				"Waffen": 6,
+			},
+			//WeaponPoints: 6,
+			SpellPoints: 5,
+			TypicalSkills: []TypicalSkill{
+				{Name: "Tierkunde", Bonus: 8, Attribute: "In", Notes: ""},
+				{Name: "Überleben", Bonus: 8, Attribute: "In", Notes: "in Heimatlandschaft"},
+			},
+			TypicalSpells: []string{"Dweomer", "Wundertaten", "Austreibung des Bösen", "Bannen von Gift"},
+		}
+	default:
+		return nil, fmt.Errorf("unbekannte Charakterklasse: %s", className)
+	}
+
+	// Bonus-Lernpunkte basierend auf Stand hinzufügen
+	if stand != "" && data != nil {
+		standBonus := getStandBonusPoints(stand)
+		// Füge die Stand-Bonuspunkte zu den normalen Lernpunkten hinzu
+		for category, bonus := range standBonus {
+			if currentPoints, exists := data.LearningPoints[category]; exists {
+				data.LearningPoints[category] = currentPoints + bonus
+			} else {
+				// Falls die Kategorie noch nicht existiert, füge sie hinzu
+				data.LearningPoints[category] = bonus
+			}
+		}
+		// Speichere die Stand-Bonuspunkte auch separat für Referenz
+		//data.StandPoints = standBonus
+	}
+
+	return data, nil
+}
+
+// getStandBonusPoints gibt die Bonus-Lernpunkte basierend auf dem Stand zurück
+func getStandBonusPoints(stand string) map[string]int {
+	switch stand {
+	case "Unfreie":
+		return map[string]int{"Halbwelt": 2}
+	case "Volk":
+		return map[string]int{"Alltag": 2}
+	case "Mittelschicht":
+		return map[string]int{"Wissen": 2}
+	case "Adel":
+		return map[string]int{"Sozial": 2}
+	default:
+		return make(map[string]int)
+	}
 }

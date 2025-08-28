@@ -35,9 +35,12 @@ export default {
     History:'History',
     Notes:'Notes',
     Campagne:'Campagne',
+    DeleteChar:'Delete Character',
     //Character:'Charakter',
   },
+  Equipment:'Equipment',
   equipment:{
+    id:'ID',
     name:'Name',
     description:'Description',
     weight:'Weight',
@@ -46,30 +49,120 @@ export default {
     notes:'notes',
     bonus:'Bonus',
     contained_in:'contained in',
+    gewicht:'Weight',
+    wert:'Value',
+    quelle:'Source',
+    system:'System',
+    personal_item:'Pers',
   },
   skill:{
+    id:'ID',
     name:'Name',
     description:'Description',
     value:'Skill value',
     note:'Notes',
     bonus:'Bonus',
     pp:'PP',
+    quelle:'Source',
+    system:'System',
+    bonusskill:'Bonus property',
+    innateskill:'innate',
+    improvable:'improvable',
+    category:'Category',
+    initialwert:'Initial value',
   },
   spell:{
+    id:'ID',
+    category:'Category',
     name:'Name',
     description:'Description',
+    level:'Level',
+    art:'Kind',  //GestenZauber, GedankenZauber, WortZauber
+    apverbrauch:'AP',
+    zauberdauer:'cast duration',
+    reichweite:'range',
+    wirkungsziel:'target',
+    wirkungsbereich:'area of effect',
+    wirkungsdauer:'duration',
+    ursprung:'origin',
     bonus:'Bonus',
     pp:'AP',
     quelle:'Source',
   },
+  spells: {
+    learn: {
+      title: 'Neuen Zauber lernen',
+      search: {
+        label: 'Suche',
+        placeholder: 'Zauber suchen...'
+      },
+      school: {
+        label: 'Schule',
+        all: 'Alle Schulen'
+      },
+      available: 'Verfügbare Zauber',
+      selected: 'Ausgewählter Zauber',
+      costs: {
+        title: 'Lernkosten',
+        ep: 'Erfahrungspunkte',
+        gold: 'Gold',
+        total: 'Gesamt'
+      },
+      action: 'Zauber lernen'
+    },
+    costs: {
+      ep: 'EP',
+      gold: 'Gold'
+    }
+  },
+  Spell:'Zauber',
   weapon:{
+    id:'ID',
     name:'Name',
     description:'Description',
     weight:'Weight',
     amount:'Amount',
     value:'Value',
+    damage:'Damage',
     bonus:'Bonus',
     contained_in:'contained in',
+    personal_item:'Pers',
+    quelle:'Quelle',
+    system:'System',
+  },
+  Weapons:'Waffen',
+  weaponskill:{
+    id:'ID',
+    name:'Name',
+    description:'Beschreibung',
+    value:'EW',
+    note:'Bemerkung',
+    bonus:'Bonus',
+    pp:'PP',
+    quelle:'Quelle',
+    system:'System',
+    bonusskill:'Bonuseigenschaft',
+    innateskill:'angeboren',
+    improvable:'verbesserbar',
+    category:'Kategorie',
+    initialwert:'Startwert',
+  },
+  WaeponSkill:'Waffenfertigkeiten',
+  maintenance:'Wartung',
+  maintmenu:{
+    skill:'Fertigkeiten',
+    weaponskill:'Waffenfertigkeiten',
+    spell:'Zauber',
+    equipment:'Ausrüstung',
+    weapon:'Waffen',
+  },
+  search:'Suche',
+  Skill:'Fertigkeit',
+  common: {
+    loading: 'Laden...',
+    cancel: 'Abbrechen',
+    previous: 'Zurück',
+    next: 'Weiter'
   },
   experience: {
     title: 'Experience & Wealth',
@@ -254,9 +347,5 @@ export default {
       apRollTooltip: 'Roll AP: 3d6 + modifier based on class',
       bRollTooltip: 'Roll B: 1d6 + modifier based on race'
     }
-  },
-  common: {
-    previous: 'Previous',
-    next: 'Next'
   }
 }

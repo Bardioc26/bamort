@@ -200,14 +200,6 @@ export default {
       handler(newValue) {
         // Only save if component is fully initialized
         if (this.isInitialized) {
-          console.log('BasicInfo: formData changed, emitting save:', newValue)
-          console.log('BasicInfo: Field validation status:')
-          console.log('  name valid:', newValue.name && newValue.name.length >= 2)
-          console.log('  geschlecht valid:', !!newValue.geschlecht)
-          console.log('  rasse valid:', !!newValue.rasse)
-          console.log('  typ valid:', !!newValue.typ)
-          console.log('  herkunft valid:', !!newValue.herkunft)
-          console.log('  stand valid:', !!newValue.stand)
           this.$emit('save', { basic_info: newValue })
         }
       },
@@ -215,10 +207,8 @@ export default {
     }
   },
   async created() {
-    console.log('BasicInfo: created() called, sessionData:', this.sessionData)
     // Initialize form with session data - check both old format and new basic_info format
     const basicInfo = this.sessionData.basic_info || {}
-    console.log('BasicInfo: extracted basicInfo:', basicInfo)
     this.formData = {
       name: basicInfo.name || this.sessionData.name || '',
       geschlecht: basicInfo.geschlecht || this.sessionData.geschlecht || '',
@@ -228,14 +218,12 @@ export default {
       stand: basicInfo.stand || this.sessionData.stand || '',
       glaube: basicInfo.glaube || this.sessionData.glaube || '',
     }
-    console.log('BasicInfo: initialized formData:', this.formData)
     
     if (this.formData.glaube) {
       this.beliefSearch = this.formData.glaube
     }
     
     // Save initial state to ensure all fields are captured
-    console.log('BasicInfo: Initial save, formData:', this.formData)
     this.$emit('save', { basic_info: this.formData })
     
     await this.loadReferenceData()
@@ -392,24 +380,10 @@ export default {
     },
     
     handleSubmit() {
-      console.log('BasicInfo: handleSubmit called')
-      console.log('BasicInfo: isValid =', this.isValid)
-      console.log('BasicInfo: formData validation:')
-      console.log('  name:', this.formData.name, '(length:', this.formData.name.length, ')')
-      console.log('  geschlecht:', this.formData.geschlecht)
-      console.log('  rasse:', this.formData.rasse)
-      console.log('  typ:', this.formData.typ)
-      console.log('  herkunft:', this.formData.herkunft)
-      console.log('  stand:', this.formData.stand)
-      console.log('  glaube:', this.formData.glaube)
-      
       if (this.isValid) {
-        console.log('BasicInfo: handleSubmit, formData:', this.formData)
         // Save the current state before proceeding
         this.$emit('save', { basic_info: this.formData })
         this.$emit('next', { basic_info: this.formData })
-      } else {
-        console.warn('BasicInfo: Form is not valid, submission blocked')
       }
     },
   }

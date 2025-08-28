@@ -86,6 +86,7 @@ export default {
     wirkungsdauer:'Wirkungsdauer',
     ursprung:'Ursprung',
     bonus:'Bonus',
+    pp:'AP',
     quelle:'Quelle',
   },
   spells: {
@@ -120,10 +121,8 @@ export default {
     name:'Name',
     description:'Beschreibung',
     weight:'Gewicht',
-    gewicht:'Gewicht',
     amount:'Anzahl',
     value:'Wert',
-    wert:'Wert',
     damage:'Schaden',
     bonus:'Bonus',
     contained_in:'Enthalten in',
@@ -162,7 +161,7 @@ export default {
   common: {
     loading: 'Laden...',
     cancel: 'Abbrechen',
-    revious: 'Zurück',
+    previous: 'Zurück',
     next: 'Weiter'
   },
   experience: {

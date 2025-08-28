@@ -33,10 +33,12 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.POST("/:id/learn-spell", LearnSpellOld)  // Zauber lernen (altes System)
 
 	// Fertigkeiten-Information
-	charGrp.GET("/:id/available-skills", GetAvailableSkillsOld)        // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
-	charGrp.POST("/available-skills-new", GetAvailableSkillsNewSystem) // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
-	charGrp.POST("/available-spells-new", GetAvailableSpellsNewSystem) // Verfügbare Zauber mit Kosten (bereits gelernte ausgeschlossen)
-	charGrp.GET("/spell-details", GetSpellDetails)                     // Detaillierte Informationen zu einem bestimmten Zauber
+	charGrp.GET("/:id/available-skills", GetAvailableSkillsOld)               // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
+	charGrp.POST("/available-skills-new", GetAvailableSkillsNewSystem)        // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
+	charGrp.POST("/available-skills-creation", GetAvailableSkillsForCreation) // Verfügbare Fertigkeiten mit Lernkosten für Charaktererstellung
+	charGrp.POST("/available-spells-creation", GetAvailableSpellsForCreation) // Verfügbare Zauber mit Lernkosten für Charaktererstellung
+	charGrp.POST("/available-spells-new", GetAvailableSpellsNewSystem)        // Verfügbare Zauber mit Kosten (bereits gelernte ausgeschlossen)
+	charGrp.GET("/spell-details", GetSpellDetails)                            // Detaillierte Informationen zu einem bestimmten Zauber
 
 	// Belohnungsarten für verschiedene Lernszenarien
 	charGrp.GET("/:id/reward-types", GetRewardTypesOld) // Verfügbare Belohnungsarten je nach Kontext
@@ -63,11 +65,11 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.DELETE("/create-session/:sessionId", DeleteCharacterSession)            // Session löschen
 
 	// Reference Data für Character Creation
-	charGrp.GET("/races", GetRaces)                                            // Verfügbare Rassen
-	charGrp.GET("/classes", GetCharacterClasses)                               // Verfügbare Klassen
-	charGrp.GET("/origins", GetOrigins)                                        // Verfügbare Herkünfte
-	charGrp.GET("/beliefs", SearchBeliefs)                                     // Glaube-Suche
-	charGrp.GET("/skill-categories-with-points", GetSkillCategoriesWithPoints) // Kategorien mit Lernpunkten
+	charGrp.GET("/races", GetRaces)                                          // Verfügbare Rassen
+	charGrp.GET("/classes", GetCharacterClasses)                             // Verfügbare Klassen
+	charGrp.GET("/classes/learning-points", GetCharacterClassLearningPoints) // Lernpunkte für Charakterklasse
+	charGrp.GET("/origins", GetOrigins)                                      // Verfügbare Herkünfte
+	charGrp.GET("/beliefs", SearchBeliefs)                                   // Glaube-Suche
 
 	// Derived Values Calculation
 	charGrp.POST("/calculate-static-fields", CalculateStaticFields) // Berechnung ohne Würfelwürfe

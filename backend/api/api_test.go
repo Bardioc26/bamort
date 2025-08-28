@@ -52,10 +52,11 @@ func TestSetupCheck(t *testing.T) {
 	err := database.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating database tables")
 
-	err = models.MigrateStructure()
-	assert.NoError(t, err, "No error expected when migrating gsmaster tables")
 	err = user.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating user tables")
+
+	err = models.MigrateStructure()
+	assert.NoError(t, err, "No error expected when migrating gsmaster tables")
 	//err = importer.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating importer tables")
 }
@@ -74,11 +75,14 @@ func TestListCharacters(t *testing.T) {
 		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
 	})
 
+	u := user.User{}
+	u.FirstId(1)
+	token := user.GenerateToken(&u)
+
 	// Create a test HTTP request
 	req, _ := http.NewRequest("GET", "/api/characters", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer ${token}")
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	// Create a response recorder to capture the handler's response
 	respRecorder := httptest.NewRecorder()

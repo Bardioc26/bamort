@@ -6,7 +6,7 @@ import (
 )
 
 type LernCostRequest struct {
-	CharId       uint   `json:"char_id" binding:"required"`                       // Charakter-ID
+	CharId       uint   `json:"char_id" binding:"omitempty"`                      // Charakter-ID
 	Name         string `json:"name" binding:"omitempty"`                         // Name der Fertigkeit / des Zaubers
 	CurrentLevel int    `json:"current_level,omitempty"`                          // Aktueller Wert (nur für Verbesserung)
 	Type         string `json:"type" binding:"required,oneof=skill spell weapon"` // 'skill', 'spell' oder 'weapon' Waffenfertigkeiten sind normale Fertigkeiten (evtl. kann hier später der Name der Waffe angegeben werden )

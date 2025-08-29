@@ -32,8 +32,11 @@ func respondWithError(c *gin.Context, status int, message string) {
 func ListCharacters(c *gin.Context) {
 	logger.Debug("ListCharacters aufgerufen")
 
-	//var characters []models.Char
-	//var listOfChars []models.CharList
+	type AllCharacters struct {
+		SelfOwned []models.CharList `json:"self_owned"`
+		Others    []models.CharList `json:"others"`
+	}
+	allCharacters := AllCharacters{}
 
 	logger.Debug("Lade Charaktere aus der Datenbank...")
 	//if err := database.DB.Find(&characters).Error; err != nil {
@@ -46,24 +49,19 @@ func ListCharacters(c *gin.Context) {
 	}
 
 	logger.Debug("Gefundene Charaktere: %d", len(listOfChars))
+	allCharacters.SelfOwned = listOfChars
 
-	/*
-		for i := range characters {
-			listOfChars = append(listOfChars, models.CharList{
-				BamortBase: models.BamortBase{
-					ID:   characters[i].ID,
-					Name: characters[i].Name,
-				},
-				Rasse: characters[i].Rasse,
-				Typ:   characters[i].Typ,
-				Grad:  characters[i].Grad,
-				Owner: characters[i].User.Username,
-			})
-		}
-	*/
+	listPublic, err := models.FindPublicCharList()
+
+	if err != nil {
+		logger.Error("Fehler beim Laden der öffentlichen Charaktere: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve public characters")
+		return
+	}
+	allCharacters.Others = listPublic
 
 	logger.Info("Charakterliste erfolgreich geladen: %d Charaktere", len(listOfChars))
-	c.JSON(http.StatusOK, listOfChars)
+	c.JSON(http.StatusOK, allCharacters)
 }
 
 func CreateCharacter(c *gin.Context) {

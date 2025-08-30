@@ -189,6 +189,9 @@ func (stamm *Skill) Create() error {
 }
 
 func (stamm *Skill) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -300,6 +303,9 @@ func (stamm *WeaponSkill) Create() error {
 }
 
 func (stamm *WeaponSkill) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -348,6 +354,9 @@ func (stamm *Spell) Create() error {
 }
 
 func (stamm *Spell) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -438,6 +447,9 @@ func (stamm *Equipment) Create() error {
 }
 
 func (stamm *Equipment) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -486,6 +498,9 @@ func (stamm *Weapon) Create() error {
 }
 
 func (stamm *Weapon) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -533,6 +548,9 @@ func (stamm *Container) Create() error {
 }
 
 func (stamm *Container) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -591,6 +609,9 @@ func (object *Transportation) FirstId(value uint) error {
 }
 
 func (stamm *Transportation) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -639,6 +660,9 @@ func (object *Believe) FirstId(value uint) error {
 }
 
 func (stamm *Believe) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {

@@ -16,7 +16,7 @@ func setupCharacterTestDB(t *testing.T) {
 	// Migrate structures
 	err := MigrateStructure()
 	require.NoError(t, err, "Failed to migrate database structure")
-	
+
 	// Clean up any existing test data
 	cleanupCharacterTestData(t)
 }

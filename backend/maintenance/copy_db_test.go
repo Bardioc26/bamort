@@ -2,7 +2,9 @@ package maintenance
 
 import (
 	"bamort/database"
+	"bamort/models"
 	"bamort/user"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -78,7 +80,6 @@ func TestCopyLiveDatabaseToFile(t *testing.T) {
 
 }
 
-/*
 // BenchmarkCopyLiveDatabaseToFile benchmarks the copy function performance
 func BenchmarkCopyLiveDatabaseToFile(b *testing.B) {
 	// Setup test database once
@@ -115,4 +116,3 @@ func BenchmarkCopyLiveDatabaseToFile(b *testing.B) {
 		os.Remove(targetFile)
 	}
 }
-*/

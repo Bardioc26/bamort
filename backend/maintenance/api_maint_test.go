@@ -10,10 +10,14 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 func TestMaintSetupCheck(t *testing.T) {
@@ -138,4 +142,165 @@ func TestGetMDSkills(t *testing.T) {
 	//assert.Equal(t, "test", listOfCharacter.Owner)
 	//assert.Equal(t, false, listOfCharacter.Public)
 
+}
+
+func TestMaintMakeTestdataFromLive(t *testing.T) {
+	// Setup proper test database
+	database.SetupTestDB(true)
+
+	// Create a proper HTTP test context
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	// Call the handler
+	MakeTestdataFromLive(c)
+
+	// Check the response
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	// Parse the JSON response
+	var response map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.Equal(t, "Live database copied to file successfully", response["message"])
+	assert.Contains(t, response, "test_data_file")
+}
+
+func TestMaintReconnectDataBase(t *testing.T) {
+	// Create a proper HTTP test context
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	// Call the handler
+	ReconnectDataBase(c)
+
+	// Check the response
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	// Parse the JSON response
+	var response map[string]string
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.Equal(t, "Database reconnected successfully", response["message"])
+}
+
+func TestMaintReloadENV(t *testing.T) {
+	// Create a proper HTTP test context
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	// Call the handler
+	ReloadENV(c)
+
+	// Check the response
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	// Parse the JSON response
+	var response map[string]string
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.Equal(t, "Environment variables reloaded successfully", response["message"])
+}
+
+func TestMaintLoadPredefinedTestData(t *testing.T) {
+	// Setup proper test database
+	database.SetupTestDB(true)
+
+	// Create a proper HTTP test context
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	// Call the handler
+	LoadPredefinedTestData(c)
+
+	// The function should always attempt to load data, but may return different status codes
+	// based on whether the predefined test data file exists and is accessible
+	if w.Code == http.StatusOK {
+		// Parse the JSON response for success case
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, "Predefined test data loaded successfully into in-memory database", response["message"])
+		assert.Contains(t, response, "test_data_file")
+		assert.Contains(t, response, "statistics")
+	} else {
+		// Check that it fails gracefully if no test data file exists or other issues
+		// Could be 404 (file not found), 500 (internal server error), etc.
+		assert.True(t, w.Code >= 400, "Should return an error status code when predefined data is not available")
+		
+		// Verify error response structure
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		if err == nil {
+			// If we can parse JSON, check for error field
+			assert.Contains(t, response, "error")
+		}
+		// If we can't parse JSON, that's also acceptable for some error cases
+	}
+}
+
+func TestLoadPredefinedTestDataFromFile(t *testing.T) {
+	// Create a temporary test database file
+	tempDir := t.TempDir()
+	testDataFile := filepath.Join(tempDir, "test_data.db")
+
+	// Create a simple test database with some data
+	sourceDB, err := gorm.Open(sqlite.Open(testDataFile), &gorm.Config{})
+	require.NoError(t, err, "Should create test database file")
+
+	// Migrate basic structures
+	err = sourceDB.AutoMigrate(&user.User{})
+	require.NoError(t, err, "Should migrate structures")
+
+	// Add test data
+	testUser := &user.User{
+		UserID:       1,
+		Username:     "testuser",
+		Email:        "test@example.com",
+		PasswordHash: "hash",
+	}
+	err = sourceDB.Create(testUser).Error
+	require.NoError(t, err, "Should create test user")
+
+	// Close the source database
+	if sqlDB, err := sourceDB.DB(); err == nil {
+		sqlDB.Close()
+	}
+
+	// Create target in-memory database
+	targetDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	require.NoError(t, err, "Should create target database")
+	defer func() {
+		if sqlDB, err := targetDB.DB(); err == nil {
+			sqlDB.Close()
+		}
+	}()
+
+	// Test the function
+	err = LoadPredefinedTestDataFromFile(targetDB, testDataFile)
+	assert.NoError(t, err, "LoadPredefinedTestDataFromFile should succeed")
+
+	// Verify data was loaded
+	var userCount int64
+	err = targetDB.Model(&user.User{}).Count(&userCount).Error
+	assert.NoError(t, err, "Should be able to count users")
+	assert.Equal(t, int64(1), userCount, "Should have loaded the test user")
+}
+
+func TestMaintTransferSQLiteToMariaDB(t *testing.T) {
+	// Skip this test if we don't have MariaDB available
+	// This test would typically be an integration test
+	t.Skip("Skipping TransferSQLiteToMariaDB test - requires MariaDB setup")
+
+	// Note: This test would need:
+	// 1. A real MariaDB instance running
+	// 2. Proper test data setup in SQLite source
+	// 3. Verification of data transfer
+	//
+	// For unit testing, this would be better tested by testing the
+	// individual components like copySQLiteToMariaDB function separately
 }

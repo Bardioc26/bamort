@@ -550,7 +550,7 @@ func setupBenchmarkDB(b *testing.B) {
 		if err != nil {
 			b.Fatal("Failed to migrate database structure:", err)
 		}
-		
+
 		// Pre-warm the database with a few queries to ensure consistent timing
 		var source Source
 		_ = source.FirstByCode("KOD")
@@ -560,7 +560,7 @@ func setupBenchmarkDB(b *testing.B) {
 
 func BenchmarkSource_FirstByCode(b *testing.B) {
 	setupBenchmarkDB(b)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		var source Source
@@ -833,7 +833,7 @@ func BenchmarkComplexWorkflow(b *testing.B) {
 
 func BenchmarkSource_FirstByCode_Light(b *testing.B) {
 	setupBenchmarkDB(b)
-	
+
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -844,7 +844,7 @@ func BenchmarkSource_FirstByCode_Light(b *testing.B) {
 
 func BenchmarkGetEPPerTEForClassAndCategory_Light(b *testing.B) {
 	setupBenchmarkDB(b)
-	
+
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -854,7 +854,7 @@ func BenchmarkGetEPPerTEForClassAndCategory_Light(b *testing.B) {
 
 func BenchmarkGetSkillInfoCategoryAndDifficultyNewSystem_Light(b *testing.B) {
 	setupBenchmarkDB(b)
-	
+
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -865,7 +865,7 @@ func BenchmarkGetSkillInfoCategoryAndDifficultyNewSystem_Light(b *testing.B) {
 // Benchmarks for measuring different batch sizes
 func BenchmarkGetActiveSourceCodes_Batch1(b *testing.B) {
 	setupBenchmarkDB(b)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		GetActiveSourceCodes()
@@ -874,7 +874,7 @@ func BenchmarkGetActiveSourceCodes_Batch1(b *testing.B) {
 
 func BenchmarkGetActiveSourceCodes_Batch10(b *testing.B) {
 	setupBenchmarkDB(b)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < 10; j++ {
@@ -885,7 +885,7 @@ func BenchmarkGetActiveSourceCodes_Batch10(b *testing.B) {
 
 func BenchmarkGetActiveSourceCodes_Batch100(b *testing.B) {
 	setupBenchmarkDB(b)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < 100; j++ {
@@ -913,11 +913,11 @@ func BenchmarkSimple_SourceStruct(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		source := Source{
-			Code:        "KOD",
-			Name:        "Kodex",
-			IsCore:      true,
-			IsActive:    true,
-			GameSystem:  "midgard",
+			Code:       "KOD",
+			Name:       "Kodex",
+			IsCore:     true,
+			IsActive:   true,
+			GameSystem: "midgard",
 		}
 		_ = source.Code
 		_ = source.Name

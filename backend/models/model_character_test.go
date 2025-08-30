@@ -16,6 +16,15 @@ func setupCharacterTestDB(t *testing.T) {
 	// Migrate structures
 	err := MigrateStructure()
 	require.NoError(t, err, "Failed to migrate database structure")
+	
+	// Clean up any existing test data
+	cleanupCharacterTestData(t)
+}
+
+func cleanupCharacterTestData(t *testing.T) {
+	// Delete all characters to ensure clean state
+	err := database.DB.Exec("DELETE FROM char_chars").Error
+	require.NoError(t, err, "Failed to clean up characters")
 }
 
 func createTestUser() *user.User {

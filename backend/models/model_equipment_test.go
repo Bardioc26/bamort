@@ -15,6 +15,22 @@ func setupEquipmentTestDB(t *testing.T) {
 	// Migrate structures
 	err := MigrateStructure()
 	require.NoError(t, err, "Failed to migrate database structure")
+	
+	// Clean up any existing test data
+	cleanupEquipmentTestData(t)
+}
+
+func cleanupEquipmentTestData(t *testing.T) {
+	// Delete all equipment data to ensure clean state
+	// Delete from actual equipment tables that exist
+	err := database.DB.Exec("DELETE FROM equi_containers").Error
+	require.NoError(t, err, "Failed to clean up equipment containers")
+	
+	err = database.DB.Exec("DELETE FROM equi_weapons").Error
+	require.NoError(t, err, "Failed to clean up equipment weapons")
+	
+	err = database.DB.Exec("DELETE FROM equi_equipments").Error
+	require.NoError(t, err, "Failed to clean up equipment items")
 }
 
 func createTestAusruestung(name string) *EqAusruestung {

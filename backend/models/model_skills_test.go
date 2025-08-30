@@ -10,7 +10,7 @@ import (
 
 func setupTestDB(t *testing.T) {
 	database.SetupTestDB()
-	
+
 	// Migrate structures
 	err := MigrateStructure()
 	require.NoError(t, err, "Failed to migrate database structure")
@@ -60,7 +60,7 @@ func TestSkFertigkeit_GetSkillByName_Success(t *testing.T) {
 
 	// Test GetSkillByName
 	result := skFertigkeit.GetSkillByName()
-	
+
 	assert.NotNil(t, result)
 	assert.Equal(t, "Athletik", result.Name)
 	assert.Equal(t, "Körper", result.Category)
@@ -82,7 +82,7 @@ func TestSkFertigkeit_GetSkillByName_NotFound(t *testing.T) {
 
 	// Test GetSkillByName
 	result := skFertigkeit.GetSkillByName()
-	
+
 	assert.Nil(t, result)
 }
 
@@ -115,7 +115,7 @@ func TestSkFertigkeit_GetCategory_FromDatabase(t *testing.T) {
 	}
 
 	result := skFertigkeit.GetCategory()
-	
+
 	assert.Equal(t, "Körper", result)
 	assert.Equal(t, "Körper", skFertigkeit.Category) // Should be set on the object
 }
@@ -133,7 +133,7 @@ func TestSkFertigkeit_GetCategory_NotFoundInDatabase(t *testing.T) {
 	}
 
 	result := skFertigkeit.GetCategory()
-	
+
 	assert.Equal(t, "Unkategorisiert", result)
 }
 

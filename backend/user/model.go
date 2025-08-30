@@ -80,6 +80,10 @@ func (object *User) FindByEmail(email string) error {
 		return fmt.Errorf("database connection is nil")
 	}
 
+	if email == "" {
+		return fmt.Errorf("email cannot be empty")
+	}
+
 	err := database.DB.First(&object, "email = ?", email).Error
 	return err
 }

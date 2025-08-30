@@ -32,6 +32,27 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
+	// Validate that username is not empty
+	if user.Username == "" {
+		logger.Error("Registrierung fehlgeschlagen - Benutzername ist leer")
+		respondWithError(c, http.StatusBadRequest, "Username cannot be empty")
+		return
+	}
+
+	// Validate that email is not empty
+	if user.Email == "" {
+		logger.Error("Registrierung fehlgeschlagen - E-Mail ist leer")
+		respondWithError(c, http.StatusBadRequest, "Email cannot be empty")
+		return
+	}
+
+	// Validate that password is not empty
+	if user.PasswordHash == "" {
+		logger.Error("Registrierung fehlgeschlagen - Passwort ist leer")
+		respondWithError(c, http.StatusBadRequest, "Password cannot be empty")
+		return
+	}
+
 	logger.Debug("Registriere Benutzer: %s", user.Username)
 	//fmt.Printf("User input: '%s'", user.PasswordHash)
 	//hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.PasswordHash), bcrypt.DefaultCost)

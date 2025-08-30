@@ -498,3 +498,464 @@ func TestPasswordResetRoutes_CORS(t *testing.T) {
 		assert.NotEqual(t, http.StatusInternalServerError, w.Code)
 	})
 }
+
+// =============================================================================
+// Register Route Tests
+// =============================================================================
+
+func TestRegisterRoute(t *testing.T) {
+	router := setupTestRouter()
+
+	t.Run("POST /register - Success", func(t *testing.T) {
+		database.SetupTestDB()
+		err := user.MigrateStructure()
+		require.NoError(t, err, "Failed to migrate user structure")
+
+		randomSuffix := rand.Intn(100000)
+		userData := map[string]interface{}{
+			"username": fmt.Sprintf("testuser_%d", randomSuffix),
+			"password": "testpassword123",
+			"email":    fmt.Sprintf("test_%d@example.com", randomSuffix),
+		}
+		jsonData, _ := json.Marshal(userData)
+
+		req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonData))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusCreated, w.Code)
+
+		var response map[string]interface{}
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Contains(t, response["message"], "User registered successfully")
+
+		// Verify user was created in database
+		var createdUser user.User
+		err = createdUser.First(userData["username"].(string))
+		assert.NoError(t, err, "User should be created in database")
+		assert.Equal(t, userData["username"], createdUser.Username)
+		assert.Equal(t, userData["email"], createdUser.Email)
+		// Verify password was hashed
+		assert.NotEqual(t, userData["password"], createdUser.PasswordHash)
+	})
+
+	t.Run("POST /register - Missing Required Fields", func(t *testing.T) {
+		// Note: The current implementation allows creation of users with missing fields
+		// The database structure allows empty strings for non-primary key fields
+		database.SetupTestDB()
+		err := user.MigrateStructure()
+		require.NoError(t, err, "Failed to migrate user structure")
+
+		testCases := []struct {
+			name           string
+			data           map[string]interface{}
+			expectedStatus int
+		}{
+			{
+				name: "Missing username - should return error",
+				data: map[string]interface{}{
+					"password": "testpassword123",
+					"email":    fmt.Sprintf("missing_username_%d@example.com", rand.Intn(100000)),
+				},
+				expectedStatus: http.StatusBadRequest, // Now returns error for empty username
+			},
+			{
+				name: "Missing password - should return error",
+				data: map[string]interface{}{
+					"username": fmt.Sprintf("testuser_nopass_%d", rand.Intn(100000)),
+					"email":    fmt.Sprintf("testnopass_%d@example.com", rand.Intn(100000)),
+				},
+				expectedStatus: http.StatusBadRequest, // Now returns error for empty password
+			},
+			{
+				name: "Missing email - should return error",
+				data: map[string]interface{}{
+					"username": fmt.Sprintf("testuser_noemail_%d", rand.Intn(100000)),
+					"password": "testpassword123",
+				},
+				expectedStatus: http.StatusBadRequest, // Now returns error for empty email
+			},
+		}
+
+		for _, tc := range testCases {
+			t.Run(tc.name, func(t *testing.T) {
+				jsonData, _ := json.Marshal(tc.data)
+
+				req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonData))
+				req.Header.Set("Content-Type", "application/json")
+
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
+
+				assert.Equal(t, tc.expectedStatus, w.Code)
+
+				var response map[string]interface{}
+				err = json.Unmarshal(w.Body.Bytes(), &response)
+				require.NoError(t, err)
+
+				if tc.expectedStatus == http.StatusCreated {
+					assert.Contains(t, response["message"], "User registered successfully")
+				} else {
+					assert.Contains(t, response, "error")
+				}
+			})
+		}
+	})
+
+	t.Run("POST /register - Duplicate Username", func(t *testing.T) {
+		database.SetupTestDB()
+		err := user.MigrateStructure()
+		require.NoError(t, err, "Failed to migrate user structure")
+
+		// Create first user
+		randomSuffix := rand.Intn(100000)
+		userData1 := map[string]interface{}{
+			"username": fmt.Sprintf("duplicate_user_%d", randomSuffix),
+			"password": "testpassword123",
+			"email":    fmt.Sprintf("first_%d@example.com", randomSuffix),
+		}
+		jsonData1, _ := json.Marshal(userData1)
+
+		req1, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonData1))
+		req1.Header.Set("Content-Type", "application/json")
+
+		w1 := httptest.NewRecorder()
+		router.ServeHTTP(w1, req1)
+		assert.Equal(t, http.StatusCreated, w1.Code)
+
+		// Try to create second user with same username
+		userData2 := map[string]interface{}{
+			"username": userData1["username"], // Same username
+			"password": "differentpassword",
+			"email":    fmt.Sprintf("second_%d@example.com", randomSuffix),
+		}
+		jsonData2, _ := json.Marshal(userData2)
+
+		req2, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonData2))
+		req2.Header.Set("Content-Type", "application/json")
+
+		w2 := httptest.NewRecorder()
+		router.ServeHTTP(w2, req2)
+
+		assert.Equal(t, http.StatusInternalServerError, w2.Code)
+
+		var response map[string]interface{}
+		err = json.Unmarshal(w2.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Contains(t, response, "error")
+		assert.Contains(t, response["error"], "Failed to create user")
+	})
+
+	t.Run("POST /register - Duplicate Email", func(t *testing.T) {
+		database.SetupTestDB()
+		err := user.MigrateStructure()
+		require.NoError(t, err, "Failed to migrate user structure")
+
+		// Create first user
+		randomSuffix := rand.Intn(100000)
+		userData1 := map[string]interface{}{
+			"username": fmt.Sprintf("first_user_%d", randomSuffix),
+			"password": "testpassword123",
+			"email":    fmt.Sprintf("duplicate_%d@example.com", randomSuffix),
+		}
+		jsonData1, _ := json.Marshal(userData1)
+
+		req1, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonData1))
+		req1.Header.Set("Content-Type", "application/json")
+
+		w1 := httptest.NewRecorder()
+		router.ServeHTTP(w1, req1)
+		assert.Equal(t, http.StatusCreated, w1.Code)
+
+		// Try to create second user with same email
+		userData2 := map[string]interface{}{
+			"username": fmt.Sprintf("second_user_%d", randomSuffix),
+			"password": "differentpassword",
+			"email":    userData1["email"], // Same email
+		}
+		jsonData2, _ := json.Marshal(userData2)
+
+		req2, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonData2))
+		req2.Header.Set("Content-Type", "application/json")
+
+		w2 := httptest.NewRecorder()
+		router.ServeHTTP(w2, req2)
+
+		assert.Equal(t, http.StatusInternalServerError, w2.Code)
+
+		var response map[string]interface{}
+		err = json.Unmarshal(w2.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Contains(t, response, "error")
+		assert.Contains(t, response["error"], "Failed to create user")
+	})
+
+	t.Run("POST /register - Invalid JSON", func(t *testing.T) {
+		req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer([]byte("invalid json")))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Contains(t, response, "error")
+	})
+}
+
+// =============================================================================
+// Login Route Tests
+// =============================================================================
+
+func TestLoginRoute(t *testing.T) {
+	router := setupTestRouter()
+
+	t.Run("POST /login - Success", func(t *testing.T) {
+		// Setup user first
+		testUser := setupTestUserForRouter(t)
+
+		loginData := map[string]interface{}{
+			"username": testUser.Username,
+			"password": "testpassword123", // Original password before hashing
+		}
+		jsonData, _ := json.Marshal(loginData)
+
+		req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(jsonData))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Equal(t, "Login successful", response["message"])
+		assert.Contains(t, response, "token")
+		assert.NotEmpty(t, response["token"])
+
+		// Verify token format (should contain user ID)
+		token := response["token"].(string)
+		assert.Contains(t, token, ".")
+		assert.Contains(t, token, ":")
+	})
+
+	t.Run("POST /login - Invalid Username", func(t *testing.T) {
+		setupTestUserForRouter(t) // Setup database
+
+		loginData := map[string]interface{}{
+			"username": "nonexistentuser",
+			"password": "testpassword123",
+		}
+		jsonData, _ := json.Marshal(loginData)
+
+		req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(jsonData))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Contains(t, response, "error")
+		assert.Contains(t, response["error"], "Invalid username")
+	})
+
+	t.Run("POST /login - Invalid Password", func(t *testing.T) {
+		testUser := setupTestUserForRouter(t)
+
+		loginData := map[string]interface{}{
+			"username": testUser.Username,
+			"password": "wrongpassword",
+		}
+		jsonData, _ := json.Marshal(loginData)
+
+		req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(jsonData))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Contains(t, response, "error")
+		assert.Contains(t, response["error"], "Invalid username")
+	})
+
+	t.Run("POST /login - Missing Required Fields", func(t *testing.T) {
+		// Note: The database may contain users with empty usernames from test data
+		// We need to test with usernames that definitely don't exist to get proper errors
+		setupTestUserForRouter(t) // Setup database
+
+		testCases := []struct {
+			name           string
+			data           map[string]interface{}
+			expectedStatus int
+		}{
+			{
+				name: "Missing username - should be unauthorized",
+				data: map[string]interface{}{
+					"password": "testpassword123",
+				},
+				expectedStatus: http.StatusUnauthorized, // No username provided
+			},
+			{
+				name: "Missing password - should be unauthorized",
+				data: map[string]interface{}{
+					"username": fmt.Sprintf("nonexistent_%d", rand.Intn(100000)),
+				},
+				expectedStatus: http.StatusUnauthorized, // No password provided
+			},
+			{
+				name: "Nonexistent username - should be unauthorized",
+				data: map[string]interface{}{
+					"username": fmt.Sprintf("definitely_nonexistent_%d", rand.Intn(100000)),
+					"password": "testpassword123",
+				},
+				expectedStatus: http.StatusUnauthorized, // Username doesn't exist
+			},
+			{
+				name: "Empty password with nonexistent user - should be unauthorized",
+				data: map[string]interface{}{
+					"username": fmt.Sprintf("another_nonexistent_%d", rand.Intn(100000)),
+					"password": "",
+				},
+				expectedStatus: http.StatusUnauthorized, // Password mismatch
+			},
+		}
+
+		for _, tc := range testCases {
+			t.Run(tc.name, func(t *testing.T) {
+				jsonData, _ := json.Marshal(tc.data)
+
+				req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(jsonData))
+				req.Header.Set("Content-Type", "application/json")
+
+				w := httptest.NewRecorder()
+				router.ServeHTTP(w, req)
+
+				assert.Equal(t, tc.expectedStatus, w.Code)
+
+				var response map[string]interface{}
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				require.NoError(t, err)
+				assert.Contains(t, response, "error")
+			})
+		}
+	})
+
+	t.Run("POST /login - Invalid JSON", func(t *testing.T) {
+		req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer([]byte("invalid json")))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Contains(t, response, "error")
+	})
+
+	t.Run("POST /login - Empty Request Body", func(t *testing.T) {
+		req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer([]byte("")))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Contains(t, response, "error")
+	})
+}
+
+// =============================================================================
+// Integration Tests for Register and Login Flow
+// =============================================================================
+
+func TestRegisterLoginFlow(t *testing.T) {
+	router := setupTestRouter()
+
+	t.Run("Complete Register and Login Flow", func(t *testing.T) {
+		database.SetupTestDB()
+		err := user.MigrateStructure()
+		require.NoError(t, err, "Failed to migrate user structure")
+
+		randomSuffix := rand.Intn(100000)
+		username := fmt.Sprintf("flowtest_user_%d", randomSuffix)
+		password := "testpassword123"
+		email := fmt.Sprintf("flowtest_%d@example.com", randomSuffix)
+
+		// Step 1: Register user
+		registerData := map[string]interface{}{
+			"username": username,
+			"password": password,
+			"email":    email,
+		}
+		jsonData, _ := json.Marshal(registerData)
+
+		req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonData))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusCreated, w.Code)
+
+		// Step 2: Login with registered credentials
+		loginData := map[string]interface{}{
+			"username": username,
+			"password": password,
+		}
+		jsonData, _ = json.Marshal(loginData)
+
+		req, _ = http.NewRequest("POST", "/login", bytes.NewBuffer(jsonData))
+		req.Header.Set("Content-Type", "application/json")
+
+		w = httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response map[string]interface{}
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+		assert.Equal(t, "Login successful", response["message"])
+		assert.Contains(t, response, "token")
+		assert.NotEmpty(t, response["token"])
+
+		// Step 3: Verify login fails with wrong password
+		wrongLoginData := map[string]interface{}{
+			"username": username,
+			"password": "wrongpassword",
+		}
+		jsonData, _ = json.Marshal(wrongLoginData)
+
+		req, _ = http.NewRequest("POST", "/login", bytes.NewBuffer(jsonData))
+		req.Header.Set("Content-Type", "application/json")
+
+		w = httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+	})
+}

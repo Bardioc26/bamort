@@ -2,10 +2,8 @@ package gsmaster
 
 import (
 	"bamort/models"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 )
 
 type SkillGroup string
@@ -69,106 +67,6 @@ var AllowedGroups = map[CharClass]map[SkillGroup]bool}
 
 var Config LevelConfig // holds all loaded data
 
-// loadLevelingConfigOld is deprecated. Use the new database-based learning cost system instead.
-// This function loads data from static JSON files.
-func loadLevelingConfigOld(opts ...string) error {
-	// Adjust path as needed
-	filePath := "../testdata/leveldata.json"
-	if len(opts) > 0 {
-		filePath = opts[0]
-	}
-	file, err := os.Open(filePath)
-	if err != nil {
-		return fmt.Errorf("failed to open JSON file: %w", err)
-	}
-	defer file.Close()
-
-	// Decode the JSON file into the ExportData structure
-	decoder := json.NewDecoder(file)
-	if err := decoder.Decode(&Config); err != nil {
-		return fmt.Errorf("failed to decode JSON file: %w", err)
-	}
-	return nil
-}
-
-// CalculateSpellLearnCostOld is deprecated. Use CalcSpellLernCost instead.
-// This function uses the old hardcoded learning cost system.
-// CalculateSpellLearnCostOld combines SpellLearnCost with SpellEPPerSchoolByClass
-func CalculateSpellLearnCostOld(spell string, class string) (int, error) {
-	if Config.AllowedSchools == nil {
-		loadLevelingConfigOld()
-	}
-
-	var spl models.Spell
-	if err := spl.First(spell); err != nil {
-		return 0, errors.New("unbekannter Zauberspruch")
-	}
-
-	if !Config.AllowedSchools[CharClass(class)][spl.Category] {
-		return 0, fmt.Errorf("die Klasse %s darf die Schule %s nicht lernen", class, spl.Category)
-	}
-	neededLE, ok := Config.SpellLearnCost[spl.Stufe]
-	if !ok {
-		return 0, fmt.Errorf("ungültige Zauberstufe: %d", spl.Stufe)
-	}
-
-	classMap, ok := Config.SpellEPPerSchoolByClass[CharClass(class)]
-	if !ok {
-		return 0, fmt.Errorf("keine EP-Tabelle für Klasse: %s", class)
-	}
-
-	epPerTE, found := classMap[spl.Category]
-	if !found {
-		return 0, fmt.Errorf("unbekannte Schule '%s' bei Klasse '%s'", spl.Category, class)
-	}
-
-	// Gesamt-EP = benötigte LE * EP pro LE.
-	totalEP := neededLE * (epPerTE * 3)
-	// +6 EP for elves
-	if class == "Elf" {
-		totalEP += 6
-	}
-
-	return totalEP, nil
-}
-
-// CalculateSkillLearnCostOld is deprecated. Use CalcSkillLernCost instead.
-// This function uses the old hardcoded learning cost system.
-// CalculateSkillLearnCostOld: erstmalige Kosten in EP
-// Then refer to Config in your calculations:
-func CalculateSkillLearnCostOld(skill string, class string) (int, error) {
-	/*
-		if !Config.AllowedGroups[class][skill.Group] {
-			return 0, fmt.Errorf("die Klasse %s darf %s nicht lernen", class, skill.Group)
-		}
-	*/
-	var skl models.Skill
-	if err := skl.First(skill); err != nil {
-		return 0, errors.New("unbekannte Fertigkeit")
-	}
-
-	groupMap, ok := Config.BaseLearnCost[SkillGroup(skl.Category)]
-	if !ok {
-		return 0, errors.New("unbekannte Gruppe")
-	}
-
-	baseLE, ok := groupMap[Difficulty(skl.Difficulty)]
-	if !ok {
-		return 0, errors.New("keine LE-Definition für diese Schwierigkeit")
-	}
-	epPerTE, ok := Config.EPPerTE[CharClass(class)][SkillGroup(skl.Category)]
-	if !ok {
-		return 0, fmt.Errorf("keine EP-Kosten für %s bei %s", class, skl.Category)
-	}
-	totalEP := baseLE * (epPerTE * 3)
-	// +6 EP for elves
-	if class == "Elf" {
-		totalEP += 6
-	}
-
-	return totalEP, nil
-}
-
 // CalculateImprovementCost: Kosten zum Steigern von +X auf +X+1
 func CalculateSkillImprovementCost(skill string, class string, currentSkillLevel int) (*models.LearnCost, error) {
 	return CalculateImprovementCost(skill, class, currentSkillLevel)
@@ -208,13 +106,4 @@ func CalculateImprovementCost(skill string, class string, currentSkillLevel int)
 	lCost.Ep = neededLE * epPerTE
 	lCost.Money = lCost.Ep
 	return &lCost, nil
-}
-
-func CalculateLearnCost(skillType string, name string, class string) (int, error) {
-	if skillType == "skill" {
-		return CalculateSkillLearnCostOld(name, class)
-	} else if skillType == "spell" {
-		return CalculateSpellLearnCostOld(name, class)
-	}
-	return 0, errors.New("unknown skill type")
 }

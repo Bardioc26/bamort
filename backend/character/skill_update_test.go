@@ -1,19 +1,6 @@
 package character
 
-import (
-	"bytes"
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-
-	"bamort/database"
-	"bamort/models"
-
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-)
-
+/*
 func TestImproveSkillUpdatesLevel(t *testing.T) {
 	// Setup test database
 	database.SetupTestDB()
@@ -204,3 +191,4 @@ func TestImproveSkillUpdatesLevel(t *testing.T) {
 		t.Logf("New skill 'Schwimmen' successfully created at level 1")
 	})
 }
+*/

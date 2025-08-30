@@ -231,7 +231,7 @@ func TestMaintLoadPredefinedTestData(t *testing.T) {
 		// Check that it fails gracefully if no test data file exists or other issues
 		// Could be 404 (file not found), 500 (internal server error), etc.
 		assert.True(t, w.Code >= 400, "Should return an error status code when predefined data is not available")
-		
+
 		// Verify error response structure
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)

@@ -56,9 +56,11 @@ func setupTestDB(opts ...bool) {
 	}
 }
 
+// tests Deprecates old static function, now using DB data
 func TestCalculateImprovementCost(t *testing.T) {
-	//loadLevelingConfigOld()
-	setupTestDB(false)
+	// Setup test database
+	database.SetupTestDB(true, true)
+	defer database.ResetTestDB()
 	/*
 		// Save original Config
 		originalConfig := Config

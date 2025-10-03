@@ -72,6 +72,7 @@ func CalculateSkillImprovementCost(skill string, class string, currentSkillLevel
 	return CalculateImprovementCost(skill, class, currentSkillLevel)
 }
 
+// Deprecated old static function, now using DB data
 func CalculateImprovementCost(skill string, class string, currentSkillLevel int) (*models.LearnCost, error) {
 	/*
 		if !Config.AllowedGroups[class][skill.Group] {

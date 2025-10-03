@@ -453,8 +453,8 @@ func GetSourcesByGameSystem(gameSystem string) ([]Source, error) {
 func GetSkillsByActiveSources(gameSystem string) ([]Skill, error) {
 	var skills []Skill
 	err := database.DB.
-		Joins("LEFT JOIN learning_sources ON lookup_lists.source_id = learning_sources.id").
-		Where("lookup_lists.game_system = ? AND (learning_sources.is_active = ? OR lookup_lists.source_id IS NULL)", gameSystem, true).
+		Joins("LEFT JOIN learning_sources ON gsm_skills.source_id = learning_sources.id").
+		Where("gsm_skills.game_system = ? AND (learning_sources.is_active = ? OR gsm_skills.source_id IS NULL)", gameSystem, true).
 		Find(&skills).Error
 	return skills, err
 }
@@ -463,8 +463,8 @@ func GetSkillsByActiveSources(gameSystem string) ([]Skill, error) {
 func GetSpellsByActiveSources(gameSystem string) ([]Spell, error) {
 	var spells []Spell
 	err := database.DB.
-		Joins("LEFT JOIN learning_sources ON lookup_lists.source_id = learning_sources.id").
-		Where("lookup_lists.game_system = ? AND (learning_sources.is_active = ? OR lookup_lists.source_id IS NULL)", gameSystem, true).
+		Joins("LEFT JOIN learning_sources ON gsm_spells.source_id = learning_sources.id").
+		Where("gsm_spells.game_system = ? AND (learning_sources.is_active = ? OR gsm_spells.source_id IS NULL)", gameSystem, true).
 		Find(&spells).Error
 	return spells, err
 }

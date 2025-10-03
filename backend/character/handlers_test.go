@@ -414,10 +414,11 @@ func TestGetAvailableSkillsForCreation(t *testing.T) {
 					if skillsList, ok := skills.([]interface{}); ok {
 						for _, skill := range skillsList {
 							if skillMap, ok := skill.(map[string]interface{}); ok {
-								assert.Contains(t, skillMap, "name", "Skill should have name")
-								assert.Contains(t, skillMap, "learnCost", "Skill should have learnCost")
+								assert.Contains(t, skillMap, "name", "Skill should have name", skillMap["name"])
+								//assert.Contains(t, skillMap, "learnCost", "Skill should have learnCost", skillMap["name"])
+								assert.Contains(t, skillMap, "leCost", "Skill should have leCost", skillMap["name"])
 
-								learnCost := skillMap["learnCost"].(float64)
+								learnCost := skillMap["leCost"].(float64)
 								assert.Greater(t, learnCost, 0.0, "Learn cost should be positive")
 								assert.Less(t, learnCost, 500.0, "Learn cost should be reasonable for character creation")
 

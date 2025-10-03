@@ -107,7 +107,7 @@ func TestGetAllSkillsWithLearningCosts(t *testing.T) {
 }
 
 // TestGetAvailableSkillsForCreationHandler tests the HTTP handler directly
-func TestGetAvailableSkillsForCreationHandler(t *testing.T) {
+func TestHandlerGetAvailableSkillsForCreation(t *testing.T) {
 	// Setup test database
 	database.SetupTestDB(true, true)
 	defer database.ResetTestDB()
@@ -150,7 +150,7 @@ func TestGetAvailableSkillsForCreationHandler(t *testing.T) {
 					if skillsList, ok := skills.([]interface{}); ok {
 						for _, skill := range skillsList {
 							if skillMap, ok := skill.(map[string]interface{}); ok {
-								if learnCost, exists := skillMap["learnCost"]; exists {
+								if learnCost, exists := skillMap["leCost"]; exists {
 									if cost, ok := learnCost.(float64); ok {
 										assert.Greater(t, cost, 0.0, "Learn cost should be positive")
 										assert.LessOrEqual(t, cost, 500.0, "Learn cost should be reasonable")

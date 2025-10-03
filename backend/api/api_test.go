@@ -62,7 +62,7 @@ func TestSetupCheck(t *testing.T) {
 }
 
 func TestListCharacters(t *testing.T) {
-	database.SetupTestDB()
+	database.SetupTestDB(true)
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -94,16 +94,22 @@ func TestListCharacters(t *testing.T) {
 	assert.Equal(t, http.StatusOK, respRecorder.Code)
 
 	// Assert the response body
-	var listOfCharacter []*models.CharList
-	err := json.Unmarshal(respRecorder.Body.Bytes(), &listOfCharacter)
+	//var listOfCharacter []*models.CharList
+	type AllCharacters struct {
+		SelfOwned []models.CharList `json:"self_owned"`
+		Others    []models.CharList `json:"others"`
+	}
+	var allCharacters AllCharacters
+	err := json.Unmarshal(respRecorder.Body.Bytes(), &allCharacters)
+	listOfCharacter := allCharacters.SelfOwned
 	assert.NoError(t, err)
-	assert.Equal(t, "Harsk Hammerhuter, Zen", listOfCharacter[0].Name)
-	assert.Equal(t, "Zwerg", listOfCharacter[0].Rasse)
-	assert.Equal(t, 1, int(listOfCharacter[0].ID)) // Check the simulated ID
-	assert.Equal(t, "Krieger", listOfCharacter[0].Typ)
-	assert.Equal(t, 3, listOfCharacter[0].Grad)
-	assert.Equal(t, "bebe", listOfCharacter[0].Owner)
-	assert.Equal(t, false, listOfCharacter[0].Public)
+	assert.Equal(t, "Harsk Hammerhuter, Zen", listOfCharacter[5].Name)
+	assert.Equal(t, "Zwerg", listOfCharacter[5].Rasse)
+	assert.Equal(t, 20, int(listOfCharacter[5].ID)) // Check the simulated ID
+	assert.Equal(t, "Krieger", listOfCharacter[5].Typ)
+	assert.Equal(t, 3, listOfCharacter[5].Grad)
+	assert.Equal(t, "bebe", listOfCharacter[5].Owner)
+	assert.Equal(t, false, listOfCharacter[5].Public)
 
 }
 

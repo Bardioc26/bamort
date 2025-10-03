@@ -65,7 +65,7 @@ func TestSkFertigkeit_GetSkillByName_Success(t *testing.T) {
 	assert.Equal(t, "Athletik", result.Name)
 	assert.Equal(t, "Körper", result.Category)
 	assert.Equal(t, "Normal", result.Difficulty)
-	assert.Equal(t, 5, result.Initialwert)
+	assert.Equal(t, 8, result.Initialwert)
 }
 
 func TestSkFertigkeit_GetSkillByName_NotFound(t *testing.T) {

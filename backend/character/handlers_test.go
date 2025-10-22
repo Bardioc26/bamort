@@ -893,13 +893,17 @@ func TestListCharacters(t *testing.T) {
 
 		// Assert response
 		assert.Equal(t, http.StatusOK, w.Code)
+		type AllCharacters struct {
+			SelfOwned []models.CharList `json:"self_owned"`
+			Others    []models.CharList `json:"others"`
+		}
 
-		var response []models.CharList
+		var response AllCharacters
 		err = json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
 
 		// Response should be an array (could be empty if no characters exist)
-		assert.IsType(t, []models.CharList{}, response)
+		assert.IsType(t, AllCharacters{}, response)
 	})
 
 	t.Run("ListCharacters with Invalid User", func(t *testing.T) {
@@ -923,11 +927,15 @@ func TestListCharacters(t *testing.T) {
 
 		// Should still return OK with empty list if user has no characters
 		assert.Equal(t, http.StatusOK, w.Code)
+		type AllCharacters struct {
+			SelfOwned []models.CharList `json:"self_owned"`
+			Others    []models.CharList `json:"others"`
+		}
 
-		var response []models.CharList
+		var response AllCharacters
 		err = json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Equal(t, 0, len(response), "Should return empty list for user with no characters")
+		assert.Equal(t, 0, len(response.SelfOwned), "Should return empty list for user with no characters")
 	})
 
 	t.Run("ListCharacters without UserID", func(t *testing.T) {
@@ -945,10 +953,14 @@ func TestListCharacters(t *testing.T) {
 
 		// Should still return OK with empty list since GetUint("userID") returns 0 for missing userID
 		assert.Equal(t, http.StatusOK, w.Code)
+		type AllCharacters struct {
+			SelfOwned []models.CharList `json:"self_owned"`
+			Others    []models.CharList `json:"others"`
+		}
 
-		var response []models.CharList
+		var response AllCharacters
 		err = json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		assert.Equal(t, 0, len(response), "Should return empty list for userID 0")
+		assert.Equal(t, 0, len(response.SelfOwned), "Should return empty list for userID 0")
 	})
 }

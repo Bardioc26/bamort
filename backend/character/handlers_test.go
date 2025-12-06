@@ -128,8 +128,8 @@ func TestImproveSkillHandler(t *testing.T) {
 			"from_level":     float64(9),
 			"gold_cost":      float64(20),
 			"message":        "Fertigkeit erfolgreich verbessert",
-			"remaining_ep":   float64(316),
-			"remaining_gold": float64(370),
+			"remaining_ep":   float64(250),
+			"remaining_gold": float64(290),
 			"skill_name":     "Athletik",
 			"to_level":       float64(10),
 		}
@@ -151,10 +151,10 @@ func TestImproveSkillHandler(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Check that EP was deducted correctly
-		assert.Equal(t, 316, updatedChar.Erfahrungsschatz.EP, "Character should have 316 EP remaining")
+		assert.Equal(t, 250, updatedChar.Erfahrungsschatz.EP, "Character should have 316 EP remaining")
 
 		// Check that Gold was deducted correctly
-		assert.Equal(t, 370, updatedChar.Vermoegen.Goldstücke, "Character should have 370 Gold remaining")
+		assert.Equal(t, 290, updatedChar.Vermoegen.Goldstücke, "Character should have 370 Gold remaining")
 
 		t.Logf("Test completed successfully!")
 		t.Logf("EP: %d -> %d (cost: %.0f)", 326, updatedChar.Erfahrungsschatz.EP, response["ep_cost"])

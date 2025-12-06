@@ -230,6 +230,9 @@ func (cc *CharacterClass) FirstByCode(code string) error {
 func (cc *CharacterClass) FirstByName(code string) error {
 	return database.DB.Where("name = ?", code).First(cc).Error
 }
+func (cc *CharacterClass) FirstByNameOrCode(value string) error {
+	return database.DB.Where("name = ? OR code = ?", value, value).First(cc).Error
+}
 
 func (sc *SkillCategory) Create() error {
 	return database.DB.Create(sc).Error

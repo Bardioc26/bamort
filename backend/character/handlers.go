@@ -1463,12 +1463,9 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 // getCharacterClassCode converts a character class name to its code using the database
 func getCharacterClassCode(className string) (string, error) {
 	var characterClass models.CharacterClass
-	err := characterClass.FirstByName(className)
+	err := characterClass.FirstByNameOrCode(className)
 	if err != nil {
-		err := characterClass.FirstByCode(className)
-		if err != nil {
-			return "", fmt.Errorf("character class '%s' not found: %w", className, err)
-		}
+		return "", fmt.Errorf("character class '%s' not found: %w", className, err)
 	}
 	return characterClass.Code, nil
 }

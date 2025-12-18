@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abenteuerblatt - {{.Character.Name}}</title>
+    <link rel="stylesheet" href="export_format_a4_quer.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="header-left">Abenteuerblatt</span>
+            <span class="header-right">Datum: {{.Meta.Date}}</span>
+        </div>
+        
+        <div class="title-row">
+            <img src="headerimg.png" alt="Schmuckgrafik" class="header-decoration">
+            <div class="info-box">
+                <div><strong>Figur</strong> {{.Character.Name}} &nbsp;&nbsp; <strong>Grad</strong> {{.Character.Grade}}</div>
+                <hr>
+                <div><strong>Typ</strong> {{.Character.Type}} &nbsp;&nbsp; <strong>GG</strong> {{.DerivedValues.GG}} &nbsp;&nbsp; <strong>SG</strong> {{.DerivedValues.SG}}</div>
+            </div>
+            <img src="headerimg.png" alt="Schmuckgrafik" class="header-decoration">
+        </div>
+        
+        <div class="flex main-content">
+            <!-- Left section -->
+            <div class="left-section">
+                <!-- Stats boxes top -->
+                <div class="stats-row">
+                    <div class="attr-box"><div class="attr-label">St</div><div class="attr-value">{{.Attributes.St}}</div></div>
+                    <div class="attr-box"><div class="attr-label">Gs</div><div class="attr-value">{{.Attributes.Gs}}</div></div>
+                    <div class="attr-box"><div class="attr-label">Gw</div><div class="attr-value">{{.Attributes.Gw}}</div></div>
+                    <div class="attr-box"><div class="attr-label">Ko</div><div class="attr-value">{{.Attributes.Ko}}</div></div>
+                    <div class="attr-box"><div class="attr-label">In</div><div class="attr-value">{{.Attributes.In}}</div></div>
+                </div>
+                <div class="stats-row">
+                    <div class="attr-box"><div class="attr-label">Zt</div><div class="attr-value">{{.Attributes.Zt}}</div></div>
+                    <div class="attr-box"><div class="attr-label">Au</div><div class="attr-value">{{.Attributes.Au}}</div></div>
+                    <div class="attr-box"><div class="attr-label">pA</div><div class="attr-value">{{.Attributes.PA}}</div></div>
+                    <div class="attr-box"><div class="attr-label">Wk</div><div class="attr-value">{{.Attributes.Wk}}</div></div>
+                    <div class="attr-box"><div class="attr-label">B</div><div class="attr-value">{{.Attributes.B}}</div></div>
+                </div>
+                
+                <!-- Combat stats -->
+                <div class="combat-stats">
+                    <div><strong>Abwehr + {{.DerivedValues.Abwehr}}</strong></div>
+                    <div><strong>+</strong> <span class="combat-stats-small">mit Vert.<br>waffe</span></div>
+                    <div><strong>Resistenz + {{.DerivedValues.ResistenzGift}}/{{.DerivedValues.ResistenzGeist}}</strong></div>
+                    <div><strong>Zaubern + {{.DerivedValues.Zaubern}}</strong></div>
+                </div>
+                
+                <!-- Skills tables -->
+                <div class="skills-row">
+                    <!-- BLOCK: skills_learned, TYPE: skills, MAX: 24, FILTER: learned -->
+                    <table class="skills-table">
+                        <tr>
+                            <th>Fertigkeit</th>
+                            <th>EW</th>
+                            <th>PP</th>
+                        </tr>
+                        {{range .Skills}}
+                        <tr><td>{{.Name}}</td><td>+ {{.Value}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                        {{end}}
+                    </table>
+                    <div class="skills-stack">
+                        <!-- BLOCK: skills_unlearned, TYPE: skills, MAX: 15, FILTER: unlearned -->
+                        <table class="skills-col-table">
+                            <tr>
+                                <th colspan="2"><em>ungelernte Fertigkeiten</em></th>
+                            </tr>
+                            <tr><td colspan="2" class="unlearned-small">alle wenigstens +(0) außer Musizieren, Schreiben, Sprache, Lesen von Zauberschrift</td></tr>
+                            <tr><td>Akrobatik+(6)</td><td>Tauchen~(6)</td></tr>
+                            <tr><td>Athletik+(6)</td><td>Trinken+(3)</td></tr>
+                            <tr><td>Balancieren+(6)</td><td>Überreden+(6)</td></tr>
+                            <tr><td>Betäubungsgriff+(6)</td><td>Verführen+(3)</td></tr>
+                            <tr><td>Bootfahren+(3)</td><td>Verfroren+(3)</td></tr>
+                            <tr><td>Einschüchtern+(3)</td><td>Verstecken+(3)</td></tr>
+                            <tr><td>Klettern+(6)</td><td>Wahrnehmung+(6)</td></tr>
+                            <tr><td>Menschenkenntnis+(3)</td><td></td></tr>
+                            <tr><td>Reiten+(6)</td><td></td></tr>
+                            <tr><td>Schwimmen+(3)</td><td></td></tr>
+                            <tr><td>Seilkunst+(3)</td><td></td></tr>
+                            <tr><td>Stehlen+(3)</td><td></td></tr>
+                            <tr><td>Tanzen+(6)</td><td></td></tr>
+                            <tr><td>Tarnen+(3)</td><td></td></tr>
+                        </table>
+                        <!-- BLOCK: skills_languages, TYPE: skills, MAX: 11, FILTER: language -->
+                        <table class="skills-table" style="width: 100%; height: unset;">
+                            <tr>
+                                <th>Fertigkeit</th>
+                                <th>EW</th>
+                                <th>PP</th>
+                            </tr>
+                            {{range .Skills}}
+                            {{if eq .Category "Sprache"}}
+                            <tr><td>{{.Name}}</td><td>+ {{.Value}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                            {{end}}
+                            {{end}}
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right section -->
+            <div class="right-section">
+                <div>
+                    <table class="table">
+                    <tr>
+                        <td>LP {{.DerivedValues.LPMax}}</td>
+                        {{range $i := iterate 13}}<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>{{end}}
+                    </tr><tr>
+                        <td>AP {{.DerivedValues.APMax}}</td>
+                        {{range $i := iterate 13}}<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>{{end}}
+                    </tr>
+                    </table>
+                </div>
+                <!-- Bonus table -->
+                <div class="margin-bottom-3">
+                    <table class="bonus-table">
+                        <tr>
+                            <th>pers.</th>
+                            <th colspan="2">Ausdauer</th>
+                            <th colspan="2">Angriff</th>
+                            <th colspan="2">Abwehr</th>
+                            <th colspan="2">Schaden</th>
+                        </tr>
+                        <tr>
+                            <td>Bonus</td>
+                            <td>{{.DerivedValues.AusdauerBonus}}</td>
+                            <td></td>
+                            <td>{{.DerivedValues.AngriffBonus}}</td>
+                            <td></td>
+                            <td>{{.DerivedValues.Abwehr}}</td>
+                            <td></td>
+                            <td>{{.DerivedValues.SchadenBonus}}</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Situativ</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Summe</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Weapons table -->
+                <div class="margin-bottom-3">
+                    <!-- BLOCK: weapons_main, TYPE: weapons, MAX: 30 -->
+                    <table class="weapons-table">
+                        <tr>
+                            <th>Waffe</th>
+                            <th>EW +/-</th>
+                            <th>GG</th>
+                            <th>+/-</th>
+                            <th>Schaden</th>
+                            <th>+/-</th>
+                            <th>Abwehr</th>
+                            <th>+/-</th>
+                        </tr>
+                        {{range .Weapons}}
+                        <tr>
+                            <td>{{.Name}}</td>
+                            <td>{{.Value}}</td>
+                            <td></td>
+                            <td></td>
+                            <td>{{.Damage}}</td>
+                            <td></td>
+                            <td>{{.ParryValue}}</td>
+                            <td></td>
+                        </tr>
+                        {{end}}
+                    </table>
+                </div>
+                
+                <!-- Senses row at bottom -->
+                <div class="senses-row">
+                    <span>Sehen+{{.DerivedValues.Sehen}}</span>
+                    <span>Nachtsicht+{{.DerivedValues.Sehen}}</span>
+                    <span>Hören+{{.DerivedValues.Horen}}</span>
+                    <span>Riechen/Schmecken+{{.DerivedValues.Riechen}}</span>
+                    <span>Sechster Sinn+{{.DerivedValues.Sechster}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

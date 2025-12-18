@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ausrüstungsblatt - {{.Character.Name}}</title>
+    <link rel="stylesheet" href="export_format_a4_quer.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="header-left">Ausrüstungsblatt</span>
+            <span class="header-right">Datum: {{.Meta.Date}}</span>
+        </div>
+        
+        <div class="title-row">
+            <img src="headerimg.png" alt="Schmuckgrafik" class="header-decoration">
+            <div class="info-box">
+                <div><strong>Figur</strong> &nbsp; {{.Character.Name}} &nbsp; <strong>Grad</strong> &nbsp; {{.Character.Grade}}</div>
+                <hr>
+                <div><strong>Typ</strong> &nbsp; {{.Character.Type}} &nbsp; <strong>Zaubern</strong> &nbsp; + {{.DerivedValues.Zaubern}}</div>
+            </div>
+            <img src="headerimg.png" alt="Schmuckgrafik" class="header-decoration">
+        </div>
+        
+        <div class="flex main-content">
+            <!-- Left section: Character icon, currency, and small containers -->
+            <div class="equipment-left">
+                <div class="char-icon-section">
+                    {{if .Character.IconBase64}}
+                    <img src="{{.Character.IconBase64}}" alt="Charakter" class="char-icon">
+                    {{end}}
+                </div>
+                <table class="currency-table">
+                    <tr>
+                        <td><strong>GS</strong></td>
+                        <td>0</td>
+                        {{range $i := iterate 9}}<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>{{end}}
+                    </tr>
+                    <tr>
+                        <td><strong>SS</strong></td>
+                        <td>0</td>
+                        {{range $i := iterate 9}}<td></td>{{end}}
+                    </tr>
+                    <tr>
+                        <td><strong>KS</strong></td>
+                        <td>0</td>
+                        {{range $i := iterate 9}}<td></td>{{end}}
+                    </tr>
+                </table>
+                
+                <!-- Containers sections -->
+                {{range .Equipment}}
+                {{if .IsContainer}}
+                <table class="equipment-section">
+                    <tr>
+                        <th colspan="2">{{.Name}}</th>
+                    </tr>
+                    {{range $.Equipment}}
+                    {{if and (not .IsContainer) (eq .Container $.Name)}}
+                    <tr>
+                        <td>{{.Name}}</td>
+                        <td>{{.Quantity}} x {{.Weight}} kg</td>
+                    </tr>
+                    {{end}}
+                    {{end}}
+                    <tr>
+                        <td colspan="2" class="weight-total"><strong>Gewicht {{.Weight}} kg</strong></td>
+                    </tr>
+                </table>
+                {{end}}
+                {{end}}
+            </div>
+            
+            <!-- Right section: Equipment sections -->
+            <div class="equipment-right">
+                <!-- Section: Am Körper getragen -->
+                <!-- BLOCK: equipment_worn, TYPE: equipment, MAX: 10, FILTER: worn -->
+                <table class="equipment-section">
+                    <tr>
+                        <th colspan="2">Am Körper getragen</th>
+                    </tr>
+                    {{range .Equipment}}
+                    {{if .IsWorn}}
+                    <tr>
+                        <td>{{.Name}}</td>
+                        <td>{{.Quantity}} x {{.Weight}} kg - {{.Value}} GS{{if .Notes}}<br>{{.Notes}}{{end}}</td>
+                    </tr>
+                    {{end}}
+                    {{end}}
+                    <tr>
+                        <td colspan="2" class="weight-total"><strong>Gewicht ? kg</strong></td>
+                    </tr>
+                </table>
+                
+                <!-- Other equipment sections by container -->
+                {{$containers := .Equipment}}
+                {{range $container := $containers}}
+                {{if and $container.IsContainer (ne $container.Name "Am Körper")}}
+                <table class="equipment-section">
+                    <tr>
+                        <th colspan="2">{{$container.Name}}</th>
+                    </tr>
+                    {{range $item := $containers}}
+                    {{if and (not $item.IsContainer) (eq $item.Container $container.Name)}}
+                    <tr>
+                        <td>{{$item.Name}}</td>
+                        <td>{{$item.Quantity}} x {{$item.Weight}} kg - {{$item.Value}} GS</td>
+                    </tr>
+                    {{end}}
+                    {{end}}
+                    <tr>
+                        <td colspan="2" class="weight-total"><strong>Gewicht {{$container.Weight}} kg</strong></td>
+                    </tr>
+                </table>
+                {{end}}
+                {{end}}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

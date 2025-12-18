@@ -56,4 +56,15 @@ td, th { border: 1px solid #000; padding: 2px 4px; }
 .spell-footer p { margin-bottom: 2mm; font-size: 8pt; }
 .items-table { font-size: 8pt; width: 100%; }
 .spell-note { margin-top: 3mm; font-size: 8pt; text-align: center; }
+.equipment-left { width: 25%; display: flex; flex-direction: column; }
+.char-icon-section { margin-bottom: 5mm; text-align: center; }
+.char-icon { width: 100px; height: 100px; }
+.currency-table { font-size: 8pt; width: 100%; height: auto; margin-top: 5mm; margin-bottom: 3mm; }
+.currency-table td { text-align: center; padding: 4px 2px; }
+.equipment-right { width: 75%; flex: 1; margin-left: 5mm; }
+.equipment-section { font-size: 8pt; width: 100%; margin-bottom: 3mm; height: auto; }
+.equipment-section th { background-color: #d0d0d0; text-align: center; padding: 4px; }
+.equipment-section td { min-height: 18px; height: 18px; }
+.equipment-section td:first-child { width: 150px; font-weight: bold; }
+.weight-total { text-align: center; background-color: #e8e8e8; }
 @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }

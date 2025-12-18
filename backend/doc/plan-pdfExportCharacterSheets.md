@@ -38,7 +38,7 @@ backend/
 
 **CSS-Handling:**
 - Externes Stylesheet `export_format_a4_quer.css` bleibt erhalten
-- Templates linken auf Stylesheet via `<link rel="stylesheet" href="export_format_a4_quer.css">`
+- Templates linken auf Stylesheet via `<link rel="stylesheet" href="shared/export_format_a4_quer.css">`
 - Beim Rendering wird CSS-Datei aus `templates/Default_A4_Quer/shared/` geladen
 - Chromedp wartet auf vollständiges Laden aller Stylesheets vor PDF-Generierung
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Figurenblatt - {{.Character.Name}}</title>
-    <link rel="stylesheet" href="export_format_a4_quer.css">
+    <link rel="stylesheet" href="shared/export_format_a4_quer.css">
 </head>
 <body>
     <div class="container">
@@ -14,13 +14,13 @@
         </div>
         
         <div class="title-row">
-            <img src="headerimg.png" alt="Schmuckgrafik" class="header-decoration">
+            <img src="shared/images/headerimg.png" alt="Schmuckgrafik" class="header-decoration">
             <div class="info-box">
                 <div><strong>Figur</strong> &nbsp; {{.Character.Name}}</div>
                 <hr>
                 <div><strong>Spieler</strong> &nbsp; {{.Character.Player}}</div>
             </div>
-            <img src="headerimg.png" alt="Schmuckgrafik" class="header-decoration">
+            <img src="shared/images/headerimg.png" alt="Schmuckgrafik" class="header-decoration">
         </div>
         
         <div class="flex main-content">
@@ -112,11 +112,12 @@
                     <tr>
                         <th>Datum</th>
                         {{range .GameResults}}<th>{{.Date.Format "02.01.2006"}}</th>{{end}}
+
                         {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>ES</td>
-                        {{range .GameResults}}<td>{{.EP}}</td>{{end}}
+                        {{range .GameResults}}<td>{{.ES}}</td>{{end}}
                         {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td></td>{{end}}{{end}}
                     </tr>
                     <tr>
@@ -130,36 +131,24 @@
                         {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td></td>{{end}}{{end}}
                     </tr>
                     <tr>
-                        <td><b><center>Datum</center></b></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <th>Datum</th>
+                        {{range .GameResults}}<th>{{.Date.Format "02.01.2006"}}</th>{{end}}
+                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>ES</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        {{range .GameResults}}<td>{{.ES}}</td>{{end}}
+                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td></td>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>EP</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        {{range .GameResults}}<td>{{.ES}}</td>{{end}}
+                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td></td>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>Geld</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        {{range .GameResults}}<td>{{.Gold}}</td>{{end}}
+                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td></td>{{end}}{{end}}
                     </tr>
                 </table>
             </div>

@@ -61,13 +61,36 @@ func PreparePaginatedPageData(viewModel *CharacterSheetViewModel, templateName s
 		if len(pageData.Weapons) > 30 {
 			pageData.Weapons = pageData.Weapons[:30]
 		}
-		pageData.Skills = viewModel.Skills
-	} else if templateName == "page3_spell.html" {
-		// Limit spells according to capacity (24 total: 12+12)
-		pageData.Spells = viewModel.Spells
-		if len(pageData.Spells) > 24 {
-			pageData.Spells = pageData.Spells[:24]
+
+		// Filter skills by category for page2 blocks
+		var learnedSkills, languageSkills []SkillViewModel
+		for _, skill := range viewModel.Skills {
+			if skill.Category == "Sprache" {
+				languageSkills = append(languageSkills, skill)
+			} else if skill.IsLearned {
+				learnedSkills = append(learnedSkills, skill)
+			}
 		}
+
+		// Apply capacity limits
+		if len(learnedSkills) > 24 {
+			learnedSkills = learnedSkills[:24]
+		}
+		if len(languageSkills) > 11 {
+			languageSkills = languageSkills[:11]
+		}
+
+		pageData.SkillsLearned = learnedSkills
+		pageData.SkillsLanguage = languageSkills
+		pageData.Skills = viewModel.Skills // Keep for backward compatibility
+	} else if templateName == "page3_spell.html" {
+		// Split spells into left (20) and right (10) columns
+		leftSpells, rightSpells := SplitSkillsIntoColumns(viewModel.Spells, 20, 10)
+		pageData.SpellsLeft = leftSpells
+		pageData.SpellsRight = rightSpells
+		pageData.Spells = viewModel.Spells // Keep for backward compatibility
+
+		// Limit magic items to 5
 		pageData.MagicItems = viewModel.MagicItems
 		if len(pageData.MagicItems) > 5 {
 			pageData.MagicItems = pageData.MagicItems[:5]
@@ -93,6 +116,27 @@ func SplitSkillsForColumns(skills []SkillViewModel, col1Max, col2Max int) ([]Ski
 	col2 := []SkillViewModel{}
 	if len(skills) > col1Max {
 		remaining := skills[col1Max:]
+		if len(remaining) > col2Max {
+			col2 = remaining[:col2Max]
+		} else {
+			col2 = remaining
+		}
+	}
+
+	return col1, col2
+}
+
+// SplitSkillsIntoColumns splits spells/items into two columns (generic for any slice type)
+// Returns (column1, column2)
+func SplitSkillsIntoColumns[T any](items []T, col1Max, col2Max int) ([]T, []T) {
+	col1 := items
+	if len(col1) > col1Max {
+		col1 = col1[:col1Max]
+	}
+
+	col2 := []T{}
+	if len(items) > col1Max {
+		remaining := items[col1Max:]
 		if len(remaining) > col2Max {
 			col2 = remaining[:col2Max]
 		} else {

@@ -87,8 +87,8 @@ func TestGetTemplateMetadata(t *testing.T) {
 	if leftBlock == nil {
 		t.Error("Expected to find 'spells_left' block")
 	} else {
-		if leftBlock.MaxItems != 12 {
-			t.Errorf("Expected spells_left max 12, got %d", leftBlock.MaxItems)
+		if leftBlock.MaxItems != 20 {
+			t.Errorf("Expected spells_left max 20, got %d", leftBlock.MaxItems)
 		}
 	}
 

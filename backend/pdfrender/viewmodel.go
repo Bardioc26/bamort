@@ -173,14 +173,18 @@ type PageData struct {
 	DerivedValues DerivedValueSet
 
 	// Lists sliced according to template block metadata
-	Skills        []SkillViewModel
-	SkillsColumn1 []SkillViewModel // For two-column skill layout
-	SkillsColumn2 []SkillViewModel // For two-column skill layout
-	Weapons       []WeaponViewModel
-	Spells        []SpellViewModel
-	MagicItems    []MagicItemViewModel
-	Equipment     []EquipmentViewModel
-	GameResults   []GameResultViewModel
+	Skills         []SkillViewModel
+	SkillsColumn1  []SkillViewModel // For two-column skill layout (page1)
+	SkillsColumn2  []SkillViewModel // For two-column skill layout (page1)
+	SkillsLearned  []SkillViewModel // Filtered learned skills (page2)
+	SkillsLanguage []SkillViewModel // Filtered language skills (page2)
+	Weapons        []WeaponViewModel
+	Spells         []SpellViewModel
+	SpellsLeft     []SpellViewModel // Left column spells (page3)
+	SpellsRight    []SpellViewModel // Right column spells (page3)
+	MagicItems     []MagicItemViewModel
+	Equipment      []EquipmentViewModel
+	GameResults    []GameResultViewModel
 
 	Meta PageMeta
 }

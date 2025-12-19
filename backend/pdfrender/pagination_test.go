@@ -211,16 +211,16 @@ func TestPaginateSpells_TwoColumns(t *testing.T) {
 
 	page := pages[0]
 
-	// Column 1 should have 12 spells
-	col1Data := page.Data["spells_column1"].([]SpellViewModel)
-	if len(col1Data) != 12 {
-		t.Errorf("Expected 12 spells in column 1, got %d", len(col1Data))
+	// Left column should have 15 spells (all fit in 20 capacity)
+	leftData := page.Data["spells_left"].([]SpellViewModel)
+	if len(leftData) != 15 {
+		t.Errorf("Expected 15 spells in left column, got %d", len(leftData))
 	}
 
-	// Column 2 should have 3 spells
-	col2Data := page.Data["spells_column2"].([]SpellViewModel)
-	if len(col2Data) != 3 {
-		t.Errorf("Expected 3 spells in column 2, got %d", len(col2Data))
+	// Right column should be empty (15 spells all fit in left)
+	rightData := page.Data["spells_right"].([]SpellViewModel)
+	if len(rightData) != 0 {
+		t.Errorf("Expected 0 spells in right column, got %d", len(rightData))
 	}
 }
 
@@ -229,7 +229,7 @@ func TestPaginateSpells_MultiPage(t *testing.T) {
 	templateSet := DefaultA4QuerTemplateSet()
 	paginator := NewPaginator(templateSet)
 
-	// Create 30 spells - should span 2 pages (24 capacity per page = 12+12)
+	// Create 30 spells - should fit on 1 page (30 capacity = 20 left + 10 right)
 	spells := make([]SpellViewModel, 30)
 	for i := 0; i < 30; i++ {
 		spells[i] = SpellViewModel{Name: "Spell" + string(rune(i))}
@@ -243,30 +243,20 @@ func TestPaginateSpells_MultiPage(t *testing.T) {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	if len(pages) != 2 {
-		t.Fatalf("Expected 2 pages, got %d", len(pages))
+	// With capacity of 20+10=30, all 30 spells fit on 1 page
+	if len(pages) != 1 {
+		t.Fatalf("Expected 1 page, got %d", len(pages))
 	}
 
-	// Page 1 should have 24 spells (12 + 12)
+	// Page 1 should have all 30 spells (20 left + 10 right)
 	page1 := pages[0]
-	col1Page1 := page1.Data["spells_column1"].([]SpellViewModel)
-	col2Page1 := page1.Data["spells_column2"].([]SpellViewModel)
-	if len(col1Page1) != 12 {
-		t.Errorf("Page 1 col1: expected 12 spells, got %d", len(col1Page1))
+	leftPage1 := page1.Data["spells_left"].([]SpellViewModel)
+	rightPage1 := page1.Data["spells_right"].([]SpellViewModel)
+	if len(leftPage1) != 20 {
+		t.Errorf("Page 1 left: expected 20 spells, got %d", len(leftPage1))
 	}
-	if len(col2Page1) != 12 {
-		t.Errorf("Page 1 col2: expected 12 spells, got %d", len(col2Page1))
-	}
-
-	// Page 2 should have 6 spells (6 + 0)
-	page2 := pages[1]
-	col1Page2 := page2.Data["spells_column1"].([]SpellViewModel)
-	col2Page2 := page2.Data["spells_column2"].([]SpellViewModel)
-	if len(col1Page2) != 6 {
-		t.Errorf("Page 2 col1: expected 6 spells, got %d", len(col1Page2))
-	}
-	if len(col2Page2) != 0 {
-		t.Errorf("Page 2 col2: expected 0 spells, got %d", len(col2Page2))
+	if len(rightPage1) != 10 {
+		t.Errorf("Page 1 right: expected 10 spells, got %d", len(rightPage1))
 	}
 }
 
@@ -355,8 +345,8 @@ func TestCalculatePagesNeeded(t *testing.T) {
 		{"30 weapons on page2", "page2_play.html", "weapons", 30, 1},
 		{"31 weapons on page2", "page2_play.html", "weapons", 31, 2},
 		{"10 spells on page3", "page3_spell.html", "spells", 10, 1},
-		{"24 spells on page3", "page3_spell.html", "spells", 24, 1},
-		{"25 spells on page3", "page3_spell.html", "spells", 25, 2},
+		{"30 spells on page3", "page3_spell.html", "spells", 30, 1}, // 20+10 = 30 fits on 1 page
+		{"31 spells on page3", "page3_spell.html", "spells", 31, 2}, // 31 requires 2 pages
 	}
 
 	for _, tc := range testCases {

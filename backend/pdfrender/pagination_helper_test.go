@@ -173,9 +173,18 @@ func TestPreparePaginatedPageData_Page3Spell(t *testing.T) {
 		t.Fatalf("PreparePaginatedPageData failed: %v", err)
 	}
 
-	// Page 3 should have spells limited to 24 (12+12)
-	if len(pageData.Spells) > 24 {
-		t.Errorf("Spells exceed capacity: got %d, max 24", len(pageData.Spells))
+	// Page 3 should have spells split: left (max 20) and right (max 10)
+	if len(pageData.SpellsLeft) > 20 {
+		t.Errorf("SpellsLeft exceed capacity: got %d, max 20", len(pageData.SpellsLeft))
+	}
+
+	if len(pageData.SpellsRight) > 10 {
+		t.Errorf("SpellsRight exceed capacity: got %d, max 10", len(pageData.SpellsRight))
+	}
+
+	totalSpells := len(pageData.SpellsLeft) + len(pageData.SpellsRight)
+	if totalSpells > 30 {
+		t.Errorf("Total spells exceed capacity: got %d, max 30 (20+10)", totalSpells)
 	}
 
 	// Magic items limited to 5
@@ -183,7 +192,8 @@ func TestPreparePaginatedPageData_Page3Spell(t *testing.T) {
 		t.Errorf("MagicItems exceed capacity: got %d, max 5", len(pageData.MagicItems))
 	}
 
-	t.Logf("Page3: %d spells, %d magic items", len(pageData.Spells), len(pageData.MagicItems))
+	t.Logf("Page3: left=%d, right=%d (total=%d spells), %d magic items",
+		len(pageData.SpellsLeft), len(pageData.SpellsRight), totalSpells, len(pageData.MagicItems))
 }
 
 func TestPreparePaginatedPageData_Page4Equipment(t *testing.T) {

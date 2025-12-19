@@ -152,7 +152,7 @@ func TestIntegration_TemplateMetadata(t *testing.T) {
 	}{
 		{"page1_stats.html", "skills_column1", 29},
 		{"page2_play.html", "skills_learned", 24},
-		{"page3_spell.html", "spells_left", 12},
+		{"page3_spell.html", "spells_left", 20},
 		{"page3_spell.html", "spells_right", 10},
 		{"page4_equip.html", "equipment_worn", 10},
 	}
@@ -296,31 +296,24 @@ func TestIntegration_MultiPageSpellList(t *testing.T) {
 		t.Fatalf("Failed to paginate spells: %v", err)
 	}
 
-	// Should create 2 pages
-	if len(pages) != 2 {
-		t.Fatalf("Expected 2 pages for 30 spells, got %d", len(pages))
-	}
+	// With 30 capacity (20+10), should create 1 page for 30 spells
 
 	// Verify distribution
-	// Page 1: 12 + 12 = 24 spells
-	col1Page1 := pages[0].Data["spells_column1"].([]SpellViewModel)
-	col2Page1 := pages[0].Data["spells_column2"].([]SpellViewModel)
-	totalPage1 := len(col1Page1) + len(col2Page1)
-
-	if totalPage1 != 24 {
-		t.Errorf("Expected 24 spells on page 1, got %d", totalPage1)
+	// With 20+10 capacity, 30 spells should fit on 1 page
+	if len(pages) != 1 {
+		t.Fatalf("Expected 1 page for 30 spells, got %d", len(pages))
 	}
 
-	// Page 2: 6 + 0 = 6 spells
-	col1Page2 := pages[1].Data["spells_column1"].([]SpellViewModel)
-	col2Page2 := pages[1].Data["spells_column2"].([]SpellViewModel)
-	totalPage2 := len(col1Page2) + len(col2Page2)
+	// Page 1: 20 (left) + 10 (right) = 30 spells
+	leftPage1 := pages[0].Data["spells_left"].([]SpellViewModel)
+	rightPage1 := pages[0].Data["spells_right"].([]SpellViewModel)
+	totalPage1 := len(leftPage1) + len(rightPage1)
 
-	if totalPage2 != 6 {
-		t.Errorf("Expected 6 spells on page 2, got %d", totalPage2)
+	if totalPage1 != 30 {
+		t.Errorf("Expected 30 spells on page 1 (20+10), got %d", totalPage1)
 	}
 
-	t.Logf("Successfully distributed 30 spells: Page 1 has %d, Page 2 has %d", totalPage1, totalPage2)
+	t.Logf("Successfully distributed 30 spells: Page 1 has %d (left %d, right %d)", totalPage1, len(leftPage1), len(rightPage1))
 }
 
 // TestIntegration_CompleteWorkflow demonstrates the full workflow from character to multi-page PDF

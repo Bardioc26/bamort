@@ -26,7 +26,7 @@
         <div class="flex main-content">
             <!-- Left spell table -->
             <div class="left-section">
-                <!-- BLOCK: spells_left, TYPE: spells, MAX: 12 -->
+                <!-- BLOCK: spells_left, TYPE: spells, MAX: 20 -->
                 <table class="spells-table">
                     <tr>
                         <th>AP<hr>Prozess *</th>
@@ -36,7 +36,7 @@
                         <th>Wirkung</th>
                         <th>Wirk.ziel<hr>Art</th>
                     </tr>
-                    {{range .Spells}}
+                    {{range .SpellsLeft}}
                     <tr>
                         <td>{{.AP}}<hr>{{.Notes}}</td>
                         <td>{{.Name}}</td>
@@ -61,7 +61,7 @@
                         <th>Wirkung</th>
                         <th>Wirk.ziel<br>Art</th>
                     </tr>
-                    {{range .Spells}}
+                    {{range .SpellsRight}}
                     <tr>
                         <td>{{.AP}}<hr>{{.Notes}}</td>
                         <td>{{.Name}}</td>

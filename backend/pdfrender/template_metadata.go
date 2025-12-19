@@ -98,15 +98,15 @@ func DefaultA4QuerTemplateSet() TemplateSet {
 					Description: "Zauberseite mit Zauberliste",
 					Blocks: []BlockMetadata{
 						{
-							Name:     "spells_column1",
+							Name:     "spells_left",
 							ListType: "spells",
-							MaxItems: 12,
+							MaxItems: 20,
 							Column:   1,
 						},
 						{
-							Name:     "spells_column2",
+							Name:     "spells_right",
 							ListType: "spells",
-							MaxItems: 12,
+							MaxItems: 10,
 							Column:   2,
 						},
 						{

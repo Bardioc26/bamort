@@ -59,7 +59,7 @@
                             <th>EW</th>
                             <th>PP</th>
                         </tr>
-                        {{range .Skills}}
+                        {{range .SkillsLearned}}
                         <tr><td>{{.Name}}</td><td>+ {{.Value}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
                         {{end}}
                     </table>
@@ -92,10 +92,8 @@
                                 <th>EW</th>
                                 <th>PP</th>
                             </tr>
-                            {{range .Skills}}
-                            {{if eq .Category "Sprache"}}
+                            {{range .SkillsLanguage}}
                             <tr><td>{{.Name}}</td><td>+ {{.Value}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
-                            {{end}}
                             {{end}}
                         </table>
                     </div>

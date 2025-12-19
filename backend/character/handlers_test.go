@@ -154,11 +154,11 @@ func TestImproveSkillHandler(t *testing.T) {
 		assert.Equal(t, 250, updatedChar.Erfahrungsschatz.EP, "Character should have 316 EP remaining")
 
 		// Check that Gold was deducted correctly
-		assert.Equal(t, 290, updatedChar.Vermoegen.Goldstücke, "Character should have 370 Gold remaining")
+		assert.Equal(t, 290, updatedChar.Vermoegen.Goldstuecke, "Character should have 370 Gold remaining")
 
 		t.Logf("Test completed successfully!")
 		t.Logf("EP: %d -> %d (cost: %.0f)", 326, updatedChar.Erfahrungsschatz.EP, response["ep_cost"])
-		t.Logf("Gold: %d -> %d (cost: %.0f)", 390, updatedChar.Vermoegen.Goldstücke, response["gold_cost"])
+		t.Logf("Gold: %d -> %d (cost: %.0f)", 390, updatedChar.Vermoegen.Goldstuecke, response["gold_cost"])
 	})
 
 }

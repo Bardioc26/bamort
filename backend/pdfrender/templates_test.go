@@ -82,23 +82,23 @@ func TestGetTemplateMetadata(t *testing.T) {
 		t.Fatal("Expected metadata blocks, got none")
 	}
 
-	// Check for spells_left block (template says MAX: 26)
+	// Check for spells_left block (template says MAX: 15)
 	leftBlock := GetBlockByName(metadata, "spells_left")
 	if leftBlock == nil {
 		t.Error("Expected to find 'spells_left' block")
 	} else {
-		if leftBlock.MaxItems != 26 {
-			t.Errorf("Expected spells_left max 26 (from template), got %d", leftBlock.MaxItems)
+		if leftBlock.MaxItems != 15 {
+			t.Errorf("Expected spells_left max 15 (from template), got %d", leftBlock.MaxItems)
 		}
 	}
 
-	// Check for spells_right block (template says MAX: 15)
+	// Check for spells_right block (template says MAX: 10)
 	rightBlock := GetBlockByName(metadata, "spells_right")
 	if rightBlock == nil {
 		t.Error("Expected to find 'spells_right' block")
 	} else {
-		if rightBlock.MaxItems != 15 {
-			t.Errorf("Expected spells_right max 15 (from template), got %d", rightBlock.MaxItems)
+		if rightBlock.MaxItems != 10 {
+			t.Errorf("Expected spells_right max 10 (from template), got %d", rightBlock.MaxItems)
 		}
 	}
 }

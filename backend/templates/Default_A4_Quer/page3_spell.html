@@ -26,7 +26,7 @@
         <div class="flex main-content">
             <!-- Left spell table -->
             <div class="left-section">
-                <!-- BLOCK: spells_left, TYPE: spells, MAX: 26 -->
+                <!-- BLOCK: spells_left, TYPE: spells, MAX: 15 -->
                 <table class="spells-table">
                     <tr>
                         <th>AP<hr>Prozess *</th>
@@ -38,12 +38,12 @@
                     </tr>
                     {{range .SpellsLeft}}
                     <tr>
-                        <td>{{.AP}}<hr>{{.Notes}}</td>
+                        <td>{{.AP}}<hr>{{.Category}}&nbsp;</td>
                         <td>{{.Name}}</td>
-                        <td>{{.CastTime}}<hr>{{.Range}}</td>
-                        <td>{{.Scope}}<hr>{{.Duration}}</td>
-                        <td>{{.Notes}}</td>
-                        <td>{{.Objective}}<hr>{{.CastingType}}</td>
+                        <td>{{.Zauberdauer}}&nbsp;<hr>{{.Reichweite}}&nbsp;</td>
+                        <td>{{.Wirkungsbereich}}&nbsp;<hr>{{.Wirkungsdauer}}&nbsp;</td>
+                        <td>{{.Beschreibung}}&nbsp;</td>
+                        <td>{{.Wirkungsziel}}&nbsp;<hr>{{.Art}}&nbsp;</td>
                     </tr>
                     {{end}}
                 </table>
@@ -51,7 +51,7 @@
             
             <!-- Right spell table -->
             <div class="right-section">
-                <!-- BLOCK: spells_right, TYPE: spells, MAX: 15 -->
+                <!-- BLOCK: spells_right, TYPE: spells, MAX: 10 -->
                 <table class="spells-table">
                     <tr>
                         <th>AP<br>Prozess *</th>
@@ -63,18 +63,18 @@
                     </tr>
                     {{range .SpellsRight}}
                     <tr>
-                        <td>{{.AP}}<hr>{{.Notes}}</td>
+                        <td>{{.AP}}&nbsp;<hr>{{.Category}}&nbsp;</td>
                         <td>{{.Name}}</td>
-                        <td>{{.CastTime}}<hr>{{.Range}}</td>
-                        <td>{{.Scope}}<hr>{{.Duration}}</td>
-                        <td>{{.Notes}}</td>
-                        <td>{{.Objective}}<hr>{{.CastingType}}</td>
+                        <td>{{.Zauberdauer}}&nbsp;<hr>{{.Reichweite}}&nbsp;</td>
+                        <td>{{.Wirkungsbereich}}&nbsp;<hr>{{.Wirkungsdauer}}&nbsp;</td>
+                        <td>{{.Beschreibung}}&nbsp;</td>
+                        <td>{{.Wirkungsziel}}&nbsp;<hr>{{.Art}}&nbsp;</td>
                     </tr>
                     {{end}}
                 </table>
                 <div class="spell-footer">
                     <p><em>wichtige magische Gegenstände, Tränke, Schriftrollen</em></p>
-                    <!-- BLOCK: magic_items, TYPE: magicItems, MAX: 8 -->
+                    <!-- BLOCK: magic_items, TYPE: magicItems, MAX: 5 -->
                     <table class="items-table">
                         <tr>
                             <th>Gegenstand</th>

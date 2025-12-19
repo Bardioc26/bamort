@@ -31,6 +31,14 @@ type CharacterInfo struct {
 	Homeland   string
 	Religion   string
 	Stand      string // Sozialer Stand
+	Vermoegen  WealthInfo
+}
+
+// WealthInfo contains character wealth/money
+type WealthInfo struct {
+	Goldstuecke   int
+	Silberstuecke int
+	Kupferstuecke int
 }
 
 // AttributeValues contains all character attributes
@@ -110,17 +118,20 @@ type WeaponViewModel struct {
 
 // SpellViewModel represents a spell for display
 type SpellViewModel struct {
-	Name     string
-	AP       int // Abenteuerpunkte
-	Category int // Kategorie (z.B. "Beherrschen", "Erkennen")
-	//CastValue   int    // Zauberwert
-	CastTime    string // Zauberdauer (z.B. "1 sec", "10 min")
-	Range       string // Reichweite (z.B. "0", "30m")
-	Scope       string // Wirkungsbereich (z.B. "1-10 Wesen", "Kegel 5m", "Zauberer", "m²", ...)
-	Duration    string // Wirkungsdauer (z.B. "0", "10 min")
-	Objective   string // wirkungsziel (z.B. Körper, Geist, Umgebung)
-	CastingType string // Art des Zaubers (z.B. "Geste", "Wort", "Gedanke")
-	Notes       string // Notizen/Besonderheiten
+	Name             string
+	Bonus            int    // Character's bonus for this spell
+	Stufe            int    // Spell level
+	AP               string // Abenteuerpunkte cost
+	Art              string // Art des Zaubers (z.B. "Gestenzauber", "Wortzauber")
+	Zauberdauer      string // Zauberdauer (z.B. "1 sec", "10 min")
+	Reichweite       string // Reichweite (z.B. "0", "30m")
+	Wirkungsziel     string // Wirkungsziel (z.B. Körper, Geist, Umgebung)
+	Wirkungsbereich  string // Wirkungsbereich (z.B. "1-10 Wesen", "Kegel 5m")
+	Wirkungsdauer    string // Wirkungsdauer (z.B. "0", "10 min")
+	Ursprung         string // Origin/source of the spell
+	Category         string // Spell school/category
+	LearningCategory string // Learning category
+	Beschreibung     string // Description
 }
 
 // MagicItemViewModel represents a magical item

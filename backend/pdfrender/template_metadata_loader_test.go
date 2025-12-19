@@ -89,9 +89,9 @@ func TestDefaultA4QuerTemplateSet_LoadsFromFiles(t *testing.T) {
 	if spellsLeft == nil {
 		t.Error("spells_left block not found")
 	} else {
-		// Should be 26 from the template file (<!-- BLOCK: spells_left, TYPE: spells, MAX: 26 -->)
-		if spellsLeft.MaxItems != 26 {
-			t.Errorf("Expected spells_left MaxItems 26 (from template file), got %d", spellsLeft.MaxItems)
+		// Should be 15 from the template file (<!-- BLOCK: spells_left, TYPE: spells, MAX: 15 -->)
+		if spellsLeft.MaxItems != 15 {
+			t.Errorf("Expected spells_left MaxItems 15 (from template file), got %d", spellsLeft.MaxItems)
 		}
 	}
 }

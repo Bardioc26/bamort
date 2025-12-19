@@ -29,22 +29,24 @@
                 <div class="char-icon-section">
                     {{if .Character.IconBase64}}
                     <img src="{{.Character.IconBase64}}" alt="Charakter" class="char-icon">
+                    {{else}}
+                    <img src="shared/images/token_bebe.png" alt="Charakter" class="char-icon">
                     {{end}}
                 </div>
                 <table class="currency-table">
                     <tr>
                         <td><strong>GS</strong></td>
-                        <td>0</td>
+                        <td>{{.Character.Vermoegen.Goldstuecke}}</td>
                         {{range $i := iterate 9}}<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>{{end}}
                     </tr>
                     <tr>
                         <td><strong>SS</strong></td>
-                        <td>0</td>
+                        <td>{{.Character.Vermoegen.Silberstuecke}}</td>
                         {{range $i := iterate 9}}<td></td>{{end}}
                     </tr>
                     <tr>
                         <td><strong>KS</strong></td>
-                        <td>0</td>
+                        <td>{{.Character.Vermoegen.Kupferstuecke}}</td>
                         {{range $i := iterate 9}}<td></td>{{end}}
                     </tr>
                 </table>

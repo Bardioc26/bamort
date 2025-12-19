@@ -1,6 +1,9 @@
 package pdfrender
 
 import (
+	"fmt"
+
+	"bamort/database"
 	"bamort/models"
 )
 
@@ -28,6 +31,11 @@ func MapCharacterToViewModel(char *models.Char) (*CharacterSheetViewModel, error
 		Religion:   char.Glaube,
 		Stand:      char.SocialClass,
 		IconBase64: "", // Will be set later if image exists
+		Vermoegen: WealthInfo{
+			Goldstuecke:   char.Vermoegen.Goldstuecke,
+			Silberstuecke: char.Vermoegen.Silberstuecke,
+			Kupferstuecke: char.Vermoegen.Kupferstuecke,
+		},
 	}
 
 	// Map attributes
@@ -129,10 +137,45 @@ func mapWeapons(char *models.Char) []WeaponViewModel {
 func mapSpells(char *models.Char) []SpellViewModel {
 	spells := make([]SpellViewModel, 0, len(char.Zauber))
 
-	for _, spell := range char.Zauber {
-		spells = append(spells, SpellViewModel{
-			Name: spell.Name,
-		})
+	for _, charSpell := range char.Zauber {
+		vm := SpellViewModel{
+			Name:  charSpell.Name,
+			Bonus: charSpell.Bonus,
+		}
+
+		// Try to load spell details from gsmaster (only if database is available)
+		// In test environments without DB, we skip this enrichment
+		if database.DB != nil {
+			masterSpell := &models.Spell{}
+			err := masterSpell.First(charSpell.Name)
+
+			// If master spell found, add all details
+			if err == nil && masterSpell.ID > 0 {
+				vm.Stufe = masterSpell.Stufe
+				vm.AP = masterSpell.AP
+				vm.Art = masterSpell.Art
+				vm.Zauberdauer = masterSpell.Zauberdauer
+				vm.Reichweite = masterSpell.Reichweite
+				vm.Wirkungsziel = masterSpell.Wirkungsziel
+				vm.Wirkungsbereich = masterSpell.Wirkungsbereich
+				vm.Wirkungsdauer = masterSpell.Wirkungsdauer
+				vm.Ursprung = masterSpell.Ursprung
+				vm.Category = masterSpell.Category
+				vm.LearningCategory = masterSpell.LearningCategory
+				vm.Beschreibung = masterSpell.Beschreibung
+
+				// If description is empty, use source code and page number
+				if vm.Beschreibung == "" && masterSpell.SourceID > 0 && masterSpell.PageNumber > 0 {
+					source := &models.Source{}
+					if err := database.DB.First(source, masterSpell.SourceID).Error; err == nil {
+						vm.Beschreibung = source.Code + " S." + fmt.Sprintf("%d", masterSpell.PageNumber)
+					}
+				}
+			}
+		}
+		// If spell details not found or DB not available, just use name and bonus from character
+
+		spells = append(spells, vm)
 	}
 
 	return spells

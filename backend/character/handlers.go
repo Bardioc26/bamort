@@ -210,9 +210,9 @@ func GetCharacterExperienceAndWealth(c *gin.Context) {
 
 	// Berechne Gesamtvermögen in Silbergroschen
 	// Annahme: 1 GS = 10 SS, 1 SS = 10 KS (typische Midgard Währung)
-	gs := character.Vermoegen.Goldstücke
-	ss := character.Vermoegen.Silberstücke
-	ks := character.Vermoegen.Kupferstücke
+	gs := character.Vermoegen.Goldstuecke
+	ss := character.Vermoegen.Silberstuecke
+	ks := character.Vermoegen.Kupferstuecke
 	totalInSS := (gs * 10) + ss + (ks / 10)
 
 	response := ExperienceAndWealthResponse{
@@ -355,9 +355,9 @@ func UpdateCharacterWealth(c *gin.Context) {
 	oldSilver := 0
 	oldCopper := 0
 	if character.Vermoegen.ID != 0 {
-		oldGold = character.Vermoegen.Goldstücke
-		oldSilver = character.Vermoegen.Silberstücke
-		oldCopper = character.Vermoegen.Kupferstücke
+		oldGold = character.Vermoegen.Goldstuecke
+		oldSilver = character.Vermoegen.Silberstuecke
+		oldCopper = character.Vermoegen.Kupferstuecke
 	}
 
 	// Aktualisiere oder erstelle Vermögen
@@ -369,9 +369,9 @@ func UpdateCharacterWealth(c *gin.Context) {
 				CharacterID: character.ID,
 				UserID:      userID,
 			},
-			Goldstücke:   getValueOrDefault(req.Goldstücke, 0),
-			Silberstücke: getValueOrDefault(req.Silberstücke, 0),
-			Kupferstücke: getValueOrDefault(req.Kupferstücke, 0),
+			Goldstuecke:   getValueOrDefault(req.Goldstücke, 0),
+			Silberstuecke: getValueOrDefault(req.Silberstücke, 0),
+			Kupferstuecke: getValueOrDefault(req.Kupferstücke, 0),
 		}
 		if err := database.DB.Create(&character.Vermoegen).Error; err != nil {
 			respondWithError(c, http.StatusInternalServerError, "Failed to create wealth record")
@@ -380,13 +380,13 @@ func UpdateCharacterWealth(c *gin.Context) {
 	} else {
 		// Aktualisiere existierendes Vermögen
 		if req.Goldstücke != nil {
-			character.Vermoegen.Goldstücke = *req.Goldstücke
+			character.Vermoegen.Goldstuecke = *req.Goldstücke
 		}
 		if req.Silberstücke != nil {
-			character.Vermoegen.Silberstücke = *req.Silberstücke
+			character.Vermoegen.Silberstuecke = *req.Silberstücke
 		}
 		if req.Kupferstücke != nil {
-			character.Vermoegen.Kupferstücke = *req.Kupferstücke
+			character.Vermoegen.Kupferstuecke = *req.Kupferstücke
 		}
 		if err := database.DB.Save(&character.Vermoegen).Error; err != nil {
 			respondWithError(c, http.StatusInternalServerError, "Failed to update wealth")
@@ -398,36 +398,36 @@ func UpdateCharacterWealth(c *gin.Context) {
 	// TODO: User-ID aus dem Authentifizierungs-Context holen
 	userID := uint(0) // Placeholder
 
-	if req.Goldstücke != nil && oldGold != character.Vermoegen.Goldstücke {
+	if req.Goldstücke != nil && oldGold != character.Vermoegen.Goldstuecke {
 		CreateAuditLogEntry(
 			character.ID,
 			"gold",
 			oldGold,
-			character.Vermoegen.Goldstücke,
+			character.Vermoegen.Goldstuecke,
 			AuditLogReason(req.Reason),
 			userID,
 			req.Notes,
 		)
 	}
 
-	if req.Silberstücke != nil && oldSilver != character.Vermoegen.Silberstücke {
+	if req.Silberstücke != nil && oldSilver != character.Vermoegen.Silberstuecke {
 		CreateAuditLogEntry(
 			character.ID,
 			"silver",
 			oldSilver,
-			character.Vermoegen.Silberstücke,
+			character.Vermoegen.Silberstuecke,
 			AuditLogReason(req.Reason),
 			userID,
 			req.Notes,
 		)
 	}
 
-	if req.Kupferstücke != nil && oldCopper != character.Vermoegen.Kupferstücke {
+	if req.Kupferstücke != nil && oldCopper != character.Vermoegen.Kupferstuecke {
 		CreateAuditLogEntry(
 			character.ID,
 			"copper",
 			oldCopper,
-			character.Vermoegen.Kupferstücke,
+			character.Vermoegen.Kupferstuecke,
 			AuditLogReason(req.Reason),
 			userID,
 			req.Notes,
@@ -437,9 +437,9 @@ func UpdateCharacterWealth(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Wealth updated successfully",
 		"wealth": gin.H{
-			"goldstücke":   character.Vermoegen.Goldstücke,
-			"silberstücke": character.Vermoegen.Silberstücke,
-			"kupferstücke": character.Vermoegen.Kupferstücke,
+			"goldstücke":   character.Vermoegen.Goldstuecke,
+			"silberstücke": character.Vermoegen.Silberstuecke,
+			"kupferstücke": character.Vermoegen.Kupferstuecke,
 		},
 	})
 }
@@ -742,7 +742,7 @@ func deductResourcesForLearning(char *models.Char, skillName string, finalLevel,
 // deductResourcesWithAuditReason zieht EP, Gold und PP ab und erstellt entsprechende Audit-Log-Einträge
 func deductResourcesWithAuditReason(char *models.Char, itemName string, finalLevel, totalEP, totalGold, totalPP int, auditReason AuditLogReason) (int, int, error) {
 	currentEP := char.Erfahrungsschatz.EP
-	currentGold := char.Vermoegen.Goldstücke
+	currentGold := char.Vermoegen.Goldstuecke
 
 	// EP abziehen und Audit-Log erstellen
 	newEP := currentEP - totalEP
@@ -780,7 +780,7 @@ func deductResourcesWithAuditReason(char *models.Char, itemName string, finalLev
 		if err != nil {
 			return 0, 0, fmt.Errorf("fehler beim Erstellen des Audit-Log-Eintrags: %v", err)
 		}
-		char.Vermoegen.Goldstücke = newGold
+		char.Vermoegen.Goldstuecke = newGold
 		if err := database.DB.Save(&char.Vermoegen).Error; err != nil {
 			return 0, 0, fmt.Errorf("fehler beim Speichern des Vermögens: %v", err)
 		}
@@ -920,7 +920,7 @@ func validateResources(char *models.Char, skillName string, totalEP, totalGold, 
 	}
 
 	// Prüfe, ob genügend Gold vorhanden ist
-	currentGold := char.Vermoegen.Goldstücke
+	currentGold := char.Vermoegen.Goldstuecke
 	if currentGold < totalGold {
 		return fmt.Errorf("Nicht genügend Gold vorhanden")
 	}
@@ -953,7 +953,7 @@ func validateResources(char *models.Char, skillName string, totalEP, totalGold, 
 // TODO Fehlerbehandlung (Falls Tabelle nicht vorhanden ist)
 func deductResources(char *models.Char, skillName string, currentLevel, finalLevel, totalEP, totalGold, totalPP int) (int, int, error) {
 	currentEP := char.Erfahrungsschatz.EP
-	currentGold := char.Vermoegen.Goldstücke
+	currentGold := char.Vermoegen.Goldstuecke
 
 	// EP abziehen und Audit-Log erstellen
 	newEP := currentEP - totalEP
@@ -986,7 +986,7 @@ func deductResources(char *models.Char, skillName string, currentLevel, finalLev
 		if err != nil {
 			return newEP, newGold, fmt.Errorf("Fehler beim Erstellen des Audit-Log-Eintrags: %v", err)
 		}
-		char.Vermoegen.Goldstücke = newGold
+		char.Vermoegen.Goldstuecke = newGold
 		if err := database.DB.Save(&char.Vermoegen).Error; err != nil {
 			return newEP, newGold, fmt.Errorf("Fehler beim Speichern des Vermögens: %v", err)
 		}
@@ -2769,7 +2769,7 @@ func FinalizeCharacterCreation(c *gin.Context) {
 			BamortCharTrait: models.BamortCharTrait{
 				UserID: userID,
 			},
-			Goldstücke: 80,
+			Goldstuecke: 80,
 		},
 
 		// Bennies (Glückspunkte, etc.)

@@ -28,24 +28,24 @@ func TestPaginationUsesTemplateMetadata(t *testing.T) {
 	if skillsLearned == nil {
 		t.Fatal("skills_learned block not found")
 	}
-	if skillsLearned.MaxItems != 18 {
-		t.Errorf("skills_learned: expected MAX 18 from template, got %d", skillsLearned.MaxItems)
+	if skillsLearned.MaxItems != 17 {
+		t.Errorf("skills_learned: expected MAX 17 from template, got %d", skillsLearned.MaxItems)
 	}
 
 	skillsLanguages := GetBlockByName(page2.Metadata.Blocks, "skills_languages")
 	if skillsLanguages == nil {
 		t.Fatal("skills_languages block not found")
 	}
-	if skillsLanguages.MaxItems != 5 {
-		t.Errorf("skills_languages: expected MAX 5 from template, got %d", skillsLanguages.MaxItems)
+	if skillsLanguages.MaxItems != 4 {
+		t.Errorf("skills_languages: expected MAX 4 from template, got %d", skillsLanguages.MaxItems)
 	}
 
 	weaponsMain := GetBlockByName(page2.Metadata.Blocks, "weapons_main")
 	if weaponsMain == nil {
 		t.Fatal("weapons_main block not found")
 	}
-	if weaponsMain.MaxItems != 24 {
-		t.Errorf("weapons_main: expected MAX 24 from template, got %d", weaponsMain.MaxItems)
+	if weaponsMain.MaxItems != 22 {
+		t.Errorf("weapons_main: expected MAX 22 from template, got %d", weaponsMain.MaxItems)
 	}
 }
 
@@ -70,16 +70,16 @@ func TestPage2PaginationWithCorrectCapacities(t *testing.T) {
 	}
 
 	// Verify capacities match template (18, 5, 24)
-	if len(pageData.SkillsLearned) != 18 {
-		t.Errorf("SkillsLearned should be filled to 18, got %d", len(pageData.SkillsLearned))
+	if len(pageData.SkillsLearned) != 17 {
+		t.Errorf("SkillsLearned should be filled to 17, got %d", len(pageData.SkillsLearned))
 	}
 
-	if len(pageData.SkillsLanguage) != 5 {
-		t.Errorf("SkillsLanguage should be filled to 5, got %d", len(pageData.SkillsLanguage))
+	if len(pageData.SkillsLanguage) != 4 {
+		t.Errorf("SkillsLanguage should be filled to 4, got %d", len(pageData.SkillsLanguage))
 	}
 
-	if len(pageData.Weapons) != 24 {
-		t.Errorf("Weapons should be filled to 24, got %d", len(pageData.Weapons))
+	if len(pageData.Weapons) != 22 {
+		t.Errorf("Weapons should be filled to 22, got %d", len(pageData.Weapons))
 	}
 }
 
@@ -101,8 +101,8 @@ func TestPage3MagicItemsCapacity(t *testing.T) {
 	}
 
 	// Template says MAX: 8 for magic_items
-	if len(pageData.MagicItems) != 8 {
-		t.Errorf("MagicItems should be filled to 8, got %d", len(pageData.MagicItems))
+	if len(pageData.MagicItems) != 5 {
+		t.Errorf("MagicItems should be filled to 5, got %d", len(pageData.MagicItems))
 	}
 }
 

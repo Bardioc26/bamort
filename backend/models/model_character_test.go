@@ -79,9 +79,9 @@ func createTestChar(name string) *Char {
 			Sg: 0,
 		},
 		Vermoegen: Vermoegen{
-			Goldstücke:   100,
-			Silberstücke: 50,
-			Kupferstücke: 25,
+			Goldstuecke:   100,
+			Silberstuecke: 50,
+			Kupferstuecke: 25,
 		},
 		Erfahrungsschatz: Erfahrungsschatz{
 			ES: 150,
@@ -435,7 +435,7 @@ func TestChar_CreateWithCompleteData(t *testing.T) {
 	assert.Equal(t, testChar.B.Max, foundChar.B.Max)
 	assert.Equal(t, testChar.Merkmale.Augenfarbe, foundChar.Merkmale.Augenfarbe)
 	assert.Equal(t, testChar.Bennies.Gg, foundChar.Bennies.Gg)
-	assert.Equal(t, testChar.Vermoegen.Goldstücke, foundChar.Vermoegen.Goldstücke)
+	assert.Equal(t, testChar.Vermoegen.Goldstuecke, foundChar.Vermoegen.Goldstuecke)
 	assert.Equal(t, testChar.Erfahrungsschatz.ES, foundChar.Erfahrungsschatz.ES)
 }
 
@@ -467,9 +467,9 @@ func TestChar_WealthManagement(t *testing.T) {
 	setupCharacterTestDB(t)
 
 	testChar := createTestChar("Wealthy Character")
-	testChar.Vermoegen.Goldstücke = 1000
-	testChar.Vermoegen.Silberstücke = 500
-	testChar.Vermoegen.Kupferstücke = 100
+	testChar.Vermoegen.Goldstuecke = 1000
+	testChar.Vermoegen.Silberstuecke = 500
+	testChar.Vermoegen.Kupferstuecke = 100
 
 	err := testChar.Create()
 	require.NoError(t, err, "Character creation should succeed")
@@ -479,9 +479,9 @@ func TestChar_WealthManagement(t *testing.T) {
 	err = foundChar.First(testChar.Name)
 	require.NoError(t, err, "Character should be found")
 
-	assert.Equal(t, 1000, foundChar.Vermoegen.Goldstücke, "Gold should match")
-	assert.Equal(t, 500, foundChar.Vermoegen.Silberstücke, "Silver should match")
-	assert.Equal(t, 100, foundChar.Vermoegen.Kupferstücke, "Copper should match")
+	assert.Equal(t, 1000, foundChar.Vermoegen.Goldstuecke, "Gold should match")
+	assert.Equal(t, 500, foundChar.Vermoegen.Silberstuecke, "Silver should match")
+	assert.Equal(t, 100, foundChar.Vermoegen.Kupferstuecke, "Copper should match")
 }
 
 func TestChar_EdgeCases(t *testing.T) {

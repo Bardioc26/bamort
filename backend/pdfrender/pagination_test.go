@@ -243,20 +243,20 @@ func TestPaginateSpells_MultiPage(t *testing.T) {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	// With capacity of 26+15=41 (from template), all 30 spells fit on 1 page
-	if len(pages) != 1 {
-		t.Fatalf("Expected 1 page, got %d", len(pages))
+	// With capacity of 15+10=25 (from template), 30 spells require 2 pages
+	if len(pages) != 2 {
+		t.Fatalf("Expected 2 pages, got %d", len(pages))
 	}
 
-	// Page 1 should have all 30 spells (26 left + 4 right, since we only have 30 total)
+	// Page 1 should have 25 spells (15 left + 10 right)
 	page1 := pages[0]
 	leftPage1 := page1.Data["spells_left"].([]SpellViewModel)
 	rightPage1 := page1.Data["spells_right"].([]SpellViewModel)
-	if len(leftPage1) != 26 {
-		t.Errorf("Page 1 left: expected 26 spells (template capacity), got %d", len(leftPage1))
+	if len(leftPage1) != 15 {
+		t.Errorf("Page 1 left: expected 15 spells (template capacity), got %d", len(leftPage1))
 	}
-	if len(rightPage1) != 4 {
-		t.Errorf("Page 1 right: expected 4 spells (remaining from 30), got %d", len(rightPage1))
+	if len(rightPage1) != 10 {
+		t.Errorf("Page 1 right: expected 10 spells (template capacity), got %d", len(rightPage1))
 	}
 }
 
@@ -294,7 +294,7 @@ func TestPaginateWeapons_MultiPage(t *testing.T) {
 	templateSet := DefaultA4QuerTemplateSet()
 	paginator := NewPaginator(templateSet)
 
-	// Create 50 weapons - should span 3 pages (24 capacity per page from template)
+	// Create 50 weapons - should span 3 pages (22 capacity per page from template)
 	weapons := make([]WeaponViewModel, 50)
 	for i := 0; i < 50; i++ {
 		weapons[i] = WeaponViewModel{Name: "Weapon" + string(rune(i))}
@@ -309,25 +309,25 @@ func TestPaginateWeapons_MultiPage(t *testing.T) {
 	}
 
 	if len(pages) != 3 {
-		t.Fatalf("Expected 3 pages (24+24+2 from template capacity), got %d", len(pages))
+		t.Fatalf("Expected 3 pages (22+22+6 from template capacity), got %d", len(pages))
 	}
 
-	// Page 1 should have 24 weapons
+	// Page 1 should have 22 weapons
 	page1Weapons := pages[0].Data["weapons_main"].([]WeaponViewModel)
-	if len(page1Weapons) != 24 {
-		t.Errorf("Page 1: expected 24 weapons (template capacity), got %d", len(page1Weapons))
+	if len(page1Weapons) != 22 {
+		t.Errorf("Page 1: expected 22 weapons (template capacity), got %d", len(page1Weapons))
 	}
 
-	// Page 2 should have 24 weapons
+	// Page 2 should have 22 weapons
 	page2Weapons := pages[1].Data["weapons_main"].([]WeaponViewModel)
-	if len(page2Weapons) != 24 {
-		t.Errorf("Page 2: expected 24 weapons (template capacity), got %d", len(page2Weapons))
+	if len(page2Weapons) != 22 {
+		t.Errorf("Page 2: expected 22 weapons (template capacity), got %d", len(page2Weapons))
 	}
 
-	// Page 3 should have 2 weapons (remaining)
+	// Page 3 should have 6 weapons (remaining)
 	page3Weapons := pages[2].Data["weapons_main"].([]WeaponViewModel)
-	if len(page3Weapons) != 2 {
-		t.Errorf("Page 3: expected 2 weapons (remaining), got %d", len(page3Weapons))
+	if len(page3Weapons) != 6 {
+		t.Errorf("Page 3: expected 6 weapons (remaining), got %d", len(page3Weapons))
 	}
 }
 
@@ -348,11 +348,11 @@ func TestCalculatePagesNeeded(t *testing.T) {
 		{"59 skills on page1", "page1_stats.html", "skills", 59, 2}, // 59 requires 2 pages
 		{"100 skills on page1", "page1_stats.html", "skills", 100, 2},
 		{"10 weapons on page2", "page2_play.html", "weapons", 10, 1},
-		{"24 weapons on page2", "page2_play.html", "weapons", 24, 1}, // MAX:24 from template
-		{"25 weapons on page2", "page2_play.html", "weapons", 25, 2}, // exceeds capacity
+		{"22 weapons on page2", "page2_play.html", "weapons", 22, 1}, // MAX:22 from template
+		{"23 weapons on page2", "page2_play.html", "weapons", 23, 2}, // exceeds capacity
 		{"10 spells on page3", "page3_spell.html", "spells", 10, 1},
-		{"41 spells on page3", "page3_spell.html", "spells", 41, 1}, // 26+15 = 41 fits on 1 page (from template)
-		{"42 spells on page3", "page3_spell.html", "spells", 42, 2}, // 42 requires 2 pages
+		{"25 spells on page3", "page3_spell.html", "spells", 25, 1}, // 15+10 = 25 fits on 1 page (from template)
+		{"26 spells on page3", "page3_spell.html", "spells", 26, 2}, // 26 requires 2 pages
 	}
 
 	for _, tc := range testCases {

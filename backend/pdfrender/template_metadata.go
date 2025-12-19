@@ -153,7 +153,7 @@ func getHardcodedTemplateSet() TemplateSet {
 						{
 							Name:     "weapons_main",
 							ListType: "weapons",
-							MaxItems: 30,
+							MaxItems: 22,
 						},
 					},
 				},
@@ -168,7 +168,7 @@ func getHardcodedTemplateSet() TemplateSet {
 						{
 							Name:     "spells_left",
 							ListType: "spells",
-							MaxItems: 20,
+							MaxItems: 15,
 							Column:   1,
 						},
 						{

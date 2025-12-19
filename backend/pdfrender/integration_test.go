@@ -1,6 +1,7 @@
 package pdfrender
 
 import (
+	"bamort/database"
 	"bamort/models"
 	"os"
 	"strings"
@@ -47,6 +48,11 @@ func TestIntegration_FullPDFGeneration(t *testing.T) {
 		},
 		B: models.B{
 			Value: 15,
+		},
+		Vermoegen: models.Vermoegen{
+			Goldstuecke:   100,
+			Silberstuecke: 50,
+			Kupferstuecke: 25,
 		},
 		Fertigkeiten: []models.SkFertigkeit{
 			{
@@ -151,9 +157,9 @@ func TestIntegration_TemplateMetadata(t *testing.T) {
 		expectedMax   int
 	}{
 		{"page1_stats.html", "skills_column1", 29},
-		{"page2_play.html", "skills_learned", 18}, // From template: MAX: 18
-		{"page3_spell.html", "spells_left", 26},   // From template: MAX: 26
-		{"page3_spell.html", "spells_right", 15},  // From template: MAX: 15
+		{"page2_play.html", "skills_learned", 17}, // From template: MAX: 17
+		{"page3_spell.html", "spells_left", 15},   // From template: MAX: 15
+		{"page3_spell.html", "spells_right", 10},  // From template: MAX: 10
 		{"page4_equip.html", "equipment_worn", 10},
 	}
 
@@ -278,11 +284,11 @@ func TestIntegration_MultiPageSpellList(t *testing.T) {
 	spells := make([]SpellViewModel, 30)
 	for i := 0; i < 30; i++ {
 		spells[i] = SpellViewModel{
-			Name:     "Zauber Nr. " + string(rune('A'+i%26)),
-			AP:       5,
-			Category: 1,
-			Duration: "1 Minute",
-			CastTime: "1 sec",
+			Name:          "Zauber Nr. " + string(rune('A'+i%26)),
+			AP:            "5",
+			Stufe:         1,
+			Wirkungsdauer: "1 Minute",
+			Zauberdauer:   "1 sec",
 		}
 	}
 
@@ -296,21 +302,21 @@ func TestIntegration_MultiPageSpellList(t *testing.T) {
 		t.Fatalf("Failed to paginate spells: %v", err)
 	}
 
-	// With 30 capacity (20+10), should create 1 page for 30 spells
+	// With 25 capacity (15+10), 30 spells should need 2 pages
 
 	// Verify distribution
-	// With 20+10 capacity, 30 spells should fit on 1 page
-	if len(pages) != 1 {
-		t.Fatalf("Expected 1 page for 30 spells, got %d", len(pages))
+	// With 15+10 capacity, 30 spells should need 2 pages
+	if len(pages) != 2 {
+		t.Fatalf("Expected 2 pages for 30 spells, got %d", len(pages))
 	}
 
-	// Page 1: 20 (left) + 10 (right) = 30 spells
+	// Page 1: 15 (left) + 10 (right) = 25 spells
 	leftPage1 := pages[0].Data["spells_left"].([]SpellViewModel)
 	rightPage1 := pages[0].Data["spells_right"].([]SpellViewModel)
 	totalPage1 := len(leftPage1) + len(rightPage1)
 
-	if totalPage1 != 30 {
-		t.Errorf("Expected 30 spells on page 1 (20+10), got %d", totalPage1)
+	if totalPage1 != 25 {
+		t.Errorf("Expected 25 spells on page 1 (15+10), got %d", totalPage1)
 	}
 
 	t.Logf("Successfully distributed 30 spells: Page 1 has %d (left %d, right %d)", totalPage1, len(leftPage1), len(rightPage1))
@@ -451,6 +457,7 @@ func TestIntegration_CompleteWorkflow(t *testing.T) {
 // TestVisualInspection_AllPages generates all 4 page types and saves them to disk
 // Run with: go test -v ./pdfrender/... -run TestVisualInspection
 func TestVisualInspection_AllPages(t *testing.T) {
+	database.SetupTestDB()
 	// Create a rich character with data for all page types
 	char := &models.Char{
 		BamortBase: models.BamortBase{
@@ -479,6 +486,11 @@ func TestVisualInspection_AllPages(t *testing.T) {
 		Lp: models.Lp{Value: 42, Max: 48},
 		Ap: models.Ap{Value: 28, Max: 32},
 		B:  models.B{Value: 18},
+		Vermoegen: models.Vermoegen{
+			Goldstuecke:   100,
+			Silberstuecke: 50,
+			Kupferstuecke: 2,
+		},
 	}
 
 	// Add skills
@@ -486,11 +498,9 @@ func TestVisualInspection_AllPages(t *testing.T) {
 		"Schwimmen", "Klettern", "Reiten", "Laufen", "Springen",
 		"Balancieren", "Schleichen", "Sich Verstecken", "Singen",
 		"Tanzen", "Musizieren", "Malen", "Kochen", "Erste Hilfe",
-		"Himmelskunde", "Pflanzenkunde", "Tierkunde", "Geografie",
+		"Himmelskunde", "Pflanzenkunde", "Tierkunde", "Heilkunde",
 		"Geschichte", "Lesen/Schreiben", "Rechnen", "Schätzen",
-		"Heilkunde", "Giftmischen", "Alchimie", "Schmieden",
-		"Lederarbeiten", "Holzbearbeitung", "Steinmetzkunst",
-		"Schlösser öffnen", "Fallen entschärfen", "Taschendiebstahl",
+		"Heilkunde", "Giftmischen", "Alchimie", "Schlösser öffnen",
 	}
 	char.Fertigkeiten = make([]models.SkFertigkeit, len(skillNames))
 	for i, name := range skillNames {
@@ -526,8 +536,7 @@ func TestVisualInspection_AllPages(t *testing.T) {
 		"Macht über die belebte Natur", "Macht über das Selbst",
 		"Erkennen von Gift", "Heilen von Wunden", "Bannen von Zauberwerk",
 		"Schutz vor Dämonen", "Macht über Unbelebtes", "Angst",
-		"Unsichtbarkeit", "Feuerlanze", "Eisstrahl", "Blitz",
-		"Verwandlung", "Teleportation", "Hellsicht",
+		"Unsichtbarkeit", "Feuerlanze",
 	}
 	char.Zauber = make([]models.SkZauber, len(spellNames))
 	for i, name := range spellNames {

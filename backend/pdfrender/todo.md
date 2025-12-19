@@ -48,3 +48,5 @@
 ## TODO (Remaining)
 
 * currently the template fetched for rendering is set to Default_A4_Quer
+* page 2 Waffen Schaden müssen noch die Boni der Waffe und der Schadensbonus des Characters eingerechnet werden.
+  Dazu muss vom (1W6)(+1) der zweite teil extrahiert werden, falls nicht vorhanden als +0 annehmen. auf diesen zweiten Teil wird der Bonus aufgerechnet

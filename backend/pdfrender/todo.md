@@ -23,25 +23,28 @@
   - Updated TestPaginationUsesTemplateMetadata to read from template files
   - Tests will automatically adapt when template capacities change
 
+* ✅ Weapon model enhancements:
+  - ✅ Added RangeNear, RangeMiddle, RangeFar integer fields to gsm_weapons table
+  - ✅ Added IsRanged() method that returns true if at least one range value > 0
+  - ✅ Damage field already exists in gsm_weapons table
+  - ✅ EqWaffe already contains bonus values: Anb (Attack), Schb (Damage), Abwb (Defense)
+  - ✅ All tests pass with new fields
+
+* ✅ Page 2 Weapons Table - Complete implementation:
+  - ✅ Changed TestVisualInspection_AllPages to load character Fanjo Vetrani (ID 18) from test database
+  - ✅ Damage calculation implemented:
+    - Calculates total damage: Base Weapon Damage + Character SchadenBonus + Weapon Schb
+    - Format: "1W6+3" where +3 = SchadenBonus + Schb
+    - Implemented calculateWeaponDamage() function
+    - Added TestMapWeapons_WithDamageCalculation test
+  - ✅ Ranged weapon ranges implemented:
+    - Shows ranges for ranged weapons (Bogen, Armbrust, etc.)
+    - Format: "Nah/Mittel/Fern" (e.g., "10/30/100")
+    - Implemented calculateWeaponRange() function
+    - Added TestMapWeapons_WithRangedWeaponRanges test
+    - Marks weapons as ranged using IsRanged field
+  - ✅ All tests pass
+
 ## TODO (Remaining)
-
-* Page 2 Weapons - Damage calculation:
-  - Calculate and display weapon damage including:
-    - Base weapon damage (from models.Weapon)
-    - Character's SchadenBonus
-    - Weapon's Schadensbonus (Schb from EqWaffe)
-  - Format: e.g., "1W6+3" where +3 = SchadenBonus + Schb
-
-* Page 2 Weapons - Ranged weapon ranges:
-  - For ranged weapons (Bogen, Armbrust, Wurfwaffe), show:
-    - Range for "Nah" (near)
-    - Range for "Mittel" (medium)  
-    - Range for "Fern" (far)
-  - This data should come from models.Weapon.Range or similar field
-.
-
-* add 3 field to gsm_weapons that holds the ranges near, middle, far all values are measured in meters so integer seems to be a good datatype. If at least 1 of 3 values is > 0 the weapon is treated as a ranged weapon
-* add a field to gsm_weapons that holds the damage the weapon creates Damage is notated as 2W6+3
-* EqWaffe already contains the values for the bunus values we need Attack (Anb), Damage (Schb) und Defence (Abwb)
 
 * currently the template fetched for rendering is set to Default_A4_Quer

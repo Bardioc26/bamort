@@ -506,113 +506,19 @@ func TestIntegration_CompleteWorkflow(t *testing.T) {
 // Run with: go test -v ./pdfrender/... -run TestVisualInspection
 func TestVisualInspection_AllPages(t *testing.T) {
 	database.SetupTestDB()
-	// Create a rich character with data for all page types
-	char := &models.Char{
-		BamortBase: models.BamortBase{
-			Name: "Integration Test",
-		},
-		Typ:         "Krieger",
-		Grad:        8,
-		Alter:       42,
-		Groesse:     185,
-		Gewicht:     92,
-		Gender:      "m",
-		SocialClass: "Frei",
-		Glaube:      "Apshai",
-		Herkunft:    "Erainn",
-		Eigenschaften: []models.Eigenschaft{
-			{Name: "St", Value: 95},
-			{Name: "Gs", Value: 85},
-			{Name: "Gw", Value: 80},
-			{Name: "Ko", Value: 90},
-			{Name: "In", Value: 75},
-			{Name: "Zt", Value: 70},
-			{Name: "Au", Value: 80},
-			{Name: "pA", Value: 85},
-			{Name: "Wk", Value: 70},
-		},
-		Lp: models.Lp{Value: 42, Max: 48},
-		Ap: models.Ap{Value: 28, Max: 32},
-		B:  models.B{Value: 18},
-		Vermoegen: models.Vermoegen{
-			Goldstuecke:   100,
-			Silberstuecke: 50,
-			Kupferstuecke: 2,
-		},
+
+	// Load character Fanjo Vetrani with ID 18 from test database
+	char := &models.Char{}
+	err := char.FirstID("18")
+	if err != nil {
+		t.Fatalf("Failed to load character with ID 18 (Fanjo Vetrani): %v", err)
 	}
 
-	// Add skills
-	skillNames := []string{
-		"Schwimmen", "Klettern", "Reiten", "Laufen", "Springen",
-		"Balancieren", "Schleichen", "Sich Verstecken", "Singen",
-		"Tanzen", "Musizieren", "Malen", "Kochen", "Erste Hilfe",
-		"Himmelskunde", "Pflanzenkunde", "Tierkunde", "Heilkunde",
-		"Geschichte", "Lesen/Schreiben", "Rechnen", "Schätzen",
-		"Heilkunde", "Giftmischen", "Alchimie", "Schlösser öffnen",
+	// Verify we loaded the correct character
+	if char.Name == "" {
+		t.Fatalf("Character loaded but has empty name")
 	}
-	char.Fertigkeiten = make([]models.SkFertigkeit, len(skillNames))
-	for i, name := range skillNames {
-		char.Fertigkeiten[i] = models.SkFertigkeit{
-			BamortCharTrait: models.BamortCharTrait{
-				BamortBase: models.BamortBase{Name: name},
-			},
-			Fertigkeitswert: 8 + i%12,
-			Pp:              i % 6,
-		}
-	}
-
-	// Add weapons
-	weaponNames := []string{
-		"Langschwert", "Kurzschwert", "Kriegshammer", "Streitaxt",
-		"Speer", "Langbogen", "Armbrust", "Dolch", "Schild",
-	}
-	char.Waffenfertigkeiten = make([]models.SkWaffenfertigkeit, len(weaponNames))
-	for i, name := range weaponNames {
-		char.Waffenfertigkeiten[i] = models.SkWaffenfertigkeit{
-			SkFertigkeit: models.SkFertigkeit{
-				BamortCharTrait: models.BamortCharTrait{
-					BamortBase: models.BamortBase{Name: name},
-				},
-				Fertigkeitswert: 12 + i*2,
-				Pp:              i,
-			},
-		}
-	}
-
-	// Add spells
-	spellNames := []string{
-		"Macht über die belebte Natur", "Macht über das Selbst",
-		"Erkennen von Gift", "Heilen von Wunden", "Bannen von Zauberwerk",
-		"Schutz vor Dämonen", "Macht über Unbelebtes", "Angst",
-		"Unsichtbarkeit", "Feuerlanze",
-	}
-	char.Zauber = make([]models.SkZauber, len(spellNames))
-	for i, name := range spellNames {
-		char.Zauber[i] = models.SkZauber{
-			BamortCharTrait: models.BamortCharTrait{
-				BamortBase: models.BamortBase{Name: name},
-			},
-			Bonus: i % 3,
-		}
-	}
-
-	// Add equipment
-	equipmentNames := []string{
-		"Rüstung (Leder)", "Helm", "Stiefel", "Umhang", "Rucksack",
-		"Seil (20m)", "Fackel (5x)", "Öllampe", "Zunderbüchse",
-		"Wasserschlauch", "Proviant (7 Tage)", "Schlafsack",
-		"Zelt", "Kochgeschirr", "Werkzeug",
-	}
-	char.Ausruestung = make([]models.EqAusruestung, len(equipmentNames))
-	for i, name := range equipmentNames {
-		char.Ausruestung[i] = models.EqAusruestung{
-			BamortCharTrait: models.BamortCharTrait{
-				BamortBase: models.BamortBase{Name: name},
-			},
-			Anzahl:  1 + i%3,
-			Gewicht: 0.5 + float64(i%10)*0.5,
-		}
-	}
+	t.Logf("Loaded character: %s (ID: %d)", char.Name, char.ID)
 
 	// Map to view model
 	viewModel, err := MapCharacterToViewModel(char)

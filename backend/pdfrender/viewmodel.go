@@ -24,6 +24,7 @@ type CharacterInfo struct {
 	Grade      int
 	Birthdate  string
 	Age        int
+	Hand       string // "rechts." oder "links." händig
 	Height     int    // in cm
 	Weight     int    // in kg
 	IconBase64 string // base64-kodiertes Charakterbild als Data-URI

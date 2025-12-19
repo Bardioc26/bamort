@@ -1,6 +1,7 @@
 package pdfrender
 
 import (
+	"bamort/database"
 	"bamort/models"
 	"os"
 	"testing"
@@ -139,7 +140,22 @@ func TestPage3MagicItemsCapacity(t *testing.T) {
 }
 
 func TestWeaponsWithEW(t *testing.T) {
-	// Test that weapons use Waffenfertigkeiten with correct EW
+	// Setup test database for weapon lookup
+	database.SetupTestDB()
+
+	// Create test weapon in gsm_weapons
+	database.DB.Where("name = ?", "Schwert").Delete(&models.Weapon{})
+	testWeapon := &models.Weapon{
+		Equipment: models.Equipment{
+			GameSystem: "midgard",
+			Name:       "Schwert",
+		},
+		SkillRequired: "Schwerter",
+		Damage:        "1W6",
+	}
+	_ = testWeapon.Create()
+
+	// Test that equipped weapons use Waffenfertigkeiten with correct EW
 	char := &models.Char{
 		BamortBase: models.BamortBase{
 			ID:   1,
@@ -150,12 +166,23 @@ func TestWeaponsWithEW(t *testing.T) {
 				SkFertigkeit: models.SkFertigkeit{
 					BamortCharTrait: models.BamortCharTrait{
 						BamortBase: models.BamortBase{
-							Name: "Schwert",
+							Name: "Schwerter",
 						},
 					},
 					Fertigkeitswert: 15,
 					Category:        "Kampf",
 				},
+			},
+		},
+		Waffen: []models.EqWaffe{
+			{
+				BamortCharTrait: models.BamortCharTrait{
+					BamortBase: models.BamortBase{
+						Name: "Schwert",
+					},
+				},
+				Anb:  0,
+				Schb: 0,
 			},
 		},
 	}
@@ -165,9 +192,9 @@ func TestWeaponsWithEW(t *testing.T) {
 		t.Fatalf("Failed to map character: %v", err)
 	}
 
-	// Weapons should contain weapon skills with EW
+	// Weapons should contain equipped weapons with EW from skill
 	if len(viewModel.Weapons) == 0 {
-		t.Fatal("Expected weapons from Waffenfertigkeiten, got none")
+		t.Fatal("Expected weapons from equipped Waffen, got none")
 	}
 
 	weapon := viewModel.Weapons[0]
@@ -175,6 +202,6 @@ func TestWeaponsWithEW(t *testing.T) {
 		t.Errorf("Expected weapon name 'Schwert', got '%s'", weapon.Name)
 	}
 	if weapon.Value != 15 {
-		t.Errorf("Expected weapon EW 15, got %d", weapon.Value)
+		t.Errorf("Expected weapon EW 15 (from skill), got %d", weapon.Value)
 	}
 }

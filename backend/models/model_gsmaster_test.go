@@ -757,6 +757,75 @@ func TestWeapon_Save(t *testing.T) {
 	assert.Equal(t, "2W6+3", foundWeapon.Damage)
 }
 
+func TestWeapon_RangedWeaponRanges(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	// Create a ranged weapon with ranges
+	weapon := &Weapon{
+		Equipment: Equipment{
+			GameSystem:   "midgard",
+			Name:         "TestBogen",
+			Beschreibung: "Test ranged weapon",
+			Gewicht:      1.5,
+			Wert:         100.0,
+		},
+		SkillRequired: "Bogen",
+		Damage:        "1W6",
+		RangeNear:     10,
+		RangeMiddle:   30,
+		RangeFar:      100,
+	}
+
+	err := weapon.Create()
+	require.NoError(t, err)
+
+	// Verify the weapon was created with ranges
+	foundWeapon := &Weapon{}
+	err = foundWeapon.FirstId(weapon.ID)
+	require.NoError(t, err)
+	assert.Equal(t, 10, foundWeapon.RangeNear)
+	assert.Equal(t, 30, foundWeapon.RangeMiddle)
+	assert.Equal(t, 100, foundWeapon.RangeFar)
+}
+
+func TestWeapon_IsRanged(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	// Test ranged weapon (has at least one range > 0)
+	rangedWeapon := &Weapon{
+		Equipment: Equipment{
+			GameSystem: "midgard",
+			Name:       "TestArmbrust",
+		},
+		SkillRequired: "Armbrust",
+		Damage:        "2W6",
+		RangeNear:     15,
+		RangeMiddle:   50,
+		RangeFar:      150,
+	}
+	err := rangedWeapon.Create()
+	require.NoError(t, err)
+
+	assert.True(t, rangedWeapon.IsRanged(), "Weapon with ranges should be ranged")
+
+	// Test melee weapon (all ranges are 0)
+	meleeWeapon := &Weapon{
+		Equipment: Equipment{
+			GameSystem: "midgard",
+			Name:       "TestSchwert",
+		},
+		SkillRequired: "Einhandschwerter",
+		Damage:        "1W6+2",
+		RangeNear:     0,
+		RangeMiddle:   0,
+		RangeFar:      0,
+	}
+	err = meleeWeapon.Create()
+	require.NoError(t, err)
+
+	assert.False(t, meleeWeapon.IsRanged(), "Weapon with no ranges should not be ranged")
+}
+
 // =============================================================================
 // Tests for Container struct
 // =============================================================================

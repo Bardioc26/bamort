@@ -159,14 +159,14 @@
                             <th>Waffe</th>
                             <th>Fert.<br>wert</th>
                             <th>Schaden</th>
-                            <th>Nah</th>
+                            <th>Reichweite<br/>nah/mitte/fern</th>
                         </tr>
                         {{range .Weapons}}
                         <tr>
                             <td>{{.Name}}</td>
                             <td>{{if .Value}}{{.Value}}{{else}}&nbsp;{{end}}</td>
-                            <td>{{.Damage}}</td>
-                            <td>&nbsp;</td>
+                            <td>{{if .Damage}}{{.Damage}}{{else}}&nbsp;{{end}}</td>
+                            <td>{{if .Range}}{{.Range}}{{else}}&nbsp;{{end}}</td>
                         </tr>
                         {{end}}
                     </table>

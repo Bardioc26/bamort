@@ -1,6 +1,7 @@
 package pdfrender
 
 import (
+	"bamort/database"
 	"bamort/models"
 	"testing"
 )
@@ -179,6 +180,21 @@ func TestMapCharacterToViewModel_Skills(t *testing.T) {
 }
 
 func TestMapCharacterToViewModel_Weapons(t *testing.T) {
+	// Setup test database for weapon lookup
+	database.SetupTestDB()
+
+	// Create test weapon in gsm_weapons
+	database.DB.Where("name = ?", "Langschwert").Delete(&models.Weapon{})
+	testWeapon := &models.Weapon{
+		Equipment: models.Equipment{
+			GameSystem: "midgard",
+			Name:       "Langschwert",
+		},
+		SkillRequired: "Schwerter",
+		Damage:        "1W6",
+	}
+	_ = testWeapon.Create()
+
 	// Arrange
 	char := &models.Char{
 		BamortBase: models.BamortBase{
@@ -190,13 +206,24 @@ func TestMapCharacterToViewModel_Weapons(t *testing.T) {
 				SkFertigkeit: models.SkFertigkeit{
 					BamortCharTrait: models.BamortCharTrait{
 						BamortBase: models.BamortBase{
-							Name: "Langschwert",
+							Name: "Schwerter",
 						},
 					},
 					Fertigkeitswert: 12,
 					Bonus:           3,
 					Category:        "Kampf",
 				},
+			},
+		},
+		Waffen: []models.EqWaffe{
+			{
+				BamortCharTrait: models.BamortCharTrait{
+					BamortBase: models.BamortBase{
+						Name: "Langschwert",
+					},
+				},
+				Anb:  0,
+				Schb: 0,
 			},
 		},
 	}
@@ -218,7 +245,7 @@ func TestMapCharacterToViewModel_Weapons(t *testing.T) {
 		t.Errorf("Expected weapon name 'Langschwert', got '%s'", weapon.Name)
 	}
 	if weapon.Value != 12 {
-		t.Errorf("Expected weapon value 12, got %d", weapon.Value)
+		t.Errorf("Expected weapon value 12 (skill value), got %d", weapon.Value)
 	}
 }
 

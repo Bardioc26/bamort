@@ -102,6 +102,9 @@ type Weapon struct {
 	Equipment
 	SkillRequired string `json:"skill_required"`
 	Damage        string `json:"damage"`
+	RangeNear     int    `json:"range_near"`   // Range in meters for "Nah" (near)
+	RangeMiddle   int    `json:"range_middle"` // Range in meters for "Mittel" (medium)
+	RangeFar      int    `json:"range_far"`    // Range in meters for "Fern" (far)
 }
 
 type Container struct {
@@ -481,6 +484,11 @@ func (object *Equipment) Save() error {
 func (object *Weapon) TableName() string {
 	dbPrefix := "gsm"
 	return dbPrefix + "_" + "weapons"
+}
+
+// IsRanged returns true if the weapon has at least one range value > 0
+func (w *Weapon) IsRanged() bool {
+	return w.RangeNear > 0 || w.RangeMiddle > 0 || w.RangeFar > 0
 }
 
 func (stamm *Weapon) Create() error {

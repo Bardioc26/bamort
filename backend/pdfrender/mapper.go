@@ -27,6 +27,7 @@ func MapCharacterToViewModel(char *models.Char) (*CharacterSheetViewModel, error
 		Height:     char.Groesse,
 		Weight:     char.Gewicht,
 		Gender:     char.Gender,
+		Hand:       char.Hand,
 		Homeland:   char.Herkunft,
 		Religion:   char.Glaube,
 		Stand:      char.SocialClass,
@@ -124,39 +125,54 @@ func mapSkills(char *models.Char) []SkillViewModel {
 	return skills
 }
 
-// mapWeapons converts character weapon skills to WeaponViewModel
+// mapWeapons converts equipped weapons to WeaponViewModel
 // EW = Waffenfertigkeit.Fertigkeitswert + Character.AngriffBonus + Weapon.Anb
 func mapWeapons(char *models.Char) []WeaponViewModel {
-	weapons := make([]WeaponViewModel, 0, len(char.Waffenfertigkeiten))
+	weapons := make([]WeaponViewModel, 0, len(char.Waffen))
 
-	// Calculate character's attack bonus once
+	// Calculate character's bonuses once
 	attrs := mapAttributes(char)
 	angriffsBonus := calculateAttributeBonus(attrs.Gs)
-	// schadenBonus will be used later for damage calculation
-	// schadenBonus := (attrs.St / 20) + (attrs.Gs / 30) - 3
+	schadenBonus := calculateAttributeBonus(attrs.St)
 
-	// Create a map of equipped weapons for quick lookup
-	equippedWeapons := make(map[string]*models.EqWaffe)
-	for i := range char.Waffen {
-		equippedWeapons[char.Waffen[i].Name] = &char.Waffen[i]
+	// Create a map of weapon skills for quick lookup
+	weaponSkills := make(map[string]int)
+	for _, skill := range char.Waffenfertigkeiten {
+		weaponSkills[skill.Name] = skill.Fertigkeitswert
 	}
 
-	for _, weaponSkill := range char.Waffenfertigkeiten {
+	// Iterate over equipped weapons
+	for _, equippedWeapon := range char.Waffen {
 		vm := WeaponViewModel{
-			Name:  weaponSkill.Name,
-			Value: weaponSkill.Fertigkeitswert, // Base skill value
+			Name: equippedWeapon.Name,
 		}
 
-		// If character has this weapon equipped, add weapon bonuses
-		if equippedWeapon, exists := equippedWeapons[weaponSkill.Name]; exists {
-			// EW = skill + character attack bonus + weapon attack bonus
-			vm.Value += angriffsBonus + equippedWeapon.Anb
+		// Load weapon from gsm_weapons to get base stats and required skill
+		baseWeapon := &models.Weapon{}
+		err := baseWeapon.First(equippedWeapon.Name)
 
-			// TODO: Calculate damage including weapon and character bonuses
-			// TODO: Add range information for ranged weapons
+		if err == nil && baseWeapon.ID > 0 {
+			// Calculate attack value: skill + character bonus + weapon bonus
+			skillValue := 0
+			if baseWeapon.SkillRequired != "" {
+				skillValue = weaponSkills[baseWeapon.SkillRequired]
+			}
+			vm.Value = skillValue + angriffsBonus + equippedWeapon.Anb
+
+			// Calculate damage: Base weapon damage + character bonus + weapon damage bonus
+			vm.Damage = calculateWeaponDamageWithBase(baseWeapon, schadenBonus, equippedWeapon.Schb)
+
+			// Add range information for ranged weapons
+			if baseWeapon.IsRanged() {
+				vm.Range = fmt.Sprintf("%d/%d/%d",
+					baseWeapon.RangeNear,
+					baseWeapon.RangeMiddle,
+					baseWeapon.RangeFar)
+				vm.IsRanged = true
+			}
 		} else {
-			// No equipped weapon, just use skill + character bonus
-			vm.Value += angriffsBonus
+			// Weapon not found in gsm_weapons, use basic info
+			vm.Value = angriffsBonus + equippedWeapon.Anb
 		}
 
 		weapons = append(weapons, vm)
@@ -262,4 +278,68 @@ func calculateAttributeBonus(value int) int {
 		return 2
 	}
 	return 0
+}
+
+// calculateWeaponDamageWithBase calculates the total damage string using an already-loaded weapon
+// Format: BaseDamage+TotalBonus, e.g., "1W6+3"
+// TotalBonus = Character's SchadenBonus + Weapon's Schadensbonus (Schb)
+func calculateWeaponDamageWithBase(baseWeapon *models.Weapon, schadenBonus int, weaponSchb int) string {
+	baseDamage := baseWeapon.Damage
+	if baseDamage == "" {
+		return ""
+	}
+
+	// Calculate total damage bonus
+	totalBonus := schadenBonus + weaponSchb
+
+	// Format the damage string
+	if totalBonus > 0 {
+		return fmt.Sprintf("%s+%d", baseDamage, totalBonus)
+	} else if totalBonus < 0 {
+		return fmt.Sprintf("%s%d", baseDamage, totalBonus)
+	}
+
+	return baseDamage
+}
+
+// calculateWeaponDamage calculates the total damage string for a weapon
+// Format: BaseDamage+TotalBonus, e.g., "1W6+3"
+// TotalBonus = Character's SchadenBonus + Weapon's Schadensbonus (Schb)
+func calculateWeaponDamage(weaponName string, schadenBonus int, weaponSchb int) string {
+	// Try to load weapon details from gsmaster to get base damage
+	var baseDamage string
+
+	if database.DB != nil {
+		masterWeapon := &models.Weapon{}
+		err := masterWeapon.First(weaponName)
+		if err == nil && masterWeapon.ID > 0 && masterWeapon.Damage != "" {
+			return calculateWeaponDamageWithBase(masterWeapon, schadenBonus, weaponSchb)
+		}
+	}
+
+	return baseDamage
+}
+
+// calculateWeaponRange returns the range string for a weapon and whether it's ranged
+// Format: "Nah/Mittel/Fern", e.g., "10/30/100"
+// Returns (rangeString, isRanged)
+func calculateWeaponRange(weaponName string) (string, bool) {
+	// Try to load weapon details from gsmaster to get ranges
+	if database.DB != nil {
+		masterWeapon := &models.Weapon{}
+		err := masterWeapon.First(weaponName)
+		if err == nil && masterWeapon.ID > 0 {
+			// Check if weapon is ranged (at least one range value > 0)
+			if masterWeapon.IsRanged() {
+				// Format as "Nah/Mittel/Fern"
+				rangeStr := fmt.Sprintf("%d/%d/%d",
+					masterWeapon.RangeNear,
+					masterWeapon.RangeMiddle,
+					masterWeapon.RangeFar)
+				return rangeStr, true
+			}
+		}
+	}
+
+	return "", false
 }

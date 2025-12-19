@@ -21,15 +21,15 @@ type EqWaffe struct {
 	BamortCharTrait
 	Magisch
 	Beschreibung            string  `json:"beschreibung"`
-	Abwb                    int     `json:"abwb"`
-	Anb                     int     `json:"anb"`
+	Abwb                    int     `json:"abwb"` // Abwehrbonus
+	Anb                     int     `json:"anb"`  // Angriffsbonus
 	Anzahl                  int     `json:"anzahl"`
 	BeinhaltetIn            string  `json:"beinhaltet_in"`
 	ContainedIn             uint    `json:"contained_in"`
 	ContainerType           string  `json:"container_type"`
 	Gewicht                 float64 `json:"gewicht"`
 	NameFuerSpezialisierung string  `json:"nameFuerSpezialisierung"`
-	Schb                    int     `json:"schb"`
+	Schb                    int     `json:"schb"` // Schadensbonus
 	Wert                    float64 `json:"wert"`
 }
 

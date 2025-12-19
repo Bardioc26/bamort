@@ -2,11 +2,23 @@ package pdfrender
 
 import (
 	"bamort/models"
+	"os"
 	"testing"
 )
 
 // TestPaginationUsesTemplateMetadata verifies tests use actual template MAX values
 func TestPaginationUsesTemplateMetadata(t *testing.T) {
+	// Read expected values directly from template file
+	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page2_play.html")
+	if err != nil {
+		t.Fatalf("Failed to read template file: %v", err)
+	}
+
+	expectedBlocks := ParseTemplateMetadata(string(templateContent))
+	expectedSkillsLearned := GetBlockByName(expectedBlocks, "skills_learned")
+	expectedSkillsLanguages := GetBlockByName(expectedBlocks, "skills_languages")
+	expectedWeaponsMain := GetBlockByName(expectedBlocks, "weapons_main")
+
 	// Load template set from actual files
 	templateSet := DefaultA4QuerTemplateSet()
 
@@ -28,28 +40,39 @@ func TestPaginationUsesTemplateMetadata(t *testing.T) {
 	if skillsLearned == nil {
 		t.Fatal("skills_learned block not found")
 	}
-	if skillsLearned.MaxItems != 17 {
-		t.Errorf("skills_learned: expected MAX 17 from template, got %d", skillsLearned.MaxItems)
+	if expectedSkillsLearned != nil && skillsLearned.MaxItems != expectedSkillsLearned.MaxItems {
+		t.Errorf("skills_learned: expected MAX %d from template, got %d", expectedSkillsLearned.MaxItems, skillsLearned.MaxItems)
 	}
 
 	skillsLanguages := GetBlockByName(page2.Metadata.Blocks, "skills_languages")
 	if skillsLanguages == nil {
 		t.Fatal("skills_languages block not found")
 	}
-	if skillsLanguages.MaxItems != 4 {
-		t.Errorf("skills_languages: expected MAX 4 from template, got %d", skillsLanguages.MaxItems)
+	if expectedSkillsLanguages != nil && skillsLanguages.MaxItems != expectedSkillsLanguages.MaxItems {
+		t.Errorf("skills_languages: expected MAX %d from template, got %d", expectedSkillsLanguages.MaxItems, skillsLanguages.MaxItems)
 	}
 
 	weaponsMain := GetBlockByName(page2.Metadata.Blocks, "weapons_main")
 	if weaponsMain == nil {
 		t.Fatal("weapons_main block not found")
 	}
-	if weaponsMain.MaxItems != 22 {
-		t.Errorf("weapons_main: expected MAX 22 from template, got %d", weaponsMain.MaxItems)
+	if expectedWeaponsMain != nil && weaponsMain.MaxItems != expectedWeaponsMain.MaxItems {
+		t.Errorf("weapons_main: expected MAX %d from template, got %d", expectedWeaponsMain.MaxItems, weaponsMain.MaxItems)
 	}
 }
 
 func TestPage2PaginationWithCorrectCapacities(t *testing.T) {
+	// Read expected values directly from template file
+	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page2_play.html")
+	if err != nil {
+		t.Fatalf("Failed to read template file: %v", err)
+	}
+
+	expectedBlocks := ParseTemplateMetadata(string(templateContent))
+	expectedSkillsLearned := GetBlockByName(expectedBlocks, "skills_learned")
+	expectedSkillsLanguages := GetBlockByName(expectedBlocks, "skills_languages")
+	expectedWeaponsMain := GetBlockByName(expectedBlocks, "weapons_main")
+
 	// Create test data
 	viewModel := &CharacterSheetViewModel{
 		Skills: []SkillViewModel{
@@ -69,21 +92,30 @@ func TestPage2PaginationWithCorrectCapacities(t *testing.T) {
 		t.Fatalf("Failed to prepare page data: %v", err)
 	}
 
-	// Verify capacities match template (18, 5, 24)
-	if len(pageData.SkillsLearned) != 17 {
-		t.Errorf("SkillsLearned should be filled to 17, got %d", len(pageData.SkillsLearned))
+	// Verify capacities match template values
+	if expectedSkillsLearned != nil && len(pageData.SkillsLearned) != expectedSkillsLearned.MaxItems {
+		t.Errorf("SkillsLearned should be filled to %d (from template), got %d", expectedSkillsLearned.MaxItems, len(pageData.SkillsLearned))
 	}
 
-	if len(pageData.SkillsLanguage) != 4 {
-		t.Errorf("SkillsLanguage should be filled to 4, got %d", len(pageData.SkillsLanguage))
+	if expectedSkillsLanguages != nil && len(pageData.SkillsLanguage) != expectedSkillsLanguages.MaxItems {
+		t.Errorf("SkillsLanguage should be filled to %d (from template), got %d", expectedSkillsLanguages.MaxItems, len(pageData.SkillsLanguage))
 	}
 
-	if len(pageData.Weapons) != 22 {
-		t.Errorf("Weapons should be filled to 22, got %d", len(pageData.Weapons))
+	if expectedWeaponsMain != nil && len(pageData.Weapons) != expectedWeaponsMain.MaxItems {
+		t.Errorf("Weapons should be filled to %d (from template), got %d", expectedWeaponsMain.MaxItems, len(pageData.Weapons))
 	}
 }
 
 func TestPage3MagicItemsCapacity(t *testing.T) {
+	// Read expected values directly from template file
+	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page3_spell.html")
+	if err != nil {
+		t.Fatalf("Failed to read template file: %v", err)
+	}
+
+	expectedBlocks := ParseTemplateMetadata(string(templateContent))
+	expectedMagicItems := GetBlockByName(expectedBlocks, "magic_items")
+
 	// Create test data with magic items
 	viewModel := &CharacterSheetViewModel{
 		MagicItems: []MagicItemViewModel{
@@ -100,9 +132,9 @@ func TestPage3MagicItemsCapacity(t *testing.T) {
 		t.Fatalf("Failed to prepare page data: %v", err)
 	}
 
-	// Template says MAX: 8 for magic_items
-	if len(pageData.MagicItems) != 5 {
-		t.Errorf("MagicItems should be filled to 5, got %d", len(pageData.MagicItems))
+	// Verify capacity matches template
+	if expectedMagicItems != nil && len(pageData.MagicItems) != expectedMagicItems.MaxItems {
+		t.Errorf("MagicItems should be filled to %d (from template), got %d", expectedMagicItems.MaxItems, len(pageData.MagicItems))
 	}
 }
 

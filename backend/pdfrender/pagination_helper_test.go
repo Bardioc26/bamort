@@ -32,20 +32,38 @@ func TestPreparePaginatedPageData_Page1Stats(t *testing.T) {
 		t.Error("SkillsColumn2 is empty")
 	}
 
-	// Check capacities (MAX: 29 each)
-	if len(pageData.SkillsColumn1) > 29 {
-		t.Errorf("SkillsColumn1 exceeds capacity: got %d, max 29", len(pageData.SkillsColumn1))
+	// Get capacities from template
+	templateSet := DefaultA4QuerTemplateSet()
+	var page1Template *TemplateWithMeta
+	for i := range templateSet.Templates {
+		if templateSet.Templates[i].Metadata.Name == "page1_stats.html" {
+			page1Template = &templateSet.Templates[i]
+			break
+		}
+	}
+	var col1MaxItems, col2MaxItems int
+	for i := range page1Template.Metadata.Blocks {
+		if page1Template.Metadata.Blocks[i].Name == "skills_column1" {
+			col1MaxItems = page1Template.Metadata.Blocks[i].MaxItems
+		} else if page1Template.Metadata.Blocks[i].Name == "skills_column2" {
+			col2MaxItems = page1Template.Metadata.Blocks[i].MaxItems
+		}
 	}
 
-	if len(pageData.SkillsColumn2) > 29 {
-		t.Errorf("SkillsColumn2 exceeds capacity: got %d, max 29", len(pageData.SkillsColumn2))
+	// Check capacities (from template)
+	if len(pageData.SkillsColumn1) > col1MaxItems {
+		t.Errorf("SkillsColumn1 exceeds capacity: got %d, max %d (from template)", len(pageData.SkillsColumn1), col1MaxItems)
+	}
+
+	if len(pageData.SkillsColumn2) > col2MaxItems {
+		t.Errorf("SkillsColumn2 exceeds capacity: got %d, max %d (from template)", len(pageData.SkillsColumn2), col2MaxItems)
 	}
 
 	// Verify skills are split correctly
 	totalPaginated := len(pageData.SkillsColumn1) + len(pageData.SkillsColumn2)
-	expectedTotal := 58 // 29 + 29
+	expectedTotal := col1MaxItems + col2MaxItems
 	if totalPaginated > expectedTotal {
-		t.Errorf("Total paginated skills exceeds capacity: got %d, max %d", totalPaginated, expectedTotal)
+		t.Errorf("Total paginated skills exceeds capacity: got %d, max %d (from template)", totalPaginated, expectedTotal)
 	}
 
 	t.Logf("Column1: %d skills, Column2: %d skills (total: %d)",
@@ -53,6 +71,24 @@ func TestPreparePaginatedPageData_Page1Stats(t *testing.T) {
 }
 
 func TestSplitSkillsForColumns(t *testing.T) {
+	// Get actual column capacities from template
+	templateSet := DefaultA4QuerTemplateSet()
+	var page1Template *TemplateWithMeta
+	for i := range templateSet.Templates {
+		if templateSet.Templates[i].Metadata.Name == "page1_stats.html" {
+			page1Template = &templateSet.Templates[i]
+			break
+		}
+	}
+	var col1MaxItems, col2MaxItems int
+	for i := range page1Template.Metadata.Blocks {
+		if page1Template.Metadata.Blocks[i].Name == "skills_column1" {
+			col1MaxItems = page1Template.Metadata.Blocks[i].MaxItems
+		} else if page1Template.Metadata.Blocks[i].Name == "skills_column2" {
+			col2MaxItems = page1Template.Metadata.Blocks[i].MaxItems
+		}
+	}
+
 	tests := []struct {
 		name     string
 		skills   int
@@ -64,42 +100,42 @@ func TestSplitSkillsForColumns(t *testing.T) {
 		{
 			name:     "few skills - only column 1",
 			skills:   10,
-			col1Max:  29,
-			col2Max:  29,
+			col1Max:  col1MaxItems,
+			col2Max:  col2MaxItems,
 			wantCol1: 10,
 			wantCol2: 0,
 		},
 		{
 			name:     "exactly column 1 capacity",
-			skills:   29,
-			col1Max:  29,
-			col2Max:  29,
-			wantCol1: 29,
+			skills:   col1MaxItems,
+			col1Max:  col1MaxItems,
+			col2Max:  col2MaxItems,
+			wantCol1: col1MaxItems,
 			wantCol2: 0,
 		},
 		{
 			name:     "overflow to column 2",
-			skills:   40,
-			col1Max:  29,
-			col2Max:  29,
-			wantCol1: 29,
+			skills:   col1MaxItems + 11,
+			col1Max:  col1MaxItems,
+			col2Max:  col2MaxItems,
+			wantCol1: col1MaxItems,
 			wantCol2: 11,
 		},
 		{
 			name:     "both columns full",
-			skills:   58,
-			col1Max:  29,
-			col2Max:  29,
-			wantCol1: 29,
-			wantCol2: 29,
+			skills:   col1MaxItems + col2MaxItems,
+			col1Max:  col1MaxItems,
+			col2Max:  col2MaxItems,
+			wantCol1: col1MaxItems,
+			wantCol2: col2MaxItems,
 		},
 		{
 			name:     "more than both columns - truncate",
-			skills:   70,
-			col1Max:  29,
-			col2Max:  29,
-			wantCol1: 29,
-			wantCol2: 29,
+			skills:   col1MaxItems + col2MaxItems + 12,
+			col1Max:  col1MaxItems,
+			col2Max:  col2MaxItems,
+			wantCol1: col1MaxItems,
+			wantCol2: col2MaxItems,
 		},
 	}
 

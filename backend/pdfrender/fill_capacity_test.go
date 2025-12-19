@@ -81,10 +81,30 @@ func TestTemplateWithEmptyRows(t *testing.T) {
 		t.Fatalf("Failed to render template: %v", err)
 	}
 
+	// Get expected skill capacity from template
+	templateSet := DefaultA4QuerTemplateSet()
+	var page1Template *TemplateWithMeta
+	for i := range templateSet.Templates {
+		if templateSet.Templates[i].Metadata.Name == "page1_stats.html" {
+			page1Template = &templateSet.Templates[i]
+			break
+		}
+	}
+	if page1Template == nil {
+		t.Fatal("page1_stats.html template not found")
+	}
+	var col1Capacity int
+	for i := range page1Template.Metadata.Blocks {
+		if page1Template.Metadata.Blocks[i].Name == "skills_column1" {
+			col1Capacity = page1Template.Metadata.Blocks[i].MaxItems
+			break
+		}
+	}
+
 	// Count the number of <tr> tags in skills table
-	// Should have 29 rows (2 filled + 27 empty)
+	// Should have col1Capacity rows (2 filled + remaining empty)
 	trCount := strings.Count(html, "<tr><td>")
-	if trCount < 29 {
-		t.Errorf("Expected at least 29 skill rows in HTML, got %d", trCount)
+	if trCount < col1Capacity {
+		t.Errorf("Expected at least %d skill rows in HTML (from template), got %d", col1Capacity, trCount)
 	}
 }

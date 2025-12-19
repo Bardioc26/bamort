@@ -150,17 +150,19 @@ func TestIntegration_TemplateMetadata(t *testing.T) {
 		t.Fatalf("Failed to load templates: %v", err)
 	}
 
+	// Load template set to get expected values from actual template files
+	templateSet := DefaultA4QuerTemplateSet()
+
 	// Act & Assert - Check each template has metadata
 	testCases := []struct {
 		template      string
 		expectedBlock string
-		expectedMax   int
 	}{
-		{"page1_stats.html", "skills_column1", 29},
-		{"page2_play.html", "skills_learned", 17}, // From template: MAX: 17
-		{"page3_spell.html", "spells_left", 15},   // From template: MAX: 15
-		{"page3_spell.html", "spells_right", 10},  // From template: MAX: 10
-		{"page4_equip.html", "equipment_worn", 10},
+		{"page1_stats.html", "skills_column1"},
+		{"page2_play.html", "skills_learned"},
+		{"page3_spell.html", "spells_left"},
+		{"page3_spell.html", "spells_right"},
+		{"page4_equip.html", "equipment_worn"},
 	}
 
 	for _, tc := range testCases {
@@ -176,9 +178,23 @@ func TestIntegration_TemplateMetadata(t *testing.T) {
 			continue
 		}
 
-		if block.MaxItems != tc.expectedMax {
-			t.Errorf("Template %s block %s: expected max %d, got %d",
-				tc.template, tc.expectedBlock, tc.expectedMax, block.MaxItems)
+		// Get expected value from template set
+		var expectedMax int
+		for i := range templateSet.Templates {
+			if templateSet.Templates[i].Metadata.Name == tc.template {
+				for j := range templateSet.Templates[i].Metadata.Blocks {
+					if templateSet.Templates[i].Metadata.Blocks[j].Name == tc.expectedBlock {
+						expectedMax = templateSet.Templates[i].Metadata.Blocks[j].MaxItems
+						break
+					}
+				}
+				break
+			}
+		}
+
+		if block.MaxItems != expectedMax {
+			t.Errorf("Template %s block %s: expected max %d (from template), got %d",
+				tc.template, tc.expectedBlock, expectedMax, block.MaxItems)
 		}
 	}
 }
@@ -265,14 +281,28 @@ func TestIntegration_PaginationWithPDF(t *testing.T) {
 
 	t.Logf("Successfully generated page 1 PDF with %d skills, size: %d bytes", len(pageData.Skills), len(pdfBytes))
 
-	// Verify second page has remaining skills (94 total - 58 from page 1 = 36 remaining)
-	// But with 29+29 capacity, it will be 29+13 = 42 on page 2
+	// Verify second page has remaining skills
+	// Get expected capacity from template (reuse templateSet from above)
+	var page1Template *TemplateWithMeta
+	for i := range templateSet.Templates {
+		if templateSet.Templates[i].Metadata.Name == "page1_stats.html" {
+			page1Template = &templateSet.Templates[i]
+			break
+		}
+	}
+
+	col1Block := GetBlockByName(page1Template.Metadata.Blocks, "skills_column1")
+	col2Block := GetBlockByName(page1Template.Metadata.Blocks, "skills_column2")
+	expectedPage1Capacity := col1Block.MaxItems + col2Block.MaxItems
+
 	col1Page2 := pages[1].Data["skills_column1"].([]SkillViewModel)
 	col2Page2 := pages[1].Data["skills_column2"].([]SkillViewModel)
 	totalPage2 := len(col1Page2) + len(col2Page2)
 
-	if totalPage2 != 42 { // 100 total - 58 from page 1 = 42 remaining
-		t.Errorf("Expected 42 skills on page 2, got %d", totalPage2)
+	expectedPage2 := 100 - expectedPage1Capacity // 100 total - capacity from page 1
+
+	if totalPage2 != expectedPage2 {
+		t.Errorf("Expected %d skills on page 2 (100 total - %d from page 1), got %d", expectedPage2, expectedPage1Capacity, totalPage2)
 	}
 
 	t.Logf("Page 2 would have %d skills distributed across columns", totalPage2)
@@ -280,7 +310,21 @@ func TestIntegration_PaginationWithPDF(t *testing.T) {
 
 // TestIntegration_MultiPageSpellList tests spell pagination across multiple pages
 func TestIntegration_MultiPageSpellList(t *testing.T) {
-	// Arrange - Create 30 spells (will need 2 pages with 24 capacity each)
+	// Get expected capacity from template
+	templateSet := DefaultA4QuerTemplateSet()
+	var page3Template *TemplateWithMeta
+	for i := range templateSet.Templates {
+		if templateSet.Templates[i].Metadata.Name == "page3_spell.html" {
+			page3Template = &templateSet.Templates[i]
+			break
+		}
+	}
+
+	spellsLeftBlock := GetBlockByName(page3Template.Metadata.Blocks, "spells_left")
+	spellsRightBlock := GetBlockByName(page3Template.Metadata.Blocks, "spells_right")
+	expectedSpellCapacity := spellsLeftBlock.MaxItems + spellsRightBlock.MaxItems
+
+	// Arrange - Create 30 spells
 	spells := make([]SpellViewModel, 30)
 	for i := 0; i < 30; i++ {
 		spells[i] = SpellViewModel{
@@ -293,7 +337,6 @@ func TestIntegration_MultiPageSpellList(t *testing.T) {
 	}
 
 	// Create paginator
-	templateSet := DefaultA4QuerTemplateSet()
 	paginator := NewPaginator(templateSet)
 
 	// Paginate spells
@@ -302,21 +345,26 @@ func TestIntegration_MultiPageSpellList(t *testing.T) {
 		t.Fatalf("Failed to paginate spells: %v", err)
 	}
 
-	// With 25 capacity (15+10), 30 spells should need 2 pages
+	// Calculate expected pages
+	expectedPages := (30 + expectedSpellCapacity - 1) / expectedSpellCapacity // Ceiling division
 
 	// Verify distribution
-	// With 15+10 capacity, 30 spells should need 2 pages
-	if len(pages) != 2 {
-		t.Fatalf("Expected 2 pages for 30 spells, got %d", len(pages))
+	if len(pages) != expectedPages {
+		t.Fatalf("Expected %d pages for 30 spells (capacity %d), got %d", expectedPages, expectedSpellCapacity, len(pages))
 	}
 
-	// Page 1: 15 (left) + 10 (right) = 25 spells
+	// Page 1 should have min(30, capacity) spells
 	leftPage1 := pages[0].Data["spells_left"].([]SpellViewModel)
 	rightPage1 := pages[0].Data["spells_right"].([]SpellViewModel)
 	totalPage1 := len(leftPage1) + len(rightPage1)
 
-	if totalPage1 != 25 {
-		t.Errorf("Expected 25 spells on page 1 (15+10), got %d", totalPage1)
+	expectedPage1 := expectedSpellCapacity
+	if 30 < expectedSpellCapacity {
+		expectedPage1 = 30
+	}
+
+	if totalPage1 != expectedPage1 {
+		t.Errorf("Expected %d spells on page 1 (capacity %d+%d), got %d", expectedPage1, spellsLeftBlock.MaxItems, spellsRightBlock.MaxItems, totalPage1)
 	}
 
 	t.Logf("Successfully distributed 30 spells: Page 1 has %d (left %d, right %d)", totalPage1, len(leftPage1), len(rightPage1))

@@ -1,6 +1,7 @@
 package pdfrender
 
 import (
+	"os"
 	"testing"
 )
 
@@ -34,7 +35,25 @@ func TestLoadTemplateSetFromFiles(t *testing.T) {
 		t.Error("Expected blocks in page1 metadata")
 	}
 
-	// Verify skills_column1 block
+	// Verify skills_column1 block - read expected value directly from template file
+	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page1_stats.html")
+	if err != nil {
+		t.Fatalf("Failed to read template file: %v", err)
+	}
+
+	expectedBlocks := ParseTemplateMetadata(string(templateContent))
+	var expectedSkillsCol1 *BlockMetadata
+	for i := range expectedBlocks {
+		if expectedBlocks[i].Name == "skills_column1" {
+			expectedSkillsCol1 = &expectedBlocks[i]
+			break
+		}
+	}
+
+	if expectedSkillsCol1 == nil {
+		t.Fatal("skills_column1 block not found in template file")
+	}
+
 	var skillsCol1 *BlockMetadata
 	for i := range page1.Metadata.Blocks {
 		if page1.Metadata.Blocks[i].Name == "skills_column1" {
@@ -47,8 +66,8 @@ func TestLoadTemplateSetFromFiles(t *testing.T) {
 		t.Error("skills_column1 block not found")
 	} else {
 		// Should match the MAX value in the template comment
-		if skillsCol1.MaxItems != 29 {
-			t.Errorf("Expected skills_column1 MaxItems 29 (from template), got %d", skillsCol1.MaxItems)
+		if skillsCol1.MaxItems != expectedSkillsCol1.MaxItems {
+			t.Errorf("Expected skills_column1 MaxItems %d (from template), got %d", expectedSkillsCol1.MaxItems, skillsCol1.MaxItems)
 		}
 		if skillsCol1.ListType != "skills" {
 			t.Errorf("Expected ListType 'skills', got '%s'", skillsCol1.ListType)
@@ -65,7 +84,25 @@ func TestDefaultA4QuerTemplateSet_LoadsFromFiles(t *testing.T) {
 	}
 
 	// Verify metadata comes from template files, not hardcoded
-	// Check page3_spell.html spells_left should be 20 (from template)
+	// Read expected value directly from template file
+	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page3_spell.html")
+	if err != nil {
+		t.Fatalf("Failed to read template file: %v", err)
+	}
+
+	expectedBlocks := ParseTemplateMetadata(string(templateContent))
+	var expectedSpellsLeft *BlockMetadata
+	for i := range expectedBlocks {
+		if expectedBlocks[i].Name == "spells_left" {
+			expectedSpellsLeft = &expectedBlocks[i]
+			break
+		}
+	}
+
+	if expectedSpellsLeft == nil {
+		t.Fatal("spells_left block not found in template file")
+	}
+
 	var page3 *TemplateWithMeta
 	for i := range templateSet.Templates {
 		if templateSet.Templates[i].Metadata.Name == "page3_spell.html" {
@@ -89,9 +126,9 @@ func TestDefaultA4QuerTemplateSet_LoadsFromFiles(t *testing.T) {
 	if spellsLeft == nil {
 		t.Error("spells_left block not found")
 	} else {
-		// Should be 15 from the template file (<!-- BLOCK: spells_left, TYPE: spells, MAX: 15 -->)
-		if spellsLeft.MaxItems != 15 {
-			t.Errorf("Expected spells_left MaxItems 15 (from template file), got %d", spellsLeft.MaxItems)
+		// Should match the value from the template file
+		if spellsLeft.MaxItems != expectedSpellsLeft.MaxItems {
+			t.Errorf("Expected spells_left MaxItems %d (from template file), got %d", expectedSpellsLeft.MaxItems, spellsLeft.MaxItems)
 		}
 	}
 }

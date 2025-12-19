@@ -151,9 +151,9 @@ func TestIntegration_TemplateMetadata(t *testing.T) {
 		expectedMax   int
 	}{
 		{"page1_stats.html", "skills_column1", 29},
-		{"page2_play.html", "skills_learned", 24},
-		{"page3_spell.html", "spells_left", 20},
-		{"page3_spell.html", "spells_right", 10},
+		{"page2_play.html", "skills_learned", 18}, // From template: MAX: 18
+		{"page3_spell.html", "spells_left", 26},   // From template: MAX: 26
+		{"page3_spell.html", "spells_right", 15},  // From template: MAX: 15
 		{"page4_equip.html", "equipment_worn", 10},
 	}
 

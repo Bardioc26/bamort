@@ -57,7 +57,6 @@ type DerivedValueSet struct {
 	LPAktuell     int
 	APAktuell     int
 	AusdauerBonus int
-
 	// Geschwindigkeit
 	GG int // Grundgeschwindigkeit
 	SG int // Schrittgeschwindigkeit
@@ -68,9 +67,9 @@ type DerivedValueSet struct {
 	AngriffBonus int
 
 	// Resistenzen
-	ResistenzGift   int
-	ResistenzKorper int
-	ResistenzGeist  int
+	ResistenzGift    int
+	ResistenzKoerper int
+	ResistenzGeist   int
 
 	// Zauberwerte
 	Zaubern      int // z.B. "+10/+9"

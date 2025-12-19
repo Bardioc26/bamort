@@ -1,5 +1,10 @@
 package pdfrender
 
+import (
+	"fmt"
+	"os"
+)
+
 // TemplateMetadata contains information about a template's capacity and requirements
 type TemplateMetadata struct {
 	Name        string // Template name (e.g., "page1_stats.html")
@@ -30,8 +35,71 @@ type TemplateWithMeta struct {
 	Path     string // File path to the template
 }
 
+// LoadTemplateSetFromFiles loads template metadata by parsing actual template files
+func LoadTemplateSetFromFiles(templateDir string) (TemplateSet, error) {
+	templateSet := TemplateSet{
+		Name:        "Default_A4_Quer",
+		Description: "Standard A4 Querformat Charakterbogen",
+		Templates:   []TemplateWithMeta{},
+	}
+
+	// Define the template files to load
+	templateFiles := []struct {
+		filename    string
+		pageType    string
+		description string
+	}{
+		{"page1_stats.html", "stats", "Statistikseite mit Grundwerten"},
+		{"page2_play.html", "play", "Spielbogen mit gelernten Fertigkeiten und Waffen"},
+		{"page3_spell.html", "spell", "Zauberseite mit Zauberliste"},
+		{"page4_equip.html", "equip", "Ausrüstungsseite"},
+	}
+
+	// Load each template file and parse its metadata
+	for _, tmplFile := range templateFiles {
+		filePath := templateDir + "/" + tmplFile.filename
+
+		// Read template content
+		content, err := os.ReadFile(filePath)
+		if err != nil {
+			return templateSet, fmt.Errorf("failed to read template %s: %w", tmplFile.filename, err)
+		}
+
+		// Parse metadata from HTML comments
+		blocks := ParseTemplateMetadata(string(content))
+
+		templateSet.Templates = append(templateSet.Templates, TemplateWithMeta{
+			Metadata: TemplateMetadata{
+				Name:        tmplFile.filename,
+				PageType:    tmplFile.pageType,
+				Description: tmplFile.description,
+				Blocks:      blocks,
+			},
+			Path: filePath,
+		})
+	}
+
+	return templateSet, nil
+}
+
 // DefaultA4QuerTemplateSet returns the template set for A4 Querformat
+// Now loads from actual template files instead of hardcoded values
 func DefaultA4QuerTemplateSet() TemplateSet {
+	// Try to load from files
+	templateSet, err := LoadTemplateSetFromFiles("backend/templates/Default_A4_Quer")
+	if err != nil {
+		// Fallback to relative path from test directory
+		templateSet, err = LoadTemplateSetFromFiles("../templates/Default_A4_Quer")
+		if err != nil {
+			// Last fallback: return hardcoded defaults
+			return getHardcodedTemplateSet()
+		}
+	}
+	return templateSet
+}
+
+// getHardcodedTemplateSet returns hardcoded fallback values
+func getHardcodedTemplateSet() TemplateSet {
 	return TemplateSet{
 		Name:        "Default_A4_Quer",
 		Description: "Standard A4 Querformat Charakterbogen",

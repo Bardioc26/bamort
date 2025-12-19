@@ -11,8 +11,7 @@
         <div class="header">
             <span class="header-left">Abenteuerblatt</span>
             <span class="header-right">Datum: {{.Meta.Date}}</span>
-        </div>
-        
+        </div>        
         <div class="title-row">
             <img src="shared/images/headerimg.png" alt="Schmuckgrafik" class="header-decoration">
             <div class="info-box">
@@ -21,8 +20,7 @@
                 <div><strong>Typ</strong> {{.Character.Type}} &nbsp;&nbsp; <strong>GG</strong> {{.DerivedValues.GG}} &nbsp;&nbsp; <strong>SG</strong> {{.DerivedValues.SG}}</div>
             </div>
             <img src="shared/images/headerimg.png" alt="Schmuckgrafik" class="header-decoration">
-        </div>
-        
+        </div>        
         <div class="flex main-content">
             <!-- Left section -->
             <div class="left-section">
@@ -40,19 +38,17 @@
                     <div class="attr-box"><div class="attr-label">pA</div><div class="attr-value">{{.Attributes.PA}}</div></div>
                     <div class="attr-box"><div class="attr-label">Wk</div><div class="attr-value">{{.Attributes.Wk}}</div></div>
                     <div class="attr-box"><div class="attr-label">B</div><div class="attr-value">{{.Attributes.B}}</div></div>
-                </div>
-                
+                </div>                
                 <!-- Combat stats -->
                 <div class="combat-stats">
                     <div><strong>Abwehr + {{.DerivedValues.Abwehr}}</strong></div>
                     <div><strong>+</strong> <span class="combat-stats-small">mit Vert.<br>waffe</span></div>
-                    <div><strong>Resistenz + {{.DerivedValues.ResistenzGift}}/{{.DerivedValues.ResistenzGeist}}</strong></div>
+                    <div><strong>Resistenz + {{.DerivedValues.ResistenzKoerper}}/{{.DerivedValues.ResistenzGeist}}</strong></div>
                     <div><strong>Zaubern + {{.DerivedValues.Zaubern}}</strong></div>
-                </div>
-                
+                </div>                
                 <!-- Skills tables -->
                 <div class="skills-row">
-                    <!-- BLOCK: skills_learned, TYPE: skills, MAX: 24, FILTER: learned -->
+                    <!-- BLOCK: skills_learned, TYPE: skills, MAX: 17, FILTER: learned -->
                     <table class="skills-table">
                         <tr>
                             <th>Fertigkeit</th>
@@ -70,22 +66,19 @@
                                 <th colspan="2"><em>ungelernte Fertigkeiten</em></th>
                             </tr>
                             <tr><td colspan="2" class="unlearned-small">alle wenigstens +(0) außer Musizieren, Schreiben, Sprache, Lesen von Zauberschrift</td></tr>
-                            <tr><td>Akrobatik+(6)</td><td>Tauchen~(6)</td></tr>
-                            <tr><td>Athletik+(6)</td><td>Trinken+(3)</td></tr>
-                            <tr><td>Balancieren+(6)</td><td>Überreden+(6)</td></tr>
-                            <tr><td>Betäubungsgriff+(6)</td><td>Verführen+(3)</td></tr>
-                            <tr><td>Bootfahren+(3)</td><td>Verfroren+(3)</td></tr>
-                            <tr><td>Einschüchtern+(3)</td><td>Verstecken+(3)</td></tr>
-                            <tr><td>Klettern+(6)</td><td>Wahrnehmung+(6)</td></tr>
-                            <tr><td>Menschenkenntnis+(3)</td><td></td></tr>
-                            <tr><td>Reiten+(6)</td><td></td></tr>
-                            <tr><td>Schwimmen+(3)</td><td></td></tr>
-                            <tr><td>Seilkunst+(3)</td><td></td></tr>
-                            <tr><td>Stehlen+(3)</td><td></td></tr>
-                            <tr><td>Tanzen+(6)</td><td></td></tr>
-                            <tr><td>Tarnen+(3)</td><td></td></tr>
+                            <tr><td>Akrobatik+(6)</td>       <td>Stehlen+(3)</td></tr>
+                            <tr><td>Athletik+(6)</td>        <td>Tanzen+(6)</td></tr>
+                            <tr><td>Balancieren+(6)</td>     <td>Tarnen+(3)</td></tr>
+                            <tr><td>Betäubungsgriff+(6)</td> <td>Tauchen~(6)</td></tr>
+                            <tr><td>Bootfahren+(3)</td>      <td>Trinken+(3)</td></tr>
+                            <tr><td>Einschüchtern+(3)</td>   <td>Überreden+(6)</td></tr>
+                            <tr><td>Klettern+(6)</td>        <td>Verführen+(3)</td></tr>
+                            <tr><td>Menschenkenntnis+(3)</td><td>Verfroren+(3)</td></tr>
+                            <tr><td>Reiten+(6)</td>          <td>Verstecken+(3)</td></tr>
+                            <tr><td>Schwimmen+(3)</td>       <td>Wahrnehmung+(6)</td></tr>
+                            <tr><td>Seilkunst+(3)</td>       <td>&nbsp;</td></tr>
                         </table>
-                        <!-- BLOCK: skills_languages, TYPE: skills, MAX: 11, FILTER: language -->
+                        <!-- BLOCK: skills_languages, TYPE: skills, MAX: 4, FILTER: language -->
                         <table class="skills-table" style="width: 100%; height: unset;">
                             <tr>
                                 <th>Fertigkeit</th>
@@ -98,8 +91,7 @@
                         </table>
                     </div>
                 </div>
-            </div>
-            
+            </div>            
             <!-- Right section -->
             <div class="right-section">
                 <div>
@@ -161,28 +153,20 @@
                 
                 <!-- Weapons table -->
                 <div class="margin-bottom-3">
-                    <!-- BLOCK: weapons_main, TYPE: weapons, MAX: 30 -->
+                    <!-- BLOCK: weapons_main, TYPE: weapons, MAX: 22 -->
                     <table class="weapons-table">
                         <tr>
                             <th>Waffe</th>
-                            <th>EW +/-</th>
-                            <th>GG</th>
-                            <th>+/-</th>
+                            <th>Fert.<br>wert</th>
                             <th>Schaden</th>
-                            <th>+/-</th>
-                            <th>Abwehr</th>
-                            <th>+/-</th>
+                            <th>Nah</th>
                         </tr>
                         {{range .Weapons}}
                         <tr>
                             <td>{{.Name}}</td>
                             <td>{{.Value}}</td>
-                            <td></td>
-                            <td></td>
                             <td>{{.Damage}}</td>
-                            <td></td>
-                            <td>{{.ParryValue}}</td>
-                            <td></td>
+                            <td>&nbsp;</td>
                         </tr>
                         {{end}}
                     </table>
@@ -190,11 +174,11 @@
                 
                 <!-- Senses row at bottom -->
                 <div class="senses-row">
-                    <span>Sehen+{{.DerivedValues.Sehen}}</span>
-                    <span>Nachtsicht+{{.DerivedValues.Sehen}}</span>
-                    <span>Hören+{{.DerivedValues.Horen}}</span>
-                    <span>Riechen/Schmecken+{{.DerivedValues.Riechen}}</span>
-                    <span>Sechster Sinn+{{.DerivedValues.Sechster}}</span>
+                    <span><b>Sehen</b> +{{.DerivedValues.Sehen}}</span>
+                    <span><b>Nachtsicht</b> +{{.DerivedValues.Sehen}}</span>
+                    <span><b>Hören</b> +{{.DerivedValues.Horen}}</span>
+                    <span><b>Riechen/Schmecken</b> +{{.DerivedValues.Riechen}}</span>
+                    <span><b>Sechster Sinn</b> +{{.DerivedValues.Sechster}}</span>
                 </div>
             </div>
         </div>

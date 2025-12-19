@@ -152,10 +152,16 @@ func TestPreparePaginatedPageData_Page2Play(t *testing.T) {
 }
 
 func TestPreparePaginatedPageData_Page3Spell(t *testing.T) {
-	// Create 30 spells and 10 magic items to test capacity
+	// Get capacities from template
+	templateSet := DefaultA4QuerTemplateSet()
+	leftCap := GetBlockCapacity(&templateSet, "page3_spell.html", "spells_left")
+	rightCap := GetBlockCapacity(&templateSet, "page3_spell.html", "spells_right")
+	magicItemsCap := GetBlockCapacity(&templateSet, "page3_spell.html", "magic_items")
+
+	// Create test data exceeding capacities
 	viewModel := &CharacterSheetViewModel{
-		Spells:     make([]SpellViewModel, 30),
-		MagicItems: make([]MagicItemViewModel, 10),
+		Spells:     make([]SpellViewModel, 50),
+		MagicItems: make([]MagicItemViewModel, 20),
 	}
 	for i := range viewModel.Spells {
 		viewModel.Spells[i] = SpellViewModel{
@@ -173,33 +179,32 @@ func TestPreparePaginatedPageData_Page3Spell(t *testing.T) {
 		t.Fatalf("PreparePaginatedPageData failed: %v", err)
 	}
 
-	// Page 3 should have spells split: left (max 20) and right (max 10)
-	if len(pageData.SpellsLeft) > 20 {
-		t.Errorf("SpellsLeft exceed capacity: got %d, max 20", len(pageData.SpellsLeft))
+	// Verify capacities match template
+	if len(pageData.SpellsLeft) != leftCap {
+		t.Errorf("SpellsLeft should be filled to %d (from template), got %d", leftCap, len(pageData.SpellsLeft))
 	}
 
-	if len(pageData.SpellsRight) > 10 {
-		t.Errorf("SpellsRight exceed capacity: got %d, max 10", len(pageData.SpellsRight))
+	if len(pageData.SpellsRight) != rightCap {
+		t.Errorf("SpellsRight should be filled to %d (from template), got %d", rightCap, len(pageData.SpellsRight))
 	}
 
-	totalSpells := len(pageData.SpellsLeft) + len(pageData.SpellsRight)
-	if totalSpells > 30 {
-		t.Errorf("Total spells exceed capacity: got %d, max 30 (20+10)", totalSpells)
+	if len(pageData.MagicItems) != magicItemsCap {
+		t.Errorf("MagicItems should be filled to %d (from template), got %d", magicItemsCap, len(pageData.MagicItems))
 	}
 
-	// Magic items limited to 5
-	if len(pageData.MagicItems) > 5 {
-		t.Errorf("MagicItems exceed capacity: got %d, max 5", len(pageData.MagicItems))
-	}
-
-	t.Logf("Page3: left=%d, right=%d (total=%d spells), %d magic items",
-		len(pageData.SpellsLeft), len(pageData.SpellsRight), totalSpells, len(pageData.MagicItems))
+	t.Logf("Page3: left=%d, right=%d (total=%d), magic_items=%d (from template)",
+		len(pageData.SpellsLeft), len(pageData.SpellsRight),
+		len(pageData.SpellsLeft)+len(pageData.SpellsRight), len(pageData.MagicItems))
 }
 
 func TestPreparePaginatedPageData_Page4Equipment(t *testing.T) {
-	// Create 30 equipment items to test capacity
+	// Get capacity from template
+	templateSet := DefaultA4QuerTemplateSet()
+	equipmentCap := GetBlockCapacity(&templateSet, "page4_equip.html", "equipment_worn")
+
+	// Create test data exceeding capacity
 	viewModel := &CharacterSheetViewModel{
-		Equipment: make([]EquipmentViewModel, 30),
+		Equipment: make([]EquipmentViewModel, 50),
 	}
 	for i := range viewModel.Equipment {
 		viewModel.Equipment[i] = EquipmentViewModel{
@@ -212,10 +217,10 @@ func TestPreparePaginatedPageData_Page4Equipment(t *testing.T) {
 		t.Fatalf("PreparePaginatedPageData failed: %v", err)
 	}
 
-	// Page 4 should have equipment limited to 20
-	if len(pageData.Equipment) > 20 {
-		t.Errorf("Equipment exceeds capacity: got %d, max 20", len(pageData.Equipment))
+	// Verify capacity matches template
+	if len(pageData.Equipment) != equipmentCap {
+		t.Errorf("Equipment should be filled to %d (from template), got %d", equipmentCap, len(pageData.Equipment))
 	}
 
-	t.Logf("Page4: %d equipment items", len(pageData.Equipment))
+	t.Logf("Page4: %d equipment items (from template)", len(pageData.Equipment))
 }

@@ -1,5 +1,19 @@
 package pdfrender
 
+// GetBlockCapacity gets the MAX capacity for a block from template metadata
+// Returns 0 if block not found
+func GetBlockCapacity(templateSet *TemplateSet, templateName, blockName string) int {
+	for _, tmpl := range templateSet.Templates {
+		if tmpl.Metadata.Name == templateName {
+			block := GetBlockByName(tmpl.Metadata.Blocks, blockName)
+			if block != nil {
+				return block.MaxItems
+			}
+		}
+	}
+	return 0
+}
+
 // PreparePaginatedPageData prepares data for rendering a template page with proper pagination
 // It takes the full view model and returns PageData with lists split according to template capacity
 func PreparePaginatedPageData(viewModel *CharacterSheetViewModel, templateName string, pageNumber int, date string) (*PageData, error) {
@@ -46,8 +60,9 @@ func PreparePaginatedPageData(viewModel *CharacterSheetViewModel, templateName s
 				// fmt.Printf("DEBUG: col1Capacity=%d, col2Capacity=%d\n", col1Capacity, col2Capacity)
 
 				col1Skills, col2Skills := SplitSkillsForColumns(viewModel.Skills, col1Capacity, col2Capacity)
-				pageData.SkillsColumn1 = col1Skills
-				pageData.SkillsColumn2 = col2Skills
+				// Fill to capacity to ensure empty rows render in template
+				pageData.SkillsColumn1 = FillToCapacity(col1Skills, col1Capacity)
+				pageData.SkillsColumn2 = FillToCapacity(col2Skills, col2Capacity)
 				pageData.Skills = viewModel.Skills // Keep for backward compatibility
 			} else {
 				pageData.Skills = viewModel.Skills
@@ -56,10 +71,20 @@ func PreparePaginatedPageData(viewModel *CharacterSheetViewModel, templateName s
 			pageData.Skills = viewModel.Skills
 		}
 	} else if templateName == "page2_play.html" {
-		// Limit weapons according to capacity (30)
-		pageData.Weapons = viewModel.Weapons
-		if len(pageData.Weapons) > 30 {
-			pageData.Weapons = pageData.Weapons[:30]
+		// Get capacities from template
+		weaponsCapacity := GetBlockCapacity(&templateSet, templateName, "weapons_main")
+		learnedCapacity := GetBlockCapacity(&templateSet, templateName, "skills_learned")
+		languageCapacity := GetBlockCapacity(&templateSet, templateName, "skills_languages")
+
+		// Limit and fill weapons to capacity
+		weapons := viewModel.Weapons
+		if weaponsCapacity > 0 && len(weapons) > weaponsCapacity {
+			weapons = weapons[:weaponsCapacity]
+		}
+		if weaponsCapacity > 0 {
+			pageData.Weapons = FillToCapacity(weapons, weaponsCapacity)
+		} else {
+			pageData.Weapons = weapons
 		}
 
 		// Filter skills by category for page2 blocks
@@ -73,32 +98,69 @@ func PreparePaginatedPageData(viewModel *CharacterSheetViewModel, templateName s
 		}
 
 		// Apply capacity limits
-		if len(learnedSkills) > 24 {
-			learnedSkills = learnedSkills[:24]
+		if learnedCapacity > 0 && len(learnedSkills) > learnedCapacity {
+			learnedSkills = learnedSkills[:learnedCapacity]
 		}
-		if len(languageSkills) > 11 {
-			languageSkills = languageSkills[:11]
+		if languageCapacity > 0 && len(languageSkills) > languageCapacity {
+			languageSkills = languageSkills[:languageCapacity]
 		}
 
-		pageData.SkillsLearned = learnedSkills
-		pageData.SkillsLanguage = languageSkills
+		// Fill to capacity to ensure empty rows render
+		if learnedCapacity > 0 {
+			pageData.SkillsLearned = FillToCapacity(learnedSkills, learnedCapacity)
+		} else {
+			pageData.SkillsLearned = learnedSkills
+		}
+		if languageCapacity > 0 {
+			pageData.SkillsLanguage = FillToCapacity(languageSkills, languageCapacity)
+		} else {
+			pageData.SkillsLanguage = languageSkills
+		}
 		pageData.Skills = viewModel.Skills // Keep for backward compatibility
 	} else if templateName == "page3_spell.html" {
-		// Split spells into left (20) and right (10) columns
-		leftSpells, rightSpells := SplitSkillsIntoColumns(viewModel.Spells, 20, 10)
-		pageData.SpellsLeft = leftSpells
-		pageData.SpellsRight = rightSpells
+		// Get capacities from template
+		spellsLeftCapacity := GetBlockCapacity(&templateSet, templateName, "spells_left")
+		spellsRightCapacity := GetBlockCapacity(&templateSet, templateName, "spells_right")
+		magicItemsCapacity := GetBlockCapacity(&templateSet, templateName, "magic_items")
+
+		// Split spells into left and right columns
+		leftSpells, rightSpells := SplitSkillsIntoColumns(viewModel.Spells, spellsLeftCapacity, spellsRightCapacity)
+		// Fill to capacity to ensure empty rows render
+		if spellsLeftCapacity > 0 {
+			pageData.SpellsLeft = FillToCapacity(leftSpells, spellsLeftCapacity)
+		} else {
+			pageData.SpellsLeft = leftSpells
+		}
+		if spellsRightCapacity > 0 {
+			pageData.SpellsRight = FillToCapacity(rightSpells, spellsRightCapacity)
+		} else {
+			pageData.SpellsRight = rightSpells
+		}
 		pageData.Spells = viewModel.Spells // Keep for backward compatibility
 
-		// Limit magic items to 5
-		pageData.MagicItems = viewModel.MagicItems
-		if len(pageData.MagicItems) > 5 {
-			pageData.MagicItems = pageData.MagicItems[:5]
+		// Limit and fill magic items
+		magicItems := viewModel.MagicItems
+		if magicItemsCapacity > 0 && len(magicItems) > magicItemsCapacity {
+			magicItems = magicItems[:magicItemsCapacity]
+		}
+		if magicItemsCapacity > 0 {
+			pageData.MagicItems = FillToCapacity(magicItems, magicItemsCapacity)
+		} else {
+			pageData.MagicItems = magicItems
 		}
 	} else if templateName == "page4_equip.html" {
-		pageData.Equipment = viewModel.Equipment
-		if len(pageData.Equipment) > 20 {
-			pageData.Equipment = pageData.Equipment[:20]
+		// Get capacity from template
+		equipmentCapacity := GetBlockCapacity(&templateSet, templateName, "equipment_worn")
+
+		// Limit and fill equipment to capacity
+		equipment := viewModel.Equipment
+		if equipmentCapacity > 0 && len(equipment) > equipmentCapacity {
+			equipment = equipment[:equipmentCapacity]
+		}
+		if equipmentCapacity > 0 {
+			pageData.Equipment = FillToCapacity(equipment, equipmentCapacity)
+		} else {
+			pageData.Equipment = equipment
 		}
 	}
 

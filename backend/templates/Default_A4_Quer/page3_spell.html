@@ -26,7 +26,7 @@
         <div class="flex main-content">
             <!-- Left spell table -->
             <div class="left-section">
-                <!-- BLOCK: spells_left, TYPE: spells, MAX: 20 -->
+                <!-- BLOCK: spells_left, TYPE: spells, MAX: 26 -->
                 <table class="spells-table">
                     <tr>
                         <th>AP<hr>Prozess *</th>
@@ -51,7 +51,7 @@
             
             <!-- Right spell table -->
             <div class="right-section">
-                <!-- BLOCK: spells_right, TYPE: spells, MAX: 10 -->
+                <!-- BLOCK: spells_right, TYPE: spells, MAX: 15 -->
                 <table class="spells-table">
                     <tr>
                         <th>AP<br>Prozess *</th>
@@ -74,7 +74,7 @@
                 </table>
                 <div class="spell-footer">
                     <p><em>wichtige magische Gegenstände, Tränke, Schriftrollen</em></p>
-                    <!-- BLOCK: magic_items, TYPE: magicItems, MAX: 5 -->
+                    <!-- BLOCK: magic_items, TYPE: magicItems, MAX: 8 -->
                     <table class="items-table">
                         <tr>
                             <th>Gegenstand</th>
@@ -82,7 +82,7 @@
                         </tr>
                         {{range .MagicItems}}
                         <tr>
-                            <td>{{.Name}}</td>
+                            <td>{{.Name}}&nbsp;</td>
                             <td>{{.Description}} {{if .Properties}}{{.Properties}}{{end}}</td>
                         </tr>
                         {{end}}

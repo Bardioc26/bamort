@@ -93,11 +93,16 @@ func mapAttributes(char *models.Char) AttributeValues {
 
 // mapDerivedValues extracts derived values like LP, AP, etc.
 func mapDerivedValues(char *models.Char) DerivedValueSet {
+	// Get attributes for bonus calculations
+	attrs := mapAttributes(char)
+	
 	return DerivedValueSet{
-		LPMax:     char.Lp.Max,
-		LPAktuell: char.Lp.Value,
-		APMax:     char.Ap.Max,
-		APAktuell: char.Ap.Value,
+		LPMax:        char.Lp.Max,
+		LPAktuell:    char.Lp.Value,
+		APMax:        char.Ap.Max,
+		APAktuell:    char.Ap.Value,
+		AngriffBonus: calculateAttributeBonus(attrs.Gs),
+		SchadenBonus: (attrs.St / 20) + (attrs.Gs / 30) - 3,
 	}
 }
 
@@ -120,14 +125,41 @@ func mapSkills(char *models.Char) []SkillViewModel {
 }
 
 // mapWeapons converts character weapon skills to WeaponViewModel
+// EW = Waffenfertigkeit.Fertigkeitswert + Character.AngriffBonus + Weapon.Anb
 func mapWeapons(char *models.Char) []WeaponViewModel {
 	weapons := make([]WeaponViewModel, 0, len(char.Waffenfertigkeiten))
 
-	for _, weapon := range char.Waffenfertigkeiten {
-		weapons = append(weapons, WeaponViewModel{
-			Name:  weapon.Name,
-			Value: weapon.Fertigkeitswert,
-		})
+	// Calculate character's attack bonus once
+	attrs := mapAttributes(char)
+	angriffsBonus := calculateAttributeBonus(attrs.Gs)
+	// schadenBonus will be used later for damage calculation
+	// schadenBonus := (attrs.St / 20) + (attrs.Gs / 30) - 3
+
+	// Create a map of equipped weapons for quick lookup
+	equippedWeapons := make(map[string]*models.EqWaffe)
+	for i := range char.Waffen {
+		equippedWeapons[char.Waffen[i].Name] = &char.Waffen[i]
+	}
+
+	for _, weaponSkill := range char.Waffenfertigkeiten {
+		vm := WeaponViewModel{
+			Name:  weaponSkill.Name,
+			Value: weaponSkill.Fertigkeitswert, // Base skill value
+		}
+
+		// If character has this weapon equipped, add weapon bonuses
+		if equippedWeapon, exists := equippedWeapons[weaponSkill.Name]; exists {
+			// EW = skill + character attack bonus + weapon attack bonus
+			vm.Value += angriffsBonus + equippedWeapon.Anb
+			
+			// TODO: Calculate damage including weapon and character bonuses
+			// TODO: Add range information for ranged weapons
+		} else {
+			// No equipped weapon, just use skill + character bonus
+			vm.Value += angriffsBonus
+		}
+
+		weapons = append(weapons, vm)
 	}
 
 	return weapons
@@ -213,4 +245,21 @@ func mapEquipment(char *models.Char) []EquipmentViewModel {
 	}
 
 	return equipment
+}
+
+// calculateAttributeBonus calculates attribute bonus based on value
+// Same logic as in character/derived_values_calculator.go
+func calculateAttributeBonus(value int) int {
+	if value >= 1 && value <= 5 {
+		return -2
+	} else if value >= 6 && value <= 20 {
+		return -1
+	} else if value >= 21 && value <= 80 {
+		return 0
+	} else if value >= 81 && value <= 95 {
+		return 1
+	} else if value >= 96 && value <= 100 {
+		return 2
+	}
+	return 0
 }

@@ -112,43 +112,42 @@
                     <tr>
                         <th>Datum</th>
                         {{range .GameResults}}<th>{{.Date.Format "02.01.2006"}}</th>{{end}}
-
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<th style="color: white;">27.12.20213</th>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>ES</td>
                         {{range .GameResults}}<td>{{.ES}}</td>{{end}}
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>EP</td>
                         {{range .GameResults}}<td>{{.EP}}</td>{{end}}
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>Geld</td>
                         {{range .GameResults}}<td>{{.Gold}}</td>{{end}}
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
                     </tr>
                     <tr>
                         <th>Datum</th>
                         {{range .GameResults}}<th>{{.Date.Format "02.01.2006"}}</th>{{end}}
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>ES</td>
                         {{range .GameResults}}<td>{{.ES}}</td>{{end}}
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>EP</td>
                         {{range .GameResults}}<td>{{.ES}}</td>{{end}}
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>Geld</td>
                         {{range .GameResults}}<td>{{.Gold}}</td>{{end}}
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
                     </tr>
                 </table>
             </div>

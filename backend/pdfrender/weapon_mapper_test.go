@@ -45,8 +45,8 @@ func TestMapWeapons_WithEWCalculation(t *testing.T) {
 						Name: "Langschwert",
 					},
 				},
-				Anb:  2,  // Attack bonus of weapon
-				Schb: 1,  // Damage bonus of weapon
+				Anb:  2, // Attack bonus of weapon
+				Schb: 1, // Damage bonus of weapon
 			},
 			{
 				BamortCharTrait: models.BamortCharTrait{
@@ -82,7 +82,7 @@ func TestMapWeapons_WithEWCalculation(t *testing.T) {
 	if sword.Name != "Langschwert" {
 		t.Errorf("Expected weapon name 'Langschwert', got '%s'", sword.Name)
 	}
-	
+
 	// EW should be: skill(12) + char_attack_bonus + weapon_bonus(2)
 	// Character attack bonus is derived from St/Gw, typically calculated in DerivedValues
 	// For now, we expect at least: 12 + 2 = 14 (we'll enhance with char bonus later)
@@ -95,7 +95,7 @@ func TestMapWeapons_WithEWCalculation(t *testing.T) {
 	if bow.Name != "Bogen" {
 		t.Errorf("Expected weapon name 'Bogen', got '%s'", bow.Name)
 	}
-	
+
 	if bow.Value < 10 {
 		t.Errorf("Expected bow EW >= 10 (skill 10 + no weapon bonus), got %d", bow.Value)
 	}

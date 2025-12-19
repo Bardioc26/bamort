@@ -95,7 +95,7 @@ func mapAttributes(char *models.Char) AttributeValues {
 func mapDerivedValues(char *models.Char) DerivedValueSet {
 	// Get attributes for bonus calculations
 	attrs := mapAttributes(char)
-	
+
 	return DerivedValueSet{
 		LPMax:        char.Lp.Max,
 		LPAktuell:    char.Lp.Value,
@@ -151,7 +151,7 @@ func mapWeapons(char *models.Char) []WeaponViewModel {
 		if equippedWeapon, exists := equippedWeapons[weaponSkill.Name]; exists {
 			// EW = skill + character attack bonus + weapon attack bonus
 			vm.Value += angriffsBonus + equippedWeapon.Anb
-			
+
 			// TODO: Calculate damage including weapon and character bonuses
 			// TODO: Add range information for ranged weapons
 		} else {

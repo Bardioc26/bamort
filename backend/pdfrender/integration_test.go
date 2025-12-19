@@ -92,17 +92,10 @@ func TestIntegration_FullPDFGeneration(t *testing.T) {
 		t.Fatalf("Failed to load templates: %v", err)
 	}
 
-	// Step 3: Render template to HTML
-	pageData := &PageData{
-		Character:     viewModel.Character,
-		Attributes:    viewModel.Attributes,
-		DerivedValues: viewModel.DerivedValues,
-		Skills:        viewModel.Skills,
-		Weapons:       viewModel.Weapons,
-		Meta: PageMeta{
-			Date:       "18.12.2025",
-			PageNumber: 1,
-		},
+	// Step 3: Prepare paginated data and render template to HTML
+	pageData, err := PreparePaginatedPageData(viewModel, "page1_stats.html", 1, "18.12.2025")
+	if err != nil {
+		t.Fatalf("Failed to prepare paginated data: %v", err)
 	}
 
 	html, err := loader.RenderTemplate("page1_stats.html", pageData)
@@ -157,7 +150,7 @@ func TestIntegration_TemplateMetadata(t *testing.T) {
 		expectedBlock string
 		expectedMax   int
 	}{
-		{"page1_stats.html", "skills_column1", 32},
+		{"page1_stats.html", "skills_column1", 29},
 		{"page2_play.html", "skills_learned", 24},
 		{"page3_spell.html", "spells_left", 12},
 		{"page3_spell.html", "spells_right", 10},
@@ -238,10 +231,10 @@ func TestIntegration_PaginationWithPDF(t *testing.T) {
 		},
 	}
 
-	// Add paginated skills for page 1
-	col1Skills := pages[0].Data["skills_column1"].([]SkillViewModel)
-	col2Skills := pages[0].Data["skills_column2"].([]SkillViewModel)
-	pageData.Skills = append(col1Skills, col2Skills...)
+	// Add paginated skills for page 1 - now with proper column split
+	pageData.SkillsColumn1 = pages[0].Data["skills_column1"].([]SkillViewModel)
+	pageData.SkillsColumn2 = pages[0].Data["skills_column2"].([]SkillViewModel)
+	pageData.Skills = append(pageData.SkillsColumn1, pageData.SkillsColumn2...) // Keep for logging
 
 	html, err := loader.RenderTemplate("page1_stats.html", pageData)
 	if err != nil {
@@ -266,13 +259,14 @@ func TestIntegration_PaginationWithPDF(t *testing.T) {
 
 	t.Logf("Successfully generated page 1 PDF with %d skills, size: %d bytes", len(pageData.Skills), len(pdfBytes))
 
-	// Verify second page has remaining skills
+	// Verify second page has remaining skills (94 total - 58 from page 1 = 36 remaining)
+	// But with 29+29 capacity, it will be 29+13 = 42 on page 2
 	col1Page2 := pages[1].Data["skills_column1"].([]SkillViewModel)
 	col2Page2 := pages[1].Data["skills_column2"].([]SkillViewModel)
 	totalPage2 := len(col1Page2) + len(col2Page2)
 
-	if totalPage2 != 36 {
-		t.Errorf("Expected 36 skills on page 2, got %d", totalPage2)
+	if totalPage2 != 42 { // 100 total - 58 from page 1 = 42 remaining
+		t.Errorf("Expected 42 skills on page 2, got %d", totalPage2)
 	}
 
 	t.Logf("Page 2 would have %d skills distributed across columns", totalPage2)
@@ -586,16 +580,9 @@ func TestVisualInspection_AllPages(t *testing.T) {
 
 	// Page 1: Stats page with skills
 	t.Log("Generating Page 1: Stats...")
-	page1Data := &PageData{
-		Character:     viewModel.Character,
-		Attributes:    viewModel.Attributes,
-		DerivedValues: viewModel.DerivedValues,
-		Skills:        viewModel.Skills,
-		GameResults:   viewModel.GameResults,
-		Meta: PageMeta{
-			Date:       "18.12.2025",
-			PageNumber: 1,
-		},
+	page1Data, err := PreparePaginatedPageData(viewModel, "page1_stats.html", 1, "18.12.2025")
+	if err != nil {
+		t.Fatalf("Failed to prepare page1 data: %v", err)
 	}
 
 	html1, err := loader.RenderTemplateWithInlinedResources("page1_stats.html", page1Data)
@@ -610,16 +597,9 @@ func TestVisualInspection_AllPages(t *testing.T) {
 
 	// Page 2: Play/Adventure page with weapons
 	t.Log("Generating Page 2: Play...")
-	page2Data := &PageData{
-		Character:     viewModel.Character,
-		Attributes:    viewModel.Attributes,
-		DerivedValues: viewModel.DerivedValues,
-		Skills:        viewModel.Skills,
-		Weapons:       viewModel.Weapons,
-		Meta: PageMeta{
-			Date:       "18.12.2025",
-			PageNumber: 2,
-		},
+	page2Data, err := PreparePaginatedPageData(viewModel, "page2_play.html", 2, "18.12.2025")
+	if err != nil {
+		t.Fatalf("Failed to prepare page2 data: %v", err)
 	}
 
 	html2, err := loader.RenderTemplateWithInlinedResources("page2_play.html", page2Data)
@@ -634,14 +614,9 @@ func TestVisualInspection_AllPages(t *testing.T) {
 
 	// Page 3: Spells page
 	t.Log("Generating Page 3: Spells...")
-	page3Data := &PageData{
-		Character:  viewModel.Character,
-		Spells:     viewModel.Spells,
-		MagicItems: viewModel.MagicItems,
-		Meta: PageMeta{
-			Date:       "18.12.2025",
-			PageNumber: 3,
-		},
+	page3Data, err := PreparePaginatedPageData(viewModel, "page3_spell.html", 3, "18.12.2025")
+	if err != nil {
+		t.Fatalf("Failed to prepare page3 data: %v", err)
 	}
 
 	html3, err := loader.RenderTemplateWithInlinedResources("page3_spell.html", page3Data)
@@ -656,14 +631,9 @@ func TestVisualInspection_AllPages(t *testing.T) {
 
 	// Page 4: Equipment page
 	t.Log("Generating Page 4: Equipment...")
-	page4Data := &PageData{
-		Character:   viewModel.Character,
-		Equipment:   viewModel.Equipment,
-		GameResults: viewModel.GameResults,
-		Meta: PageMeta{
-			Date:       "18.12.2025",
-			PageNumber: 4,
-		},
+	page4Data, err := PreparePaginatedPageData(viewModel, "page4_equip.html", 4, "18.12.2025")
+	if err != nil {
+		t.Fatalf("Failed to prepare page4 data: %v", err)
 	}
 
 	html4, err := loader.RenderTemplateWithInlinedResources("page4_equip.html", page4Data)

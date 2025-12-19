@@ -115,8 +115,10 @@ func TestRenderTemplate_WithSkills(t *testing.T) {
 		Character: CharacterInfo{
 			Name: "Test",
 		},
-		Skills: []SkillViewModel{
-			{Name: "Schwimmen", Value: 10, PracticePoints: 5},
+		SkillsColumn1: []SkillViewModel{
+			{Name: "Schwimmen", Value: 10, PracticePoints: 2},
+		},
+		SkillsColumn2: []SkillViewModel{
 			{Name: "Klettern", Value: 8, PracticePoints: 3},
 		},
 		Meta: PageMeta{

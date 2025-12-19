@@ -127,16 +127,16 @@ func TestPaginateSkills_MultiColumn(t *testing.T) {
 
 	page := pages[0]
 
-	// Column 1 should have 32 skills
+	// Column 1 should have 29 skills
 	col1Data := page.Data["skills_column1"].([]SkillViewModel)
-	if len(col1Data) != 32 {
-		t.Errorf("Expected 32 skills in column 1, got %d", len(col1Data))
+	if len(col1Data) != 29 {
+		t.Errorf("Expected 29 skills in column 1, got %d", len(col1Data))
 	}
 
-	// Column 2 should have 8 skills
+	// Column 2 should have 11 skills (40 total - 29 in col1)
 	col2Data := page.Data["skills_column2"].([]SkillViewModel)
-	if len(col2Data) != 8 {
-		t.Errorf("Expected 8 skills in column 2, got %d", len(col2Data))
+	if len(col2Data) != 11 {
+		t.Errorf("Expected 11 skills in column 2, got %d", len(col2Data))
 	}
 }
 
@@ -163,26 +163,26 @@ func TestPaginateSkills_MultiPage(t *testing.T) {
 		t.Fatalf("Expected 2 pages, got %d", len(pages))
 	}
 
-	// Page 1 should have 64 skills (32 + 32)
+	// Page 1 should have 58 skills (29 + 29)
 	page1 := pages[0]
 	col1Page1 := page1.Data["skills_column1"].([]SkillViewModel)
 	col2Page1 := page1.Data["skills_column2"].([]SkillViewModel)
-	if len(col1Page1) != 32 {
-		t.Errorf("Page 1 col1: expected 32 skills, got %d", len(col1Page1))
+	if len(col1Page1) != 29 {
+		t.Errorf("Page 1 col1: expected 29 skills, got %d", len(col1Page1))
 	}
-	if len(col2Page1) != 32 {
-		t.Errorf("Page 1 col2: expected 32 skills, got %d", len(col2Page1))
+	if len(col2Page1) != 29 {
+		t.Errorf("Page 1 col2: expected 29 skills, got %d", len(col2Page1))
 	}
 
-	// Page 2 should have 36 skills (32 + 4)
+	// Page 2 should have 42 skills (29 + 13) - 100 total - 58 from page 1 = 42 remaining
 	page2 := pages[1]
 	col1Page2 := page2.Data["skills_column1"].([]SkillViewModel)
 	col2Page2 := page2.Data["skills_column2"].([]SkillViewModel)
-	if len(col1Page2) != 32 {
-		t.Errorf("Page 2 col1: expected 32 skills, got %d", len(col1Page2))
+	if len(col1Page2) != 29 {
+		t.Errorf("Page 2 col1: expected 29 skills, got %d", len(col1Page2))
 	}
-	if len(col2Page2) != 4 {
-		t.Errorf("Page 2 col2: expected 4 skills, got %d", len(col2Page2))
+	if len(col2Page2) != 13 {
+		t.Errorf("Page 2 col2: expected 13 skills, got %d", len(col2Page2))
 	}
 }
 
@@ -348,8 +348,8 @@ func TestCalculatePagesNeeded(t *testing.T) {
 		expectedPages int
 	}{
 		{"10 skills on page1", "page1_stats.html", "skills", 10, 1},
-		{"64 skills on page1", "page1_stats.html", "skills", 64, 1},
-		{"65 skills on page1", "page1_stats.html", "skills", 65, 2},
+		{"58 skills on page1", "page1_stats.html", "skills", 58, 1}, // 29+29 = 58 fits on 1 page
+		{"59 skills on page1", "page1_stats.html", "skills", 59, 2}, // 59 requires 2 pages
 		{"100 skills on page1", "page1_stats.html", "skills", 100, 2},
 		{"10 weapons on page2", "page2_play.html", "weapons", 10, 1},
 		{"30 weapons on page2", "page2_play.html", "weapons", 30, 1},

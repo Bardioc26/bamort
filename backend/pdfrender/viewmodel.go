@@ -173,12 +173,14 @@ type PageData struct {
 	DerivedValues DerivedValueSet
 
 	// Lists sliced according to template block metadata
-	Skills      []SkillViewModel
-	Weapons     []WeaponViewModel
-	Spells      []SpellViewModel
-	MagicItems  []MagicItemViewModel
-	Equipment   []EquipmentViewModel
-	GameResults []GameResultViewModel
+	Skills        []SkillViewModel
+	SkillsColumn1 []SkillViewModel // For two-column skill layout
+	SkillsColumn2 []SkillViewModel // For two-column skill layout
+	Weapons       []WeaponViewModel
+	Spells        []SpellViewModel
+	MagicItems    []MagicItemViewModel
+	Equipment     []EquipmentViewModel
+	GameResults   []GameResultViewModel
 
 	Meta PageMeta
 }

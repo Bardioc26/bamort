@@ -45,13 +45,13 @@ func DefaultA4QuerTemplateSet() TemplateSet {
 						{
 							Name:     "skills_column1",
 							ListType: "skills",
-							MaxItems: 32,
+							MaxItems: 29,
 							Column:   1,
 						},
 						{
 							Name:     "skills_column2",
 							ListType: "skills",
-							MaxItems: 32,
+							MaxItems: 29,
 							Column:   2,
 						},
 					},

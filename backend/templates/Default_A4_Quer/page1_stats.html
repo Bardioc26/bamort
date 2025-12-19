@@ -157,26 +157,26 @@
                 <div class="skills-content">
                 <div class="skills-title">Liste der gelernten und angeborenen Fertigkeiten</div>
                 <div class="skills-container">
-                    <!-- BLOCK: skills_column1, TYPE: skills, MAX: 32 -->
+                    <!-- BLOCK: skills_column1, TYPE: skills, MAX: 29 -->
                     <table class="skills-table">
                         <tr>
                             <th>Fertigkeit</th>
                             <th>EW</th>
                             <th>PP</th>
                         </tr>
-                        {{range .Skills}}
+                        {{range .SkillsColumn1}}
                         <tr><td>{{.Name}}</td><td>+ {{.Value}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
                         {{end}}
                     </table>
-                    <!-- BLOCK: skills_column2, TYPE: skills, MAX: 32 -->
+                    <!-- BLOCK: skills_column2, TYPE: skills, MAX: 29 -->
                     <table class="skills-table">
                         <tr>
                             <th>Fertigkeit</th>
                             <th>EW</th>
                             <th>PP</th>
                         </tr>
-                        {{range $i := iterate 32}}
-                        <tr><td>&nbsp;</td><td></td><td></td></tr>
+                        {{range .SkillsColumn2}}
+                        <tr><td>{{.Name}}</td><td>+ {{.Value}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
                         {{end}}
                     </table>
                 </div>

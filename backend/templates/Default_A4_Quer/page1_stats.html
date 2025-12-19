@@ -25,7 +25,7 @@
         
         <div class="flex main-content">
             <div class="left-section">
-            <div class="col">
+            <div class="col-chartype">
                 <!-- left column block Chartype -->
                 <div class="margin-bottom-3">
                     <div><strong>Typ</strong> {{.Character.Type}} &nbsp;&nbsp; <strong>Grad</strong> {{.Character.Grade}}</div>
@@ -55,7 +55,7 @@
                     <div class="attr-box attr-box-100"><div class="attr-label">Raufen</div><div class="attr-value">+ 5</div></div>
                 </div>
                 <!-- left column block boni -->
-                <div class="margin-top-5">
+                <div class="margin-top-2">
                     <div><strong>persönlicher Bonus für:</strong></div>
                     <div class="margin-top-2">
                         <div class="bonus-row"><span>Ausdauer <u>{{.DerivedValues.AusdauerBonus}}</u></span><span>Schaden <u>{{.DerivedValues.SchadenBonus}}</u></span><span>Angriff <u>{{.DerivedValues.AngriffBonus}}</u></span></div>
@@ -64,7 +64,7 @@
                 </div>
             </div>
             <!-- center column block Charinfo -->
-            <div class="col">
+            <div class="col-charinfo">
                 <table class="charinfo">
                     <tr>
                         <td><strong>Geburtsdatum</strong></td>
@@ -100,14 +100,14 @@
                 </table>
             </div>
             <!-- left column block LPAP -->
-            <div class="margin-top-5">
+            <div class="margin-top-3">
                 <div class="attr-box attr-box-100"><div class="attr-label">LP-Max.</div><div class="attr-value">{{.DerivedValues.LPMax}}</div></div>
                 <div class="attr-box attr-box-100"><div class="attr-label">AP-Max.</div><div class="attr-value">{{.DerivedValues.APMax}}</div></div>
                 <div class="attr-box attr-box-80"><div class="attr-label">GG</div><div class="attr-value">{{.DerivedValues.GG}}</div></div>
                 <div class="attr-box attr-box-80"><div class="attr-label">SG</div><div class="attr-value">{{.DerivedValues.SG}}</div></div>
             </div>
             <!-- left column block History -->
-            <div class="margin-top-5">
+            <div class="margin-top-2">
                 <table class="history-table">
                     <tr>
                         <th>Datum</th>
@@ -118,17 +118,17 @@
                     <tr>
                         <td>ES</td>
                         {{range .GameResults}}<td>{{.ES}}</td>{{end}}
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td></td>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>EP</td>
                         {{range .GameResults}}<td>{{.EP}}</td>{{end}}
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td></td>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>Geld</td>
                         {{range .GameResults}}<td>{{.Gold}}</td>{{end}}
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td></td>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
                     </tr>
                     <tr>
                         <th>Datum</th>
@@ -138,17 +138,17 @@
                     <tr>
                         <td>ES</td>
                         {{range .GameResults}}<td>{{.ES}}</td>{{end}}
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td></td>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>EP</td>
                         {{range .GameResults}}<td>{{.ES}}</td>{{end}}
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td></td>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
                     </tr>
                     <tr>
                         <td>Geld</td>
                         {{range .GameResults}}<td>{{.Gold}}</td>{{end}}
-                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td></td>{{end}}{{end}}
+                        {{range $i := iterate 6}}{{if lt $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
                     </tr>
                 </table>
             </div>

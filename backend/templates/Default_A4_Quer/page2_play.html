@@ -56,7 +56,7 @@
                             <th>PP</th>
                         </tr>
                         {{range .SkillsLearned}}
-                        <tr><td>{{.Name}}</td><td>+ {{.Value}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                        <tr><td>{{.Name}}</td><td>{{if .Value}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
                         {{end}}
                     </table>
                     <div class="skills-stack">
@@ -86,7 +86,7 @@
                                 <th>PP</th>
                             </tr>
                             {{range .SkillsLanguage}}
-                            <tr><td>{{.Name}}</td><td>+ {{.Value}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                            <tr><td>{{.Name}}</td><td>{{if .Value}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
                             {{end}}
                         </table>
                     </div>
@@ -164,7 +164,7 @@
                         {{range .Weapons}}
                         <tr>
                             <td>{{.Name}}</td>
-                            <td>{{.Value}}</td>
+                            <td>{{if .Value}}{{.Value}}{{else}}&nbsp;{{end}}</td>
                             <td>{{.Damage}}</td>
                             <td>&nbsp;</td>
                         </tr>

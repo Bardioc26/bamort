@@ -72,7 +72,7 @@
                     </tr>
                     <tr>
                         <td><strong>Alter</strong></td>
-                        <td><u>{{.Character.Age}}</u> rechts. händig</td>
+                        <td>{{.Character.Age}}&nbsp;&nbsp;{{.Character.Hand}}-händig</td>
                     </tr>
                     <tr>
                         <td><strong>Größe</strong></td>
@@ -165,7 +165,7 @@
                             <th>PP</th>
                         </tr>
                         {{range .SkillsColumn1}}
-                        <tr><td>{{.Name}}</td><td>+ {{.Value}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                        <tr><td>{{.Name}}</td><td>{{if .Name}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
                         {{end}}
                     </table>
                     <!-- BLOCK: skills_column2, TYPE: skills, MAX: 29 -->
@@ -176,7 +176,7 @@
                             <th>PP</th>
                         </tr>
                         {{range .SkillsColumn2}}
-                        <tr><td>{{.Name}}</td><td>+ {{.Value}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                        <tr><td>{{.Name}}</td><td>{{if .Name}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
                         {{end}}
                     </table>
                 </div>

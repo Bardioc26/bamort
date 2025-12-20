@@ -177,18 +177,19 @@ func TestContinuationPages_MultipleOverflows(t *testing.T) {
 
 	t.Logf("Created %d pages for 200 skills", len(pages))
 
-	// Verify template names follow pattern
-	expectedTemplates := []string{
-		"page1_stats.html",
-		"page1.2_stats.html",
-		"page1.3_stats.html",
-		"page1.4_stats.html",
-	}
-
+	// Verify template names follow pattern: page1_stats.html, then all use page1.2_stats.html
 	for i, page := range pages {
-		if i < len(expectedTemplates) && page.TemplateName != expectedTemplates[i] {
+		var expectedTemplate string
+		if i == 0 {
+			expectedTemplate = "page1_stats.html"
+		} else {
+			// All continuation pages use the same .2 template
+			expectedTemplate = "page1.2_stats.html"
+		}
+
+		if page.TemplateName != expectedTemplate {
 			t.Errorf("Page %d: expected template '%s', got '%s'",
-				i+1, expectedTemplates[i], page.TemplateName)
+				i+1, expectedTemplate, page.TemplateName)
 		}
 	}
 }

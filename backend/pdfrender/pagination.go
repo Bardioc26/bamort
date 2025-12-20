@@ -7,19 +7,23 @@ import (
 
 // GenerateContinuationTemplateName creates a continuation template name
 // Example: "page1_stats.html" + pageNum 2 -> "page1.2_stats.html"
+// Note: All continuation pages (2, 3, 4, ...) use the same template name: page1.2_stats.html
 func GenerateContinuationTemplateName(originalTemplate string, pageNum int) string {
 	if pageNum == 1 {
 		return originalTemplate
 	}
 
+	// All continuation pages use .2 template (page1.2, page2.2, etc.)
+	// NOT page1.3, page1.4, etc.
+
 	// Split template name at first underscore to insert page continuation number
 	// Example: "page1_stats.html" -> "page1" + "_stats.html"
 	parts := strings.SplitN(originalTemplate, "_", 2)
 	if len(parts) != 2 {
-		// Fallback: just append .2, .3, etc before extension
+		// Fallback: just append .2 before extension
 		ext := ".html"
 		base := strings.TrimSuffix(originalTemplate, ext)
-		return fmt.Sprintf("%s.%d%s", base, pageNum, ext)
+		return fmt.Sprintf("%s.2%s", base, ext)
 	}
 
 	// Extract page number and base name
@@ -27,8 +31,8 @@ func GenerateContinuationTemplateName(originalTemplate string, pageNum int) stri
 	baseName := parts[0]
 	suffix := parts[1]
 
-	// Insert continuation number: "page1.2_stats.html"
-	return fmt.Sprintf("%s.%d_%s", baseName, pageNum, suffix)
+	// Always use .2 for continuation pages: "page1.2_stats.html"
+	return fmt.Sprintf("%s.2_%s", baseName, suffix)
 }
 
 // ExtractBaseTemplateName extracts the base template name from a continuation template

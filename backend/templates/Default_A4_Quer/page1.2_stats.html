@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figurenblatt - {{.Character.Name}}</title>
+    <link rel="stylesheet" href="shared/export_format_a4_quer.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="header-left">Figurenblatt</span>
+            <span class="header-right">Datum: {{.Meta.Date}}</span>
+        </div>
+        
+        <div class="title-row">
+            <img src="shared/images/headerimg.png" alt="Schmuckgrafik" class="header-decoration">
+            <div class="info-box">
+                <div><strong>Figur</strong> &nbsp; {{.Character.Name}}</div>
+                <hr>
+                <div><strong>Spieler</strong> &nbsp; {{.Character.Player}}</div>
+            </div>
+            <img src="shared/images/headerimg.png" alt="Schmuckgrafik" class="header-decoration">
+        </div>
+        
+        <div class="flex main-content">
+            <div class="left-section">
+                <div class="skills-content">
+                <div class="skills-title">Liste der gelernten und angeborenen Fertigkeiten</div>
+                <div class="skills-container">
+                    <!-- BLOCK: skills_column1, TYPE: skills, MAX: 5 -->
+                    <table class="skills-table">
+                        <tr>
+                            <th>Fertigkeit</th>
+                            <th>EW</th>
+                            <th>PP</th>
+                        </tr>
+                        {{range .SkillsColumn1}}
+                        <tr><td>{{.Name}}</td><td>{{if .Name}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                        {{end}}
+                    </table>
+                    <!-- BLOCK: skills_column2, TYPE: skills, MAX: 5 -->
+                    <table class="skills-table">
+                        <tr>
+                            <th>Fertigkeit</th>
+                            <th>EW</th>
+                            <th>PP</th>
+                        </tr>
+                        {{range .SkillsColumn2}}
+                        <tr><td>{{.Name}}</td><td>{{if .Name}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                        {{end}}
+                    </table>
+                </div>
+                </div>            
+            </div>
+            <!-- right1 column block Fertigkeiten -->
+            <div class="right-section">
+                <div class="skills-content">
+                <div class="skills-title">Liste der gelernten und angeborenen Fertigkeiten</div>
+                <div class="skills-container">
+                    <!-- BLOCK: skills_column3, TYPE: skills, MAX: 5 -->
+                    <table class="skills-table">
+                        <tr>
+                            <th>Fertigkeit</th>
+                            <th>EW</th>
+                            <th>PP</th>
+                        </tr>
+                        {{range .SkillsColumn1}}
+                        <tr><td>{{.Name}}</td><td>{{if .Name}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                        {{end}}
+                    </table>
+                    <!-- BLOCK: skills_column4, TYPE: skills, MAX: 5 -->
+                    <table class="skills-table">
+                        <tr>
+                            <th>Fertigkeit</th>
+                            <th>EW</th>
+                            <th>PP</th>
+                        </tr>
+                        {{range .SkillsColumn2}}
+                        <tr><td>{{.Name}}</td><td>{{if .Name}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                        {{end}}
+                    </table>
+                </div>
+                </div>
+                
+                <!-- Senses row at bottom -->
+                <div class="senses-row">
+                    <span><b>Sehen</b> +{{.DerivedValues.Sehen}}</span>
+                    <span><b>Nachtsicht</b> +{{.DerivedValues.Sehen}}</span>
+                    <span><b>Hören</b> +{{.DerivedValues.Horen}}</span>
+                    <span><b>Riechen/Schmecken</b> +{{.DerivedValues.Riechen}}</span>
+                    <span><b>Sechster Sinn</b> +{{.DerivedValues.Sechster}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

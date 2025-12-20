@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zauberblatt - {{.Character.Name}}</title>
+    <link rel="stylesheet" href="shared/export_format_a4_quer.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="header-left">Zauberblatt</span>
+            <span class="header-right">Datum: {{.Meta.Date}}</span>
+        </div>
+        
+        <div class="title-row">
+            <img src="shared/images/headerimg.png" alt="Schmuckgrafik" class="header-decoration">
+            <div class="info-box">
+                <div><strong>Figur</strong> &nbsp; {{.Character.Name}} &nbsp; <strong>Grad</strong> &nbsp; {{.Character.Grade}}</div>
+                <hr>
+                <div><strong>Typ</strong> &nbsp; {{.Character.Type}} &nbsp; <strong>Zaubern</strong> &nbsp; + {{.DerivedValues.Zaubern}}</div>
+            </div>
+            <img src="shared/images/headerimg.png" alt="Schmuckgrafik" class="header-decoration">
+        </div>
+        
+        <div class="flex main-content">
+            <!-- Left spell table -->
+            <div class="left-section">
+                <!-- BLOCK: spells_left, TYPE: spells, MAX: 5 -->
+                <table class="spells-table">
+                    <tr>
+                        <th>AP<hr>Prozess *</th>
+                        <th>Zauber</th>
+                        <th>Zauberdauer<hr>Reichweite</th>
+                        <th>Wirkungsbereich<hr>Wirkungsdauer</th>
+                        <th>Wirkung</th>
+                        <th>Wirk.ziel<hr>Art</th>
+                    </tr>
+                    {{range .SpellsLeft}}
+                    <tr>
+                        <td>{{.AP}}<hr>{{.Category}}&nbsp;</td>
+                        <td>{{.Name}}</td>
+                        <td>{{.Zauberdauer}}&nbsp;<hr>{{.Reichweite}}&nbsp;</td>
+                        <td>{{.Wirkungsbereich}}&nbsp;<hr>{{.Wirkungsdauer}}&nbsp;</td>
+                        <td>{{.Beschreibung}}&nbsp;</td>
+                        <td>{{.Wirkungsziel}}&nbsp;<hr>{{.Art}}&nbsp;</td>
+                    </tr>
+                    {{end}}
+                </table>
+            </div>
+            
+            <!-- Right spell table -->
+            <div class="right-section">
+                <!-- BLOCK: spells_right, TYPE: spells, MAX: 2 -->
+                <table class="spells-table">
+                    <tr>
+                        <th>AP<br>Prozess *</th>
+                        <th>Zauber</th>
+                        <th>Zauberdauer<br>Reichweite</th>
+                        <th>Wirkungsbereich<br>Wirkungsdauer</th>
+                        <th>Wirkung</th>
+                        <th>Wirk.ziel<br>Art</th>
+                    </tr>
+                    {{range .SpellsRight}}
+                    <tr>
+                        <td>{{.AP}}&nbsp;<hr>{{.Category}}&nbsp;</td>
+                        <td>{{.Name}}</td>
+                        <td>{{.Zauberdauer}}&nbsp;<hr>{{.Reichweite}}&nbsp;</td>
+                        <td>{{.Wirkungsbereich}}&nbsp;<hr>{{.Wirkungsdauer}}&nbsp;</td>
+                        <td>{{.Beschreibung}}&nbsp;</td>
+                        <td>{{.Wirkungsziel}}&nbsp;<hr>{{.Art}}&nbsp;</td>
+                    </tr>
+                    {{end}}
+                </table>
+                <div class="spell-footer">
+                    <p><em>wichtige magische Gegenstände, Tränke, Schriftrollen</em></p>
+                    <!-- BLOCK: magic_items, TYPE: magicItems, MAX: 5 -->
+                    <table class="items-table">
+                        <tr>
+                            <th>Gegenstand</th>
+                            <th>Beschreibung</th>
+                        </tr>
+                        {{range .MagicItems}}
+                        <tr>
+                            <td>{{.Name}}&nbsp;</td>
+                            <td>{{.Description}} {{if .Properties}}{{.Properties}}{{end}}</td>
+                        </tr>
+                        {{end}}
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="spell-note">
+            <strong>* +2 auf EW:Zaubern für Spezialisierung von Magiern</strong>
+        </div>
+    </div>
+</body>
+</html>

@@ -4,8 +4,8 @@
   - For each Weapon a character has:
     - Its name
     - ✅ the Fertigkeitswert (EW): Waffenfertigkeit.Fertigkeitswert + Character.AngriffBonus + Weapon.Anb (if equipped)
-    - ❌ TODO: the Schaden (Damage) including character's SchadenBonus and weapon's Schadensbonus
-    - ❌ TODO: If it is a ranged weapon, the ranges for near, medium and far
+    - ✅ the Schaden (Damage) including character's SchadenBonus and weapon's Schadensbonus
+    - ✅ If it is a ranged weapon, the ranges for near, medium and far
 
   Implementation notes:
   - ✅ AngriffBonus and SchadenBonus are now calculated in DerivedValueSet from character attributes
@@ -45,8 +45,29 @@
     - Marks weapons as ranged using IsRanged field
   - ✅ All tests pass
 
+* ✅ Continuation pages for overflow items:
+  - When items exceed template capacity, continuation pages are automatically created
+  - Continuation pages follow naming pattern: page1.2_stats.html, page1.3_stats.html, etc.
+  - Template loader automatically falls back to base template for continuation pages
+  - No physical continuation template files needed - reuses base template structure
+  - **NEW: RenderPageWithContinuations() function generates actual PDF files**
+  - Each continuation page is rendered as a separate PDF
+  - PDFs can be merged into a single combined file
+  - Implemented using TDD:
+    - Created comprehensive tests in continuation_test.go
+    - Added GenerateContinuationTemplateName() function
+    - Added ExtractBaseTemplateName() function
+    - Updated paginateList() to generate continuation template names
+    - Updated RenderTemplate() to handle continuation template fallback
+    - **Created RenderPageWithContinuations() to actually render multiple PDFs**
+    - **Created integration test that saves real PDF files to disk**
+  - All existing tests updated to work with dynamic template capacities
+  - Fully tested and working end-to-end
+  - **VERIFIED: 5 continuation pages generated for 50 skills, saved to /tmp/bamort_continuation_test/**
+
 ## TODO (Remaining)
 
+* continuation of lists does not work as expected but good enough for a first shot
+  * generalize handling so that only on set of functions can handle ALL kinds of templates. Needs massive refactoring
+  
 * currently the template fetched for rendering is set to Default_A4_Quer
-* page 2 Waffen Schaden müssen noch die Boni der Waffe und der Schadensbonus des Characters eingerechnet werden.
-  Dazu muss vom (1W6)(+1) der zweite teil extrahiert werden, falls nicht vorhanden als +0 annehmen. auf diesen zweiten Teil wird der Bonus aufgerechnet

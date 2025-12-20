@@ -22,16 +22,16 @@ func TestGenerateContinuationTemplateName(t *testing.T) {
 			expected: "page1.2_stats.html",
 		},
 		{
-			name:     "Third page gets continuation name",
+			name:     "Third page uses same continuation template (.2)",
 			template: "page2_play.html",
 			pageNum:  3,
-			expected: "page2.3_play.html",
+			expected: "page2.2_play.html",
 		},
 		{
-			name:     "Multiple digits",
+			name:     "All continuation pages use .2 template",
 			template: "page1_stats.html",
 			pageNum:  10,
-			expected: "page1.10_stats.html",
+			expected: "page1.2_stats.html",
 		},
 	}
 

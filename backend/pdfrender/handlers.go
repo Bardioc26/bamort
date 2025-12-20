@@ -1,0 +1,166 @@
+package pdfrender
+
+import (
+	"bamort/config"
+	"bamort/models"
+	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/pdfcpu/pdfcpu/pkg/api"
+)
+
+// TemplateInfo represents information about an available export template
+type TemplateInfo struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// ListTemplates returns a list of available export templates
+func ListTemplates(c *gin.Context) {
+	templatesDir := config.Cfg.TemplatesDir
+
+	// Read template directories
+	entries, err := os.ReadDir(templatesDir)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read templates directory"})
+		return
+	}
+
+	var templates []TemplateInfo
+	for _, entry := range entries {
+		if entry.IsDir() {
+			templates = append(templates, TemplateInfo{
+				ID:          entry.Name(),
+				Name:        entry.Name(),
+				Description: "PDF Export Template: " + entry.Name(),
+			})
+		}
+	}
+
+	c.JSON(http.StatusOK, templates)
+}
+
+// ExportCharacterToPDF exports a character to PDF
+// Query params:
+//   - template: template ID to use (default: "Default_A4_Quer")
+//   - showUserName: whether to show user name (default: false)
+func ExportCharacterToPDF(c *gin.Context) {
+	// Get character ID
+	charID := c.Param("id")
+	if charID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Character ID is required"})
+		return
+	}
+
+	// Load character
+	char := &models.Char{}
+	if err := char.FirstID(charID); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Character not found"})
+		return
+	}
+
+	// Get template parameter (default to Default_A4_Quer)
+	templateID := c.DefaultQuery("template", "Default_A4_Quer")
+
+	// Map character to view model
+	viewModel, err := MapCharacterToViewModel(char)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to map character: " + err.Error()})
+		return
+	}
+
+	// Load templates
+	templateDir := filepath.Join(config.Cfg.TemplatesDir, templateID)
+	loader := NewTemplateLoader(templateDir)
+	if err := loader.LoadTemplates(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load templates: " + err.Error()})
+		return
+	}
+
+	renderer := NewPDFRenderer()
+	currentDate := time.Now().Format("02.01.2006")
+
+	// Render all 4 pages with continuations
+	var allPDFs [][]byte
+
+	// Page 1: Stats
+	page1PDFs, err := RenderPageWithContinuations(viewModel, "page1_stats.html", 1, currentDate, loader, renderer)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render page 1: " + err.Error()})
+		return
+	}
+	allPDFs = append(allPDFs, page1PDFs...)
+
+	// Page 2: Play
+	page2PDFs, err := RenderPageWithContinuations(viewModel, "page2_play.html", 2, currentDate, loader, renderer)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render page 2: " + err.Error()})
+		return
+	}
+	allPDFs = append(allPDFs, page2PDFs...)
+
+	// Page 3: Spells
+	page3PDFs, err := RenderPageWithContinuations(viewModel, "page3_spell.html", 3, currentDate, loader, renderer)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render page 3: " + err.Error()})
+		return
+	}
+	allPDFs = append(allPDFs, page3PDFs...)
+
+	// Page 4: Equipment
+	page4PDFs, err := RenderPageWithContinuations(viewModel, "page4_equip.html", 4, currentDate, loader, renderer)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render page 4: " + err.Error()})
+		return
+	}
+	allPDFs = append(allPDFs, page4PDFs...)
+
+	// If only one PDF, return it directly
+	if len(allPDFs) == 1 {
+		c.Data(http.StatusOK, "application/pdf", allPDFs[0])
+		return
+	}
+
+	// Merge multiple PDFs
+	tmpDir := "/tmp/bamort_pdf_export"
+	if err := os.MkdirAll(tmpDir, 0755); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create temp directory"})
+		return
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Save individual PDFs
+	var filePaths []string
+	for i, pdf := range allPDFs {
+		filename := fmt.Sprintf("%s/page_%d.pdf", tmpDir, i)
+		if err := os.WriteFile(filename, pdf, 0644); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write temporary PDF"})
+			return
+		}
+		filePaths = append(filePaths, filename)
+	}
+
+	// Merge PDFs
+	combinedPath := fmt.Sprintf("%s/combined.pdf", tmpDir)
+	if err := api.MergeCreateFile(filePaths, combinedPath, false, nil); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to merge PDFs: " + err.Error()})
+		return
+	}
+
+	// Read combined PDF
+	combinedPDF, err := os.ReadFile(combinedPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read combined PDF"})
+		return
+	}
+
+	// Set response headers
+	filename := fmt.Sprintf("%s_character_sheet.pdf", char.Name)
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	c.Data(http.StatusOK, "application/pdf", combinedPDF)
+}

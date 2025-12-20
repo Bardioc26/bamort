@@ -35,9 +35,9 @@ func TestIntegration_ContinuationPages_ActualFiles(t *testing.T) {
 		B:  models.B{Value: 15},
 	}
 
-	// Add 50 skills to force multiple continuation pages
-	char.Fertigkeiten = make([]models.SkFertigkeit, 50)
-	for i := 0; i < 50; i++ {
+	// Add 150 skills to force multiple continuation pages (capacity is 58/page)
+	char.Fertigkeiten = make([]models.SkFertigkeit, 150)
+	for i := 0; i < 150; i++ {
 		char.Fertigkeiten[i] = models.SkFertigkeit{
 			BamortCharTrait: models.BamortCharTrait{
 				BamortBase: models.BamortBase{Name: "Skill " + string(rune('A'+i%26))},
@@ -60,6 +60,21 @@ func TestIntegration_ContinuationPages_ActualFiles(t *testing.T) {
 	if err = loader.LoadTemplates(); err != nil {
 		t.Fatalf("Failed to load templates: %v", err)
 	}
+
+	// Check template capacity
+	templateSet := DefaultA4QuerTemplateSet()
+	var totalCap int
+	for _, tmpl := range templateSet.Templates {
+		if tmpl.Metadata.Name == "page1_stats.html" {
+			for _, block := range tmpl.Metadata.Blocks {
+				if block.ListType == "skills" {
+					totalCap += block.MaxItems
+					t.Logf("Block %s has capacity %d", block.Name, block.MaxItems)
+				}
+			}
+		}
+	}
+	t.Logf("Total capacity: %d skills", totalCap)
 
 	renderer := NewPDFRenderer()
 

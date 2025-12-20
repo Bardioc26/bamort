@@ -12,3 +12,4 @@
 - The main function is in cmd/backend/main.go.
 - You write tests ONLY in _test.go files.
 - You will NEVER create files for testing with a main() function!
+- If you want to ensure that the docker container is already runnung execute "docker ps" and find "bamort-backend-dev"

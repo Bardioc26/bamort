@@ -67,7 +67,31 @@
 
 ## TODO (Remaining)
 
+* ✅ 1. create API endpoint for listing available export templates
+  * Endpoint: GET /api/pdf/templates
+  * Returns: JSON array of TemplateInfo objects [{id, name, description}]
+  * Test: TestListTemplates passes
+  * Configuration: Uses config.Cfg.TemplatesDir (default: "./templates")
+* ✅ 2. create API endpoint for exporting character to PDF. 
+  * Endpoint: GET /api/pdf/export/:id?template=xxx&showUserName=true
+  * Endpoint takes parameter "template", "show user name". 
+  * Return combined PDF file for download or display in Browser
+  * Renders all 4 pages (stats, play, spells, equipment) with continuation pages
+  * Merges all PDFs into single combined file
+  * Returns PDF with proper headers: Content-Type: application/pdf, Content-Disposition
+  * Tests: TestExportCharacterToPDF, TestExportCharacterToPDF_WithTemplate, TestExportCharacterToPDF_CharacterNotFound all pass
+  * Configuration: Uses config.Cfg.TemplatesDir for template path resolution
+  * Status: ✅ Deployed and running in Docker container, verified with logs
+* 3. create exporting function in Frontend
+  * The UI element to start the export function should be to the left side from the characters name.
+  * select template
+  * start export
+  * display result in new tab
+
+
+
+### Later
 * continuation of lists does not work as expected but good enough for a first shot
   * generalize handling so that only on set of functions can handle ALL kinds of templates. Needs massive refactoring
-  
+
 * currently the template fetched for rendering is set to Default_A4_Quer

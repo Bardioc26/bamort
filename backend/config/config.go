@@ -25,6 +25,9 @@ type Config struct {
 	Environment string
 
 	DevTesting string // "yes" or "no", used to determine if we are in a test environment
+
+	// PDF Templates
+	TemplatesDir string // Directory where PDF templates are stored
 }
 
 // Cfg ist die globale Konfigurationsvariable
@@ -45,7 +48,8 @@ func defaultConfig() *Config {
 		DebugMode:    false,
 		LogLevel:     "INFO",
 		Environment:  "production",
-		DevTesting:   "no", // Default to "no", can be overridden in tests
+		DevTesting:   "no",          // Default to "no", can be overridden in tests
+		TemplatesDir: "./templates", // Default templates directory
 	}
 }
 
@@ -109,6 +113,11 @@ func LoadConfig() *Config {
 	} else {
 		config.DevTesting = "no" // Default to "no"
 		fmt.Printf("DEBUG LoadConfig - DEVTESTING nicht gefunden, setze DevTesting auf 'no'\n")
+	}
+
+	// Templates Directory
+	if templatesDir := os.Getenv("TEMPLATES_DIR"); templatesDir != "" {
+		config.TemplatesDir = templatesDir
 	}
 
 	fmt.Printf("DEBUG LoadConfig - Finale Config: Environment='%s', DevTesting='%s', DatabaseType='%s'\n",

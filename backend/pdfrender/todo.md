@@ -82,11 +82,15 @@
   * Tests: TestExportCharacterToPDF, TestExportCharacterToPDF_WithTemplate, TestExportCharacterToPDF_CharacterNotFound all pass
   * Configuration: Uses config.Cfg.TemplatesDir for template path resolution
   * Status: ✅ Deployed and running in Docker container, verified with logs
-* 3. create exporting function in Frontend
-  * The UI element to start the export function should be to the left side from the characters name.
-  * select template
-  * start export
-  * display result in new tab
+* ✅ 3. create exporting function in Frontend
+  * ✅ The UI element to start the export function is to the left side of the character's name (CharacterDetails.vue)
+  * ✅ Template selection dropdown implemented - auto-selects first template
+  * ✅ Export button with loading state (disabled while exporting)
+  * ✅ PDF opens in new browser tab using window.open()
+  * ✅ Translations added for German and English
+  * ✅ API integration: Fetches templates on component load, calls export endpoint with selected template
+  * ✅ Error handling with user-friendly alerts
+  * Status: ✅ Deployed with HMR, ready for testing
 
 
 

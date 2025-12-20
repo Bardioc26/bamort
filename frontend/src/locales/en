@@ -377,5 +377,15 @@ export default {
     gold_gained: 'Gold erhalten',
     reason: 'Reason',
     notes: 'Notes'
+  },
+  export: {
+    selectTemplate: 'Template',
+    exportPDF: 'Export PDF',
+    exporting: 'Exporting...',
+    pleaseSelectTemplate: 'Please select a template',
+    exportFailed: 'PDF export failed',
+    showUserName: 'Show username',
+    cancel: 'Cancel',
+    export: 'Export'
   }
 }

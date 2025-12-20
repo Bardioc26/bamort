@@ -99,10 +99,10 @@ func TestSplitSkillsForColumns(t *testing.T) {
 	}{
 		{
 			name:     "few skills - only column 1",
-			skills:   10,
+			skills:   3, // Less than col1Max
 			col1Max:  col1MaxItems,
 			col2Max:  col2MaxItems,
-			wantCol1: 10,
+			wantCol1: 3,
 			wantCol2: 0,
 		},
 		{
@@ -115,11 +115,11 @@ func TestSplitSkillsForColumns(t *testing.T) {
 		},
 		{
 			name:     "overflow to column 2",
-			skills:   col1MaxItems + 11,
+			skills:   col1MaxItems + 3, // More than col1, but less than col1+col2
 			col1Max:  col1MaxItems,
 			col2Max:  col2MaxItems,
 			wantCol1: col1MaxItems,
-			wantCol2: 11,
+			wantCol2: 3,
 		},
 		{
 			name:     "both columns full",
@@ -234,11 +234,10 @@ func TestPreparePaginatedPageData_Page3Spell(t *testing.T) {
 }
 
 func TestPreparePaginatedPageData_Page4Equipment(t *testing.T) {
-	// Get capacity from template
-	templateSet := DefaultA4QuerTemplateSet()
-	equipmentCap := GetBlockCapacity(&templateSet, "page4_equip.html", "equipment_worn")
+	// Page 4 equipment page needs ALL equipment (not limited by capacity)
+	// because the template has complex container logic that requires the full equipment list
 
-	// Create test data exceeding capacity
+	// Create test data
 	viewModel := &CharacterSheetViewModel{
 		Equipment: make([]EquipmentViewModel, 50),
 	}
@@ -253,10 +252,10 @@ func TestPreparePaginatedPageData_Page4Equipment(t *testing.T) {
 		t.Fatalf("PreparePaginatedPageData failed: %v", err)
 	}
 
-	// Verify capacity matches template
-	if len(pageData.Equipment) != equipmentCap {
-		t.Errorf("Equipment should be filled to %d (from template), got %d", equipmentCap, len(pageData.Equipment))
+	// Verify all equipment is included (not truncated)
+	if len(pageData.Equipment) != 50 {
+		t.Errorf("Equipment should include all items (50), got %d", len(pageData.Equipment))
 	}
 
-	t.Logf("Page4: %d equipment items (from template)", len(pageData.Equipment))
+	t.Logf("Page4: %d equipment items (all items included for container rendering)", len(pageData.Equipment))
 }

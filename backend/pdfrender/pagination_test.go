@@ -61,12 +61,28 @@ func TestPaginateSkills_SinglePage(t *testing.T) {
 	templateSet := DefaultA4QuerTemplateSet()
 	paginator := NewPaginator(templateSet)
 
-	skills := make([]SkillViewModel, 10)
-	for i := 0; i < 10; i++ {
+	// Get column capacities from template
+	var col1Capacity int
+	for _, tmpl := range templateSet.Templates {
+		if tmpl.Metadata.Name == "page1_stats.html" {
+			for _, block := range tmpl.Metadata.Blocks {
+				if block.Name == "skills_column1" {
+					col1Capacity = block.MaxItems
+					break
+				}
+			}
+			break
+		}
+	}
+
+	// Create skills that fit within first column only
+	numSkills := col1Capacity
+	skills := make([]SkillViewModel, numSkills)
+	for i := 0; i < numSkills; i++ {
 		skills[i] = SkillViewModel{Name: "Skill" + string(rune('A'+i))}
 	}
 
-	// Act - page1_stats has 2 columns with 32 each = 64 total capacity
+	// Act
 	pages, err := paginator.PaginateSkills(skills, "page1_stats.html", "")
 
 	// Assert
@@ -84,13 +100,13 @@ func TestPaginateSkills_SinglePage(t *testing.T) {
 		t.Errorf("Expected page number 1, got %d", page.PageNumber)
 	}
 
-	// Column 1 should have all 10 skills
+	// Column 1 should have all skills (exactly matching capacity)
 	col1Data, ok := page.Data["skills_column1"].([]SkillViewModel)
 	if !ok {
 		t.Fatal("skills_column1 data not found or wrong type")
 	}
-	if len(col1Data) != 10 {
-		t.Errorf("Expected 10 skills in column 1, got %d", len(col1Data))
+	if len(col1Data) != numSkills {
+		t.Errorf("Expected %d skills in column 1 (capacity), got %d", numSkills, len(col1Data))
 	}
 
 	// Column 2 should be empty (no overflow)
@@ -117,10 +133,18 @@ func TestPaginateSkills_MultiColumn(t *testing.T) {
 		}
 	}
 	col1Block := GetBlockByName(page1Template.Metadata.Blocks, "skills_column1")
+	col2Block := GetBlockByName(page1Template.Metadata.Blocks, "skills_column2")
+	totalCapacity := col1Block.MaxItems + col2Block.MaxItems
 
-	// Create 40 skills - should fill first column and spill to second
-	skills := make([]SkillViewModel, 40)
-	for i := 0; i < 40; i++ {
+	// Create enough skills to use both columns but fit on one page
+	// Use totalCapacity - 1 to test partial fill of second column
+	numSkills := col1Block.MaxItems + 2
+	if numSkills > totalCapacity {
+		numSkills = totalCapacity
+	}
+
+	skills := make([]SkillViewModel, numSkills)
+	for i := 0; i < numSkills; i++ {
 		skills[i] = SkillViewModel{Name: "Skill" + string(rune(i))}
 	}
 
@@ -132,8 +156,10 @@ func TestPaginateSkills_MultiColumn(t *testing.T) {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	if len(pages) != 1 {
-		t.Fatalf("Expected 1 page, got %d", len(pages))
+	// Should fit on one page
+	expectedPages := (numSkills + totalCapacity - 1) / totalCapacity
+	if len(pages) != expectedPages {
+		t.Fatalf("Expected %d page, got %d", expectedPages, len(pages))
 	}
 
 	page := pages[0]
@@ -146,9 +172,9 @@ func TestPaginateSkills_MultiColumn(t *testing.T) {
 
 	// Column 2 should have remaining skills
 	col2Data := page.Data["skills_column2"].([]SkillViewModel)
-	expectedCol2 := 40 - col1Block.MaxItems
+	expectedCol2 := numSkills - col1Block.MaxItems
 	if len(col2Data) != expectedCol2 {
-		t.Errorf("Expected %d skills in column 2 (40 total - %d in col1), got %d", expectedCol2, col1Block.MaxItems, len(col2Data))
+		t.Errorf("Expected %d skills in column 2 (%d total - %d in col1), got %d", expectedCol2, numSkills, col1Block.MaxItems, len(col2Data))
 	}
 }
 
@@ -157,9 +183,22 @@ func TestPaginateSkills_MultiPage(t *testing.T) {
 	templateSet := DefaultA4QuerTemplateSet()
 	paginator := NewPaginator(templateSet)
 
-	// Create 100 skills - should span 2 pages (64 capacity per page)
-	skills := make([]SkillViewModel, 100)
-	for i := 0; i < 100; i++ {
+	// Get column capacities from template
+	var page1Template *TemplateWithMeta
+	for i := range templateSet.Templates {
+		if templateSet.Templates[i].Metadata.Name == "page1_stats.html" {
+			page1Template = &templateSet.Templates[i]
+			break
+		}
+	}
+	col1Block := GetBlockByName(page1Template.Metadata.Blocks, "skills_column1")
+	col2Block := GetBlockByName(page1Template.Metadata.Blocks, "skills_column2")
+	totalCapacity := col1Block.MaxItems + col2Block.MaxItems
+
+	// Create enough skills to span exactly 2 pages
+	numSkills := totalCapacity + 1
+	skills := make([]SkillViewModel, numSkills)
+	for i := 0; i < numSkills; i++ {
 		skills[i] = SkillViewModel{Name: "Skill" + string(rune(i))}
 	}
 
@@ -171,50 +210,32 @@ func TestPaginateSkills_MultiPage(t *testing.T) {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	if len(pages) != 2 {
-		t.Fatalf("Expected 2 pages, got %d", len(pages))
-	}
-
-	// Get column capacities from template (reuse templateSet from above)
-	var page1Template *TemplateWithMeta
-	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page1_stats.html" {
-			page1Template = &templateSet.Templates[i]
-			break
-		}
-	}
-	var col1Capacity, col2Capacity int
-	for i := range page1Template.Metadata.Blocks {
-		if page1Template.Metadata.Blocks[i].Name == "skills_column1" {
-			col1Capacity = page1Template.Metadata.Blocks[i].MaxItems
-		} else if page1Template.Metadata.Blocks[i].Name == "skills_column2" {
-			col2Capacity = page1Template.Metadata.Blocks[i].MaxItems
-		}
+	expectedPages := 2
+	if len(pages) != expectedPages {
+		t.Fatalf("Expected %d pages, got %d", expectedPages, len(pages))
 	}
 
 	// Page 1 should have full capacity (col1 + col2)
 	page1 := pages[0]
 	col1Page1 := page1.Data["skills_column1"].([]SkillViewModel)
 	col2Page1 := page1.Data["skills_column2"].([]SkillViewModel)
-	if len(col1Page1) != col1Capacity {
-		t.Errorf("Page 1 col1: expected %d skills (template capacity), got %d", col1Capacity, len(col1Page1))
+	if len(col1Page1) != col1Block.MaxItems {
+		t.Errorf("Page 1 col1: expected %d skills (template capacity), got %d", col1Block.MaxItems, len(col1Page1))
 	}
-	if len(col2Page1) != col2Capacity {
-		t.Errorf("Page 1 col2: expected %d skills (template capacity), got %d", col2Capacity, len(col2Page1))
+	if len(col2Page1) != col2Block.MaxItems {
+		t.Errorf("Page 1 col2: expected %d skills (template capacity), got %d", col2Block.MaxItems, len(col2Page1))
 	}
 
-	// Page 2 should have remaining skills
+	// Page 2 should have remaining skills (just 1 skill)
 	page2 := pages[1]
 	col1Page2 := page2.Data["skills_column1"].([]SkillViewModel)
 	col2Page2 := page2.Data["skills_column2"].([]SkillViewModel)
-	page1Total := col1Capacity + col2Capacity
-	remainingSkills := 100 - page1Total
-	if len(col1Page2) != col1Capacity {
-		t.Errorf("Page 2 col1: expected %d skills (template capacity), got %d", col1Capacity, len(col1Page2))
+	remainingSkills := numSkills - totalCapacity
+	if len(col1Page2) != remainingSkills {
+		t.Errorf("Page 2 col1: expected %d skills (remaining), got %d", remainingSkills, len(col1Page2))
 	}
-	expectedCol2 := remainingSkills - col1Capacity
-	if len(col2Page2) != expectedCol2 {
-		t.Errorf("Page 2 col2: expected %d skills (remaining), got %d", expectedCol2, len(col2Page2))
+	if len(col2Page2) != 0 {
+		t.Errorf("Page 2 col2: expected 0 skills, got %d", len(col2Page2))
 	}
 }
 
@@ -342,12 +363,31 @@ func TestPaginateWeapons_SinglePage(t *testing.T) {
 	templateSet := DefaultA4QuerTemplateSet()
 	paginator := NewPaginator(templateSet)
 
-	weapons := make([]WeaponViewModel, 10)
-	for i := 0; i < 10; i++ {
+	// Get weapon capacity from template
+	var weaponCapacity int
+	for _, tmpl := range templateSet.Templates {
+		if tmpl.Metadata.Name == "page2_play.html" {
+			for _, block := range tmpl.Metadata.Blocks {
+				if block.ListType == "weapons" {
+					weaponCapacity = block.MaxItems
+					break
+				}
+			}
+			break
+		}
+	}
+
+	// Create fewer weapons than capacity
+	numWeapons := weaponCapacity - 2
+	if numWeapons < 1 {
+		numWeapons = 1
+	}
+	weapons := make([]WeaponViewModel, numWeapons)
+	for i := 0; i < numWeapons; i++ {
 		weapons[i] = WeaponViewModel{Name: "Weapon" + string(rune('A'+i))}
 	}
 
-	// Act - page2_play has weapons_main with MAX:30
+	// Act
 	pages, err := paginator.PaginateWeapons(weapons, "page2_play.html")
 
 	// Assert
@@ -355,14 +395,15 @@ func TestPaginateWeapons_SinglePage(t *testing.T) {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	if len(pages) != 1 {
-		t.Fatalf("Expected 1 page, got %d", len(pages))
+	expectedPages := 1
+	if len(pages) != expectedPages {
+		t.Fatalf("Expected %d page (capacity %d, items %d), got %d", expectedPages, weaponCapacity, numWeapons, len(pages))
 	}
 
 	page := pages[0]
 	weaponsData := page.Data["weapons_main"].([]WeaponViewModel)
-	if len(weaponsData) != 10 {
-		t.Errorf("Expected 10 weapons, got %d", len(weaponsData))
+	if len(weaponsData) != numWeapons {
+		t.Errorf("Expected %d weapons, got %d", numWeapons, len(weaponsData))
 	}
 }
 
@@ -488,11 +529,11 @@ func TestCalculatePagesNeeded(t *testing.T) {
 		{"10 skills on page1", "page1_stats.html", "skills", 10, 1},
 		{fmt.Sprintf("%d skills on page1", skillCapacity), "page1_stats.html", "skills", skillCapacity, 1},
 		{fmt.Sprintf("%d skills on page1", skillCapacity+1), "page1_stats.html", "skills", skillCapacity + 1, 2},
-		{"100 skills on page1", "page1_stats.html", "skills", 100, 2},
-		{"10 weapons on page2", "page2_play.html", "weapons", 10, 1},
+		{"100 skills on page1", "page1_stats.html", "skills", 100, (100 + skillCapacity - 1) / skillCapacity}, // Dynamic calculation
+		{"10 weapons on page2", "page2_play.html", "weapons", 10, (10 + weaponCapacity - 1) / weaponCapacity}, // Dynamic calculation
 		{fmt.Sprintf("%d weapons on page2", weaponCapacity), "page2_play.html", "weapons", weaponCapacity, 1},
 		{fmt.Sprintf("%d weapons on page2", weaponCapacity+1), "page2_play.html", "weapons", weaponCapacity + 1, 2},
-		{"10 spells on page3", "page3_spell.html", "spells", 10, 1},
+		{"10 spells on page3", "page3_spell.html", "spells", 10, (10 + spellCapacity - 1) / spellCapacity}, // Dynamic calculation
 		{fmt.Sprintf("%d spells on page3", spellCapacity), "page3_spell.html", "spells", spellCapacity, 1},
 		{fmt.Sprintf("%d spells on page3", spellCapacity+1), "page3_spell.html", "spells", spellCapacity + 1, 2},
 	}

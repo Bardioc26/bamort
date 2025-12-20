@@ -3,7 +3,9 @@ package pdfrender
 import (
 	"bamort/database"
 	"bamort/models"
+	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -220,10 +222,25 @@ func TestIntegration_PaginationWithPDF(t *testing.T) {
 		t.Fatalf("Failed to paginate skills: %v", err)
 	}
 
-	// Should create 2 pages (64 + 36 skills)
-	if len(pages) != 2 {
-		t.Fatalf("Expected 2 pages, got %d", len(pages))
+	// Calculate expected pages based on actual capacity
+	var skillsCapacity int
+	for _, tmpl := range templateSet.Templates {
+		if tmpl.Metadata.Name == "page1_stats.html" {
+			for _, block := range tmpl.Metadata.Blocks {
+				if block.ListType == "skills" {
+					skillsCapacity += block.MaxItems
+				}
+			}
+			break
+		}
 	}
+	expectedPages := (100 + skillsCapacity - 1) / skillsCapacity
+
+	if len(pages) != expectedPages {
+		t.Fatalf("Expected %d pages for 100 skills (capacity %d), got %d", expectedPages, skillsCapacity, len(pages))
+	}
+
+	t.Logf("Successfully paginated 100 skills into %d pages (capacity %d per page)", len(pages), skillsCapacity)
 
 	// Load templates
 	loader := NewTemplateLoader("../templates/Default_A4_Quer")
@@ -281,31 +298,25 @@ func TestIntegration_PaginationWithPDF(t *testing.T) {
 
 	t.Logf("Successfully generated page 1 PDF with %d skills, size: %d bytes", len(pageData.Skills), len(pdfBytes))
 
-	// Verify second page has remaining skills
-	// Get expected capacity from template (reuse templateSet from above)
-	var page1Template *TemplateWithMeta
-	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page1_stats.html" {
-			page1Template = &templateSet.Templates[i]
-			break
+	// Verify second page has remaining skills (if there are multiple pages)
+	if len(pages) > 1 {
+		col1Page2 := pages[1].Data["skills_column1"].([]SkillViewModel)
+		col2Page2 := pages[1].Data["skills_column2"].([]SkillViewModel)
+		totalPage2 := len(col1Page2) + len(col2Page2)
+
+		expectedPage2 := skillsCapacity
+		if 100-skillsCapacity < skillsCapacity {
+			expectedPage2 = 100 - skillsCapacity
 		}
+
+		if totalPage2 != expectedPage2 {
+			t.Errorf("Expected %d skills on page 2, got %d", expectedPage2, totalPage2)
+		}
+
+		t.Logf("Page 2 has %d skills distributed across columns", totalPage2)
 	}
 
-	col1Block := GetBlockByName(page1Template.Metadata.Blocks, "skills_column1")
-	col2Block := GetBlockByName(page1Template.Metadata.Blocks, "skills_column2")
-	expectedPage1Capacity := col1Block.MaxItems + col2Block.MaxItems
-
-	col1Page2 := pages[1].Data["skills_column1"].([]SkillViewModel)
-	col2Page2 := pages[1].Data["skills_column2"].([]SkillViewModel)
-	totalPage2 := len(col1Page2) + len(col2Page2)
-
-	expectedPage2 := 100 - expectedPage1Capacity // 100 total - capacity from page 1
-
-	if totalPage2 != expectedPage2 {
-		t.Errorf("Expected %d skills on page 2 (100 total - %d from page 1), got %d", expectedPage2, expectedPage1Capacity, totalPage2)
-	}
-
-	t.Logf("Page 2 would have %d skills distributed across columns", totalPage2)
+	t.Logf("Page 2 would have %d skills distributed across columns", 100-skillsCapacity)
 }
 
 // TestIntegration_MultiPageSpellList tests spell pagination across multiple pages
@@ -534,99 +545,112 @@ func TestVisualInspection_AllPages(t *testing.T) {
 
 	renderer := NewPDFRenderer()
 
-	// Page 1: Stats page with skills
-	t.Log("Generating Page 1: Stats...")
-	page1Data, err := PreparePaginatedPageData(viewModel, "page1_stats.html", 1, "18.12.2025")
-	if err != nil {
-		t.Fatalf("Failed to prepare page1 data: %v", err)
-	}
-
-	html1, err := loader.RenderTemplateWithInlinedResources("page1_stats.html", page1Data)
-	if err != nil {
-		t.Fatalf("Failed to render page1: %v", err)
-	}
-
-	pdf1, err := renderer.RenderHTMLToPDF(html1)
-	if err != nil {
-		t.Fatalf("Failed to generate PDF for page1: %v", err)
-	}
-
-	// Page 2: Play/Adventure page with weapons
-	t.Log("Generating Page 2: Play...")
-	page2Data, err := PreparePaginatedPageData(viewModel, "page2_play.html", 2, "18.12.2025")
-	if err != nil {
-		t.Fatalf("Failed to prepare page2 data: %v", err)
-	}
-
-	html2, err := loader.RenderTemplateWithInlinedResources("page2_play.html", page2Data)
-	if err != nil {
-		t.Fatalf("Failed to render page2: %v", err)
-	}
-
-	pdf2, err := renderer.RenderHTMLToPDF(html2)
-	if err != nil {
-		t.Fatalf("Failed to generate PDF for page2: %v", err)
-	}
-
-	// Page 3: Spells page
-	t.Log("Generating Page 3: Spells...")
-	page3Data, err := PreparePaginatedPageData(viewModel, "page3_spell.html", 3, "18.12.2025")
-	if err != nil {
-		t.Fatalf("Failed to prepare page3 data: %v", err)
-	}
-
-	html3, err := loader.RenderTemplateWithInlinedResources("page3_spell.html", page3Data)
-	if err != nil {
-		t.Fatalf("Failed to render page3: %v", err)
-	}
-
-	pdf3, err := renderer.RenderHTMLToPDF(html3)
-	if err != nil {
-		t.Fatalf("Failed to generate PDF for page3: %v", err)
-	}
-
-	// Page 4: Equipment page
-	t.Log("Generating Page 4: Equipment...")
-	page4Data, err := PreparePaginatedPageData(viewModel, "page4_equip.html", 4, "18.12.2025")
-	if err != nil {
-		t.Fatalf("Failed to prepare page4 data: %v", err)
-	}
-
-	html4, err := loader.RenderTemplateWithInlinedResources("page4_equip.html", page4Data)
-	if err != nil {
-		t.Fatalf("Failed to render page4: %v", err)
-	}
-
-	pdf4, err := renderer.RenderHTMLToPDF(html4)
-	if err != nil {
-		t.Fatalf("Failed to generate PDF for page4: %v", err)
-	}
-
-	// Save all PDFs to disk
+	// Generate all pages with continuations if needed
+	allPDFs := [][]byte{}
+	var filePaths []string
 	outputDir := "/tmp/bamort_pdf_test"
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		t.Fatalf("Failed to create output directory: %v", err)
 	}
 
-	files := []struct {
-		name string
-		data []byte
-	}{
-		{"page1_stats.pdf", pdf1},
-		{"page2_play.pdf", pdf2},
-		{"page3_spell.pdf", pdf3},
-		{"page4_equip.pdf", pdf4},
+	// Page 1: Stats page with skills (may have continuations)
+	t.Log("Generating Page 1: Stats...")
+	page1PDFs, err := RenderPageWithContinuations(viewModel, "page1_stats.html", 1, "18.12.2025", loader, renderer)
+	if err != nil {
+		t.Fatalf("Failed to generate page1: %v", err)
 	}
+	t.Logf("  Generated %d PDF(s) for page 1", len(page1PDFs))
 
-	var filePaths []string
-	for _, file := range files {
-		path := outputDir + "/" + file.name
-		if err := os.WriteFile(path, file.data, 0644); err != nil {
-			t.Errorf("Failed to write %s: %v", file.name, err)
+	for i, pdf := range page1PDFs {
+		allPDFs = append(allPDFs, pdf)
+		var filename string
+		if i == 0 {
+			filename = "page1_stats.pdf"
+		} else {
+			filename = fmt.Sprintf("page1_stats_continuation_%d.pdf", i)
+		}
+		path := filepath.Join(outputDir, filename)
+		if err := os.WriteFile(path, pdf, 0644); err != nil {
+			t.Errorf("Failed to write %s: %v", filename, err)
 			continue
 		}
 		filePaths = append(filePaths, path)
-		t.Logf("✓ Saved %s (%d bytes)", path, len(file.data))
+		t.Logf("  ✓ Saved %s (%d bytes)", filename, len(pdf))
+	}
+
+	// Page 2: Play/Adventure page with weapons (may have continuations)
+	t.Log("Generating Page 2: Play...")
+	page2PDFs, err := RenderPageWithContinuations(viewModel, "page2_play.html", 2, "18.12.2025", loader, renderer)
+	if err != nil {
+		t.Fatalf("Failed to generate page2: %v", err)
+	}
+	t.Logf("  Generated %d PDF(s) for page 2", len(page2PDFs))
+
+	for i, pdf := range page2PDFs {
+		allPDFs = append(allPDFs, pdf)
+		var filename string
+		if i == 0 {
+			filename = "page2_play.pdf"
+		} else {
+			filename = fmt.Sprintf("page2_play_continuation_%d.pdf", i)
+		}
+		path := filepath.Join(outputDir, filename)
+		if err := os.WriteFile(path, pdf, 0644); err != nil {
+			t.Errorf("Failed to write %s: %v", filename, err)
+			continue
+		}
+		filePaths = append(filePaths, path)
+		t.Logf("  ✓ Saved %s (%d bytes)", filename, len(pdf))
+	}
+
+	// Page 3: Spells page (may have continuations)
+	t.Log("Generating Page 3: Spells...")
+	page3PDFs, err := RenderPageWithContinuations(viewModel, "page3_spell.html", 3, "18.12.2025", loader, renderer)
+	if err != nil {
+		t.Fatalf("Failed to generate page3: %v", err)
+	}
+	t.Logf("  Generated %d PDF(s) for page 3", len(page3PDFs))
+
+	for i, pdf := range page3PDFs {
+		allPDFs = append(allPDFs, pdf)
+		var filename string
+		if i == 0 {
+			filename = "page3_spell.pdf"
+		} else {
+			filename = fmt.Sprintf("page3_spell_continuation_%d.pdf", i)
+		}
+		path := filepath.Join(outputDir, filename)
+		if err := os.WriteFile(path, pdf, 0644); err != nil {
+			t.Errorf("Failed to write %s: %v", filename, err)
+			continue
+		}
+		filePaths = append(filePaths, path)
+		t.Logf("  ✓ Saved %s (%d bytes)", filename, len(pdf))
+	}
+
+	// Page 4: Equipment page (may have continuations)
+	t.Log("Generating Page 4: Equipment...")
+	page4PDFs, err := RenderPageWithContinuations(viewModel, "page4_equip.html", 4, "18.12.2025", loader, renderer)
+	if err != nil {
+		t.Fatalf("Failed to generate page4: %v", err)
+	}
+	t.Logf("  Generated %d PDF(s) for page 4", len(page4PDFs))
+
+	for i, pdf := range page4PDFs {
+		allPDFs = append(allPDFs, pdf)
+		var filename string
+		if i == 0 {
+			filename = "page4_equip.pdf"
+		} else {
+			filename = fmt.Sprintf("page4_equip_continuation_%d.pdf", i)
+		}
+		path := filepath.Join(outputDir, filename)
+		if err := os.WriteFile(path, pdf, 0644); err != nil {
+			t.Errorf("Failed to write %s: %v", filename, err)
+			continue
+		}
+		filePaths = append(filePaths, path)
+		t.Logf("  ✓ Saved %s (%d bytes)", filename, len(pdf))
 	}
 
 	// Merge all PDFs into a single file
@@ -644,13 +668,13 @@ func TestVisualInspection_AllPages(t *testing.T) {
 	t.Logf("\n✓ Combined all pages into: %s (%d bytes)", combinedPath, combinedInfo.Size())
 
 	// Summary
-	t.Logf("\n✓ All 4 pages generated successfully!")
+	t.Logf("\n✓ All pages generated successfully!")
 	t.Logf("  Character: %s (Grade %d)", viewModel.Character.Name, viewModel.Character.Grade)
 	t.Logf("  Skills: %d", len(viewModel.Skills))
 	t.Logf("  Weapons: %d", len(viewModel.Weapons))
 	t.Logf("  Spells: %d", len(viewModel.Spells))
 	t.Logf("  Equipment: %d items", len(viewModel.Equipment))
 	t.Logf("\n  Output directory: %s", outputDir)
-	t.Logf("  Individual PDFs: %d bytes", len(pdf1)+len(pdf2)+len(pdf3)+len(pdf4))
+	t.Logf("  Total PDFs generated: %d (including continuations)", len(allPDFs))
 	t.Logf("  Combined PDF: %d bytes", combinedInfo.Size())
 }

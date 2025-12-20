@@ -149,19 +149,10 @@ func PreparePaginatedPageData(viewModel *CharacterSheetViewModel, templateName s
 			pageData.MagicItems = magicItems
 		}
 	} else if templateName == "page4_equip.html" {
-		// Get capacity from template
-		equipmentCapacity := GetBlockCapacity(&templateSet, templateName, "equipment_worn")
-
-		// Limit and fill equipment to capacity
-		equipment := viewModel.Equipment
-		if equipmentCapacity > 0 && len(equipment) > equipmentCapacity {
-			equipment = equipment[:equipmentCapacity]
-		}
-		if equipmentCapacity > 0 {
-			pageData.Equipment = FillToCapacity(equipment, equipmentCapacity)
-		} else {
-			pageData.Equipment = equipment
-		}
+		// Page 4 needs ALL equipment to properly render containers
+		// The template has complex logic showing containers on left, worn items and container sections on right
+		// Don't truncate based on capacity - let the template handle all items
+		pageData.Equipment = viewModel.Equipment
 	}
 
 	return pageData, nil

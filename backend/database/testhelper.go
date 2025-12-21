@@ -133,9 +133,9 @@ func ResetTestDB() {
 
 		if testdbTempDir != "" {
 			logger.Debug("ResetTestDB: Lösche temporäres Verzeichnis: %s", testdbTempDir)
-			err := os.RemoveAll(testdbTempDir)
-			if err != nil {
-				logger.Error("ResetTestDB: Fehler beim Löschen des temporären Verzeichnisses: %s", err.Error())
+			removeErr := os.RemoveAll(testdbTempDir)
+			if removeErr != nil {
+				logger.Error("ResetTestDB: Fehler beim Löschen des temporären Verzeichnisses: %s", removeErr.Error())
 			} else {
 				logger.Info("ResetTestDB: Temporäres Verzeichnis erfolgreich gelöscht")
 			}

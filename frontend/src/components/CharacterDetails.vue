@@ -18,9 +18,13 @@
           <button @click="showExportDialog = false" class="close-button">&times;</button>
         </div>
         <div class="modal-body">
+          <div v-if="isExporting" class="loading-overlay">
+            <div class="spinner"></div>
+            <p>{{ $t('export.generating') }}</p>
+          </div>
           <div class="form-group">
             <label>{{ $t('export.selectTemplate') }}:</label>
-            <select v-model="selectedTemplate" class="template-select">
+            <select v-model="selectedTemplate" class="template-select" :disabled="isExporting">
               <option value="">{{ $t('export.pleaseSelectTemplate') }}</option>
               <option v-for="template in templates" :key="template.id" :value="template.id">
                 {{ template.name }}
@@ -29,13 +33,13 @@
           </div>
           <div class="form-group">
             <label class="checkbox-label">
-              <input type="checkbox" v-model="showUserName">
+              <input type="checkbox" v-model="showUserName" :disabled="isExporting">
               {{ $t('export.showUserName') }}
             </label>
           </div>
         </div>
         <div class="modal-footer">
-          <button @click="showExportDialog = false" class="btn-cancel">
+          <button @click="showExportDialog = false" class="btn-cancel" :disabled="isExporting">
             {{ $t('export.cancel') }}
           </button>
           <button @click="exportToPDF" class="btn-export" :disabled="!selectedTemplate || isExporting">
@@ -170,6 +174,43 @@
 
 .modal-body {
   padding: 20px;
+  position: relative;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  border-radius: 0 0 8px 8px;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-overlay p {
+  color: #007bff;
+  font-weight: 500;
+  margin: 0;
 }
 
 .form-group {
@@ -368,30 +409,97 @@ export default {
         return
       }
       
+      // Open window IMMEDIATELY (synchronously) to avoid popup blocker
+      const pdfWindow = window.open('', '_blank')
+      if (!pdfWindow) {
+        alert(this.$t('export.popupBlocked'))
+        return
+      }
+      
+      // Show loading page in the new window
+      pdfWindow.document.write(`
+        <html>
+          <head>
+            <title>${this.$t('export.generating')}</title>
+            <style>
+              body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                font-family: Arial, sans-serif;
+                background: #f5f5f5;
+              }
+              .loading-container {
+                text-align: center;
+              }
+              .spinner {
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #007bff;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 20px;
+              }
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+              h2 {
+                color: #333;
+                margin: 0 0 10px 0;
+              }
+              p {
+                color: #666;
+                margin: 0;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="loading-container">
+              <div class="spinner"></div>
+              <h2>${this.$t('export.generating')}</h2>
+              <p>${this.$t('export.pleaseWait')}</p>
+            </div>
+          </body>
+        </html>
+      `)
+      
       this.isExporting = true
+      
       try {
-        const params = { template: this.selectedTemplate }
+        // Build URL parameters
+        const params = new URLSearchParams({
+          template: this.selectedTemplate
+        })
         if (this.showUserName) {
-          params.showUserName = true
+          params.append('showUserName', 'true')
         }
         
+        // Fetch PDF from API
         const response = await API.get(`/api/pdf/export/${this.id}`, {
-          params,
+          params: Object.fromEntries(params),
           responseType: 'blob'
         })
         
-        // Create blob URL and open in new tab
+        // Create object URL from blob
         const blob = new Blob([response.data], { type: 'application/pdf' })
         const url = window.URL.createObjectURL(blob)
-        window.open(url, '_blank')
         
-        // Clean up blob URL after a delay
-        setTimeout(() => window.URL.revokeObjectURL(url), 100)
+        // Replace loading page with PDF
+        pdfWindow.location.href = url
+        
+        // Clean up blob URL after some time
+        setTimeout(() => window.URL.revokeObjectURL(url), 10000)
         
         // Close dialog on success
         this.showExportDialog = false
       } catch (error) {
         console.error('Failed to export PDF:', error)
+        pdfWindow.close()
         alert(this.$t('export.exportFailed') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.isExporting = false

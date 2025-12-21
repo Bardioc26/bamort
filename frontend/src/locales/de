@@ -386,6 +386,9 @@ export default {
     exportFailed: 'PDF Export fehlgeschlagen',
     showUserName: 'Benutzername anzeigen',
     cancel: 'Abbrechen',
-    export: 'Exportieren'
+    export: 'Exportieren',
+    generating: 'PDF wird generiert...',
+    pleaseWait: 'Bitte warten, dies kann einen Moment dauern',
+    popupBlocked: 'Popup wurde blockiert. Bitte erlauben Sie Popups für diese Seite.'
   }
 }

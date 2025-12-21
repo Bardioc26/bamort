@@ -65,7 +65,6 @@
   - Fully tested and working end-to-end
   - **VERIFIED: 5 continuation pages generated for 50 skills, saved to /tmp/bamort_continuation_test/**
 
-## TODO (Remaining)
 
 * ✅ 1. create API endpoint for listing available export templates
   * Endpoint: GET /api/pdf/templates
@@ -92,10 +91,17 @@
   * ✅ Error handling with user-friendly alerts
   * Status: ✅ Deployed with HMR, ready for testing
 
-
+## TODO (Remaining)
+* 1. create a directory xporttemp in the backend
+* 2. save the PDF to file during the ExportCharacterToPDF call and return the filename charname+timestamp.pdf. Make shure the filename contains no spaces or special chars that might disturb the download
+* 3. create an API endpoint to load the file from xporttemp
+* 4. create a maintenance endpoint to clean up the xporttemp directory. remove all files that are older than 7 days
+* 5. change the frontend to get the PDF from the new API endpoint
 
 ### Later
 * continuation of lists does not work as expected but good enough for a first shot
   * generalize handling so that only on set of functions can handle ALL kinds of templates. Needs massive refactoring
 
 * currently the template fetched for rendering is set to Default_A4_Quer
+* remove inline css as far as possible
+* make pdf download popup an own view

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figurenblatt - {{.Character.Name}}</title>
+    <link rel="stylesheet" href="shared/export_format_a4_quer.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="header-left">Figurenblatt</span>
+            <span class="header-right">Datum: {{.Meta.Date}}</span>
+        </div>
+        
+        <div class="title-row">
+            <img src="shared/images/headerimg.png" alt="Schmuckgrafik" class="header-decoration">
+            <div class="info-box">
+                <div><strong>Figur</strong> &nbsp; {{.Character.Name}}</div>
+                <hr>
+                <div><strong>Spieler</strong> &nbsp; {{.Character.Player}}</div>
+            </div>
+            <img src="shared/images/headerimg.png" alt="Schmuckgrafik" class="header-decoration">
+        </div>
+        
+        <div class="flex main-content">
+            <div class="left-section">
+            <div class="col-chartype">
+                <!-- left column block Chartype -->
+                <div class="margin-bottom-3">
+                    <div><strong>Typ</strong> {{.Character.Type}} &nbsp;&nbsp; <strong>Grad</strong> {{.Character.Grade}}</div>
+                    <div><strong>Spezialisierung</strong> _______________________</div>
+                </div>
+                <!-- left column block stats1 -->
+                <div class="margin-bottom-3">
+                    <div class="attr-box"><div class="attr-label">St</div><div class="attr-value">{{.Attributes.St}}</div></div>
+                    <div class="attr-box"><div class="attr-label">Gs</div><div class="attr-value">{{.Attributes.Gs}}</div></div>
+                    <div class="attr-box"><div class="attr-label">Gw</div><div class="attr-value">{{.Attributes.Gw}}</div></div>
+                </div>
+                <!-- left column block stats2 -->
+                <div class="margin-bottom-3">
+                    <div class="attr-box"><div class="attr-label">Ko</div><div class="attr-value">{{.Attributes.Ko}}</div></div>
+                    <div class="attr-box"><div class="attr-label">In</div><div class="attr-value">{{.Attributes.In}}</div></div>
+                    <div class="attr-box"><div class="attr-label">Zt</div><div class="attr-value">{{.Attributes.Zt}}</div></div>
+                </div>
+                <!-- left column block stats3 -->
+                <div class="margin-bottom-3">
+                    <div class="attr-box"><div class="attr-label">Au</div><div class="attr-value">{{.Attributes.Au}}</div></div>
+                    <div class="attr-box"><div class="attr-label">pA</div><div class="attr-value">{{.Attributes.PA}}</div></div>
+                    <div class="attr-box"><div class="attr-label">Wk</div><div class="attr-value">{{.Attributes.Wk}}</div></div>
+                </div>
+                <!-- left column block stats4 -->
+                <div class="margin-bottom-3">
+                    <div class="attr-box attr-box-80"><div class="attr-label">B</div><div class="attr-value">{{.Attributes.B}}</div></div>
+                    <div class="attr-box attr-box-100"><div class="attr-label">Raufen</div><div class="attr-value">+ 5</div></div>
+                </div>
+                <!-- left column block boni -->
+                <div class="margin-top-2">
+                    <div><strong>persönlicher Bonus für:</strong></div>
+                    <div class="margin-top-2">
+                        <div class="bonus-row"><span>Ausdauer <u>{{.DerivedValues.AusdauerBonus}}</u></span><span>Schaden <u>{{.DerivedValues.SchadenBonus}}</u></span><span>Angriff <u>{{.DerivedValues.AngriffBonus}}</u></span></div>
+                        <div class="bonus-row"><span>Abwehr <u>{{.DerivedValues.Abwehr}}</u></span><span>Resistenz <u>{{.DerivedValues.ResistenzGift}}/{{.DerivedValues.ResistenzGeist}}</u></span><span>Zaubern <u>{{.DerivedValues.Zaubern}}</u></span></div>
+                    </div>
+                </div>
+            </div>
+            <!-- center column block Charinfo -->
+            <div class="col-charinfo">
+                <table class="charinfo">
+                    <tr>
+                        <td><strong>Geburtsdatum</strong></td>
+                        <td>{{.Character.Birthdate}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Alter</strong></td>
+                        <td>{{.Character.Age}}&nbsp;&nbsp;{{.Character.Hand}}-händig</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Größe</strong></td>
+                        <td>{{.Character.Height}} cm</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gestalt</strong></td>
+                        <td>mittel, normal Gewicht {{.Character.Weight}} kg</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Stand</strong></td>
+                        <td>{{.Character.Stand}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Heimat</strong></td>
+                        <td>{{.Character.Homeland}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Glaube</strong></td>
+                        <td>{{.Character.Religion}}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><strong>Besondere Merkmale:</strong><br/><br/><br/><br/><br/><br/><br/><br/></td>
+                    </tr>
+                </table>
+            </div>
+            <!-- left column block LPAP -->
+            <div class="margin-top-3">
+                <div class="attr-box attr-box-100"><div class="attr-label">LP-Max.</div><div class="attr-value">{{.DerivedValues.LPMax}}</div></div>
+                <div class="attr-box attr-box-100"><div class="attr-label">AP-Max.</div><div class="attr-value">{{.DerivedValues.APMax}}</div></div>
+                <div class="attr-box attr-box-80"><div class="attr-label">GG</div><div class="attr-value">{{.DerivedValues.GG}}</div></div>
+                <div class="attr-box attr-box-80"><div class="attr-label">SG</div><div class="attr-value">{{.DerivedValues.SG}}</div></div>
+            </div>
+            <!-- left column block History -->
+            <div class="margin-top-2">
+                <table class="history-table">
+                    <tr>
+                        <th>Datum</th>
+                        {{range .GameResults}}<th>{{.Date.Format "02.01.2006"}}</th>{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<th style="color: white;">27.12.20213</th>{{end}}{{end}}
+                    </tr>
+                    <tr>
+                        <td>ES</td>
+                        {{range .GameResults}}<td>{{.ES}}</td>{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
+                    </tr>
+                    <tr>
+                        <td>EP</td>
+                        {{range .GameResults}}<td>{{.EP}}</td>{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
+                    </tr>
+                    <tr>
+                        <td>Geld</td>
+                        {{range .GameResults}}<td>{{.Gold}}</td>{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
+                    </tr>
+                    <tr>
+                        <th>Datum</th>
+                        {{range .GameResults}}<th>{{.Date.Format "02.01.2006"}}</th>{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>{{end}}{{end}}
+                    </tr>
+                    <tr>
+                        <td>ES</td>
+                        {{range .GameResults}}<td>{{.ES}}</td>{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
+                    </tr>
+                    <tr>
+                        <td>EP</td>
+                        {{range .GameResults}}<td>{{.ES}}</td>{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
+                    </tr>
+                    <tr>
+                        <td>Geld</td>
+                        {{range .GameResults}}<td>{{.Gold}}</td>{{end}}
+                        {{range $i := iterate 6}}{{if ge $i (len $.GameResults)}}<td>&nbsp;</td>{{end}}{{end}}
+                    </tr>
+                </table>
+            </div>
+            </div>
+            <!-- right1 column block Fertigkeiten -->
+            <div class="right-section">
+                <div class="skills-content">
+                <div class="skills-title">Liste der gelernten und angeborenen Fertigkeiten</div>
+                <div class="skills-container">
+                    <!-- BLOCK: skills_column1, TYPE: skills, MAX: 29 -->
+                    <table class="skills-table">
+                        <tr>
+                            <th>Fertigkeit</th>
+                            <th>EW</th>
+                            <th>PP</th>
+                        </tr>
+                        {{range .SkillsColumn1}}
+                        <tr><td>{{.Name}}</td><td>{{if .Name}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                        {{end}}
+                    </table>
+                    <!-- BLOCK: skills_column2, TYPE: skills, MAX: 29 -->
+                    <table class="skills-table">
+                        <tr>
+                            <th>Fertigkeit</th>
+                            <th>EW</th>
+                            <th>PP</th>
+                        </tr>
+                        {{range .SkillsColumn2}}
+                        <tr><td>{{.Name}}</td><td>{{if .Name}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                        {{end}}
+                    </table>
+                </div>
+                </div>
+                
+                <!-- Senses row at bottom -->
+                <div class="senses-row">
+                    <span><b>Sehen</b> +{{.DerivedValues.Sehen}}</span>
+                    <span><b>Nachtsicht</b> +{{.DerivedValues.Sehen}}</span>
+                    <span><b>Hören</b> +{{.DerivedValues.Horen}}</span>
+                    <span><b>Riechen/Schmecken</b> +{{.DerivedValues.Riechen}}</span>
+                    <span><b>Sechster Sinn</b> +{{.DerivedValues.Sechster}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

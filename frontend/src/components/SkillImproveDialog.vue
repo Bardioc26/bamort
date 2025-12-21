@@ -644,7 +644,7 @@ export default {
         });
         
         // API-Endpunkt für verfügbare Belohnungsarten
-        const response = await this.$api.get(`/api/characters/${this.character.id}/reward-types`, {
+        const response = await API.get(`/api/characters/${this.character.id}/reward-types`, {
           params: {
             learning_type: this.learningType,
             skill_name: this.skill.name,
@@ -751,7 +751,7 @@ export default {
           reward: this.selectedRewardType
         };
         
-        const response = await this.$api.post(`/api/characters/lerncost-new`, requestData);
+        const response = await API.post(`/api/characters/lerncost-new`, requestData);
         
         console.log('Learning costs API response:', response.data);
         
@@ -1003,7 +1003,7 @@ export default {
             break;
         }
         
-        const response = await this.$api.post(endpoint, requestData);
+        const response = await API.post(endpoint, requestData);
         
         console.log(`${this.learningType} erfolgreich ausgeführt:`, response.data);
         alert(`${this.learningType === 'spell' ? 'Zauber' : 'Fertigkeit'} "${this.skill.name}" erfolgreich ${this.learningType === 'learn' ? 'gelernt' : 'auf Stufe ' + finalLevel + ' verbessert'} (${this.selectedLevels.length} Level)!`);

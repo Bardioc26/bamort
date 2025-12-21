@@ -102,6 +102,9 @@ type Weapon struct {
 	Equipment
 	SkillRequired string `json:"skill_required"`
 	Damage        string `json:"damage"`
+	RangeNear     int    `json:"range_near"`   // Range in meters for "Nah" (near)
+	RangeMiddle   int    `json:"range_middle"` // Range in meters for "Mittel" (medium)
+	RangeFar      int    `json:"range_far"`    // Range in meters for "Fern" (far)
 }
 
 type Container struct {
@@ -189,6 +192,9 @@ func (stamm *Skill) Create() error {
 }
 
 func (stamm *Skill) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -300,6 +306,9 @@ func (stamm *WeaponSkill) Create() error {
 }
 
 func (stamm *WeaponSkill) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -348,6 +357,9 @@ func (stamm *Spell) Create() error {
 }
 
 func (stamm *Spell) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -438,6 +450,9 @@ func (stamm *Equipment) Create() error {
 }
 
 func (stamm *Equipment) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -471,6 +486,11 @@ func (object *Weapon) TableName() string {
 	return dbPrefix + "_" + "weapons"
 }
 
+// IsRanged returns true if the weapon has at least one range value > 0
+func (w *Weapon) IsRanged() bool {
+	return w.RangeNear > 0 || w.RangeMiddle > 0 || w.RangeFar > 0
+}
+
 func (stamm *Weapon) Create() error {
 	gameSystem := "midgard"
 	stamm.GameSystem = gameSystem
@@ -486,6 +506,9 @@ func (stamm *Weapon) Create() error {
 }
 
 func (stamm *Weapon) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -533,6 +556,9 @@ func (stamm *Container) Create() error {
 }
 
 func (stamm *Container) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -591,6 +617,9 @@ func (object *Transportation) FirstId(value uint) error {
 }
 
 func (stamm *Transportation) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {
@@ -639,6 +668,9 @@ func (object *Believe) FirstId(value uint) error {
 }
 
 func (stamm *Believe) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
 	gameSystem := "midgard"
 	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
 	if err != nil {

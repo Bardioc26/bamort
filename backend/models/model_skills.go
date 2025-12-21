@@ -1,5 +1,7 @@
 package models
 
+import "strings"
+
 type SkFertigkeit struct {
 	BamortCharTrait
 	Beschreibung    string    `json:"beschreibung"`
@@ -49,6 +51,17 @@ func (object *SkFertigkeit) GetSkillByName() *Skill {
 	return &gsmsk
 }
 
+func (object *SkWaffenfertigkeit) GetSkillByName() *Skill {
+	// For weapon skills, we need to look in the WeaponSkill table
+	var weaponSkill WeaponSkill
+	err := weaponSkill.First(object.Name)
+	if err != nil || weaponSkill.ID == 0 {
+		return nil
+	}
+	// Return the embedded Skill from WeaponSkill
+	return &weaponSkill.Skill
+}
+
 func (object *SkFertigkeit) GetCategory() string {
 	if object.Category != "" {
 		return object.Category
@@ -58,6 +71,24 @@ func (object *SkFertigkeit) GetCategory() string {
 	if gsmsk.ID == 0 {
 		return "Unkategorisiert"
 	}
-	object.Category = gsmsk.Category
+	// Trim whitespace from category to handle inconsistent data
+	category := strings.TrimSpace(gsmsk.Category)
+	object.Category = category
+	return object.Category
+}
+
+func (object *SkWaffenfertigkeit) GetCategory() string {
+	if object.Category != "" {
+		return object.Category
+	}
+	// For weapon skills, we need to look in the WeaponSkill table
+	var weaponSkill WeaponSkill
+	err := weaponSkill.First(object.Name)
+	if err != nil || weaponSkill.ID == 0 {
+		return "Unkategorisiert"
+	}
+	// Trim whitespace from category to handle inconsistent data
+	category := strings.TrimSpace(weaponSkill.Category)
+	object.Category = category
 	return object.Category
 }

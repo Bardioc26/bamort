@@ -200,7 +200,7 @@ func TestImportVTTStructure(t *testing.T) {
 
 func TestImportSkill2GSMaster(t *testing.T) {
 
-	database.SetupTestDB()
+	database.SetupTestDB(true)
 
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
@@ -209,7 +209,7 @@ func TestImportSkill2GSMaster(t *testing.T) {
 	skill, erro := TransformImportFertigkeit2GSDMaster(&character.Fertigkeiten[0])
 
 	assert.NoError(t, erro, "Expected no error when Unmarshal filecontent")
-	assert.GreaterOrEqual(t, int(skill.ID), 1)
+	assert.GreaterOrEqual(t, int(skill.ID), 11)
 	assert.Equal(t, "Hören", skill.Name)
 	assert.Equal(t, "", skill.Beschreibung)
 	assert.Equal(t, 6, skill.Initialwert)
@@ -221,10 +221,10 @@ func TestImportSkill2GSMaster(t *testing.T) {
 	skill2 := models.Skill{}
 	erro = skill2.First("Hören")
 	assert.NoError(t, erro, "Expected no error when finding Record by name")
-	assert.Equal(t, 1, int(skill.ID))
+	assert.Equal(t, 11, int(skill.ID))
 
 	skill3 := models.Skill{}
-	erro = skill3.FirstId(1)
+	erro = skill3.FirstId(11)
 	assert.NoError(t, erro, "Expected no error when finding Record by ID")
 	assert.Equal(t, "Hören", skill3.Name)
 
@@ -253,7 +253,7 @@ func TestImportWeaponSkill2GSMaster(t *testing.T) {
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
 	assert.Equal(t, "Armbrüste", skill.Name)
 	assert.Equal(t, "", skill.Beschreibung)
-	assert.Equal(t, 8, skill.Initialwert)
+	assert.Equal(t, 5, skill.Initialwert)
 	assert.Equal(t, "check", skill.Bonuseigenschaft)
 	assert.Equal(t, "KOD5 144", skill.Quelle)
 	assert.Equal(t, true, skill.Improvable)
@@ -294,12 +294,12 @@ func TestImportSpell2GSMaster(t *testing.T) {
 	assert.GreaterOrEqual(t, int(skill.ID), 1)
 	assert.Equal(t, "midgard", skill.GameSystem)
 	assert.Equal(t, "Angst", skill.Name)
-	assert.Equal(t, "", skill.Beschreibung)
+	assert.Equal(t, "macht Angst", skill.Beschreibung)
 	assert.Equal(t, "ARK5 63", skill.Quelle)
-	assert.Equal(t, 0, skill.Stufe)
-	assert.Equal(t, 0, skill.AP)
-	assert.Equal(t, "", skill.Wirkungsziel)
-	assert.Equal(t, 0, skill.Reichweite)
+	assert.Equal(t, 2, skill.Stufe)
+	assert.Equal(t, "2 je Wesen", skill.AP)
+	assert.Equal(t, "Geist", skill.Wirkungsziel)
+	assert.Equal(t, "30 m", skill.Reichweite)
 	//}
 	skill2 := models.Spell{}
 	erro = skill2.First("Angst")

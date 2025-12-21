@@ -88,6 +88,9 @@ export default {
     bonus:'Bonus',
     pp:'AP',
     quelle:'Quelle',
+    import: 'Import',
+    selectCsv: 'CSV auswählen',
+    system: 'System'
   },
   spells: {
     learn: {
@@ -347,5 +350,45 @@ export default {
       apRollTooltip: 'AP würfeln: 3d6 + Modifikator je nach Klasse',
       bRollTooltip: 'B würfeln: 1d6 + Modifikator je nach Rasse'
     }
+  },
+  audit: {
+    title: 'Änderungsprotokoll',
+    filter_by_field: 'Filter nach Feld',
+    all_fields: 'Alle Felder',
+    experience_points: 'Erfahrungspunkte',
+    gold: 'Gold',
+    silver: 'Silber',
+    copper: 'Kupfer',
+    filter_by_date: 'Zeitraum',
+    all_time: 'Alle Zeit',
+    today: 'Heute',
+    this_week: 'Diese Woche',
+    this_month: 'Dieser Monat',
+    custom_range: 'Benutzerdefiniert',
+    group_by_date: 'Nach Datum gruppieren',
+    refresh: 'Aktualisieren',
+    loading: 'Lädt...',
+    statistics: 'Statistiken',
+    no_entries: 'Keine Einträge',
+    total_changes: 'Gesamtänderungen',
+    ep_spent: 'EP ausgegeben',
+    ep_gained: 'EP erhalten',
+    gold_spent: 'Gold ausgegeben',
+    gold_gained: 'Gold erhalten',
+    reason: 'Grund',
+    notes: 'Notizen'
+  },
+  export: {
+    selectTemplate: 'Vorlage',
+    exportPDF: 'PDF Export',
+    exporting: 'Exportiere...',
+    pleaseSelectTemplate: 'Bitte Vorlage auswählen',
+    exportFailed: 'PDF Export fehlgeschlagen',
+    showUserName: 'Benutzername anzeigen',
+    cancel: 'Abbrechen',
+    export: 'Exportieren',
+    generating: 'PDF wird generiert...',
+    pleaseWait: 'Bitte warten, dies kann einen Moment dauern',
+    popupBlocked: 'Popup wurde blockiert. Bitte erlauben Sie Popups für diese Seite.'
   }
 }

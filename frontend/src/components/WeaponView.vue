@@ -17,11 +17,11 @@
       <template v-for="weapon in character.waffen">
         <tr>
           <td>{{ weapon.name || '-' }}</td>
-          <td>{{ weapon.beschreibung || '-' }}</td>
-          <td>{{ weapon.gewicht || '-' }}</td>
-          <td>{{ weapon.wert || '-' }}</td>
-          <td>{{ weapon.anzahl || '-' }}</td>
-          <td>{{ weapon.beinhaltet_in || '-' }}</td>
+          <td>{{ weapon.description || '-' }}</td>
+          <td>{{ weapon.weight || '-' }}</td>
+          <td>{{ weapon.value || '-' }}</td>
+          <td>{{ weapon.amount || '-' }}</td>
+          <td>{{ weapon.contained_in || '-' }}</td>
           <td>{{ weapon.Anb || '-' }}/{{ weapon.Abwb || '-' }}</td>
         </tr>
       </template>

@@ -8,6 +8,7 @@ import (
 	"bamort/importer"
 	"bamort/logger"
 	"bamort/maintenance"
+	"bamort/pdfrender"
 	"bamort/router"
 
 	"github.com/gin-gonic/gin"
@@ -66,6 +67,11 @@ func main() {
 	character.RegisterRoutes(protected)
 	maintenance.RegisterRoutes(protected)
 	importer.RegisterRoutes(protected)
+	pdfrender.RegisterRoutes(protected)
+
+	// Register public routes (no authentication)
+	pdfrender.RegisterPublicRoutes(r)
+
 	logger.Info("API-Routen erfolgreich registriert")
 
 	// Server starten

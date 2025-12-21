@@ -242,8 +242,8 @@
       "quelle": "ARK5 63",
       "bonus": 0,
       "Stufe": 0,
-      "AP": 0,
-      "Reichweite": 0,
+      "AP": "0",
+      "Reichweite": "15 m",
       "Wirkungsziel": ""
     }
   ],

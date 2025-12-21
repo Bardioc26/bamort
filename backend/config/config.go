@@ -25,6 +25,10 @@ type Config struct {
 	Environment string
 
 	DevTesting string // "yes" or "no", used to determine if we are in a test environment
+
+	// PDF Templates
+	TemplatesDir  string // Directory where PDF templates are stored
+	ExportTempDir string // Directory for temporary PDF exports
 }
 
 // Cfg ist die globale Konfigurationsvariable
@@ -39,13 +43,15 @@ func init() {
 // defaultConfig gibt die Standard-Konfiguration zurück
 func defaultConfig() *Config {
 	return &Config{
-		ServerPort:   "8180",
-		DatabaseURL:  "",
-		DatabaseType: "mysql",
-		DebugMode:    false,
-		LogLevel:     "INFO",
-		Environment:  "production",
-		DevTesting:   "no", // Default to "no", can be overridden in tests
+		ServerPort:    "8180",
+		DatabaseURL:   "",
+		DatabaseType:  "mysql",
+		DebugMode:     false,
+		LogLevel:      "INFO",
+		Environment:   "production",
+		DevTesting:    "no",          // Default to "no", can be overridden in tests
+		TemplatesDir:  "./templates", // Default templates directory
+		ExportTempDir: "./xporttemp", // Default export temp directory
 	}
 }
 
@@ -109,6 +115,16 @@ func LoadConfig() *Config {
 	} else {
 		config.DevTesting = "no" // Default to "no"
 		fmt.Printf("DEBUG LoadConfig - DEVTESTING nicht gefunden, setze DevTesting auf 'no'\n")
+	}
+
+	// Templates Directory
+	if templatesDir := os.Getenv("TEMPLATES_DIR"); templatesDir != "" {
+		config.TemplatesDir = templatesDir
+	}
+
+	// Export Temp Directory
+	if exportTempDir := os.Getenv("EXPORT_TEMP_DIR"); exportTempDir != "" {
+		config.ExportTempDir = exportTempDir
 	}
 
 	fmt.Printf("DEBUG LoadConfig - Finale Config: Environment='%s', DevTesting='%s', DatabaseType='%s'\n",

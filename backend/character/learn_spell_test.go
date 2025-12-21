@@ -37,14 +37,14 @@ func TestLearnSpell(t *testing.T) {
 			database.DB.Model(&character).Where("id = ?", 18).Update("erfahrungsschatz", character.Erfahrungsschatz)
 		}
 
-		if character.Vermoegen.Goldstücke < 200 {
-			character.Vermoegen.Goldstücke = 500
+		if character.Vermoegen.Goldstuecke < 200 {
+			character.Vermoegen.Goldstuecke = 500
 			database.DB.Model(&character).Where("id = ?", 18).Update("vermoegen", character.Vermoegen)
 		}
 
 		// Store initial resources for comparison
 		initialEP := character.Erfahrungsschatz.EP
-		initialGold := character.Vermoegen.Goldstücke
+		initialGold := character.Vermoegen.Goldstuecke
 
 		// Create LernCostRequest (new format)
 		request := map[string]interface{}{
@@ -294,7 +294,7 @@ func TestLearnSpell(t *testing.T) {
 				BamortCharTrait: models.BamortCharTrait{
 					CharacterID: 22,
 				},
-				Goldstücke: 10, // Insufficient gold
+				Goldstuecke: 10, // Insufficient gold
 			},
 		}
 

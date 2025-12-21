@@ -114,26 +114,32 @@ func ResetTestDB() {
 	if isTestDb {
 		logger.Debug("ResetTestDB: Verwende Test-Datenbank, führe Cleanup durch")
 
-		sqlDB, err := DB.DB()
-		if err == nil {
-			logger.Debug("ResetTestDB: Schließe Datenbankverbindung")
-			sqlDB.Close()
-
-			DB = nil
-			logger.Debug("ResetTestDB: DB auf nil gesetzt")
-
-			if testdbTempDir != "" {
-				logger.Debug("ResetTestDB: Lösche temporäres Verzeichnis: %s", testdbTempDir)
-				err = os.RemoveAll(testdbTempDir)
-				if err != nil {
-					logger.Error("ResetTestDB: Fehler beim Löschen des temporären Verzeichnisses: %s", err.Error())
-				} else {
-					logger.Info("ResetTestDB: Temporäres Verzeichnis erfolgreich gelöscht")
-				}
-				testdbTempDir = ""
+		// Check if DB is not nil before trying to use it
+		if DB != nil {
+			sqlDB, err := DB.DB()
+			if err == nil {
+				logger.Debug("ResetTestDB: Schließe Datenbankverbindung")
+				sqlDB.Close()
+			} else {
+				logger.Error("ResetTestDB: Fehler beim Abrufen der SQL-Datenbank: %s", err.Error())
 			}
 		} else {
-			logger.Error("ResetTestDB: Fehler beim Abrufen der SQL-Datenbank: %s", err.Error())
+			logger.Debug("ResetTestDB: DB ist bereits nil, überspringe Verbindungsschließung")
+		}
+
+		// Always set DB to nil and clean up temp directory
+		DB = nil
+		logger.Debug("ResetTestDB: DB auf nil gesetzt")
+
+		if testdbTempDir != "" {
+			logger.Debug("ResetTestDB: Lösche temporäres Verzeichnis: %s", testdbTempDir)
+			removeErr := os.RemoveAll(testdbTempDir)
+			if removeErr != nil {
+				logger.Error("ResetTestDB: Fehler beim Löschen des temporären Verzeichnisses: %s", removeErr.Error())
+			} else {
+				logger.Info("ResetTestDB: Temporäres Verzeichnis erfolgreich gelöscht")
+			}
+			testdbTempDir = ""
 		}
 	} else {
 		logger.Debug("ResetTestDB: Verwende Live-Datenbank, überspringe Cleanup")

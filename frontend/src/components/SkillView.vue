@@ -37,7 +37,7 @@
                   <span class="icon">📚</span>
                 </button>
                 <button 
-                  @click="showAddDialog" 
+                  @click="openAddDialog" 
                   class="btn-add"
                   title="Fertigkeit hinzufügen"
                 >
@@ -239,6 +239,7 @@
 
     <!-- Neue Dialog-Komponente für detailliertes Fertigkeiten-Lernen -->
     <SkillImproveDialog 
+      v-if="selectedSkillToLearn"
       :character="character"
       :skill="selectedSkillToLearn"
       :isVisible="showDetailedLearnDialog"
@@ -676,7 +677,7 @@ export default {
       this.showImproveSelectionDialog = true;
     },
     
-    showAddDialog() {
+    openAddDialog() {
       this.closeDialogs();
       this.showAddDialog = true;
     },

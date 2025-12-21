@@ -28,12 +28,12 @@ func RegisterRoutes(r *gin.RouterGroup) {
 
 	// Lernen und Verbessern (mit automatischem Audit-Log)
 	charGrp.POST("/:id/learn-skill-new", LearnSkill) // Fertigkeit lernen (neues System)
-	charGrp.POST("/:id/learn-skill", LearnSkillOld)  // Fertigkeit lernen (altes System)
+	//charGrp.POST("/:id/learn-skill", LearnSkillOld)  // Fertigkeit lernen (altes System)
 	charGrp.POST("/:id/learn-spell-new", LearnSpell) // Zauber lernen (neues System)
-	charGrp.POST("/:id/learn-spell", LearnSpellOld)  // Zauber lernen (altes System)
+	//charGrp.POST("/:id/learn-spell", LearnSpellOld)  // Zauber lernen (altes System)
 
 	// Fertigkeiten-Information
-	charGrp.GET("/:id/available-skills", GetAvailableSkillsOld)               // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
+	//charGrp.GET("/:id/available-skills", GetAvailableSkillsOld)               // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
 	charGrp.POST("/available-skills-new", GetAvailableSkillsNewSystem)        // Verfügbare Fertigkeiten mit Kosten (bereits gelernte ausgeschlossen)
 	charGrp.POST("/available-skills-creation", GetAvailableSkillsForCreation) // Verfügbare Fertigkeiten mit Lernkosten für Charaktererstellung
 	charGrp.POST("/available-spells-creation", GetAvailableSpellsForCreation) // Verfügbare Zauber mit Lernkosten für Charaktererstellung
@@ -41,7 +41,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.GET("/spell-details", GetSpellDetails)                            // Detaillierte Informationen zu einem bestimmten Zauber
 
 	// Belohnungsarten für verschiedene Lernszenarien
-	charGrp.GET("/:id/reward-types", GetRewardTypesOld) // Verfügbare Belohnungsarten je nach Kontext
+	charGrp.GET("/:id/reward-types", GetRewardTypesStatic) // Verfügbare Belohnungsarten je nach Kontext
 
 	// Praxispunkte-Verwaltung
 	charGrp.GET("/:id/practice-points", GetPracticePoints)     // NewSystem
@@ -50,8 +50,8 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.POST("/:id/practice-points/use", UsePracticePoint) // NewSystem
 
 	// System-Information
-	charGrp.GET("/character-classes", GetCharacterClassesHandlerOld)
-	charGrp.GET("/skill-categories", GetSkillCategoriesHandlerOld)
+	//charGrp.GET("/character-classes", GetCharacterClassesHandlerOld)
+	charGrp.GET("/skill-categories", GetSkillCategoriesHandlerStatic)
 
 	// Character Creation
 	charGrp.GET("/create-sessions", ListCharacterSessions)                          // Aktive Sessions für Benutzer auflisten

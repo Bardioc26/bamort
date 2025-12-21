@@ -55,7 +55,7 @@
       
       <button @click="loadAuditLog" class="btn-refresh" :disabled="isLoading">
         <span v-if="isLoading">⏳</span>
-        <span v-else">🔄</span>
+        <span v-else>🔄</span>
         {{ $t('audit.refresh', 'Aktualisieren') }}
       </button>
     </div>

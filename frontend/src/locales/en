@@ -88,6 +88,9 @@ export default {
     bonus:'Bonus',
     pp:'AP',
     quelle:'Source',
+    import: 'Import',
+    selectCsv: 'select CSV',
+    system: 'System'
   },
   spells: {
     learn: {
@@ -127,7 +130,7 @@ export default {
     bonus:'Bonus',
     contained_in:'contained in',
     personal_item:'Pers',
-    quelle:'Quelle',
+    quelle:'Source',
     system:'System',
   },
   Weapons:'Waffen',
@@ -347,5 +350,45 @@ export default {
       apRollTooltip: 'Roll AP: 3d6 + modifier based on class',
       bRollTooltip: 'Roll B: 1d6 + modifier based on race'
     }
+  },
+  audit: {
+    title: 'Audit Log',
+    filter_by_field: 'Filter by Field',
+    all_fields: 'All Fields',
+    experience_points: 'Experience Points',
+    gold: 'Gold',
+    silver: 'Silver',
+    copper: 'Copper',
+    filter_by_date: 'Time Period',
+    all_time: 'All Time',
+    today: 'Today',
+    this_week: 'This Week',
+    this_month: 'This Month',
+    custom_range: 'Custom Range',
+    group_by_date: 'Group by Date',
+    refresh: 'Refresh',
+    loading: 'Loading...',
+    statistics: 'Statistics',
+    no_entries: 'Keine Einträge',
+    total_changes: 'Gesamtänderungen',
+    ep_spent: 'EP ausgegeben',
+    ep_gained: 'EP erhalten',
+    gold_spent: 'Gold ausgegeben',
+    gold_gained: 'Gold erhalten',
+    reason: 'Reason',
+    notes: 'Notes'
+  },
+  export: {
+    selectTemplate: 'Template',
+    exportPDF: 'Export PDF',
+    exporting: 'Exporting...',
+    pleaseSelectTemplate: 'Please select a template',
+    exportFailed: 'PDF export failed',
+    showUserName: 'Show username',
+    cancel: 'Cancel',
+    export: 'Export',
+    generating: 'Generating PDF...',
+    pleaseWait: 'Please wait, this may take a moment',
+    popupBlocked: 'Popup was blocked. Please allow popups for this site.'
   }
 }

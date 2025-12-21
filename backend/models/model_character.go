@@ -69,9 +69,9 @@ type Bennies struct {
 
 type Vermoegen struct {
 	BamortCharTrait
-	Goldstücke   int `json:"goldstücke"`   // GS
-	Silberstücke int `json:"silberstücke"` // SS
-	Kupferstücke int `json:"kupferstücke"` // KS
+	Goldstuecke   int `json:"goldstücke"`   // GS
+	Silberstuecke int `json:"silberstücke"` // SS
+	Kupferstuecke int `json:"kupferstücke"` // KS
 }
 
 type Char struct {
@@ -210,12 +210,26 @@ func (object *Char) FindByUserID(userID uint) ([]Char, error) {
 	return chars, nil
 }
 
+func FindPublicCharList() ([]CharList, error) {
+	var chars []CharList
+	err := database.DB.Table("char_chars").
+		Select("char_chars.id, char_chars.name, char_chars.user_id, char_chars.rasse, char_chars.typ, char_chars.grad, char_chars.public, users.username as owner").
+		Joins("LEFT JOIN users ON char_chars.user_id = users.user_id").
+		Where("char_chars.public = ?", true).
+		Find(&chars).Error
+	if err != nil {
+		return nil, err
+	}
+	return chars, nil
+}
+
 // FindCharListByUserID finds all characters belonging to a specific user for listing (minimal data)
 func FindCharListByUserID(userID uint) ([]CharList, error) {
 	var chars []CharList
 	err := database.DB.Table("char_chars").
-		Select("id, name, user_id, rasse, typ, grad, owner, public").
-		Where("user_id = ?", userID).
+		Select("char_chars.id, char_chars.name, char_chars.user_id, char_chars.rasse, char_chars.typ, char_chars.grad, char_chars.public, users.username as owner").
+		Joins("LEFT JOIN users ON char_chars.user_id = users.user_id").
+		Where("char_chars.user_id = ?", userID).
 		Find(&chars).Error
 	if err != nil {
 		return nil, err

@@ -1,8 +1,12 @@
 {
 	"folders": [
 		{
-			"path": "backend"
+			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"go.testEnvVars": {
+			"CGO_ENABLED": "1"
+		}
+	}
 }

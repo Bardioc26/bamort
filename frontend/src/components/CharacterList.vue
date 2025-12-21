@@ -64,7 +64,7 @@ export default {
         const response = await API.get('/api/characters', {
           headers: { Authorization: `Bearer ${token}` },
         })
-        this.characters = response.data
+        this.characters = response.data.self_owned
       } catch (error) {
         console.error('Error loading characters:', error)
       }

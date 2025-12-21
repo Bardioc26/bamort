@@ -40,7 +40,7 @@ func TestExportGSMasterdata(t *testing.T) {
 }
 
 func TestImportGSMasterdata(t *testing.T) {
-	database.SetupTestDB()
+	database.SetupTestDB(true)
 	err := Import("../testdata/gsmaster_exported_gsdata.json")
 	assert.NoError(t, err, "expexted no Error during Export if gsmaster data")
 }

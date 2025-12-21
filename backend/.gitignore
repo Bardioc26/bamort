@@ -43,3 +43,4 @@ maintenance/testdata/*
 testdata/*_data.db
 tmp/main
 uploads/*
+xporttemp/*

@@ -20,6 +20,10 @@ type User struct {
 }
 
 func (object *User) Create() error {
+	if database.DB == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the User record
 		if err := tx.Create(&object).Error; err != nil {
@@ -32,6 +36,10 @@ func (object *User) Create() error {
 }
 
 func (object *User) First(value string) error {
+	if database.DB == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
 	err := database.DB.First(&object, "username = ?", value).Error
 	if err != nil {
 		// User found
@@ -41,6 +49,10 @@ func (object *User) First(value string) error {
 }
 
 func (object *User) FirstId(value uint) error {
+	if database.DB == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
 	err := database.DB.First(&object, "user_id = ?", value).Error
 	if err != nil {
 		// User found
@@ -50,6 +62,10 @@ func (object *User) FirstId(value uint) error {
 }
 
 func (object *User) Save() error {
+	if database.DB == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
 	err := database.DB.Save(&object).Error
 	if err != nil {
 		// User found
@@ -60,12 +76,24 @@ func (object *User) Save() error {
 
 // FindByEmail findet einen User anhand der E-Mail-Adresse
 func (object *User) FindByEmail(email string) error {
+	if database.DB == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
+	if email == "" {
+		return fmt.Errorf("email cannot be empty")
+	}
+
 	err := database.DB.First(&object, "email = ?", email).Error
 	return err
 }
 
 // FindByResetHash findet einen User anhand des Reset-Hashes
 func (object *User) FindByResetHash(resetHash string) error {
+	if database.DB == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
 	err := database.DB.First(&object, "reset_pw_hash = ? AND reset_pw_hash_expires > ?", resetHash, time.Now()).Error
 	return err
 }

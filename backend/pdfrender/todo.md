@@ -105,3 +105,4 @@
 * currently the template fetched for rendering is set to Default_A4_Quer
 * remove inline css as far as possible
 * make pdf download popup an own view
+* func CleanupExportTemp move maxAge := 7 * 24 * time.Hour definition to Config struct n config.go

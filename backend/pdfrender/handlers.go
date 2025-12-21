@@ -45,10 +45,12 @@ func ListTemplates(c *gin.Context) {
 	c.JSON(http.StatusOK, templates)
 }
 
-// ExportCharacterToPDF exports a character to PDF
+// ExportCharacterToPDF exports a character to PDF and saves it to xporttemp directory
 // Query params:
 //   - template: template ID to use (default: "Default_A4_Quer")
 //   - showUserName: whether to show user name (default: false)
+//
+// Returns JSON with filename: {"filename": "CharacterName_20231225_143045.pdf"}
 func ExportCharacterToPDF(c *gin.Context) {
 	// Get character ID
 	charID := c.Param("id")
@@ -120,47 +122,110 @@ func ExportCharacterToPDF(c *gin.Context) {
 	}
 	allPDFs = append(allPDFs, page4PDFs...)
 
-	// If only one PDF, return it directly
+	// Merge PDFs if needed
+	var finalPDF []byte
 	if len(allPDFs) == 1 {
-		c.Data(http.StatusOK, "application/pdf", allPDFs[0])
-		return
-	}
-
-	// Merge multiple PDFs
-	tmpDir := "/tmp/bamort_pdf_export"
-	if err := os.MkdirAll(tmpDir, 0755); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create temp directory"})
-		return
-	}
-	defer os.RemoveAll(tmpDir)
-
-	// Save individual PDFs
-	var filePaths []string
-	for i, pdf := range allPDFs {
-		filename := fmt.Sprintf("%s/page_%d.pdf", tmpDir, i)
-		if err := os.WriteFile(filename, pdf, 0644); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write temporary PDF"})
+		finalPDF = allPDFs[0]
+	} else {
+		// Merge multiple PDFs
+		tmpDir := "/tmp/bamort_pdf_export"
+		if err := os.MkdirAll(tmpDir, 0755); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create temp directory"})
 			return
 		}
-		filePaths = append(filePaths, filename)
+		defer os.RemoveAll(tmpDir)
+
+		// Save individual PDFs
+		var filePaths []string
+		for i, pdf := range allPDFs {
+			filename := fmt.Sprintf("%s/page_%d.pdf", tmpDir, i)
+			if err := os.WriteFile(filename, pdf, 0644); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write temporary PDF"})
+				return
+			}
+			filePaths = append(filePaths, filename)
+		}
+
+		// Merge PDFs
+		combinedPath := fmt.Sprintf("%s/combined.pdf", tmpDir)
+		if err := api.MergeCreateFile(filePaths, combinedPath, false, nil); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to merge PDFs: " + err.Error()})
+			return
+		}
+
+		// Read combined PDF
+		finalPDF, err = os.ReadFile(combinedPath)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read combined PDF"})
+			return
+		}
 	}
 
-	// Merge PDFs
-	combinedPath := fmt.Sprintf("%s/combined.pdf", tmpDir)
-	if err := api.MergeCreateFile(filePaths, combinedPath, false, nil); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to merge PDFs: " + err.Error()})
+	// Ensure export temp directory exists
+	if err := EnsureExportTempDir(config.Cfg.ExportTempDir); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create export directory"})
 		return
 	}
 
-	// Read combined PDF
-	combinedPDF, err := os.ReadFile(combinedPath)
+	// Generate filename
+	filename := GenerateExportFilename(char.Name, time.Now())
+	filePath := filepath.Join(config.Cfg.ExportTempDir, filename)
+
+	// Save PDF to file
+	if err := os.WriteFile(filePath, finalPDF, 0644); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save PDF file: " + err.Error()})
+		return
+	}
+
+	// Return filename
+	c.JSON(http.StatusOK, gin.H{"filename": filename})
+}
+
+// GetPDFFile serves a PDF file from the xporttemp directory
+func GetPDFFile(c *gin.Context) {
+	filename := c.Param("filename")
+	if filename == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Filename is required"})
+		return
+	}
+
+	// Prevent path traversal attacks - only allow base filename
+	if filepath.Base(filename) != filename {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid filename"})
+		return
+	}
+
+	// Only allow .pdf files
+	if filepath.Ext(filename) != ".pdf" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Only PDF files are allowed"})
+		return
+	}
+
+	// Construct full path
+	filePath := filepath.Join(config.Cfg.ExportTempDir, filename)
+
+	// Check if file exists
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+		return
+	}
+
+	// Serve the file
+	c.File(filePath)
+}
+
+// CleanupExportTemp removes PDF files older than 7 days from xporttemp directory
+func CleanupExportTemp(c *gin.Context) {
+	// Clean up files older than 7 days
+	maxAge := 7 * 24 * time.Hour
+	count, err := CleanupOldFiles(config.Cfg.ExportTempDir, maxAge)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read combined PDF"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to cleanup files: " + err.Error()})
 		return
 	}
 
-	// Set response headers
-	filename := fmt.Sprintf("%s_character_sheet.pdf", char.Name)
-	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
-	c.Data(http.StatusOK, "application/pdf", combinedPDF)
+	c.JSON(http.StatusOK, gin.H{
+		"deleted": count,
+		"message": fmt.Sprintf("Deleted %d files older than 7 days", count),
+	})
 }

@@ -409,65 +409,6 @@ export default {
         return
       }
       
-      // Open window IMMEDIATELY (synchronously) to avoid popup blocker
-      const pdfWindow = window.open('', '_blank')
-      if (!pdfWindow) {
-        alert(this.$t('export.popupBlocked'))
-        return
-      }
-      
-      // Show loading page in the new window
-      pdfWindow.document.write(`
-        <html>
-          <head>
-            <title>${this.$t('export.generating')}</title>
-            <style>
-              body {
-                margin: 0;
-                padding: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-                font-family: Arial, sans-serif;
-                background: #f5f5f5;
-              }
-              .loading-container {
-                text-align: center;
-              }
-              .spinner {
-                border: 4px solid #f3f3f3;
-                border-top: 4px solid #007bff;
-                border-radius: 50%;
-                width: 50px;
-                height: 50px;
-                animation: spin 1s linear infinite;
-                margin: 0 auto 20px;
-              }
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-              h2 {
-                color: #333;
-                margin: 0 0 10px 0;
-              }
-              p {
-                color: #666;
-                margin: 0;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="loading-container">
-              <div class="spinner"></div>
-              <h2>${this.$t('export.generating')}</h2>
-              <p>${this.$t('export.pleaseWait')}</p>
-            </div>
-          </body>
-        </html>
-      `)
-      
       this.isExporting = true
       
       try {
@@ -479,27 +420,24 @@ export default {
           params.append('showUserName', 'true')
         }
         
-        // Fetch PDF from API
+        // Get filename from export API (saves PDF to file)
         const response = await API.get(`/api/pdf/export/${this.id}`, {
-          params: Object.fromEntries(params),
-          responseType: 'blob'
+          params: Object.fromEntries(params)
         })
         
-        // Create object URL from blob
-        const blob = new Blob([response.data], { type: 'application/pdf' })
-        const url = window.URL.createObjectURL(blob)
+        const filename = response.data.filename
+        if (!filename) {
+          throw new Error('No filename returned from export')
+        }
         
-        // Replace loading page with PDF
-        pdfWindow.location.href = url
-        
-        // Clean up blob URL after some time
-        setTimeout(() => window.URL.revokeObjectURL(url), 10000)
+        // Open PDF in new window using file endpoint
+        const pdfUrl = `${API.defaults.baseURL}/api/pdf/file/${filename}`
+        window.open(pdfUrl, '_blank')
         
         // Close dialog on success
         this.showExportDialog = false
       } catch (error) {
         console.error('Failed to export PDF:', error)
-        pdfWindow.close()
         alert(this.$t('export.exportFailed') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.isExporting = false

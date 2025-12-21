@@ -20,12 +20,12 @@ func GenerateContinuationTemplateName(originalTemplate string, pageNum int) stri
 	// Pattern: page_N.html where N is a number
 	ext := ".html"
 	base := strings.TrimSuffix(originalTemplate, ext)
-	
+
 	// Check if it's already a continuation (has .2 in it)
 	if strings.Contains(base, ".2") {
 		return originalTemplate
 	}
-	
+
 	// Append .2 before .html
 	return fmt.Sprintf("%s.2%s", base, ext)
 }
@@ -42,7 +42,7 @@ func ExtractBaseTemplateName(templateName string) string {
 
 	// Remove .html
 	base := strings.TrimSuffix(templateName, ext)
-	
+
 	// Find the last dot
 	lastDotIdx := strings.LastIndex(base, ".")
 	if lastDotIdx == -1 {

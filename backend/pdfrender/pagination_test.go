@@ -166,9 +166,9 @@ func TestPaginateMultiList_WithOverflow(t *testing.T) {
 	for _, dist := range distributions {
 		for blockName, data := range dist.Data {
 			// Only count skill blocks to avoid counting the same skills multiple times
-			if skillsList, ok := data.([]SkillViewModel); ok && 
-				(blockName == "skills_column1" || blockName == "skills_column2" || 
-				 blockName == "skills_column3" || blockName == "skills_column4") {
+			if skillsList, ok := data.([]SkillViewModel); ok &&
+				(blockName == "skills_column1" || blockName == "skills_column2" ||
+					blockName == "skills_column3" || blockName == "skills_column4") {
 				totalSkills += len(skillsList)
 			}
 		}
@@ -837,7 +837,7 @@ func TestCalculatePagesNeeded(t *testing.T) {
 		{"10 skills on page1", "page_1.html", "skills", 10, 1},
 		{fmt.Sprintf("%d skills on page1", skillCapacity), "page_1.html", "skills", skillCapacity, 1},
 		{fmt.Sprintf("%d skills on page1", skillCapacity+1), "page_1.html", "skills", skillCapacity + 1, 2},
-		{"100 skills on page1", "page_1.html", "skills", 100, (100 + skillCapacity - 1) / skillCapacity}, // Dynamic calculation
+		{"100 skills on page1", "page_1.html", "skills", 100, (100 + skillCapacity - 1) / skillCapacity},  // Dynamic calculation
 		{"10 weapons on page2", "page_2.html", "weapons", 10, (10 + weaponCapacity - 1) / weaponCapacity}, // Dynamic calculation
 		{fmt.Sprintf("%d weapons on page2", weaponCapacity), "page_2.html", "weapons", weaponCapacity, 1},
 		{fmt.Sprintf("%d weapons on page2", weaponCapacity+1), "page_2.html", "weapons", weaponCapacity + 1, 2},

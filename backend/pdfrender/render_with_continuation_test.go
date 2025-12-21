@@ -61,7 +61,7 @@ func TestRenderWithContinuations_SkillsOverflow(t *testing.T) {
 	// Act - Render page1 with continuations
 	pdfs, err := RenderPageWithContinuations(
 		viewModel,
-		"page1_stats.html",
+		"page_1.html",
 		1,
 		"20.12.2025",
 		loader,
@@ -77,7 +77,7 @@ func TestRenderWithContinuations_SkillsOverflow(t *testing.T) {
 	templateSet := DefaultA4QuerTemplateSet()
 	var skillsCapacity int
 	for _, tmpl := range templateSet.Templates {
-		if tmpl.Metadata.Name == "page1_stats.html" {
+		if tmpl.Metadata.Name == "page_1.html" {
 			for _, block := range tmpl.Metadata.Blocks {
 				if block.ListType == "skills" {
 					skillsCapacity += block.MaxItems
@@ -163,7 +163,7 @@ func TestRenderWithContinuations_NoOverflow(t *testing.T) {
 	// Act
 	pdfs, err := RenderPageWithContinuations(
 		viewModel,
-		"page1_stats.html",
+		"page_1.html",
 		1,
 		"20.12.2025",
 		loader,

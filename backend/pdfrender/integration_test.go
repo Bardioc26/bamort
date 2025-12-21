@@ -101,12 +101,12 @@ func TestIntegration_FullPDFGeneration(t *testing.T) {
 	}
 
 	// Step 3: Prepare paginated data and render template to HTML
-	pageData, err := PreparePaginatedPageData(viewModel, "page1_stats.html", 1, "18.12.2025")
+	pageData, err := PreparePaginatedPageData(viewModel, "page_1.html", 1, "18.12.2025")
 	if err != nil {
 		t.Fatalf("Failed to prepare paginated data: %v", err)
 	}
 
-	html, err := loader.RenderTemplate("page1_stats.html", pageData)
+	html, err := loader.RenderTemplate("page_1.html", pageData)
 	if err != nil {
 		t.Fatalf("Failed to render template: %v", err)
 	}
@@ -160,11 +160,11 @@ func TestIntegration_TemplateMetadata(t *testing.T) {
 		template      string
 		expectedBlock string
 	}{
-		{"page1_stats.html", "skills_column1"},
-		{"page2_play.html", "skills_learned"},
-		{"page3_spell.html", "spells_left"},
-		{"page3_spell.html", "spells_right"},
-		{"page4_equip.html", "equipment_worn"},
+		{"page_1.html", "skills_column1"},
+		{"page_2.html", "skills_learned"},
+		{"page_3.html", "spells_left"},
+		{"page_3.html", "spells_right"},
+		{"page_4.html", "equipment_worn"},
 	}
 
 	for _, tc := range testCases {
@@ -217,7 +217,7 @@ func TestIntegration_PaginationWithPDF(t *testing.T) {
 	templateSet := DefaultA4QuerTemplateSet()
 	paginator := NewPaginator(templateSet)
 
-	pages, err := paginator.PaginateSkills(skills, "page1_stats.html", "")
+	pages, err := paginator.PaginateSkills(skills, "page_1.html", "")
 	if err != nil {
 		t.Fatalf("Failed to paginate skills: %v", err)
 	}
@@ -225,7 +225,7 @@ func TestIntegration_PaginationWithPDF(t *testing.T) {
 	// Calculate expected pages based on actual capacity
 	var skillsCapacity int
 	for _, tmpl := range templateSet.Templates {
-		if tmpl.Metadata.Name == "page1_stats.html" {
+		if tmpl.Metadata.Name == "page_1.html" {
 			for _, block := range tmpl.Metadata.Blocks {
 				if block.ListType == "skills" {
 					skillsCapacity += block.MaxItems
@@ -275,7 +275,7 @@ func TestIntegration_PaginationWithPDF(t *testing.T) {
 	pageData.SkillsColumn2 = pages[0].Data["skills_column2"].([]SkillViewModel)
 	pageData.Skills = append(pageData.SkillsColumn1, pageData.SkillsColumn2...) // Keep for logging
 
-	html, err := loader.RenderTemplate("page1_stats.html", pageData)
+	html, err := loader.RenderTemplate("page_1.html", pageData)
 	if err != nil {
 		t.Fatalf("Failed to render template: %v", err)
 	}
@@ -325,7 +325,7 @@ func TestIntegration_MultiPageSpellList(t *testing.T) {
 	templateSet := DefaultA4QuerTemplateSet()
 	var page3Template *TemplateWithMeta
 	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page3_spell.html" {
+		if templateSet.Templates[i].Metadata.Name == "page_3.html" {
 			page3Template = &templateSet.Templates[i]
 			break
 		}
@@ -351,7 +351,7 @@ func TestIntegration_MultiPageSpellList(t *testing.T) {
 	paginator := NewPaginator(templateSet)
 
 	// Paginate spells
-	pages, err := paginator.PaginateSpells(spells, "page3_spell.html")
+	pages, err := paginator.PaginateSpells(spells, "page_3.html")
 	if err != nil {
 		t.Fatalf("Failed to paginate spells: %v", err)
 	}
@@ -446,7 +446,7 @@ func TestIntegration_CompleteWorkflow(t *testing.T) {
 	paginator := NewPaginator(templateSet)
 
 	// Step 4: Paginate skills
-	skillPages, err := paginator.PaginateSkills(viewModel.Skills, "page1_stats.html", "")
+	skillPages, err := paginator.PaginateSkills(viewModel.Skills, "page_1.html", "")
 	if err != nil {
 		t.Fatalf("Failed to paginate skills: %v", err)
 	}
@@ -555,7 +555,7 @@ func TestVisualInspection_AllPages(t *testing.T) {
 
 	// Page 1: Stats page with skills (may have continuations)
 	t.Log("Generating Page 1: Stats...")
-	page1PDFs, err := RenderPageWithContinuations(viewModel, "page1_stats.html", 1, "18.12.2025", loader, renderer)
+	page1PDFs, err := RenderPageWithContinuations(viewModel, "page_1.html", 1, "18.12.2025", loader, renderer)
 	if err != nil {
 		t.Fatalf("Failed to generate page1: %v", err)
 	}
@@ -580,7 +580,7 @@ func TestVisualInspection_AllPages(t *testing.T) {
 
 	// Page 2: Play/Adventure page with weapons (may have continuations)
 	t.Log("Generating Page 2: Play...")
-	page2PDFs, err := RenderPageWithContinuations(viewModel, "page2_play.html", 2, "18.12.2025", loader, renderer)
+	page2PDFs, err := RenderPageWithContinuations(viewModel, "page_2.html", 2, "18.12.2025", loader, renderer)
 	if err != nil {
 		t.Fatalf("Failed to generate page2: %v", err)
 	}
@@ -605,7 +605,7 @@ func TestVisualInspection_AllPages(t *testing.T) {
 
 	// Page 3: Spells page (may have continuations)
 	t.Log("Generating Page 3: Spells...")
-	page3PDFs, err := RenderPageWithContinuations(viewModel, "page3_spell.html", 3, "18.12.2025", loader, renderer)
+	page3PDFs, err := RenderPageWithContinuations(viewModel, "page_3.html", 3, "18.12.2025", loader, renderer)
 	if err != nil {
 		t.Fatalf("Failed to generate page3: %v", err)
 	}
@@ -630,7 +630,7 @@ func TestVisualInspection_AllPages(t *testing.T) {
 
 	// Page 4: Equipment page (may have continuations)
 	t.Log("Generating Page 4: Equipment...")
-	page4PDFs, err := RenderPageWithContinuations(viewModel, "page4_equip.html", 4, "18.12.2025", loader, renderer)
+	page4PDFs, err := RenderPageWithContinuations(viewModel, "page_4.html", 4, "18.12.2025", loader, renderer)
 	if err != nil {
 		t.Fatalf("Failed to generate page4: %v", err)
 	}

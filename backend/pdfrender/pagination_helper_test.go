@@ -18,7 +18,7 @@ func TestPreparePaginatedPageData_Page1Stats(t *testing.T) {
 		}
 	}
 
-	pageData, err := PreparePaginatedPageData(viewModel, "page1_stats.html", 1, "2024-01-01")
+	pageData, err := PreparePaginatedPageData(viewModel, "page_1.html", 1, "2024-01-01")
 	if err != nil {
 		t.Fatalf("PreparePaginatedPageData failed: %v", err)
 	}
@@ -36,7 +36,7 @@ func TestPreparePaginatedPageData_Page1Stats(t *testing.T) {
 	templateSet := DefaultA4QuerTemplateSet()
 	var page1Template *TemplateWithMeta
 	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page1_stats.html" {
+		if templateSet.Templates[i].Metadata.Name == "page_1.html" {
 			page1Template = &templateSet.Templates[i]
 			break
 		}
@@ -75,7 +75,7 @@ func TestSplitSkillsForColumns(t *testing.T) {
 	templateSet := DefaultA4QuerTemplateSet()
 	var page1Template *TemplateWithMeta
 	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page1_stats.html" {
+		if templateSet.Templates[i].Metadata.Name == "page_1.html" {
 			page1Template = &templateSet.Templates[i]
 			break
 		}
@@ -174,7 +174,7 @@ func TestPreparePaginatedPageData_Page2Play(t *testing.T) {
 		}
 	}
 
-	pageData, err := PreparePaginatedPageData(viewModel, "page2_play.html", 2, "2024-01-01")
+	pageData, err := PreparePaginatedPageData(viewModel, "page_2.html", 2, "2024-01-01")
 	if err != nil {
 		t.Fatalf("PreparePaginatedPageData failed: %v", err)
 	}
@@ -190,9 +190,9 @@ func TestPreparePaginatedPageData_Page2Play(t *testing.T) {
 func TestPreparePaginatedPageData_Page3Spell(t *testing.T) {
 	// Get capacities from template
 	templateSet := DefaultA4QuerTemplateSet()
-	leftCap := GetBlockCapacity(&templateSet, "page3_spell.html", "spells_left")
-	rightCap := GetBlockCapacity(&templateSet, "page3_spell.html", "spells_right")
-	magicItemsCap := GetBlockCapacity(&templateSet, "page3_spell.html", "magic_items")
+	leftCap := GetBlockCapacity(&templateSet, "page_3.html", "spells_left")
+	rightCap := GetBlockCapacity(&templateSet, "page_3.html", "spells_right")
+	magicItemsCap := GetBlockCapacity(&templateSet, "page_3.html", "magic_items")
 
 	// Create test data exceeding capacities
 	viewModel := &CharacterSheetViewModel{
@@ -210,7 +210,7 @@ func TestPreparePaginatedPageData_Page3Spell(t *testing.T) {
 		}
 	}
 
-	pageData, err := PreparePaginatedPageData(viewModel, "page3_spell.html", 3, "2024-01-01")
+	pageData, err := PreparePaginatedPageData(viewModel, "page_3.html", 3, "2024-01-01")
 	if err != nil {
 		t.Fatalf("PreparePaginatedPageData failed: %v", err)
 	}
@@ -247,7 +247,7 @@ func TestPreparePaginatedPageData_Page4Equipment(t *testing.T) {
 		}
 	}
 
-	pageData, err := PreparePaginatedPageData(viewModel, "page4_equip.html", 4, "2024-01-01")
+	pageData, err := PreparePaginatedPageData(viewModel, "page_4.html", 4, "2024-01-01")
 	if err != nil {
 		t.Fatalf("PreparePaginatedPageData failed: %v", err)
 	}

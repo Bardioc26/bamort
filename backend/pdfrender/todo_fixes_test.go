@@ -10,7 +10,7 @@ import (
 // TestPaginationUsesTemplateMetadata verifies tests use actual template MAX values
 func TestPaginationUsesTemplateMetadata(t *testing.T) {
 	// Read expected values directly from template file
-	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page2_play.html")
+	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page_2.html")
 	if err != nil {
 		t.Fatalf("Failed to read template file: %v", err)
 	}
@@ -26,14 +26,14 @@ func TestPaginationUsesTemplateMetadata(t *testing.T) {
 	// Find page2
 	var page2 *TemplateWithMeta
 	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page2_play.html" {
+		if templateSet.Templates[i].Metadata.Name == "page_2.html" {
 			page2 = &templateSet.Templates[i]
 			break
 		}
 	}
 
 	if page2 == nil {
-		t.Fatal("page2_play.html not found")
+		t.Fatal("page_2.html not found")
 	}
 
 	// Verify blocks exist and have correct MAX from template
@@ -64,7 +64,7 @@ func TestPaginationUsesTemplateMetadata(t *testing.T) {
 
 func TestPage2PaginationWithCorrectCapacities(t *testing.T) {
 	// Read expected values directly from template file
-	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page2_play.html")
+	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page_2.html")
 	if err != nil {
 		t.Fatalf("Failed to read template file: %v", err)
 	}
@@ -88,7 +88,7 @@ func TestPage2PaginationWithCorrectCapacities(t *testing.T) {
 		},
 	}
 
-	pageData, err := PreparePaginatedPageData(viewModel, "page2_play.html", 2, "2024-01-01")
+	pageData, err := PreparePaginatedPageData(viewModel, "page_2.html", 2, "2024-01-01")
 	if err != nil {
 		t.Fatalf("Failed to prepare page data: %v", err)
 	}
@@ -109,7 +109,7 @@ func TestPage2PaginationWithCorrectCapacities(t *testing.T) {
 
 func TestPage3MagicItemsCapacity(t *testing.T) {
 	// Read expected values directly from template file
-	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page3_spell.html")
+	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page_3.html")
 	if err != nil {
 		t.Fatalf("Failed to read template file: %v", err)
 	}
@@ -128,7 +128,7 @@ func TestPage3MagicItemsCapacity(t *testing.T) {
 		},
 	}
 
-	pageData, err := PreparePaginatedPageData(viewModel, "page3_spell.html", 3, "2024-01-01")
+	pageData, err := PreparePaginatedPageData(viewModel, "page_3.html", 3, "2024-01-01")
 	if err != nil {
 		t.Fatalf("Failed to prepare page data: %v", err)
 	}

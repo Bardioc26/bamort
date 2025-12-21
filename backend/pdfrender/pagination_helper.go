@@ -32,7 +32,7 @@ func PreparePaginatedPageData(viewModel *CharacterSheetViewModel, templateName s
 	}
 
 	// For page1_stats.html - paginate skills across two columns
-	if templateName == "page1_stats.html" {
+	if templateName == "page_1.html" {
 		// Get the template metadata
 		var template *TemplateMetadata
 		for _, tmpl := range templateSet.Templates {
@@ -70,7 +70,7 @@ func PreparePaginatedPageData(viewModel *CharacterSheetViewModel, templateName s
 		} else {
 			pageData.Skills = viewModel.Skills
 		}
-	} else if templateName == "page2_play.html" {
+	} else if templateName == "page_2.html" {
 		// Get capacities from template
 		weaponsCapacity := GetBlockCapacity(&templateSet, templateName, "weapons_main")
 		learnedCapacity := GetBlockCapacity(&templateSet, templateName, "skills_learned")
@@ -117,7 +117,7 @@ func PreparePaginatedPageData(viewModel *CharacterSheetViewModel, templateName s
 			pageData.SkillsLanguage = languageSkills
 		}
 		pageData.Skills = viewModel.Skills // Keep for backward compatibility
-	} else if templateName == "page3_spell.html" {
+	} else if templateName == "page_3.html" {
 		// Get capacities from template
 		spellsLeftCapacity := GetBlockCapacity(&templateSet, templateName, "spells_left")
 		spellsRightCapacity := GetBlockCapacity(&templateSet, templateName, "spells_right")
@@ -148,7 +148,7 @@ func PreparePaginatedPageData(viewModel *CharacterSheetViewModel, templateName s
 		} else {
 			pageData.MagicItems = magicItems
 		}
-	} else if templateName == "page4_equip.html" {
+	} else if templateName == "page_4.html" {
 		// Page 4 needs ALL equipment to properly render containers
 		// The template has complex logic showing containers on left, worn items and container sections on right
 		// Don't truncate based on capacity - let the template handle all items

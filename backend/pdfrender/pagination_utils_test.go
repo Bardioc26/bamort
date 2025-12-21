@@ -11,27 +11,27 @@ func TestGenerateContinuationTemplateName(t *testing.T) {
 	}{
 		{
 			name:     "First page returns original",
-			template: "page1_stats.html",
+			template: "page_1.html",
 			pageNum:  1,
-			expected: "page1_stats.html",
+			expected: "page_1.html",
 		},
 		{
 			name:     "Second page gets continuation name",
-			template: "page1_stats.html",
+			template: "page_1.html",
 			pageNum:  2,
-			expected: "page1.2_stats.html",
+			expected: "page_1.2.html",
 		},
 		{
 			name:     "Third page uses same continuation template (.2)",
-			template: "page2_play.html",
+			template: "page_2.html",
 			pageNum:  3,
-			expected: "page2.2_play.html",
+			expected: "page_2.2.html",
 		},
 		{
 			name:     "All continuation pages use .2 template",
-			template: "page1_stats.html",
+			template: "page_1.html",
 			pageNum:  10,
-			expected: "page1.2_stats.html",
+			expected: "page_1.2.html",
 		},
 	}
 
@@ -53,23 +53,23 @@ func TestExtractBaseTemplateName(t *testing.T) {
 	}{
 		{
 			name:     "Base template returns itself",
-			template: "page1_stats.html",
-			expected: "page1_stats.html",
+			template: "page_1.html",
+			expected: "page_1.html",
 		},
 		{
 			name:     "Continuation template returns base",
-			template: "page1.2_stats.html",
-			expected: "page1_stats.html",
+			template: "page_1.2.html",
+			expected: "page_1.html",
 		},
 		{
 			name:     "Multiple digit continuation",
-			template: "page1.10_stats.html",
-			expected: "page1_stats.html",
+			template: "page_1.10.html",
+			expected: "page_1.html",
 		},
 		{
 			name:     "Different page type",
-			template: "page2.3_play.html",
-			expected: "page2_play.html",
+			template: "page_2.3.html",
+			expected: "page_2.html",
 		},
 		{
 			name:     "Template without underscore",
@@ -90,7 +90,7 @@ func TestExtractBaseTemplateName(t *testing.T) {
 
 func TestContinuationRoundTrip(t *testing.T) {
 	// Test that generating a continuation name and extracting the base works correctly
-	original := "page1_stats.html"
+	original := "page_1.html"
 
 	for pageNum := 1; pageNum <= 5; pageNum++ {
 		continuation := GenerateContinuationTemplateName(original, pageNum)

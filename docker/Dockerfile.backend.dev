@@ -1,5 +1,4 @@
 # Development Dockerfile für Go Backend mit Live-Reloading
-#FROM golang:1.23-alpine
 FROM golang:1.25-alpine
 
 # Install necessary packages for CGO and SQLite

@@ -68,8 +68,8 @@ func (tl *TemplateLoader) LoadTemplates() error {
 }
 
 // RenderTemplate renders a specific template with the given data
-// For continuation templates (e.g., "page1.2_stats.html"), it automatically
-// falls back to the base template (e.g., "page1_stats.html") if the continuation
+// For continuation templates (e.g., "page_1.2.html"), it automatically
+// falls back to the base template (e.g., "page_1.html") if the continuation
 // template doesn't exist as a physical file
 func (tl *TemplateLoader) RenderTemplate(templateName string, data interface{}) (string, error) {
 	if tl.templates == nil {
@@ -79,7 +79,7 @@ func (tl *TemplateLoader) RenderTemplate(templateName string, data interface{}) 
 	tmpl := tl.templates.Lookup(templateName)
 	if tmpl == nil {
 		// Try to extract base template name for continuation pages
-		// e.g., "page1.2_stats.html" -> "page1_stats.html"
+		// e.g., "page_1.2.html" -> "page_1.html"
 		baseTemplateName := ExtractBaseTemplateName(templateName)
 		if baseTemplateName != templateName {
 			tmpl = tl.templates.Lookup(baseTemplateName)

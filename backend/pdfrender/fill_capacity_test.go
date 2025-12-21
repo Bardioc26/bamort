@@ -76,7 +76,7 @@ func TestTemplateWithEmptyRows(t *testing.T) {
 		},
 	}
 
-	html, err := loader.RenderTemplate("page1_stats.html", pageData)
+	html, err := loader.RenderTemplate("page_1.html", pageData)
 	if err != nil {
 		t.Fatalf("Failed to render template: %v", err)
 	}
@@ -85,13 +85,13 @@ func TestTemplateWithEmptyRows(t *testing.T) {
 	templateSet := DefaultA4QuerTemplateSet()
 	var page1Template *TemplateWithMeta
 	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page1_stats.html" {
+		if templateSet.Templates[i].Metadata.Name == "page_1.html" {
 			page1Template = &templateSet.Templates[i]
 			break
 		}
 	}
 	if page1Template == nil {
-		t.Fatal("page1_stats.html template not found")
+		t.Fatal("page_1.html template not found")
 	}
 	var col1Capacity int
 	for i := range page1Template.Metadata.Blocks {

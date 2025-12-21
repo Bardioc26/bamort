@@ -6,55 +6,51 @@ import (
 )
 
 // GenerateContinuationTemplateName creates a continuation template name
-// Example: "page1_stats.html" + pageNum 2 -> "page1.2_stats.html"
-// Note: All continuation pages (2, 3, 4, ...) use the same template name: page1.2_stats.html
+// Example: "page_1.html" + pageNum 2 -> "page_1.2.html"
+// Note: All continuation pages (2, 3, 4, ...) use the same template name: page_1.2.html
 func GenerateContinuationTemplateName(originalTemplate string, pageNum int) string {
 	if pageNum == 1 {
 		return originalTemplate
 	}
 
-	// All continuation pages use .2 template (page1.2, page2.2, etc.)
-	// NOT page1.3, page1.4, etc.
+	// All continuation pages use .2 template (page_1.2, page_2.2, etc.)
+	// NOT page_1.3, page_1.4, etc.
 
-	// Split template name at first underscore to insert page continuation number
-	// Example: "page1_stats.html" -> "page1" + "_stats.html"
-	parts := strings.SplitN(originalTemplate, "_", 2)
-	if len(parts) != 2 {
-		// Fallback: just append .2 before extension
-		ext := ".html"
-		base := strings.TrimSuffix(originalTemplate, ext)
-		return fmt.Sprintf("%s.2%s", base, ext)
+	// New format: "page_1.html" -> "page_1.2.html"
+	// Pattern: page_N.html where N is a number
+	ext := ".html"
+	base := strings.TrimSuffix(originalTemplate, ext)
+	
+	// Check if it's already a continuation (has .2 in it)
+	if strings.Contains(base, ".2") {
+		return originalTemplate
 	}
-
-	// Extract page number and base name
-	// "page1" -> "page" + "1"
-	baseName := parts[0]
-	suffix := parts[1]
-
-	// Always use .2 for continuation pages: "page1.2_stats.html"
-	return fmt.Sprintf("%s.2_%s", baseName, suffix)
+	
+	// Append .2 before .html
+	return fmt.Sprintf("%s.2%s", base, ext)
 }
 
 // ExtractBaseTemplateName extracts the base template name from a continuation template
-// Example: "page1.2_stats.html" -> "page1_stats.html"
+// Example: "page_1.2.html" -> "page_1.html"
 func ExtractBaseTemplateName(templateName string) string {
-	// Check if it's a continuation template (contains .N_ pattern)
-	parts := strings.SplitN(templateName, "_", 2)
-	if len(parts) != 2 {
+	// New format: "page_1.2.html" or "page_1.10.html" -> "page_1.html"
+	// Pattern: ends with .N.html where N is any number
+	ext := ".html"
+	if !strings.HasSuffix(templateName, ext) {
 		return templateName
 	}
 
-	baseName := parts[0]
-	suffix := parts[1]
-
-	// Check if baseName contains a dot followed by a number (e.g., "page1.2")
-	dotIdx := strings.LastIndex(baseName, ".")
-	if dotIdx == -1 {
-		return templateName // Not a continuation template
+	// Remove .html
+	base := strings.TrimSuffix(templateName, ext)
+	
+	// Find the last dot
+	lastDotIdx := strings.LastIndex(base, ".")
+	if lastDotIdx == -1 {
+		return templateName // No dot found, not a continuation
 	}
 
-	// Verify the part after the dot is a number
-	numPart := baseName[dotIdx+1:]
+	// Check if everything after the last dot is a number
+	numPart := base[lastDotIdx+1:]
 	if len(numPart) == 0 {
 		return templateName
 	}
@@ -66,8 +62,7 @@ func ExtractBaseTemplateName(templateName string) string {
 	}
 
 	// It's a continuation template, return the base name
-	basePrefix := baseName[:dotIdx]
-	return fmt.Sprintf("%s_%s", basePrefix, suffix)
+	return base[:lastDotIdx] + ext
 }
 
 // SliceList slices a list based on start index and max items
@@ -103,6 +98,189 @@ type Paginator struct {
 func NewPaginator(templateSet TemplateSet) *Paginator {
 	return &Paginator{
 		templateSet: templateSet,
+	}
+}
+
+// PaginateMultiList is a unified pagination function that handles multiple list types
+// It replaces PaginateSkills, PaginateSpells, and PaginatePage2PlayLists
+// dataMap keys: "skills", "weapons", "spells", "equipment", "magicItems"
+func (p *Paginator) PaginateMultiList(dataMap map[string]interface{}, templateName string) ([]PageDistribution, error) {
+	template := p.findTemplate(templateName)
+	if template == nil {
+		return nil, fmt.Errorf("template not found: %s", templateName)
+	}
+
+	// Build filtered lists for each unique list type + filter combination
+	type listTracker struct {
+		items      interface{}
+		currentIdx int
+		totalCount int
+	}
+
+	// Track by "listType:filter" to avoid duplicates
+	listTrackers := make(map[string]*listTracker)
+
+	// First pass: create filtered lists for each unique listType+filter combination
+	for _, block := range template.Blocks {
+		// Get the source data based on block's ListType
+		var sourceData interface{}
+		switch block.ListType {
+		case "skills":
+			sourceData = dataMap["skills"]
+		case "weapons":
+			sourceData = dataMap["weapons"]
+		case "spells":
+			sourceData = dataMap["spells"]
+		case "equipment":
+			sourceData = dataMap["equipment"]
+		case "magicItems":
+			sourceData = dataMap["magicItems"]
+		default:
+			continue
+		}
+
+		if sourceData == nil {
+			continue
+		}
+
+		// Create unique key for this list type + filter combination
+		trackerKey := block.ListType
+		if block.Filter != "" {
+			trackerKey += ":" + block.Filter
+		}
+
+		// Only create tracker once per unique combination
+		if _, exists := listTrackers[trackerKey]; !exists {
+			// Apply filter if specified
+			filteredItems := p.applyFilter(sourceData, block.Filter)
+			itemCount := p.getItemCount(filteredItems)
+
+			if itemCount > 0 {
+				listTrackers[trackerKey] = &listTracker{
+					items:      filteredItems,
+					currentIdx: 0,
+					totalCount: itemCount,
+				}
+			}
+		}
+	}
+
+	// If all lists are empty, return empty result
+	if len(listTrackers) == 0 {
+		return []PageDistribution{}, nil
+	}
+
+	// Generate pages until all items are distributed
+	distributions := []PageDistribution{}
+	pageNum := 1
+
+	for {
+		// Check if there are any remaining items
+		hasRemainingItems := false
+		for _, tracker := range listTrackers {
+			if tracker.currentIdx < tracker.totalCount {
+				hasRemainingItems = true
+				break
+			}
+		}
+
+		if !hasRemainingItems {
+			break
+		}
+
+		// Create page data
+		pageData := make(map[string]interface{})
+
+		// Distribute items to each block for this page
+		for _, block := range template.Blocks {
+			// Get tracker for this block's list type + filter
+			trackerKey := block.ListType
+			if block.Filter != "" {
+				trackerKey += ":" + block.Filter
+			}
+
+			tracker, exists := listTrackers[trackerKey]
+			if !exists {
+				// Block has no data, add empty slice
+				pageData[block.Name] = p.createEmptySlice(block.ListType)
+				continue
+			}
+
+			// Calculate how many items to take for this block
+			itemsToTake := block.MaxItems
+			remaining := tracker.totalCount - tracker.currentIdx
+			if itemsToTake > remaining {
+				itemsToTake = remaining
+			}
+
+			// Extract slice for this block
+			blockItems := p.extractSlice(tracker.items, tracker.currentIdx, itemsToTake)
+			pageData[block.Name] = blockItems
+			tracker.currentIdx += itemsToTake
+		}
+
+		// Determine template name - use continuation naming for pages 2+
+		pageTemplateName := GenerateContinuationTemplateName(templateName, pageNum)
+
+		distributions = append(distributions, PageDistribution{
+			TemplateName: pageTemplateName,
+			PageNumber:   pageNum,
+			Data:         pageData,
+		})
+
+		pageNum++
+	}
+
+	return distributions, nil
+}
+
+// applyFilter filters a list based on filter criteria
+func (p *Paginator) applyFilter(items interface{}, filter string) interface{} {
+	if filter == "" {
+		return items
+	}
+
+	switch v := items.(type) {
+	case []SkillViewModel:
+		filtered := []SkillViewModel{}
+		for _, skill := range v {
+			include := false
+			switch filter {
+			case "learned":
+				include = skill.IsLearned && skill.Category != "Sprache"
+			case "unlearned":
+				include = !skill.IsLearned && skill.Category != "Sprache"
+			case "language", "languages":
+				include = skill.Category == "Sprache"
+			default:
+				include = true
+			}
+			if include {
+				filtered = append(filtered, skill)
+			}
+		}
+		return filtered
+	default:
+		// No filtering for other types
+		return items
+	}
+}
+
+// getItemCount returns the count of items in a list
+func (p *Paginator) getItemCount(items interface{}) int {
+	switch v := items.(type) {
+	case []SkillViewModel:
+		return len(v)
+	case []WeaponViewModel:
+		return len(v)
+	case []SpellViewModel:
+		return len(v)
+	case []EquipmentViewModel:
+		return len(v)
+	case []MagicItemViewModel:
+		return len(v)
+	default:
+		return 0
 	}
 }
 
@@ -289,6 +467,12 @@ func (p *Paginator) extractSlice(items interface{}, start, count int) interface{
 			end = len(v)
 		}
 		return v[start:end]
+	case []MagicItemViewModel:
+		end := start + count
+		if end > len(v) {
+			end = len(v)
+		}
+		return v[start:end]
 	}
 	return nil
 }
@@ -304,6 +488,8 @@ func (p *Paginator) createEmptySlice(listType string) interface{} {
 		return []SpellViewModel{}
 	case "equipment":
 		return []EquipmentViewModel{}
+	case "magicItems":
+		return []MagicItemViewModel{}
 	default:
 		return []interface{}{}
 	}

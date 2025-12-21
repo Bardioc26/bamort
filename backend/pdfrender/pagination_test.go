@@ -5,6 +5,314 @@ import (
 	"testing"
 )
 
+// TestPaginateMultiList_SingleListType tests pagination with a single list type (skills only)
+func TestPaginateMultiList_SingleListType(t *testing.T) {
+	// Arrange
+	templateSet := DefaultA4QuerTemplateSet()
+	paginator := NewPaginator(templateSet)
+
+	// Create skills that will fit on one page (less than total capacity)
+	skills := make([]SkillViewModel, 20)
+	for i := 0; i < 20; i++ {
+		skills[i] = SkillViewModel{Name: fmt.Sprintf("Skill%d", i+1)}
+	}
+
+	dataMap := map[string]interface{}{
+		"skills": skills,
+	}
+
+	// Act
+	distributions, err := paginator.PaginateMultiList(dataMap, "page_1.html")
+
+	// Assert
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if len(distributions) != 1 {
+		t.Fatalf("Expected 1 page, got %d", len(distributions))
+	}
+
+	// Verify data is distributed correctly
+	page := distributions[0]
+	if page.TemplateName != "page_1.html" {
+		t.Errorf("Expected template 'page_1.html', got '%s'", page.TemplateName)
+	}
+
+	// Check that skills are distributed to appropriate blocks
+	// Note: Skills are distributed to multiple columns, so we count each block
+	totalSkills := 0
+	skillBlocks := []string{"skills_column1", "skills_column2"}
+	for _, blockName := range skillBlocks {
+		if data, exists := page.Data[blockName]; exists {
+			if skillsList, ok := data.([]SkillViewModel); ok {
+				totalSkills += len(skillsList)
+			}
+		}
+	}
+
+	if totalSkills != 20 {
+		t.Errorf("Expected 20 total skills distributed across columns, got %d", totalSkills)
+	}
+}
+
+// TestPaginateMultiList_MultipleListTypes tests pagination with multiple list types
+func TestPaginateMultiList_MultipleListTypes(t *testing.T) {
+	// Arrange
+	templateSet := DefaultA4QuerTemplateSet()
+	paginator := NewPaginator(templateSet)
+
+	// Create skills and weapons for page_2.html
+	skills := make([]SkillViewModel, 30)
+	for i := 0; i < 30; i++ {
+		skills[i] = SkillViewModel{
+			Name:      fmt.Sprintf("Skill%d", i+1),
+			IsLearned: i < 15, // First 15 are learned
+			Category:  "Kampf",
+		}
+	}
+
+	weapons := make([]WeaponViewModel, 10)
+	for i := 0; i < 10; i++ {
+		weapons[i] = WeaponViewModel{
+			Name:  fmt.Sprintf("Weapon%d", i+1),
+			Value: 10 + i,
+		}
+	}
+
+	dataMap := map[string]interface{}{
+		"skills":  skills,
+		"weapons": weapons,
+	}
+
+	// Act
+	distributions, err := paginator.PaginateMultiList(dataMap, "page_2.html")
+
+	// Assert
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if len(distributions) == 0 {
+		t.Fatal("Expected at least 1 page")
+	}
+
+	// Verify all data is distributed across pages
+	totalSkills := 0
+	totalWeapons := 0
+
+	for _, dist := range distributions {
+		for _, data := range dist.Data {
+			switch v := data.(type) {
+			case []SkillViewModel:
+				totalSkills += len(v)
+			case []WeaponViewModel:
+				totalWeapons += len(v)
+			}
+		}
+	}
+
+	if totalSkills != 30 {
+		t.Errorf("Expected 30 total skills, got %d", totalSkills)
+	}
+	if totalWeapons != 10 {
+		t.Errorf("Expected 10 total weapons, got %d", totalWeapons)
+	}
+}
+
+// TestPaginateMultiList_WithOverflow tests continuation pages are created
+func TestPaginateMultiList_WithOverflow(t *testing.T) {
+	// Arrange
+	templateSet := DefaultA4QuerTemplateSet()
+	paginator := NewPaginator(templateSet)
+
+	// Create many skills to force continuation pages
+	skills := make([]SkillViewModel, 100)
+	for i := 0; i < 100; i++ {
+		skills[i] = SkillViewModel{Name: fmt.Sprintf("Skill%d", i+1)}
+	}
+
+	dataMap := map[string]interface{}{
+		"skills": skills,
+	}
+
+	// Act
+	distributions, err := paginator.PaginateMultiList(dataMap, "page_1.html")
+
+	// Assert
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if len(distributions) <= 1 {
+		t.Fatalf("Expected multiple pages for 100 skills, got %d", len(distributions))
+	}
+
+	// Verify continuation template naming
+	if distributions[0].TemplateName != "page_1.html" {
+		t.Errorf("First page should use base template, got '%s'", distributions[0].TemplateName)
+	}
+
+	for i := 1; i < len(distributions); i++ {
+		expectedName := "page_1.2.html"
+		if distributions[i].TemplateName != expectedName {
+			t.Errorf("Page %d should use continuation template '%s', got '%s'",
+				i+1, expectedName, distributions[i].TemplateName)
+		}
+	}
+
+	// Verify all skills are distributed
+	totalSkills := 0
+	for _, dist := range distributions {
+		for blockName, data := range dist.Data {
+			// Only count skill blocks to avoid counting the same skills multiple times
+			if skillsList, ok := data.([]SkillViewModel); ok && 
+				(blockName == "skills_column1" || blockName == "skills_column2" || 
+				 blockName == "skills_column3" || blockName == "skills_column4") {
+				totalSkills += len(skillsList)
+			}
+		}
+	}
+
+	if totalSkills != 100 {
+		t.Errorf("Expected 100 total skills distributed, got %d", totalSkills)
+	}
+}
+
+// TestPaginateMultiList_EmptyLists tests handling of empty data
+func TestPaginateMultiList_EmptyLists(t *testing.T) {
+	// Arrange
+	templateSet := DefaultA4QuerTemplateSet()
+	paginator := NewPaginator(templateSet)
+
+	dataMap := map[string]interface{}{
+		"skills": []SkillViewModel{},
+	}
+
+	// Act
+	distributions, err := paginator.PaginateMultiList(dataMap, "page_1.html")
+
+	// Assert
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if len(distributions) != 0 {
+		t.Errorf("Expected 0 pages for empty data, got %d", len(distributions))
+	}
+}
+
+// TestPaginateMultiList_WithFilters tests filtering by learned/unlearned/language
+func TestPaginateMultiList_WithFilters(t *testing.T) {
+	// Arrange
+	templateSet := DefaultA4QuerTemplateSet()
+	paginator := NewPaginator(templateSet)
+
+	// Create mixed skills
+	skills := []SkillViewModel{
+		{Name: "Learned1", IsLearned: true, Category: "Kampf"},
+		{Name: "Learned2", IsLearned: true, Category: "Körper"},
+		{Name: "Unlearned1", IsLearned: false, Category: "Kampf"},
+		{Name: "Unlearned2", IsLearned: false, Category: "Social"},
+		{Name: "Language1", Category: "Sprache"},
+		{Name: "Language2", Category: "Sprache"},
+	}
+
+	dataMap := map[string]interface{}{
+		"skills": skills,
+	}
+
+	// Act
+	distributions, err := paginator.PaginateMultiList(dataMap, "page_2.html")
+
+	// Assert
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if len(distributions) == 0 {
+		t.Fatal("Expected at least 1 page")
+	}
+
+	// Verify filtering worked - check that learned, unlearned, and language skills are in separate blocks
+	page := distributions[0]
+
+	if learnedData, ok := page.Data["skills_learned"]; ok {
+		learned := learnedData.([]SkillViewModel)
+		for _, skill := range learned {
+			if !skill.IsLearned {
+				t.Errorf("Found unlearned skill '%s' in learned block", skill.Name)
+			}
+		}
+	}
+
+	if languageData, ok := page.Data["skills_languages"]; ok {
+		languages := languageData.([]SkillViewModel)
+		for _, skill := range languages {
+			if skill.Category != "Sprache" {
+				t.Errorf("Found non-language skill '%s' in language block", skill.Name)
+			}
+		}
+	}
+}
+
+// TestPaginateMultiList_UnknownTemplate tests error handling for unknown templates
+func TestPaginateMultiList_UnknownTemplate(t *testing.T) {
+	// Arrange
+	templateSet := DefaultA4QuerTemplateSet()
+	paginator := NewPaginator(templateSet)
+
+	dataMap := map[string]interface{}{
+		"skills": []SkillViewModel{{Name: "Test"}},
+	}
+
+	// Act
+	distributions, err := paginator.PaginateMultiList(dataMap, "nonexistent_template.html")
+
+	// Assert
+	if err == nil {
+		t.Fatal("Expected error for unknown template, got nil")
+	}
+
+	if distributions != nil {
+		t.Error("Expected nil distributions for error case")
+	}
+}
+
+// TestPaginateMultiList_PageNumbering tests that page numbers are sequential
+func TestPaginateMultiList_PageNumbering(t *testing.T) {
+	// Arrange
+	templateSet := DefaultA4QuerTemplateSet()
+	paginator := NewPaginator(templateSet)
+
+	// Create enough skills for 3 pages
+	skills := make([]SkillViewModel, 120)
+	for i := 0; i < 120; i++ {
+		skills[i] = SkillViewModel{Name: fmt.Sprintf("Skill%d", i+1)}
+	}
+
+	dataMap := map[string]interface{}{
+		"skills": skills,
+	}
+
+	// Act
+	distributions, err := paginator.PaginateMultiList(dataMap, "page_1.html")
+
+	// Assert
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	// Verify page numbers are sequential
+	for i, dist := range distributions {
+		expectedPageNum := i + 1
+		if dist.PageNumber != expectedPageNum {
+			t.Errorf("Page %d has incorrect PageNumber: expected %d, got %d",
+				i+1, expectedPageNum, dist.PageNumber)
+		}
+	}
+}
+
 func TestSliceList_Basic(t *testing.T) {
 	// Arrange
 	items := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
@@ -64,7 +372,7 @@ func TestPaginateSkills_SinglePage(t *testing.T) {
 	// Get column capacities from template
 	var col1Capacity int
 	for _, tmpl := range templateSet.Templates {
-		if tmpl.Metadata.Name == "page1_stats.html" {
+		if tmpl.Metadata.Name == "page_1.html" {
 			for _, block := range tmpl.Metadata.Blocks {
 				if block.Name == "skills_column1" {
 					col1Capacity = block.MaxItems
@@ -83,7 +391,7 @@ func TestPaginateSkills_SinglePage(t *testing.T) {
 	}
 
 	// Act
-	pages, err := paginator.PaginateSkills(skills, "page1_stats.html", "")
+	pages, err := paginator.PaginateSkills(skills, "page_1.html", "")
 
 	// Assert
 	if err != nil {
@@ -127,7 +435,7 @@ func TestPaginateSkills_MultiColumn(t *testing.T) {
 	// Get expected capacity from template
 	var page1Template *TemplateWithMeta
 	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page1_stats.html" {
+		if templateSet.Templates[i].Metadata.Name == "page_1.html" {
 			page1Template = &templateSet.Templates[i]
 			break
 		}
@@ -149,7 +457,7 @@ func TestPaginateSkills_MultiColumn(t *testing.T) {
 	}
 
 	// Act
-	pages, err := paginator.PaginateSkills(skills, "page1_stats.html", "")
+	pages, err := paginator.PaginateSkills(skills, "page_1.html", "")
 
 	// Assert
 	if err != nil {
@@ -186,7 +494,7 @@ func TestPaginateSkills_MultiPage(t *testing.T) {
 	// Get column capacities from template
 	var page1Template *TemplateWithMeta
 	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page1_stats.html" {
+		if templateSet.Templates[i].Metadata.Name == "page_1.html" {
 			page1Template = &templateSet.Templates[i]
 			break
 		}
@@ -203,7 +511,7 @@ func TestPaginateSkills_MultiPage(t *testing.T) {
 	}
 
 	// Act
-	pages, err := paginator.PaginateSkills(skills, "page1_stats.html", "")
+	pages, err := paginator.PaginateSkills(skills, "page_1.html", "")
 
 	// Assert
 	if err != nil {
@@ -247,7 +555,7 @@ func TestPaginateSpells_TwoColumns(t *testing.T) {
 	// Get spell column capacities from template
 	var page3Template *TemplateWithMeta
 	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page3_spell.html" {
+		if templateSet.Templates[i].Metadata.Name == "page_3.html" {
 			page3Template = &templateSet.Templates[i]
 			break
 		}
@@ -271,7 +579,7 @@ func TestPaginateSpells_TwoColumns(t *testing.T) {
 		}
 
 		// Act
-		pages, err := paginator.PaginateSpells(spells, "page3_spell.html")
+		pages, err := paginator.PaginateSpells(spells, "page_3.html")
 
 		// Assert
 		if err != nil {
@@ -311,7 +619,7 @@ func TestPaginateSpells_MultiPage(t *testing.T) {
 	// Get spell column capacities from template
 	var page3Template *TemplateWithMeta
 	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page3_spell.html" {
+		if templateSet.Templates[i].Metadata.Name == "page_3.html" {
 			page3Template = &templateSet.Templates[i]
 			break
 		}
@@ -332,7 +640,7 @@ func TestPaginateSpells_MultiPage(t *testing.T) {
 	}
 
 	// Act
-	pages, err := paginator.PaginateSpells(spells, "page3_spell.html")
+	pages, err := paginator.PaginateSpells(spells, "page_3.html")
 
 	// Assert
 	if err != nil {
@@ -366,7 +674,7 @@ func TestPaginateWeapons_SinglePage(t *testing.T) {
 	// Get weapon capacity from template
 	var weaponCapacity int
 	for _, tmpl := range templateSet.Templates {
-		if tmpl.Metadata.Name == "page2_play.html" {
+		if tmpl.Metadata.Name == "page_2.html" {
 			for _, block := range tmpl.Metadata.Blocks {
 				if block.ListType == "weapons" {
 					weaponCapacity = block.MaxItems
@@ -388,7 +696,7 @@ func TestPaginateWeapons_SinglePage(t *testing.T) {
 	}
 
 	// Act
-	pages, err := paginator.PaginateWeapons(weapons, "page2_play.html")
+	pages, err := paginator.PaginateWeapons(weapons, "page_2.html")
 
 	// Assert
 	if err != nil {
@@ -415,13 +723,13 @@ func TestPaginateWeapons_MultiPage(t *testing.T) {
 	// Get weapon capacity from template
 	var page2Template *TemplateWithMeta
 	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page2_play.html" {
+		if templateSet.Templates[i].Metadata.Name == "page_2.html" {
 			page2Template = &templateSet.Templates[i]
 			break
 		}
 	}
 	if page2Template == nil {
-		t.Fatal("page2_play.html template not found")
+		t.Fatal("page_2.html template not found")
 	}
 	var weaponsBlock *BlockMetadata
 	for i := range page2Template.Metadata.Blocks {
@@ -442,7 +750,7 @@ func TestPaginateWeapons_MultiPage(t *testing.T) {
 	}
 
 	// Act
-	pages, err := paginator.PaginateWeapons(weapons, "page2_play.html")
+	pages, err := paginator.PaginateWeapons(weapons, "page_2.html")
 
 	// Assert
 	if err != nil {
@@ -479,11 +787,11 @@ func TestCalculatePagesNeeded(t *testing.T) {
 	var page1Template, page2Template, page3Template *TemplateWithMeta
 	for i := range templateSet.Templates {
 		switch templateSet.Templates[i].Metadata.Name {
-		case "page1_stats.html":
+		case "page_1.html":
 			page1Template = &templateSet.Templates[i]
-		case "page2_play.html":
+		case "page_2.html":
 			page2Template = &templateSet.Templates[i]
-		case "page3_spell.html":
+		case "page_3.html":
 			page3Template = &templateSet.Templates[i]
 		}
 	}
@@ -526,16 +834,16 @@ func TestCalculatePagesNeeded(t *testing.T) {
 		itemCount     int
 		expectedPages int
 	}{
-		{"10 skills on page1", "page1_stats.html", "skills", 10, 1},
-		{fmt.Sprintf("%d skills on page1", skillCapacity), "page1_stats.html", "skills", skillCapacity, 1},
-		{fmt.Sprintf("%d skills on page1", skillCapacity+1), "page1_stats.html", "skills", skillCapacity + 1, 2},
-		{"100 skills on page1", "page1_stats.html", "skills", 100, (100 + skillCapacity - 1) / skillCapacity}, // Dynamic calculation
-		{"10 weapons on page2", "page2_play.html", "weapons", 10, (10 + weaponCapacity - 1) / weaponCapacity}, // Dynamic calculation
-		{fmt.Sprintf("%d weapons on page2", weaponCapacity), "page2_play.html", "weapons", weaponCapacity, 1},
-		{fmt.Sprintf("%d weapons on page2", weaponCapacity+1), "page2_play.html", "weapons", weaponCapacity + 1, 2},
-		{"10 spells on page3", "page3_spell.html", "spells", 10, (10 + spellCapacity - 1) / spellCapacity}, // Dynamic calculation
-		{fmt.Sprintf("%d spells on page3", spellCapacity), "page3_spell.html", "spells", spellCapacity, 1},
-		{fmt.Sprintf("%d spells on page3", spellCapacity+1), "page3_spell.html", "spells", spellCapacity + 1, 2},
+		{"10 skills on page1", "page_1.html", "skills", 10, 1},
+		{fmt.Sprintf("%d skills on page1", skillCapacity), "page_1.html", "skills", skillCapacity, 1},
+		{fmt.Sprintf("%d skills on page1", skillCapacity+1), "page_1.html", "skills", skillCapacity + 1, 2},
+		{"100 skills on page1", "page_1.html", "skills", 100, (100 + skillCapacity - 1) / skillCapacity}, // Dynamic calculation
+		{"10 weapons on page2", "page_2.html", "weapons", 10, (10 + weaponCapacity - 1) / weaponCapacity}, // Dynamic calculation
+		{fmt.Sprintf("%d weapons on page2", weaponCapacity), "page_2.html", "weapons", weaponCapacity, 1},
+		{fmt.Sprintf("%d weapons on page2", weaponCapacity+1), "page_2.html", "weapons", weaponCapacity + 1, 2},
+		{"10 spells on page3", "page_3.html", "spells", 10, (10 + spellCapacity - 1) / spellCapacity}, // Dynamic calculation
+		{fmt.Sprintf("%d spells on page3", spellCapacity), "page_3.html", "spells", spellCapacity, 1},
+		{fmt.Sprintf("%d spells on page3", spellCapacity+1), "page_3.html", "spells", spellCapacity + 1, 2},
 	}
 
 	for _, tc := range testCases {
@@ -562,7 +870,7 @@ func TestPaginateSkills_EmptyList(t *testing.T) {
 	skills := []SkillViewModel{}
 
 	// Act
-	pages, err := paginator.PaginateSkills(skills, "page1_stats.html", "")
+	pages, err := paginator.PaginateSkills(skills, "page_1.html", "")
 
 	// Assert
 	if err != nil {

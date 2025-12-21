@@ -46,7 +46,7 @@ func TestRenderTemplate_BasicData(t *testing.T) {
 	}
 
 	// Act
-	html, err := loader.RenderTemplate("page1_stats.html", data)
+	html, err := loader.RenderTemplate("page_1.html", data)
 
 	// Assert
 	if err != nil {
@@ -75,7 +75,7 @@ func TestGetTemplateMetadata(t *testing.T) {
 	}
 
 	// Act
-	metadata := loader.GetTemplateMetadata("page3_spell.html")
+	metadata := loader.GetTemplateMetadata("page_3.html")
 
 	// Assert
 	if len(metadata) == 0 {
@@ -86,13 +86,13 @@ func TestGetTemplateMetadata(t *testing.T) {
 	templateSet := DefaultA4QuerTemplateSet()
 	var page3Template *TemplateWithMeta
 	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page3_spell.html" {
+		if templateSet.Templates[i].Metadata.Name == "page_3.html" {
 			page3Template = &templateSet.Templates[i]
 			break
 		}
 	}
 	if page3Template == nil {
-		t.Fatal("page3_spell.html template not found")
+		t.Fatal("page_3.html template not found")
 	}
 
 	// Get expected values from template
@@ -150,7 +150,7 @@ func TestRenderTemplate_WithSkills(t *testing.T) {
 	}
 
 	// Act
-	html, err := loader.RenderTemplate("page1_stats.html", data)
+	html, err := loader.RenderTemplate("page_1.html", data)
 
 	// Assert
 	if err != nil {

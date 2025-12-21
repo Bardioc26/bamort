@@ -17,17 +17,17 @@ func TestLoadTemplateSetFromFiles(t *testing.T) {
 		t.Fatal("Expected templates, got none")
 	}
 
-	// Find page1_stats.html and verify its metadata matches the HTML comments
+	// Find page_1.html and verify its metadata matches the HTML comments
 	var page1 *TemplateWithMeta
 	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page1_stats.html" {
+		if templateSet.Templates[i].Metadata.Name == "page_1.html" {
 			page1 = &templateSet.Templates[i]
 			break
 		}
 	}
 
 	if page1 == nil {
-		t.Fatal("page1_stats.html not found in template set")
+		t.Fatal("page_1.html not found in template set")
 	}
 
 	// Check that blocks were parsed from HTML
@@ -36,7 +36,7 @@ func TestLoadTemplateSetFromFiles(t *testing.T) {
 	}
 
 	// Verify skills_column1 block - read expected value directly from template file
-	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page1_stats.html")
+	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page_1.html")
 	if err != nil {
 		t.Fatalf("Failed to read template file: %v", err)
 	}
@@ -85,7 +85,7 @@ func TestDefaultA4QuerTemplateSet_LoadsFromFiles(t *testing.T) {
 
 	// Verify metadata comes from template files, not hardcoded
 	// Read expected value directly from template file
-	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page3_spell.html")
+	templateContent, err := os.ReadFile("../templates/Default_A4_Quer/page_3.html")
 	if err != nil {
 		t.Fatalf("Failed to read template file: %v", err)
 	}
@@ -105,14 +105,14 @@ func TestDefaultA4QuerTemplateSet_LoadsFromFiles(t *testing.T) {
 
 	var page3 *TemplateWithMeta
 	for i := range templateSet.Templates {
-		if templateSet.Templates[i].Metadata.Name == "page3_spell.html" {
+		if templateSet.Templates[i].Metadata.Name == "page_3.html" {
 			page3 = &templateSet.Templates[i]
 			break
 		}
 	}
 
 	if page3 == nil {
-		t.Fatal("page3_spell.html not found")
+		t.Fatal("page_3.html not found")
 	}
 
 	var spellsLeft *BlockMetadata

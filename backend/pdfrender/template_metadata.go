@@ -7,7 +7,7 @@ import (
 
 // TemplateMetadata contains information about a template's capacity and requirements
 type TemplateMetadata struct {
-	Name        string // Template name (e.g., "page1_stats.html")
+	Name        string // Template name (e.g., "page_1.html")
 	PageType    string // "stats", "play", "spell", "equip"
 	Description string
 	Blocks      []BlockMetadata // List blocks and their capacities
@@ -49,10 +49,10 @@ func LoadTemplateSetFromFiles(templateDir string) (TemplateSet, error) {
 		pageType    string
 		description string
 	}{
-		{"page1_stats.html", "stats", "Statistikseite mit Grundwerten"},
-		{"page2_play.html", "play", "Spielbogen mit gelernten Fertigkeiten und Waffen"},
-		{"page3_spell.html", "spell", "Zauberseite mit Zauberliste"},
-		{"page4_equip.html", "equip", "Ausrüstungsseite"},
+		{"page_1.html", "stats", "Statistikseite mit Grundwerten"},
+		{"page_2.html", "play", "Spielbogen mit gelernten Fertigkeiten und Waffen"},
+		{"page_3.html", "spell", "Zauberseite mit Zauberliste"},
+		{"page_4.html", "equip", "Ausrüstungsseite"},
 	}
 
 	// Load each template file and parse its metadata
@@ -106,7 +106,7 @@ func getHardcodedTemplateSet() TemplateSet {
 		Templates: []TemplateWithMeta{
 			{
 				Metadata: TemplateMetadata{
-					Name:        "page1_stats.html",
+					Name:        "page_1.html",
 					PageType:    "stats",
 					Description: "Statistikseite mit Grundwerten",
 					Blocks: []BlockMetadata{
@@ -124,11 +124,11 @@ func getHardcodedTemplateSet() TemplateSet {
 						},
 					},
 				},
-				Path: "templates/Default_A4_Quer/page1_stats.html",
+				Path: "templates/Default_A4_Quer/page_1.html",
 			},
 			{
 				Metadata: TemplateMetadata{
-					Name:        "page2_play.html",
+					Name:        "page_2.html",
 					PageType:    "play",
 					Description: "Spielbogen mit gelernten Fertigkeiten und Waffen",
 					Blocks: []BlockMetadata{
@@ -157,11 +157,11 @@ func getHardcodedTemplateSet() TemplateSet {
 						},
 					},
 				},
-				Path: "templates/Default_A4_Quer/page2_play.html",
+				Path: "templates/Default_A4_Quer/page_2.html",
 			},
 			{
 				Metadata: TemplateMetadata{
-					Name:        "page3_spell.html",
+					Name:        "page_3.html",
 					PageType:    "spell",
 					Description: "Zauberseite mit Zauberliste",
 					Blocks: []BlockMetadata{
@@ -184,11 +184,11 @@ func getHardcodedTemplateSet() TemplateSet {
 						},
 					},
 				},
-				Path: "templates/Default_A4_Quer/page3_spell.html",
+				Path: "templates/Default_A4_Quer/page_3.html",
 			},
 			{
 				Metadata: TemplateMetadata{
-					Name:        "page4_equip.html",
+					Name:        "page_4.html",
 					PageType:    "equip",
 					Description: "Ausrüstungsseite",
 					Blocks: []BlockMetadata{
@@ -204,7 +204,7 @@ func getHardcodedTemplateSet() TemplateSet {
 						},
 					},
 				},
-				Path: "templates/Default_A4_Quer/page4_equip.html",
+				Path: "templates/Default_A4_Quer/page_4.html",
 			},
 		},
 	}

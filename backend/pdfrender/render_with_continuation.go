@@ -20,53 +20,23 @@ func RenderPageWithContinuations(
 	templateSet := DefaultA4QuerTemplateSet()
 	paginator := NewPaginator(templateSet)
 
-	// Determine which list type this template handles
-	var distributions []PageDistribution
-	var err error
+	// Build data map from view model
+	dataMap := map[string]interface{}{
+		"skills":     viewModel.Skills,
+		"weapons":    viewModel.Weapons,
+		"spells":     viewModel.Spells,
+		"equipment":  viewModel.Equipment,
+		"magicItems": viewModel.MagicItems,
+	}
 
-	switch templateName {
-	case "page1_stats.html":
-		// Paginate skills
-		distributions, err = paginator.PaginateSkills(viewModel.Skills, templateName, "")
-		if err != nil {
-			return nil, fmt.Errorf("failed to paginate skills: %w", err)
-		}
+	// Use unified pagination for all templates
+	distributions, err := paginator.PaginateMultiList(dataMap, templateName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to paginate: %w", err)
+	}
 
-	case "page2_play.html":
-		// Page 2 has both skills and weapons that overflow together
-		// Use multi-list pagination so remaining items from both lists go to continuation pages
-		distributions, err = paginator.PaginatePage2PlayLists(viewModel.Skills, viewModel.Weapons, templateName)
-		if err != nil {
-			return nil, fmt.Errorf("failed to paginate page2 lists: %w", err)
-		}
-
-	case "page3_spell.html":
-		// Paginate spells
-		distributions, err = paginator.PaginateSpells(viewModel.Spells, templateName)
-		if err != nil {
-			return nil, fmt.Errorf("failed to paginate spells: %w", err)
-		}
-
-	case "page4_equip.html":
-		// Page 4 has a complex container-based layout where items are grouped by containers.
-		// The template expects the full equipment list to properly render containers and their contents.
-		// Pagination doesn't make sense here - render as single page with all equipment.
-		pageData, err := PreparePaginatedPageData(viewModel, templateName, startPageNumber, date)
-		if err != nil {
-			return nil, err
-		}
-		html, err := loader.RenderTemplateWithInlinedResources(templateName, pageData)
-		if err != nil {
-			return nil, err
-		}
-		pdf, err := renderer.RenderHTMLToPDF(html)
-		if err != nil {
-			return nil, err
-		}
-		return [][]byte{pdf}, nil
-
-	default:
-		// For unknown templates, render single page without pagination
+	// If no distributions (empty data), render single empty page
+	if len(distributions) == 0 {
 		pageData, err := PreparePaginatedPageData(viewModel, templateName, startPageNumber, date)
 		if err != nil {
 			return nil, err
@@ -82,24 +52,7 @@ func RenderPageWithContinuations(
 		return [][]byte{pdf}, nil
 	}
 
-	// If only one page, use the simplified approach
-	if len(distributions) == 1 {
-		pageData, err := PreparePaginatedPageData(viewModel, templateName, startPageNumber, date)
-		if err != nil {
-			return nil, err
-		}
-		html, err := loader.RenderTemplateWithInlinedResources(templateName, pageData)
-		if err != nil {
-			return nil, err
-		}
-		pdf, err := renderer.RenderHTMLToPDF(html)
-		if err != nil {
-			return nil, err
-		}
-		return [][]byte{pdf}, nil
-	}
-
-	// Multiple pages needed - render each one
+	// Render each distributed page
 	for i, dist := range distributions {
 		pageData := &PageData{
 			Character:     viewModel.Character,
@@ -112,58 +65,10 @@ func RenderPageWithContinuations(
 			},
 		}
 
-		// Populate the page data based on the distribution
-		switch templateName {
-		case "page1_stats.html":
-			// Extract skills from distribution
-			if col1, ok := dist.Data["skills_column1"].([]SkillViewModel); ok {
-				pageData.SkillsColumn1 = col1
-			}
-			if col2, ok := dist.Data["skills_column2"].([]SkillViewModel); ok {
-				pageData.SkillsColumn2 = col2
-			}
-			// Combine for backward compatibility
-			pageData.Skills = append(pageData.SkillsColumn1, pageData.SkillsColumn2...)
+		// Populate page data from distribution
+		populatePageDataFromDistribution(pageData, dist)
 
-		case "page2_play.html":
-			// Extract all lists from distribution (skills and weapons)
-			if weapons, ok := dist.Data["weapons_main"].([]WeaponViewModel); ok {
-				pageData.Weapons = weapons
-			}
-			if learned, ok := dist.Data["skills_learned"].([]SkillViewModel); ok {
-				pageData.SkillsLearned = learned
-			}
-			if unlearned, ok := dist.Data["skills_unlearned"].([]SkillViewModel); ok {
-				// Unlearned skills are typically shown via general skills list
-				// Add to Skills for template compatibility
-				pageData.Skills = append(pageData.Skills, unlearned...)
-			}
-			if languages, ok := dist.Data["skills_languages"].([]SkillViewModel); ok {
-				pageData.SkillsLanguage = languages
-			}
-
-		case "page3_spell.html":
-			// Extract spells from distribution
-			if left, ok := dist.Data["spells_left"].([]SpellViewModel); ok {
-				pageData.SpellsLeft = left
-			}
-			if right, ok := dist.Data["spells_right"].([]SpellViewModel); ok {
-				pageData.SpellsRight = right
-			}
-			// Combine for backward compatibility
-			pageData.Spells = append(pageData.SpellsLeft, pageData.SpellsRight...)
-
-		case "page4_equip.html":
-			// Extract equipment from distribution
-			if equipment, ok := dist.Data["equipment_worn"].([]EquipmentViewModel); ok {
-				pageData.Equipment = append(pageData.Equipment, equipment...)
-			}
-			if equipment, ok := dist.Data["equipment_carried"].([]EquipmentViewModel); ok {
-				pageData.Equipment = append(pageData.Equipment, equipment...)
-			}
-		}
-
-		// Render the page (use continuation template name if needed)
+		// Render the page
 		html, err := loader.RenderTemplateWithInlinedResources(dist.TemplateName, pageData)
 		if err != nil {
 			return nil, fmt.Errorf("failed to render %s: %w", dist.TemplateName, err)
@@ -178,6 +83,84 @@ func RenderPageWithContinuations(
 	}
 
 	return pdfs, nil
+}
+
+// populatePageDataFromDistribution populates PageData from a distribution
+// This replaces the hardcoded switch statements for each template type
+func populatePageDataFromDistribution(pageData *PageData, dist PageDistribution) {
+	// Populate data based on block names in distribution
+	for blockName, data := range dist.Data {
+		switch blockName {
+		// Skills blocks
+		case "skills_column1":
+			if skills, ok := data.([]SkillViewModel); ok {
+				pageData.SkillsColumn1 = skills
+				pageData.Skills = append(pageData.Skills, skills...)
+			}
+		case "skills_column2":
+			if skills, ok := data.([]SkillViewModel); ok {
+				pageData.SkillsColumn2 = skills
+				pageData.Skills = append(pageData.Skills, skills...)
+			}
+		case "skills_column3":
+			if skills, ok := data.([]SkillViewModel); ok {
+				pageData.SkillsColumn3 = skills
+				pageData.Skills = append(pageData.Skills, skills...)
+			}
+		case "skills_column4":
+			if skills, ok := data.([]SkillViewModel); ok {
+				pageData.SkillsColumn4 = skills
+				pageData.Skills = append(pageData.Skills, skills...)
+			}
+		case "skills_learned":
+			if skills, ok := data.([]SkillViewModel); ok {
+				pageData.SkillsLearned = skills
+			}
+		case "skills_unlearned":
+			if skills, ok := data.([]SkillViewModel); ok {
+				// Add to general Skills list for template compatibility
+				pageData.Skills = append(pageData.Skills, skills...)
+			}
+		case "skills_languages":
+			if skills, ok := data.([]SkillViewModel); ok {
+				pageData.SkillsLanguage = skills
+			}
+
+		// Weapons blocks
+		case "weapons_main":
+			if weapons, ok := data.([]WeaponViewModel); ok {
+				pageData.Weapons = weapons
+			}
+
+		// Spells blocks
+		case "spells_left":
+			if spells, ok := data.([]SpellViewModel); ok {
+				pageData.SpellsLeft = spells
+				pageData.Spells = append(pageData.Spells, spells...)
+			}
+		case "spells_right":
+			if spells, ok := data.([]SpellViewModel); ok {
+				pageData.SpellsRight = spells
+				pageData.Spells = append(pageData.Spells, spells...)
+			}
+
+		// Equipment blocks
+		case "equipment_worn":
+			if equipment, ok := data.([]EquipmentViewModel); ok {
+				pageData.Equipment = append(pageData.Equipment, equipment...)
+			}
+		case "equipment_carried":
+			if equipment, ok := data.([]EquipmentViewModel); ok {
+				pageData.Equipment = append(pageData.Equipment, equipment...)
+			}
+
+		// Magic items
+		case "magic_items":
+			if items, ok := data.([]MagicItemViewModel); ok {
+				pageData.MagicItems = items
+			}
+		}
+	}
 }
 
 // MergePDFs merges multiple PDF byte slices into a single PDF

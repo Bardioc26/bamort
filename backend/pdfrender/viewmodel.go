@@ -185,14 +185,16 @@ type PageData struct {
 
 	// Lists sliced according to template block metadata
 	Skills         []SkillViewModel
-	SkillsColumn1  []SkillViewModel // For two-column skill layout (page1)
-	SkillsColumn2  []SkillViewModel // For two-column skill layout (page1)
-	SkillsLearned  []SkillViewModel // Filtered learned skills (page2)
-	SkillsLanguage []SkillViewModel // Filtered language skills (page2)
+	SkillsColumn1  []SkillViewModel // For two-column skill layout (page_1)
+	SkillsColumn2  []SkillViewModel // For two-column skill layout (page_1)
+	SkillsColumn3  []SkillViewModel // For continuation pages (page_1.2)
+	SkillsColumn4  []SkillViewModel // For continuation pages (page_1.2)
+	SkillsLearned  []SkillViewModel // Filtered learned skills (page_2)
+	SkillsLanguage []SkillViewModel // Filtered language skills (page_2)
 	Weapons        []WeaponViewModel
 	Spells         []SpellViewModel
-	SpellsLeft     []SpellViewModel // Left column spells (page3)
-	SpellsRight    []SpellViewModel // Right column spells (page3)
+	SpellsLeft     []SpellViewModel // Left column spells (page_3)
+	SpellsRight    []SpellViewModel // Right column spells (page_3)
 	MagicItems     []MagicItemViewModel
 	Equipment      []EquipmentViewModel
 	GameResults    []GameResultViewModel

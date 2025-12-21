@@ -22,7 +22,7 @@ func TestContinuationPages_WhenSkillsExceedCapacity(t *testing.T) {
 	}
 
 	// Act - Paginate skills for page1_stats
-	pages, err := paginator.PaginateSkills(skills, "page1_stats.html", "")
+	pages, err := paginator.PaginateSkills(skills, "page_1.html", "")
 
 	// Assert
 	if err != nil {
@@ -34,13 +34,13 @@ func TestContinuationPages_WhenSkillsExceedCapacity(t *testing.T) {
 		t.Errorf("Expected at least 2 pages for 100 skills, got %d", len(pages))
 	}
 
-	// First page should be "page1_stats.html"
-	if pages[0].TemplateName != "page1_stats.html" {
-		t.Errorf("Expected first page template 'page1_stats.html', got '%s'", pages[0].TemplateName)
+	// First page should be "page_1.html"
+	if pages[0].TemplateName != "page_1.html" {
+		t.Errorf("Expected first page template 'page_1.html', got '%s'", pages[0].TemplateName)
 	}
 
-	// Second page should be continuation page with name pattern "page1.2_stats.html"
-	expectedContinuation := "page1.2_stats.html"
+	// Second page should be continuation page with name pattern "page_1.2.html"
+	expectedContinuation := "page_1.2.html"
 	if pages[1].TemplateName != expectedContinuation {
 		t.Errorf("Expected continuation page template '%s', got '%s'",
 			expectedContinuation, pages[1].TemplateName)
@@ -79,7 +79,7 @@ func TestContinuationPages_WhenWeaponsExceedCapacity(t *testing.T) {
 	// Get capacity for page2_play weapons (should be 12)
 	var weaponsCapacity int
 	for _, tmpl := range templateSet.Templates {
-		if tmpl.Metadata.Name == "page2_play.html" {
+		if tmpl.Metadata.Name == "page_2.html" {
 			for _, block := range tmpl.Metadata.Blocks {
 				if block.ListType == "weapons" {
 					weaponsCapacity = block.MaxItems
@@ -106,7 +106,7 @@ func TestContinuationPages_WhenWeaponsExceedCapacity(t *testing.T) {
 	t.Logf("Created %d weapons (capacity %d)", numWeapons, weaponsCapacity)
 
 	// Act
-	pages, err := paginator.PaginateWeapons(weapons, "page2_play.html")
+	pages, err := paginator.PaginateWeapons(weapons, "page_2.html")
 
 	// Assert
 	if err != nil {
@@ -119,13 +119,13 @@ func TestContinuationPages_WhenWeaponsExceedCapacity(t *testing.T) {
 	}
 
 	// First page should be original template
-	if pages[0].TemplateName != "page2_play.html" {
-		t.Errorf("Expected first page 'page2_play.html', got '%s'", pages[0].TemplateName)
+	if pages[0].TemplateName != "page_2.html" {
+		t.Errorf("Expected first page 'page_2.html', got '%s'", pages[0].TemplateName)
 	}
 
 	// Second page should be continuation
-	if pages[1].TemplateName != "page2.2_play.html" {
-		t.Errorf("Expected continuation 'page2.2_play.html', got '%s'", pages[1].TemplateName)
+	if pages[1].TemplateName != "page_2.2.html" {
+		t.Errorf("Expected continuation 'page_2.2.html', got '%s'", pages[1].TemplateName)
 	}
 }
 
@@ -138,7 +138,7 @@ func TestContinuationPages_MultipleOverflows(t *testing.T) {
 	// Get actual capacity from template
 	var skillsCapacity int
 	for _, tmpl := range templateSet.Templates {
-		if tmpl.Metadata.Name == "page1_stats.html" {
+		if tmpl.Metadata.Name == "page_1.html" {
 			for _, block := range tmpl.Metadata.Blocks {
 				if block.ListType == "skills" {
 					skillsCapacity += block.MaxItems
@@ -163,7 +163,7 @@ func TestContinuationPages_MultipleOverflows(t *testing.T) {
 	expectedPages := (200 + skillsCapacity - 1) / skillsCapacity
 
 	// Act
-	pages, err := paginator.PaginateSkills(skills, "page1_stats.html", "")
+	pages, err := paginator.PaginateSkills(skills, "page_1.html", "")
 
 	// Assert
 	if err != nil {
@@ -177,14 +177,14 @@ func TestContinuationPages_MultipleOverflows(t *testing.T) {
 
 	t.Logf("Created %d pages for 200 skills", len(pages))
 
-	// Verify template names follow pattern: page1_stats.html, then all use page1.2_stats.html
+	// Verify template names follow pattern: page_1.html, then all use page_1.2.html
 	for i, page := range pages {
 		var expectedTemplate string
 		if i == 0 {
-			expectedTemplate = "page1_stats.html"
+			expectedTemplate = "page_1.html"
 		} else {
 			// All continuation pages use the same .2 template
-			expectedTemplate = "page1.2_stats.html"
+			expectedTemplate = "page_1.2.html"
 		}
 
 		if page.TemplateName != expectedTemplate {
@@ -211,7 +211,7 @@ func TestContinuationPages_NoOverflow(t *testing.T) {
 	}
 
 	// Act
-	pages, err := paginator.PaginateSkills(skills, "page1_stats.html", "")
+	pages, err := paginator.PaginateSkills(skills, "page_1.html", "")
 
 	// Assert
 	if err != nil {
@@ -224,7 +224,7 @@ func TestContinuationPages_NoOverflow(t *testing.T) {
 	}
 
 	// Should use original template, not continuation
-	if pages[0].TemplateName != "page1_stats.html" {
-		t.Errorf("Expected original template 'page1_stats.html', got '%s'", pages[0].TemplateName)
+	if pages[0].TemplateName != "page_1.html" {
+		t.Errorf("Expected original template 'page_1.html', got '%s'", pages[0].TemplateName)
 	}
 }

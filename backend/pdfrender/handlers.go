@@ -91,7 +91,7 @@ func ExportCharacterToPDF(c *gin.Context) {
 	var allPDFs [][]byte
 
 	// Page 1: Stats
-	page1PDFs, err := RenderPageWithContinuations(viewModel, "page1_stats.html", 1, currentDate, loader, renderer)
+	page1PDFs, err := RenderPageWithContinuations(viewModel, "page_1.html", 1, currentDate, loader, renderer)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render page 1: " + err.Error()})
 		return
@@ -99,7 +99,7 @@ func ExportCharacterToPDF(c *gin.Context) {
 	allPDFs = append(allPDFs, page1PDFs...)
 
 	// Page 2: Play
-	page2PDFs, err := RenderPageWithContinuations(viewModel, "page2_play.html", 2, currentDate, loader, renderer)
+	page2PDFs, err := RenderPageWithContinuations(viewModel, "page_2.html", 2, currentDate, loader, renderer)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render page 2: " + err.Error()})
 		return
@@ -107,7 +107,7 @@ func ExportCharacterToPDF(c *gin.Context) {
 	allPDFs = append(allPDFs, page2PDFs...)
 
 	// Page 3: Spells
-	page3PDFs, err := RenderPageWithContinuations(viewModel, "page3_spell.html", 3, currentDate, loader, renderer)
+	page3PDFs, err := RenderPageWithContinuations(viewModel, "page_3.html", 3, currentDate, loader, renderer)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render page 3: " + err.Error()})
 		return
@@ -115,7 +115,7 @@ func ExportCharacterToPDF(c *gin.Context) {
 	allPDFs = append(allPDFs, page3PDFs...)
 
 	// Page 4: Equipment
-	page4PDFs, err := RenderPageWithContinuations(viewModel, "page4_equip.html", 4, currentDate, loader, renderer)
+	page4PDFs, err := RenderPageWithContinuations(viewModel, "page_4.html", 4, currentDate, loader, renderer)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render page 4: " + err.Error()})
 		return

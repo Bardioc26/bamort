@@ -98,30 +98,30 @@ func TestGetTemplateMetadata(t *testing.T) {
 	// Get expected values from template
 	var expectedLeftMax, expectedRightMax int
 	for i := range page3Template.Metadata.Blocks {
-		if page3Template.Metadata.Blocks[i].Name == "spells_left" {
+		if page3Template.Metadata.Blocks[i].Name == "spells_column1" {
 			expectedLeftMax = page3Template.Metadata.Blocks[i].MaxItems
-		} else if page3Template.Metadata.Blocks[i].Name == "spells_right" {
+		} else if page3Template.Metadata.Blocks[i].Name == "spells_column2" {
 			expectedRightMax = page3Template.Metadata.Blocks[i].MaxItems
 		}
 	}
 
-	// Check for spells_left block
-	leftBlock := GetBlockByName(metadata, "spells_left")
+	// Check for spells_column1 block
+	leftBlock := GetBlockByName(metadata, "spells_column1")
 	if leftBlock == nil {
-		t.Error("Expected to find 'spells_left' block")
+		t.Error("Expected to find 'spells_column1' block")
 	} else {
 		if leftBlock.MaxItems != expectedLeftMax {
-			t.Errorf("Expected spells_left max %d (from template), got %d", expectedLeftMax, leftBlock.MaxItems)
+			t.Errorf("Expected spells_column1 max %d (from template), got %d", expectedLeftMax, leftBlock.MaxItems)
 		}
 	}
 
-	// Check for spells_right block
-	rightBlock := GetBlockByName(metadata, "spells_right")
+	// Check for spells_column2 block
+	rightBlock := GetBlockByName(metadata, "spells_column2")
 	if rightBlock == nil {
-		t.Error("Expected to find 'spells_right' block")
+		t.Error("Expected to find 'spells_column2' block")
 	} else {
 		if rightBlock.MaxItems != expectedRightMax {
-			t.Errorf("Expected spells_right max %d (from template), got %d", expectedRightMax, rightBlock.MaxItems)
+			t.Errorf("Expected spells_column2 max %d (from template), got %d", expectedRightMax, rightBlock.MaxItems)
 		}
 	}
 }

@@ -133,12 +133,12 @@ func populatePageDataFromDistribution(pageData *PageData, dist PageDistribution)
 			}
 
 		// Spells blocks
-		case "spells_left":
+		case "spells_column1":
 			if spells, ok := data.([]SpellViewModel); ok {
 				pageData.SpellsLeft = spells
 				pageData.Spells = append(pageData.Spells, spells...)
 			}
-		case "spells_right":
+		case "spells_column2":
 			if spells, ok := data.([]SpellViewModel); ok {
 				pageData.SpellsRight = spells
 				pageData.Spells = append(pageData.Spells, spells...)

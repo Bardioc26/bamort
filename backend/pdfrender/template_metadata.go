@@ -166,13 +166,13 @@ func getHardcodedTemplateSet() TemplateSet {
 					Description: "Zauberseite mit Zauberliste",
 					Blocks: []BlockMetadata{
 						{
-							Name:     "spells_left",
+							Name:     "spells_column1",
 							ListType: "spells",
 							MaxItems: 15,
 							Column:   1,
 						},
 						{
-							Name:     "spells_right",
+							Name:     "spells_column2",
 							ListType: "spells",
 							MaxItems: 10,
 							Column:   2,

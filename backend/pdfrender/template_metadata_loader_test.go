@@ -93,14 +93,14 @@ func TestDefaultA4QuerTemplateSet_LoadsFromFiles(t *testing.T) {
 	expectedBlocks := ParseTemplateMetadata(string(templateContent))
 	var expectedSpellsLeft *BlockMetadata
 	for i := range expectedBlocks {
-		if expectedBlocks[i].Name == "spells_left" {
+		if expectedBlocks[i].Name == "spells_column1" {
 			expectedSpellsLeft = &expectedBlocks[i]
 			break
 		}
 	}
 
 	if expectedSpellsLeft == nil {
-		t.Fatal("spells_left block not found in template file")
+		t.Fatal("spells_column1 block not found in template file")
 	}
 
 	var page3 *TemplateWithMeta
@@ -117,18 +117,18 @@ func TestDefaultA4QuerTemplateSet_LoadsFromFiles(t *testing.T) {
 
 	var spellsLeft *BlockMetadata
 	for i := range page3.Metadata.Blocks {
-		if page3.Metadata.Blocks[i].Name == "spells_left" {
+		if page3.Metadata.Blocks[i].Name == "spells_column1" {
 			spellsLeft = &page3.Metadata.Blocks[i]
 			break
 		}
 	}
 
 	if spellsLeft == nil {
-		t.Error("spells_left block not found")
+		t.Error("spells_column1 block not found")
 	} else {
 		// Should match the value from the template file
 		if spellsLeft.MaxItems != expectedSpellsLeft.MaxItems {
-			t.Errorf("Expected spells_left MaxItems %d (from template file), got %d", expectedSpellsLeft.MaxItems, spellsLeft.MaxItems)
+			t.Errorf("Expected spells_column1 MaxItems %d (from template file), got %d", expectedSpellsLeft.MaxItems, spellsLeft.MaxItems)
 		}
 	}
 }

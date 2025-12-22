@@ -8,13 +8,13 @@ func TestParseTemplateMetadata(t *testing.T) {
 <!DOCTYPE html>
 <html>
 <body>
-    <!-- BLOCK: spells_left, TYPE: spells, MAX: 12 -->
+    <!-- BLOCK: spells_column1, TYPE: spells, MAX: 12 -->
     <table>
         {{range .Spells}}
         {{end}}
     </table>
     
-    <!-- BLOCK: spells_right, TYPE: spells, MAX: 10 -->
+    <!-- BLOCK: spells_column2, TYPE: spells, MAX: 10 -->
     <table>
         {{range .Spells}}
         {{end}}
@@ -38,8 +38,8 @@ func TestParseTemplateMetadata(t *testing.T) {
 	}
 
 	// Check first block
-	if blocks[0].Name != "spells_left" {
-		t.Errorf("Expected name 'spells_left', got '%s'", blocks[0].Name)
+	if blocks[0].Name != "spells_column1" {
+		t.Errorf("Expected name 'spells_column1', got '%s'", blocks[0].Name)
 	}
 	if blocks[0].ListType != "spells" {
 		t.Errorf("Expected type 'spells', got '%s'", blocks[0].ListType)
@@ -49,8 +49,8 @@ func TestParseTemplateMetadata(t *testing.T) {
 	}
 
 	// Check second block
-	if blocks[1].Name != "spells_right" {
-		t.Errorf("Expected name 'spells_right', got '%s'", blocks[1].Name)
+	if blocks[1].Name != "spells_column2" {
+		t.Errorf("Expected name 'spells_column2', got '%s'", blocks[1].Name)
 	}
 	if blocks[1].MaxItems != 10 {
 		t.Errorf("Expected max 10, got %d", blocks[1].MaxItems)

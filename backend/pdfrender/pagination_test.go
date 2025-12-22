@@ -562,9 +562,9 @@ func TestPaginateSpells_TwoColumns(t *testing.T) {
 	}
 	var leftCapacity, rightCapacity int
 	for i := range page3Template.Metadata.Blocks {
-		if page3Template.Metadata.Blocks[i].Name == "spells_left" {
+		if page3Template.Metadata.Blocks[i].Name == "spells_column1" {
 			leftCapacity = page3Template.Metadata.Blocks[i].MaxItems
-		} else if page3Template.Metadata.Blocks[i].Name == "spells_right" {
+		} else if page3Template.Metadata.Blocks[i].Name == "spells_column2" {
 			rightCapacity = page3Template.Metadata.Blocks[i].MaxItems
 		}
 	}
@@ -593,7 +593,7 @@ func TestPaginateSpells_TwoColumns(t *testing.T) {
 		page := pages[0]
 
 		// Left column should be filled first
-		leftData := page.Data["spells_left"].([]SpellViewModel)
+		leftData := page.Data["spells_column1"].([]SpellViewModel)
 		expectedLeft := leftCapacity
 		if testCount < leftCapacity {
 			expectedLeft = testCount
@@ -603,7 +603,7 @@ func TestPaginateSpells_TwoColumns(t *testing.T) {
 		}
 
 		// Right column gets remainder
-		rightData := page.Data["spells_right"].([]SpellViewModel)
+		rightData := page.Data["spells_column2"].([]SpellViewModel)
 		expectedRight := testCount - expectedLeft
 		if len(rightData) != expectedRight {
 			t.Errorf("Expected %d spells in right column (remaining), got %d", expectedRight, len(rightData))
@@ -626,9 +626,9 @@ func TestPaginateSpells_MultiPage(t *testing.T) {
 	}
 	var leftCapacity, rightCapacity int
 	for i := range page3Template.Metadata.Blocks {
-		if page3Template.Metadata.Blocks[i].Name == "spells_left" {
+		if page3Template.Metadata.Blocks[i].Name == "spells_column1" {
 			leftCapacity = page3Template.Metadata.Blocks[i].MaxItems
-		} else if page3Template.Metadata.Blocks[i].Name == "spells_right" {
+		} else if page3Template.Metadata.Blocks[i].Name == "spells_column2" {
 			rightCapacity = page3Template.Metadata.Blocks[i].MaxItems
 		}
 	}
@@ -656,8 +656,8 @@ func TestPaginateSpells_MultiPage(t *testing.T) {
 
 	// Page 1 should have full capacity (left + right)
 	page1 := pages[0]
-	leftPage1 := page1.Data["spells_left"].([]SpellViewModel)
-	rightPage1 := page1.Data["spells_right"].([]SpellViewModel)
+	leftPage1 := page1.Data["spells_column1"].([]SpellViewModel)
+	rightPage1 := page1.Data["spells_column2"].([]SpellViewModel)
 	if len(leftPage1) != leftCapacity {
 		t.Errorf("Page 1 left: expected %d spells (template capacity), got %d", leftCapacity, len(leftPage1))
 	}
@@ -819,9 +819,9 @@ func TestCalculatePagesNeeded(t *testing.T) {
 	// Get spell capacity (col1 + col2)
 	var spellCol1, spellCol2 int
 	for i := range page3Template.Metadata.Blocks {
-		if page3Template.Metadata.Blocks[i].Name == "spells_left" {
+		if page3Template.Metadata.Blocks[i].Name == "spells_column1" {
 			spellCol1 = page3Template.Metadata.Blocks[i].MaxItems
-		} else if page3Template.Metadata.Blocks[i].Name == "spells_right" {
+		} else if page3Template.Metadata.Blocks[i].Name == "spells_column2" {
 			spellCol2 = page3Template.Metadata.Blocks[i].MaxItems
 		}
 	}

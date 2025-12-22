@@ -190,8 +190,8 @@ func TestPreparePaginatedPageData_Page2Play(t *testing.T) {
 func TestPreparePaginatedPageData_Page3Spell(t *testing.T) {
 	// Get capacities from template
 	templateSet := DefaultA4QuerTemplateSet()
-	leftCap := GetBlockCapacity(&templateSet, "page_3.html", "spells_left")
-	rightCap := GetBlockCapacity(&templateSet, "page_3.html", "spells_right")
+	leftCap := GetBlockCapacity(&templateSet, "page_3.html", "spells_column1")
+	rightCap := GetBlockCapacity(&templateSet, "page_3.html", "spells_column2")
 	magicItemsCap := GetBlockCapacity(&templateSet, "page_3.html", "magic_items")
 
 	// Create test data exceeding capacities

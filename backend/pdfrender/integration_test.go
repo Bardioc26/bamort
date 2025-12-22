@@ -162,8 +162,8 @@ func TestIntegration_TemplateMetadata(t *testing.T) {
 	}{
 		{"page_1.html", "skills_column1"},
 		{"page_2.html", "skills_learned"},
-		{"page_3.html", "spells_left"},
-		{"page_3.html", "spells_right"},
+		{"page_3.html", "spells_column1"},
+		{"page_3.html", "spells_column2"},
 		{"page_4.html", "equipment_worn"},
 	}
 
@@ -331,8 +331,8 @@ func TestIntegration_MultiPageSpellList(t *testing.T) {
 		}
 	}
 
-	spellsLeftBlock := GetBlockByName(page3Template.Metadata.Blocks, "spells_left")
-	spellsRightBlock := GetBlockByName(page3Template.Metadata.Blocks, "spells_right")
+	spellsLeftBlock := GetBlockByName(page3Template.Metadata.Blocks, "spells_column1")
+	spellsRightBlock := GetBlockByName(page3Template.Metadata.Blocks, "spells_column2")
 	expectedSpellCapacity := spellsLeftBlock.MaxItems + spellsRightBlock.MaxItems
 
 	// Arrange - Create 30 spells
@@ -365,8 +365,8 @@ func TestIntegration_MultiPageSpellList(t *testing.T) {
 	}
 
 	// Page 1 should have min(30, capacity) spells
-	leftPage1 := pages[0].Data["spells_left"].([]SpellViewModel)
-	rightPage1 := pages[0].Data["spells_right"].([]SpellViewModel)
+	leftPage1 := pages[0].Data["spells_column1"].([]SpellViewModel)
+	rightPage1 := pages[0].Data["spells_column2"].([]SpellViewModel)
 	totalPage1 := len(leftPage1) + len(rightPage1)
 
 	expectedPage1 := expectedSpellCapacity

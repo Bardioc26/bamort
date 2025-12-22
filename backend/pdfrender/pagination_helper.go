@@ -119,8 +119,8 @@ func PreparePaginatedPageData(viewModel *CharacterSheetViewModel, templateName s
 		pageData.Skills = viewModel.Skills // Keep for backward compatibility
 	} else if templateName == "page_3.html" {
 		// Get capacities from template
-		spellsLeftCapacity := GetBlockCapacity(&templateSet, templateName, "spells_left")
-		spellsRightCapacity := GetBlockCapacity(&templateSet, templateName, "spells_right")
+		spellsLeftCapacity := GetBlockCapacity(&templateSet, templateName, "spells_column1")
+		spellsRightCapacity := GetBlockCapacity(&templateSet, templateName, "spells_column2")
 		magicItemsCapacity := GetBlockCapacity(&templateSet, templateName, "magic_items")
 
 		// Split spells into left and right columns

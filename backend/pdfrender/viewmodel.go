@@ -103,6 +103,7 @@ type SkillViewModel struct {
 	PracticePoints int    // Praxispunkte (PP)
 	Attribute1     string // Leiteigenschaft Attribut für Bonus (z.B. "St")
 	IsLearned      bool   // Ob die Fertigkeit gelernt wurde
+	Bemerkung      string // Bemerkungen zur Fertigkeit
 }
 
 // WeaponViewModel represents a weapon for display

@@ -34,7 +34,7 @@
                             <th>PP</th>
                         </tr>
                         {{range .SkillsLearned}}
-                        <tr><td>{{.Name}}</td><td>{{if .Value}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                        <tr><td>{{.Name}}{{if .Bemerkung}}:<span style="font-size: smaller;">{{.Bemerkung}}</span>{{end}}</td><td>{{if .Value}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
                         {{end}}
                     </table>
                     <!-- BLOCK: skills_languages, TYPE: skills, MAX: 4, FILTER: language -->
@@ -45,7 +45,7 @@
                             <th>PP</th>
                         </tr>
                         {{range .SkillsLanguage}}
-                        <tr><td>{{.Name}}</td><td>{{if .Value}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
+                        <tr><td>{{.Name}}{{if .Bemerkung}}:<span style="font-size: smaller;">{{.Bemerkung}}</span>{{end}}</td><td>{{if .Value}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
                         {{end}}
                     </table>
                 </div>

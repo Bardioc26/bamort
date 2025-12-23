@@ -112,14 +112,19 @@ func mapSkills(char *models.Char) []SkillViewModel {
 	skills := make([]SkillViewModel, 0, len(char.Fertigkeiten))
 
 	for _, skill := range char.Fertigkeiten {
-		skills = append(skills, SkillViewModel{
+		skl := SkillViewModel{
 			Name:           skill.Name,
 			Category:       skill.Category,
 			Value:          skill.Fertigkeitswert,
 			Bonus:          skill.Bonus,
 			PracticePoints: skill.Pp,
 			IsLearned:      skill.Fertigkeitswert > 0,
-		})
+			Bemerkung:      skill.Bemerkung,
+		}
+		if skl.Name == "Schreiben" || skl.Name == "Sprache" {
+			skl.Category = "Sprache"
+		}
+		skills = append(skills, skl)
 	}
 
 	return skills

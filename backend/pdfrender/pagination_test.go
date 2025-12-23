@@ -5,6 +5,39 @@ import (
 	"testing"
 )
 
+// Helper function to count non-empty skills (skills with a name)
+func countNonEmptySkills(skills []SkillViewModel) int {
+	count := 0
+	for _, skill := range skills {
+		if skill.Name != "" {
+			count++
+		}
+	}
+	return count
+}
+
+// Helper function to count non-empty weapons
+func countNonEmptyWeapons(weapons []WeaponViewModel) int {
+	count := 0
+	for _, weapon := range weapons {
+		if weapon.Name != "" {
+			count++
+		}
+	}
+	return count
+}
+
+// Helper function to count non-empty spells
+func countNonEmptySpells(spells []SpellViewModel) int {
+	count := 0
+	for _, spell := range spells {
+		if spell.Name != "" {
+			count++
+		}
+	}
+	return count
+}
+
 // TestPaginateMultiList_SingleListType tests pagination with a single list type (skills only)
 func TestPaginateMultiList_SingleListType(t *testing.T) {
 	// Arrange
@@ -46,7 +79,7 @@ func TestPaginateMultiList_SingleListType(t *testing.T) {
 	for _, blockName := range skillBlocks {
 		if data, exists := page.Data[blockName]; exists {
 			if skillsList, ok := data.([]SkillViewModel); ok {
-				totalSkills += len(skillsList)
+				totalSkills += countNonEmptySkills(skillsList)
 			}
 		}
 	}
@@ -105,9 +138,9 @@ func TestPaginateMultiList_MultipleListTypes(t *testing.T) {
 		for _, data := range dist.Data {
 			switch v := data.(type) {
 			case []SkillViewModel:
-				totalSkills += len(v)
+				totalSkills += countNonEmptySkills(v)
 			case []WeaponViewModel:
-				totalWeapons += len(v)
+				totalWeapons += countNonEmptyWeapons(v)
 			}
 		}
 	}
@@ -169,7 +202,7 @@ func TestPaginateMultiList_WithOverflow(t *testing.T) {
 			if skillsList, ok := data.([]SkillViewModel); ok &&
 				(blockName == "skills_column1" || blockName == "skills_column2" ||
 					blockName == "skills_column3" || blockName == "skills_column4") {
-				totalSkills += len(skillsList)
+				totalSkills += countNonEmptySkills(skillsList)
 			}
 		}
 	}
@@ -240,6 +273,10 @@ func TestPaginateMultiList_WithFilters(t *testing.T) {
 	if learnedData, ok := page.Data["skills_learned"]; ok {
 		learned := learnedData.([]SkillViewModel)
 		for _, skill := range learned {
+			// Skip empty items (padding)
+			if skill.Name == "" {
+				continue
+			}
 			if !skill.IsLearned {
 				t.Errorf("Found unlearned skill '%s' in learned block", skill.Name)
 			}
@@ -249,6 +286,10 @@ func TestPaginateMultiList_WithFilters(t *testing.T) {
 	if languageData, ok := page.Data["skills_languages"]; ok {
 		languages := languageData.([]SkillViewModel)
 		for _, skill := range languages {
+			// Skip empty items (padding)
+			if skill.Name == "" {
+				continue
+			}
 			if skill.Category != "Sprache" {
 				t.Errorf("Found non-language skill '%s' in language block", skill.Name)
 			}

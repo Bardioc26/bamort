@@ -201,8 +201,8 @@ func (p *Paginator) PaginateMultiList(dataMap map[string]interface{}, templateNa
 
 			tracker, exists := listTrackers[trackerKey]
 			if !exists {
-				// Block has no data, add empty slice
-				pageData[block.Name] = p.createEmptySlice(block.ListType)
+				// Block has no data, fill with empty items up to MAX
+				pageData[block.Name] = p.createEmptySliceWithCapacity(block.ListType, block.MaxItems)
 				continue
 			}
 
@@ -213,8 +213,9 @@ func (p *Paginator) PaginateMultiList(dataMap map[string]interface{}, templateNa
 				itemsToTake = remaining
 			}
 
-			// Extract slice for this block
+			// Extract slice for this block and fill to capacity
 			blockItems := p.extractSlice(tracker.items, tracker.currentIdx, itemsToTake)
+			blockItems = p.fillSliceToCapacity(blockItems, block.MaxItems)
 			pageData[block.Name] = blockItems
 			tracker.currentIdx += itemsToTake
 		}
@@ -492,6 +493,42 @@ func (p *Paginator) createEmptySlice(listType string) interface{} {
 		return []MagicItemViewModel{}
 	default:
 		return []interface{}{}
+	}
+}
+
+// createEmptySliceWithCapacity creates an empty slice filled to capacity with zero values
+func (p *Paginator) createEmptySliceWithCapacity(listType string, capacity int) interface{} {
+	switch listType {
+	case "skills":
+		return FillToCapacity([]SkillViewModel{}, capacity)
+	case "weapons":
+		return FillToCapacity([]WeaponViewModel{}, capacity)
+	case "spells":
+		return FillToCapacity([]SpellViewModel{}, capacity)
+	case "equipment":
+		return FillToCapacity([]EquipmentViewModel{}, capacity)
+	case "magicItems":
+		return FillToCapacity([]MagicItemViewModel{}, capacity)
+	default:
+		return []interface{}{}
+	}
+}
+
+// fillSliceToCapacity fills an existing slice to the specified capacity
+func (p *Paginator) fillSliceToCapacity(items interface{}, capacity int) interface{} {
+	switch v := items.(type) {
+	case []SkillViewModel:
+		return FillToCapacity(v, capacity)
+	case []WeaponViewModel:
+		return FillToCapacity(v, capacity)
+	case []SpellViewModel:
+		return FillToCapacity(v, capacity)
+	case []EquipmentViewModel:
+		return FillToCapacity(v, capacity)
+	case []MagicItemViewModel:
+		return FillToCapacity(v, capacity)
+	default:
+		return items
 	}
 }
 

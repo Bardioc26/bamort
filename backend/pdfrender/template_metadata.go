@@ -51,9 +51,13 @@ func LoadTemplateSetFromFiles(templateDir string) (TemplateSet, error) {
 		description string
 	}{
 		{"page_1.html", "stats", "Statistikseite mit Grundwerten"},
+		{"page_1.2.html", "stats", "Fortsetzung Statistikseite"},
 		{"page_2.html", "play", "Spielbogen mit gelernten Fertigkeiten und Waffen"},
+		{"page_2.2.html", "play", "Fortsetzung Spielbogen"},
 		{"page_3.html", "spell", "Zauberseite mit Zauberliste"},
+		{"page_3.2.html", "spell", "Fortsetzung Zauberseite"},
 		{"page_4.html", "equip", "Ausrüstungsseite"},
+		{"page_4.2.html", "equip", "Fortsetzung Ausrüstungsseite"},
 	}
 
 	// Load each template file and parse its metadata

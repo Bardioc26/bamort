@@ -116,6 +116,14 @@ func populatePageDataFromDistribution(pageData *PageData, dist PageDistribution)
 			if skills, ok := data.([]SkillViewModel); ok {
 				pageData.SkillsLearned = skills
 			}
+		case "skills_learned_1":
+			if skills, ok := data.([]SkillViewModel); ok {
+				pageData.SkillsLearned1 = skills
+			}
+		case "skills_learned_2":
+			if skills, ok := data.([]SkillViewModel); ok {
+				pageData.SkillsLearned2 = skills
+			}
 		case "skills_unlearned":
 			if skills, ok := data.([]SkillViewModel); ok {
 				// Add to general Skills list for template compatibility

@@ -120,46 +120,55 @@ func (p *Paginator) PaginateMultiList(dataMap map[string]interface{}, templateNa
 	// Track by "listType:filter" to avoid duplicates
 	listTrackers := make(map[string]*listTracker)
 
+	// Scan both base template and continuation template to find all unique listType:filter combinations
+	templatesToScan := []*TemplateMetadata{template}
+	continuationName := GenerateContinuationTemplateName(templateName, 2)
+	if contTemplate := p.findTemplate(continuationName); contTemplate != nil {
+		templatesToScan = append(templatesToScan, contTemplate)
+	}
+
 	// First pass: create filtered lists for each unique listType+filter combination
-	for _, block := range template.Blocks {
-		// Get the source data based on block's ListType
-		var sourceData interface{}
-		switch block.ListType {
-		case "skills":
-			sourceData = dataMap["skills"]
-		case "weapons":
-			sourceData = dataMap["weapons"]
-		case "spells":
-			sourceData = dataMap["spells"]
-		case "equipment":
-			sourceData = dataMap["equipment"]
-		case "magicItems":
-			sourceData = dataMap["magicItems"]
-		default:
-			continue
-		}
+	for _, tmpl := range templatesToScan {
+		for _, block := range tmpl.Blocks {
+			// Get the source data based on block's ListType
+			var sourceData interface{}
+			switch block.ListType {
+			case "skills":
+				sourceData = dataMap["skills"]
+			case "weapons":
+				sourceData = dataMap["weapons"]
+			case "spells":
+				sourceData = dataMap["spells"]
+			case "equipment":
+				sourceData = dataMap["equipment"]
+			case "magicItems":
+				sourceData = dataMap["magicItems"]
+			default:
+				continue
+			}
 
-		if sourceData == nil {
-			continue
-		}
+			if sourceData == nil {
+				continue
+			}
 
-		// Create unique key for this list type + filter combination
-		trackerKey := block.ListType
-		if block.Filter != "" {
-			trackerKey += ":" + block.Filter
-		}
+			// Create unique key for this list type + filter combination
+			trackerKey := block.ListType
+			if block.Filter != "" {
+				trackerKey += ":" + block.Filter
+			}
 
-		// Only create tracker once per unique combination
-		if _, exists := listTrackers[trackerKey]; !exists {
-			// Apply filter if specified
-			filteredItems := p.applyFilter(sourceData, block.Filter)
-			itemCount := p.getItemCount(filteredItems)
+			// Only create tracker once per unique combination
+			if _, exists := listTrackers[trackerKey]; !exists {
+				// Apply filter if specified
+				filteredItems := p.applyFilter(sourceData, block.Filter)
+				itemCount := p.getItemCount(filteredItems)
 
-			if itemCount > 0 {
-				listTrackers[trackerKey] = &listTracker{
-					items:      filteredItems,
-					currentIdx: 0,
-					totalCount: itemCount,
+				if itemCount > 0 {
+					listTrackers[trackerKey] = &listTracker{
+						items:      filteredItems,
+						currentIdx: 0,
+						totalCount: itemCount,
+					}
 				}
 			}
 		}
@@ -188,11 +197,21 @@ func (p *Paginator) PaginateMultiList(dataMap map[string]interface{}, templateNa
 			break
 		}
 
+		// Determine template name for this page
+		pageTemplateName := GenerateContinuationTemplateName(templateName, pageNum)
+
+		// Load the correct template metadata for this page
+		// Fall back to base template if continuation template doesn't exist
+		currentTemplate := p.findTemplate(pageTemplateName)
+		if currentTemplate == nil {
+			currentTemplate = template
+		}
+
 		// Create page data
 		pageData := make(map[string]interface{})
 
 		// Distribute items to each block for this page
-		for _, block := range template.Blocks {
+		for _, block := range currentTemplate.Blocks {
 			// Get tracker for this block's list type + filter
 			trackerKey := block.ListType
 			if block.Filter != "" {
@@ -221,7 +240,11 @@ func (p *Paginator) PaginateMultiList(dataMap map[string]interface{}, templateNa
 			if block.NoEmpty && itemsToTake == 0 {
 				continue
 			}
-
+			// For regular blocks with no items remaining, fill with empty rows
+			if itemsToTake == 0 {
+				pageData[block.Name] = p.createEmptySliceWithCapacity(block.ListType, block.MaxItems)
+				continue
+			}
 			// Extract slice for this block
 			blockItems := p.extractSlice(tracker.items, tracker.currentIdx, itemsToTake)
 
@@ -232,9 +255,7 @@ func (p *Paginator) PaginateMultiList(dataMap map[string]interface{}, templateNa
 			tracker.currentIdx += itemsToTake
 		}
 
-		// Determine template name - use continuation naming for pages 2+
-		pageTemplateName := GenerateContinuationTemplateName(templateName, pageNum)
-
+		// Template name was already determined at the start of the loop
 		distributions = append(distributions, PageDistribution{
 			TemplateName: pageTemplateName,
 			PageNumber:   pageNum,

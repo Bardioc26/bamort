@@ -191,6 +191,8 @@ type PageData struct {
 	SkillsColumn3  []SkillViewModel // For continuation pages (page_1.2)
 	SkillsColumn4  []SkillViewModel // For continuation pages (page_1.2)
 	SkillsLearned  []SkillViewModel // Filtered learned skills (page_2)
+	SkillsLearned1 []SkillViewModel // First block of learned skills (page_2.2)
+	SkillsLearned2 []SkillViewModel // Second block of learned skills (page_2.2)
 	SkillsLanguage []SkillViewModel // Filtered language skills (page_2)
 	Weapons        []WeaponViewModel
 	Spells         []SpellViewModel

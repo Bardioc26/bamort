@@ -26,19 +26,19 @@
             <div class="left-section">             
                 <!-- Skills tables -->
                 <div class="skills-row">
-                    <!-- BLOCK: skills_learned, TYPE: skills, MAX: 7, FILTER: learned -->
+                    <!-- BLOCK: skills_learned_1, TYPE: skills, MAX: 31, FILTER: learned -->
                     <table class="skills-table">
                         <tr>
                             <th>Fertigkeit</th>
                             <th>EW</th>
                             <th>PP</th>
                         </tr>
-                        {{range .SkillsLearned}}
+                        {{range .SkillsLearned1}}
                         <tr><td>{{.Name}}{{if .Bemerkung}}:<span style="font-size: smaller;">{{.Bemerkung}}</span>{{end}}</td><td>{{if .Value}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
                         {{end}}
                     </table>
                     <div class="skills-stack">                        
-                        <!-- BLOCK: skills_languages, TYPE: skills, MAX: 6, FILTER: language, NOEMPTY -->
+                        <!-- BLOCK: skills_languages, TYPE: skills, MAX: 14, FILTER: language, NOEMPTY -->
                         {{if .SkillsLanguage}}{{if (index .SkillsLanguage 0).Name}}
                         <table class="skills-table" style="width: 100%; height: unset;">
                             <tr>
@@ -51,14 +51,14 @@
                             {{end}}
                         </table>
                         {{end}}{{end}}
-                        <!-- BLOCK: skills_learned, TYPE: skills, MAX: 10, FILTER: learned -->
+                        <!-- BLOCK: skills_learned_2, TYPE: skills, MAX: 16, FILTER: learned -->
                         <table class="skills-table" style="width: 100%; height: unset;">
                             <tr>
                                 <th>Fertigkeit</th>
                                 <th>EW</th>
                                 <th>PP</th>
                             </tr>
-                            {{range .SkillsLearned}}
+                            {{range .SkillsLearned2}}
                             <tr><td>{{.Name}}{{if .Bemerkung}}:<span style="font-size: smaller;">{{.Bemerkung}}</span>{{end}}</td><td>{{if .Value}}+ {{.Value}}{{else}}&nbsp;{{end}}</td><td>{{if .PracticePoints}}{{.PracticePoints}}{{end}}</td></tr>
                             {{end}}
                         </table>
@@ -69,7 +69,7 @@
             <div class="right-section">
                 <!-- Weapons table -->
                 <div class="margin-bottom-3">
-                    <!-- BLOCK: weapons_main, TYPE: weapons, MAX: 3 -->
+                    <!-- BLOCK: weapons_main, TYPE: weapons, MAX: 29 -->
                     <table class="weapons-table">
                         <tr>
                             <th>Waffe</th>

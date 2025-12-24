@@ -201,6 +201,10 @@ func (p *Paginator) PaginateMultiList(dataMap map[string]interface{}, templateNa
 
 			tracker, exists := listTrackers[trackerKey]
 			if !exists {
+				// Skip blocks with NOEMPTY flag when they have no data
+				if block.NoEmpty {
+					continue
+				}
 				// Block has no data, fill with empty items up to MAX
 				pageData[block.Name] = p.createEmptySliceWithCapacity(block.ListType, block.MaxItems)
 				continue
@@ -213,9 +217,17 @@ func (p *Paginator) PaginateMultiList(dataMap map[string]interface{}, templateNa
 				itemsToTake = remaining
 			}
 
-			// Extract slice for this block and fill to capacity
+			// Skip NOEMPTY blocks when no items remain
+			if block.NoEmpty && itemsToTake == 0 {
+				continue
+			}
+
+			// Extract slice for this block
 			blockItems := p.extractSlice(tracker.items, tracker.currentIdx, itemsToTake)
+
+			// Always fill to capacity (both normal and NOEMPTY blocks get filled when they have items)
 			blockItems = p.fillSliceToCapacity(blockItems, block.MaxItems)
+
 			pageData[block.Name] = blockItems
 			tracker.currentIdx += itemsToTake
 		}

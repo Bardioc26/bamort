@@ -20,6 +20,7 @@ type BlockMetadata struct {
 	MaxItems int    // Maximum number of items this block can display
 	Filter   string // Optional filter criteria (e.g., "learned", "unlearned", "languages")
 	Column   int    // Column number for multi-column layouts (0 if single column)
+	NoEmpty  bool   // If true, remove this block when it contains no items
 }
 
 // TemplateSet contains all templates and their metadata for a format

@@ -7,9 +7,6 @@ services:
     container_name: bamort-backend-dev
     ports:
       - "8180:8180"
-    volumes:
-      - ../backend:/app
-      - go-mod-cache:/go/pkg/mod
     environment:
       - GO_ENV=development
       - CGO_ENABLED=1
@@ -21,6 +18,9 @@ services:
     working_dir: /app
     # Restart if Go code changes cause crash
     restart: unless-stopped
+    volumes:
+      - ../backend:/app
+      - go-mod-cache:/go/pkg/mod
 
   frontend-dev:
     build:
@@ -29,15 +29,15 @@ services:
     container_name: bamort-frontend-dev
     ports:
       - "5173:5173"  # Vite dev server port
-    volumes:
-      - ../frontend:/app
-      - /app/node_modules  # Prevent overwriting node_modules
     environment:
       - NODE_ENV=development
       - VITE_API_URL=${VITE_API_URL:-http://192.168.0.48:8180}
     depends_on:
       - backend-dev
     restart: unless-stopped
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules  # Prevent overwriting node_modules
 
   mariadb:
     image: mariadb:11.4

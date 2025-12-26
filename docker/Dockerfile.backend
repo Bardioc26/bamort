@@ -1,5 +1,5 @@
 # =========== 1) Build stage ===========
-FROM golang:1.24-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Install necessary packages for CGO and SQLite
 RUN apk add --no-cache gcc musl-dev sqlite-dev
@@ -17,7 +17,21 @@ COPY . .
 RUN go build -v -o server cmd/main.go
 
 # =========== 2) Runtime stage ===========
-FROM alpine:3.18
+FROM alpine:3.23
+
+# Install Chromium for PDF rendering
+RUN apk add --no-cache \
+    chromium \
+    chromium-chromedriver \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
+
+# Set Chrome path for chromedp
+ENV CHROME_BIN=/usr/bin/chromium-browser \
+    CHROME_PATH=/usr/bin/chromium-browser
 
 WORKDIR /app
 

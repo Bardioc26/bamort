@@ -1,0 +1,661 @@
+-- --------------------------------------------------------
+-- indizes und increments
+-- --------------------------------------------------------
+--
+-- Indizes der exportierten Tabellen
+--
+
+--
+-- Indizes für die Tabelle `audit_log_entries`
+--
+ALTER TABLE `audit_log_entries`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indizes für die Tabelle `char_bennies`
+--
+ALTER TABLE `char_bennies`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_char_bennies_character_id` (`character_id`),
+  ADD KEY `idx_char_bennies_user_id` (`user_id`);
+
+--
+-- Indizes für die Tabelle `char_characteristics`
+--
+ALTER TABLE `char_characteristics`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_char_characteristics_character_id` (`character_id`),
+  ADD KEY `idx_char_characteristics_user_id` (`user_id`);
+
+--
+-- Indizes für die Tabelle `char_chars`
+--
+ALTER TABLE `char_chars`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_char_chars_user_id` (`user_id`);
+
+--
+-- Indizes für die Tabelle `char_char_creation_session`
+--
+ALTER TABLE `char_char_creation_session`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_char_char_creation_session_user_id` (`user_id`);
+
+--
+-- Indizes für die Tabelle `char_eigenschaften`
+--
+ALTER TABLE `char_eigenschaften`
+  ADD PRIMARY KEY (`character_id`,`name`),
+  ADD KEY `idx_char_eigenschaften_id` (`id`),
+  ADD KEY `idx_char_eigenschaften_user_id` (`user_id`);
+
+--
+-- Indizes für die Tabelle `char_endurances`
+--
+ALTER TABLE `char_endurances`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_char_endurances_character_id` (`character_id`);
+
+--
+-- Indizes für die Tabelle `char_experiances`
+--
+ALTER TABLE `char_experiances`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_char_experiances_character_id` (`character_id`),
+  ADD KEY `idx_char_experiances_user_id` (`user_id`);
+
+--
+-- Indizes für die Tabelle `char_health`
+--
+ALTER TABLE `char_health`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_char_health_character_id` (`character_id`);
+
+--
+-- Indizes für die Tabelle `char_motionranges`
+--
+ALTER TABLE `char_motionranges`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_char_motionranges_character_id` (`character_id`);
+
+--
+-- Indizes für die Tabelle `char_wealth`
+--
+ALTER TABLE `char_wealth`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_char_wealth_character_id` (`character_id`),
+  ADD KEY `idx_char_wealth_user_id` (`user_id`);
+
+--
+-- Indizes für die Tabelle `equi_containers`
+--
+ALTER TABLE `equi_containers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_equi_containers_character_id` (`character_id`),
+  ADD KEY `idx_equi_containers_user_id` (`user_id`);
+
+--
+-- Indizes für die Tabelle `equi_equipments`
+--
+ALTER TABLE `equi_equipments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_equi_equipments_character_id` (`character_id`),
+  ADD KEY `idx_equi_equipments_user_id` (`user_id`);
+
+--
+-- Indizes für die Tabelle `equi_weapons`
+--
+ALTER TABLE `equi_weapons`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_equi_weapons_character_id` (`character_id`),
+  ADD KEY `idx_equi_weapons_user_id` (`user_id`);
+
+--
+-- Indizes für die Tabelle `gsm_believes`
+--
+ALTER TABLE `gsm_believes`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_gsm_believes_game_system` (`game_system`),
+  ADD KEY `idx_gsm_believes_name` (`name`),
+  ADD KEY `idx_gsm_believes_source_id` (`source_id`);
+
+--
+-- Indizes für die Tabelle `gsm_containers`
+--
+ALTER TABLE `gsm_containers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_gsm_containers_game_system` (`game_system`),
+  ADD KEY `idx_gsm_containers_name` (`name`),
+  ADD KEY `idx_gsm_containers_source_id` (`source_id`);
+
+--
+-- Indizes für die Tabelle `gsm_equipments`
+--
+ALTER TABLE `gsm_equipments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_gsm_equipments_game_system` (`game_system`),
+  ADD KEY `idx_gsm_equipments_name` (`name`),
+  ADD KEY `idx_gsm_equipments_source_id` (`source_id`);
+
+--
+-- Indizes für die Tabelle `gsm_skills`
+--
+ALTER TABLE `gsm_skills`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_gsm_skills_game_system` (`game_system`),
+  ADD KEY `idx_gsm_skills_name` (`name`),
+  ADD KEY `idx_gsm_skills_source_id` (`source_id`);
+
+--
+-- Indizes für die Tabelle `gsm_spells`
+--
+ALTER TABLE `gsm_spells`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_gsm_spells_learning_category` (`learning_category`),
+  ADD KEY `idx_gsm_spells_game_system` (`game_system`),
+  ADD KEY `idx_gsm_spells_name` (`name`),
+  ADD KEY `idx_gsm_spells_source_id` (`source_id`);
+
+--
+-- Indizes für die Tabelle `gsm_transportations`
+--
+ALTER TABLE `gsm_transportations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_gsm_transportations_game_system` (`game_system`),
+  ADD KEY `idx_gsm_transportations_name` (`name`),
+  ADD KEY `idx_gsm_transportations_source_id` (`source_id`);
+
+--
+-- Indizes für die Tabelle `gsm_weapons`
+--
+ALTER TABLE `gsm_weapons`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_gsm_weapons_game_system` (`game_system`),
+  ADD KEY `idx_gsm_weapons_name` (`name`),
+  ADD KEY `idx_gsm_weapons_source_id` (`source_id`);
+
+--
+-- Indizes für die Tabelle `gsm_weaponskills`
+--
+ALTER TABLE `gsm_weaponskills`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_gsm_weaponskills_game_system` (`game_system`),
+  ADD KEY `idx_gsm_weaponskills_name` (`name`),
+  ADD KEY `idx_gsm_weaponskills_source_id` (`source_id`);
+
+--
+-- Indizes für die Tabelle `learning_character_classes`
+--
+ALTER TABLE `learning_character_classes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uni_learning_character_classes_name` (`name`),
+  ADD UNIQUE KEY `idx_learning_character_classes_code` (`code`),
+  ADD KEY `idx_learning_character_classes_source_id` (`source_id`),
+  ADD KEY `idx_learning_character_classes_game_system` (`game_system`),
+  ADD KEY `idx_learning_character_classes_quelle` (`quelle`);
+
+--
+-- Indizes für die Tabelle `learning_class_category_ep_costs`
+--
+ALTER TABLE `learning_class_category_ep_costs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_learning_class_category_ep_costs_s_category` (`skill_category`),
+  ADD KEY `idx_learning_class_category_ep_costs_character_class_id` (`character_class_id`),
+  ADD KEY `idx_learning_class_category_ep_costs_skill_category_id` (`skill_category_id`),
+  ADD KEY `idx_learning_class_category_ep_costs_cc_lass` (`character_class`);
+
+--
+-- Indizes für die Tabelle `learning_class_spell_school_ep_costs`
+--
+ALTER TABLE `learning_class_spell_school_ep_costs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_learning_class_spell_school_ep_costs_cc_lass` (`character_class`),
+  ADD KEY `idx_learning_class_spell_school_ep_costs_s_category` (`spell_school`),
+  ADD KEY `idx_learning_class_spell_school_ep_costs_character_class_id` (`character_class_id`),
+  ADD KEY `idx_learning_class_spell_school_ep_costs_spell_school_id` (`spell_school_id`);
+
+--
+-- Indizes für die Tabelle `learning_skill_categories`
+--
+ALTER TABLE `learning_skill_categories`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uni_learning_skill_categories_name` (`name`),
+  ADD KEY `idx_learning_skill_categories_source_id` (`source_id`),
+  ADD KEY `idx_learning_skill_categories_game_system` (`game_system`),
+  ADD KEY `idx_learning_skill_categories_quelle` (`quelle`);
+
+--
+-- Indizes für die Tabelle `learning_skill_category_difficulties`
+--
+ALTER TABLE `learning_skill_category_difficulties`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_learning_skill_category_difficulties_skill_id` (`skill_id`),
+  ADD KEY `idx_learning_skill_category_difficulties_skill_category_id` (`skill_category_id`),
+  ADD KEY `idx_learning_skill_category_difficulties_skill_difficulty_id` (`skill_difficulty_id`),
+  ADD KEY `idx_learning_skill_category_difficulties_s_difficulty` (`skill_difficulty`),
+  ADD KEY `idx_learning_skill_category_difficulties_s_category` (`skill_category`);
+
+--
+-- Indizes für die Tabelle `learning_skill_difficulties`
+--
+ALTER TABLE `learning_skill_difficulties`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uni_learning_skill_difficulties_name` (`name`),
+  ADD KEY `idx_learning_skill_difficulties_game_system` (`game_system`);
+
+--
+-- Indizes für die Tabelle `learning_skill_improvement_costs`
+--
+ALTER TABLE `learning_skill_improvement_costs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_learning_skill_improvement_costs_skill_category_diff411ad55b` (`skill_category_difficulty_id`),
+  ADD KEY `idx_learning_skill_improvement_costs_current_level` (`current_level`);
+
+--
+-- Indizes für die Tabelle `learning_sources`
+--
+ALTER TABLE `learning_sources`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx_learning_sources_code` (`code`),
+  ADD UNIQUE KEY `uni_learning_sources_name` (`name`),
+  ADD KEY `idx_learning_sources_game_system` (`game_system`);
+
+--
+-- Indizes für die Tabelle `learning_spell_level_le_costs`
+--
+ALTER TABLE `learning_spell_level_le_costs`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx_learning_spell_level_le_costs_level` (`level`),
+  ADD KEY `idx_learning_spell_level_le_costs_game_system` (`game_system`);
+
+--
+-- Indizes für die Tabelle `learning_spell_schools`
+--
+ALTER TABLE `learning_spell_schools`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uni_learning_spell_schools_name` (`name`),
+  ADD KEY `idx_learning_spell_schools_source_id` (`source_id`),
+  ADD KEY `idx_learning_spell_schools_game_system` (`game_system`),
+  ADD KEY `idx_learning_spell_schools_quelle` (`quelle`);
+
+--
+-- Indizes für die Tabelle `skill_skills`
+--
+ALTER TABLE `skill_skills`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_skill_skills_character_id` (`character_id`),
+  ADD KEY `idx_skill_skills_user_id` (`user_id`);
+
+--
+-- Indizes für die Tabelle `skill_spells`
+--
+ALTER TABLE `skill_spells`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_skill_spells_character_id` (`character_id`),
+  ADD KEY `idx_skill_spells_user_id` (`user_id`);
+
+--
+-- Indizes für die Tabelle `skill_weaponskills`
+--
+ALTER TABLE `skill_weaponskills`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_skill_weaponskills_character_id` (`character_id`),
+  ADD KEY `idx_skill_weaponskills_user_id` (`user_id`);
+
+--
+-- Indizes für die Tabelle `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`user_id`),
+  ADD UNIQUE KEY `uni_users_username` (`username`),
+  ADD UNIQUE KEY `uni_users_email` (`email`),
+  ADD KEY `idx_users_reset_pw_hash` (`reset_pw_hash`);
+
+--
+-- AUTO_INCREMENT für exportierte Tabellen
+--
+
+--
+-- AUTO_INCREMENT für Tabelle `audit_log_entries`
+--
+ALTER TABLE `audit_log_entries`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT für Tabelle `char_bennies`
+--
+ALTER TABLE `char_bennies`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+
+--
+-- AUTO_INCREMENT für Tabelle `char_characteristics`
+--
+ALTER TABLE `char_characteristics`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+--
+-- AUTO_INCREMENT für Tabelle `char_chars`
+--
+ALTER TABLE `char_chars`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+
+--
+-- AUTO_INCREMENT für Tabelle `char_endurances`
+--
+ALTER TABLE `char_endurances`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+
+--
+-- AUTO_INCREMENT für Tabelle `char_experiances`
+--
+ALTER TABLE `char_experiances`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+
+--
+-- AUTO_INCREMENT für Tabelle `char_health`
+--
+ALTER TABLE `char_health`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+
+--
+-- AUTO_INCREMENT für Tabelle `char_motionranges`
+--
+ALTER TABLE `char_motionranges`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+
+--
+-- AUTO_INCREMENT für Tabelle `char_wealth`
+--
+ALTER TABLE `char_wealth`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT für Tabelle `equi_containers`
+--
+ALTER TABLE `equi_containers`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
+
+--
+-- AUTO_INCREMENT für Tabelle `equi_equipments`
+--
+ALTER TABLE `equi_equipments`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=228;
+
+--
+-- AUTO_INCREMENT für Tabelle `equi_weapons`
+--
+ALTER TABLE `equi_weapons`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=90;
+
+--
+-- AUTO_INCREMENT für Tabelle `gsm_believes`
+--
+ALTER TABLE `gsm_believes`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT für Tabelle `gsm_containers`
+--
+ALTER TABLE `gsm_containers`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- AUTO_INCREMENT für Tabelle `gsm_equipments`
+--
+ALTER TABLE `gsm_equipments`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=80;
+
+--
+-- AUTO_INCREMENT für Tabelle `gsm_skills`
+--
+ALTER TABLE `gsm_skills`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
+
+--
+-- AUTO_INCREMENT für Tabelle `gsm_spells`
+--
+ALTER TABLE `gsm_spells`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=538;
+
+--
+-- AUTO_INCREMENT für Tabelle `gsm_transportations`
+--
+ALTER TABLE `gsm_transportations`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT für Tabelle `gsm_weapons`
+--
+ALTER TABLE `gsm_weapons`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+
+--
+-- AUTO_INCREMENT für Tabelle `gsm_weaponskills`
+--
+ALTER TABLE `gsm_weaponskills`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT für Tabelle `learning_character_classes`
+--
+ALTER TABLE `learning_character_classes`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT für Tabelle `learning_class_category_ep_costs`
+--
+ALTER TABLE `learning_class_category_ep_costs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=151;
+
+--
+-- AUTO_INCREMENT für Tabelle `learning_class_spell_school_ep_costs`
+--
+ALTER TABLE `learning_class_spell_school_ep_costs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+
+--
+-- AUTO_INCREMENT für Tabelle `learning_skill_categories`
+--
+ALTER TABLE `learning_skill_categories`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT für Tabelle `learning_skill_category_difficulties`
+--
+ALTER TABLE `learning_skill_category_difficulties`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
+
+--
+-- AUTO_INCREMENT für Tabelle `learning_skill_difficulties`
+--
+ALTER TABLE `learning_skill_difficulties`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT für Tabelle `learning_skill_improvement_costs`
+--
+ALTER TABLE `learning_skill_improvement_costs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=610;
+
+--
+-- AUTO_INCREMENT für Tabelle `learning_sources`
+--
+ALTER TABLE `learning_sources`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT für Tabelle `learning_spell_level_le_costs`
+--
+ALTER TABLE `learning_spell_level_le_costs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- AUTO_INCREMENT für Tabelle `learning_spell_schools`
+--
+ALTER TABLE `learning_spell_schools`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT für Tabelle `skill_skills`
+--
+ALTER TABLE `skill_skills`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=618;
+
+--
+-- AUTO_INCREMENT für Tabelle `skill_spells`
+--
+ALTER TABLE `skill_spells`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=367;
+
+--
+-- AUTO_INCREMENT für Tabelle `skill_weaponskills`
+--
+ALTER TABLE `skill_weaponskills`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
+
+--
+-- AUTO_INCREMENT für Tabelle `users`
+--
+ALTER TABLE `users`
+  MODIFY `user_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- Constraints der exportierten Tabellen
+--
+
+--
+-- Constraints der Tabelle `char_bennies`
+--
+ALTER TABLE `char_bennies`
+  ADD CONSTRAINT `fk_char_chars_bennies` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `char_characteristics`
+--
+ALTER TABLE `char_characteristics`
+  ADD CONSTRAINT `fk_char_chars_merkmale` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `char_eigenschaften`
+--
+ALTER TABLE `char_eigenschaften`
+  ADD CONSTRAINT `fk_char_chars_eigenschaften` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `char_endurances`
+--
+ALTER TABLE `char_endurances`
+  ADD CONSTRAINT `fk_char_chars_ap` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `char_experiances`
+--
+ALTER TABLE `char_experiances`
+  ADD CONSTRAINT `fk_char_chars_erfahrungsschatz` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `char_health`
+--
+ALTER TABLE `char_health`
+  ADD CONSTRAINT `fk_char_chars_lp` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `char_motionranges`
+--
+ALTER TABLE `char_motionranges`
+  ADD CONSTRAINT `fk_char_chars_b` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `char_wealth`
+--
+ALTER TABLE `char_wealth`
+  ADD CONSTRAINT `fk_char_chars_vermoegen` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `equi_containers`
+--
+ALTER TABLE `equi_containers`
+  ADD CONSTRAINT `fk_char_chars_behaeltnisse` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_char_chars_transportmittel` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `equi_equipments`
+--
+ALTER TABLE `equi_equipments`
+  ADD CONSTRAINT `fk_char_chars_ausruestung` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `equi_weapons`
+--
+ALTER TABLE `equi_weapons`
+  ADD CONSTRAINT `fk_char_chars_waffen` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `learning_character_classes`
+--
+ALTER TABLE `learning_character_classes`
+  ADD CONSTRAINT `fk_learning_character_classes_source` FOREIGN KEY (`source_id`) REFERENCES `learning_sources` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `learning_class_category_ep_costs`
+--
+ALTER TABLE `learning_class_category_ep_costs`
+  ADD CONSTRAINT `fk_learning_class_category_ep_costs_character_class` FOREIGN KEY (`character_class_id`) REFERENCES `learning_character_classes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_learning_class_category_ep_costs_skill_category` FOREIGN KEY (`skill_category_id`) REFERENCES `learning_skill_categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `learning_class_spell_school_ep_costs`
+--
+ALTER TABLE `learning_class_spell_school_ep_costs`
+  ADD CONSTRAINT `fk_learning_class_spell_school_ep_costs_character_class` FOREIGN KEY (`character_class_id`) REFERENCES `learning_character_classes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_learning_class_spell_school_ep_costs_spell_school` FOREIGN KEY (`spell_school_id`) REFERENCES `learning_spell_schools` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `learning_skill_categories`
+--
+ALTER TABLE `learning_skill_categories`
+  ADD CONSTRAINT `fk_learning_skill_categories_source` FOREIGN KEY (`source_id`) REFERENCES `learning_sources` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `learning_skill_category_difficulties`
+--
+ALTER TABLE `learning_skill_category_difficulties`
+  ADD CONSTRAINT `fk_learning_skill_category_difficulties_skill` FOREIGN KEY (`skill_id`) REFERENCES `gsm_skills` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_learning_skill_category_difficulties_skill_category` FOREIGN KEY (`skill_category_id`) REFERENCES `learning_skill_categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_learning_skill_category_difficulties_skill_difficulty` FOREIGN KEY (`skill_difficulty_id`) REFERENCES `learning_skill_difficulties` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `learning_skill_improvement_costs`
+--
+ALTER TABLE `learning_skill_improvement_costs`
+  ADD CONSTRAINT `fk_learning_skill_improvement_costs_skill_category_difficulty` FOREIGN KEY (`skill_category_difficulty_id`) REFERENCES `learning_skill_category_difficulties` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `learning_spell_schools`
+--
+ALTER TABLE `learning_spell_schools`
+  ADD CONSTRAINT `fk_learning_spell_schools_source` FOREIGN KEY (`source_id`) REFERENCES `learning_sources` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `skill_skills`
+--
+ALTER TABLE `skill_skills`
+  ADD CONSTRAINT `fk_char_chars_fertigkeiten` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `skill_spells`
+--
+ALTER TABLE `skill_spells`
+  ADD CONSTRAINT `fk_char_chars_zauber` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints der Tabelle `skill_weaponskills`
+--
+ALTER TABLE `skill_weaponskills`
+  ADD CONSTRAINT `fk_char_chars_waffenfertigkeiten` FOREIGN KEY (`character_id`) REFERENCES `char_chars` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+SET FOREIGN_KEY_CHECKS=1;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

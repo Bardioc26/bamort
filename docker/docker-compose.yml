@@ -1,37 +1,42 @@
 version: "3.8"
 services:
-
   backend:
     build: 
       context: ../backend
-      dockerfile: ../docker/Dockerfile
-    container_name: backend
-    environment:
-      - DATABASE_TYPE=mysql
-      - DATABASE_URL=bamort:${MARIADB_PASSWORD:-secure_user_password}@tcp(mariadb:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local
+      dockerfile: ../docker/Dockerfile.backend
+    container_name: bamort-backend
     ports:
       - "8180:8180"
+    environment:
+      - GO_ENV=production
+      - CGO_ENABLED=1
+      - DATABASE_TYPE=mysql
+      - DATABASE_URL=bamort:${MARIADB_PASSWORD:-secure_user_password}@tcp(mariadb:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local
     depends_on:
       mariadb:
         condition: service_healthy
+    working_dir: /app
     restart: unless-stopped
+
+
+
+
 
   frontend:
     build:
       context: ../frontend
       dockerfile: ../docker/Dockerfile.frontend
-    container_name: frontend
+    container_name: bamort-frontend
     ports:
       - "5173:80"
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://bamort.trokan.de:8180}
-      - BASE_URL=http://bamort.trokan.de:8180
-      - PORT=8180
       - ENVIRONMENT=production
-      - DATABASE_TYPE=mysql
-      - DATABASE_URL=bamort:bG4)efozrc@tcp(mariadb:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local
+      - VITE_API_URL=${VITE_API_URL:-http://bamort.trokan.de:8180}
+      - BASE_URL=http://bamort.trokan.de
+      - PORT=8180      
     depends_on:
       - backend
+    restart: unless-stopped
 
   mariadb:
     image: mariadb:11.4
@@ -51,8 +56,8 @@ services:
       - ./init-db:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      start_period: 10s
-      timeout: 5s
+      start_period: 30s
+      timeout: 15s
       retries: 3
 
   # phpMyAdmin - Database Management (commented out for production)
@@ -74,5 +79,5 @@ services:
   #     mariadb:
   #       condition: service_healthy
 
-volumes:
-  db_data:
+#volumes:
+#  db_data:

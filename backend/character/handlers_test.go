@@ -716,7 +716,7 @@ func TestFinalizeCharacterCreation(t *testing.T) {
 
 		// Verify character exists in database
 		var createdChar models.Char
-		err = database.DB.Preload("Fertigkeiten").Preload("Waffenfertigkeiten").Preload("Zauber").
+		err = database.DB.Preload("Lp").Preload("Ap").Preload("B").Preload("Eigenschaften").Preload("Fertigkeiten").Preload("Waffenfertigkeiten").Preload("Zauber").
 			First(&createdChar, "id = ?", characterID).Error
 		assert.NoError(t, err, "Created character should exist in database")
 
@@ -755,6 +755,13 @@ func TestFinalizeCharacterCreation(t *testing.T) {
 		assert.Equal(t, 33, createdChar.Ap.Value, "AP Value should equal Max initially")
 		assert.Equal(t, 8, createdChar.B.Max, "B Max should match session")
 		assert.Equal(t, 8, createdChar.B.Value, "B Value should equal Max initially")
+
+		// Validate static derived values (Resistenz, Abwehr, Zaubern, Raufen)
+		assert.Equal(t, 11, createdChar.ResistenzKoerper, "Resistenz Körper should match session")
+		assert.Equal(t, 11, createdChar.ResistenzGeist, "Resistenz Geist should match session")
+		assert.Equal(t, 11, createdChar.Abwehr, "Abwehr should match session")
+		assert.Equal(t, 11, createdChar.Zaubern, "Zaubern should match session")
+		assert.Equal(t, 8, createdChar.Raufen, "Raufen should match session")
 
 		// Validate skills were transferred (session has 10 skills: 6 regular skills + 4 weapon skills)
 		// Regular skills: Klettern, Reiten, Sprache, Athletik, Heilkunde, Naturkunde (6)

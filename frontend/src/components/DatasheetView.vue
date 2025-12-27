@@ -21,11 +21,11 @@
             <strong>Aktuelle Kampagne:</strong> Melzindar
           </p>
           <p>
-            {{ character.typ || 'x' }} ({{ character.geschlecht || 'x' }}nännlich),
+            {{ character.typ || 'x' }} ({{ character.gender || 'x' }}),
             Grad:  {{ character.grad || 'x' }},
             Rasse:  {{ character.rasse || 'x' }},
-            Heimat: {{ character.heimat || 'x' }}Alba,
-            Stand:  {{ character.heimat || 'x' }}Mittelschicht.
+            Heimat: {{ character.origin || '-' }},
+            Stand:  {{ character.social_class || '-' }}.
           </p>
           <p v-if="character.rasse==='Zwerg'">
             Hort für Grad {{ character.grad || 'x' }}: 125 GS, für nächsten Grad: 250 GS.
@@ -44,7 +44,7 @@
             und {{ character.merkmale?.breite  || '-'}},
             Augen: {{ character.merkmale?.augenfarbe || '-' }},
             Haare: {{ character.merkmale?.haarfarbe || '-' }},
-            Glaube: {{ character.glaube }}.
+            Glaube: {{ character.glaube || '-' }}
           </p>
           <p>
             <strong>Merkmale:</strong> {{ character.merkmale?.sonstige || '-' }}

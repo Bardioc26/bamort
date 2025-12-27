@@ -2748,6 +2748,13 @@ func FinalizeCharacterCreation(c *gin.Context) {
 		Public: false, // Default to private
 		Grad:   1,     // Default starting grade
 
+		// Static derived values (can increase with grade)
+		ResistenzKoerper: session.DerivedValues.ResistenzKoerper,
+		ResistenzGeist:   session.DerivedValues.ResistenzGeist,
+		Abwehr:           session.DerivedValues.Abwehr,
+		Zaubern:          session.DerivedValues.Zaubern,
+		Raufen:           session.DerivedValues.Raufen,
+
 		// Lebenspunkte
 		Lp: models.Lp{
 			Max:   session.DerivedValues.LPMax,

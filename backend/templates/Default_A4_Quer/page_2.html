@@ -41,10 +41,10 @@
                 </div>                
                 <!-- Combat stats -->
                 <div class="combat-stats">
-                    <div><strong>Abwehr + {{.DerivedValues.Abwehr}}</strong></div>
+                    <div><strong>Abwehr + {{.DerivedValues.Abwehr}}+{{.DerivedValues.AbwehrBonus}}</strong></div>
                     <div><strong>+</strong> <span class="combat-stats-small">mit Vert.<br>waffe</span></div>
-                    <div><strong>Resistenz + {{.DerivedValues.ResistenzKoerper}}/{{.DerivedValues.ResistenzGeist}}</strong></div>
-                    <div><strong>Zaubern + {{.DerivedValues.Zaubern}}</strong></div>
+                    <div><strong>Resistenz + {{.DerivedValues.ResistenzKoerper}}+{{.DerivedValues.ResistenzBonusKoerper}}/{{.DerivedValues.ResistenzGeist}}+{{.DerivedValues.ResistenzBonusGeist}}</strong></div>
+                    <div><strong>Zaubern + {{.DerivedValues.Zaubern}}+{{.DerivedValues.ZauberBonus}}</strong></div>
                 </div>                
                 <!-- Skills tables -->
                 <div class="skills-row">
@@ -121,29 +121,29 @@
                             <td></td>
                             <td>{{.DerivedValues.AngriffBonus}}</td>
                             <td></td>
-                            <td>{{.DerivedValues.Abwehr}}</td>
+                            <td>{{.DerivedValues.AbwehrBonus}}</td>
                             <td></td>
                             <td>{{.DerivedValues.SchadenBonus}}</td>
                             <td></td>
                         </tr>
                         <tr>
-                            <td>Situativ</td>
+                            <td>Wert</td>
+                            <td>{{.DerivedValues.APMax}}</td>
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>{{.DerivedValues.Abwehr}}</td>
                             <td></td>
                             <td></td>
                             <td></td>
                         </tr>
                         <tr>
                             <td>Summe</td>
+                            <td>{{.DerivedValues.APMax}}</td>
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>{{.DerivedValues.Abwehr}}+{{.DerivedValues.AbwehrBonus}}</td>
                             <td></td>
                             <td></td>
                             <td></td>

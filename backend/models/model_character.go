@@ -76,21 +76,27 @@ type Vermoegen struct {
 
 type Char struct {
 	BamortBase
-	UserID             uint                 `gorm:"index;not null;default:1" json:"user_id"`
-	User               user.User            `gorm:"foreignKey:UserID;references:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"user"`
-	Rasse              string               `json:"rasse"`
-	Typ                string               `json:"typ"`
-	Alter              int                  `json:"alter"`
-	Anrede             string               `json:"anrede"`
-	Grad               int                  `json:"grad"`
-	Gender             string               `json:"gender"`
-	SocialClass        string               `json:"social_class"`
-	Groesse            int                  `json:"groesse"`
-	Gewicht            int                  `json:"gewicht"`
-	Herkunft           string               `json:"origin"`
-	Glaube             string               `json:"glaube"`
-	Hand               string               `json:"hand"`
-	Public             bool                 `json:"public"`
+	UserID      uint      `gorm:"index;not null;default:1" json:"user_id"`
+	User        user.User `gorm:"foreignKey:UserID;references:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"user"`
+	Rasse       string    `json:"rasse"`
+	Typ         string    `json:"typ"`
+	Alter       int       `json:"alter"`
+	Anrede      string    `json:"anrede"`
+	Grad        int       `json:"grad"`
+	Gender      string    `json:"gender"`
+	SocialClass string    `json:"social_class"`
+	Groesse     int       `json:"groesse"`
+	Gewicht     int       `json:"gewicht"`
+	Herkunft    string    `json:"origin"`
+	Glaube      string    `json:"glaube"`
+	Hand        string    `json:"hand"`
+	Public      bool      `json:"public"`
+	// Static derived values (can increase with grade)
+	ResistenzKoerper   int                  `json:"resistenz_koerper"`
+	ResistenzGeist     int                  `json:"resistenz_geist"`
+	Abwehr             int                  `json:"abwehr"`
+	Zaubern            int                  `json:"zaubern"`
+	Raufen             int                  `json:"raufen"`
 	Lp                 Lp                   `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"lp"`
 	Ap                 Ap                   `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"ap"`
 	B                  B                    `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"b"`
@@ -292,4 +298,156 @@ func (object *Bennies) TableName() string {
 func (object *Vermoegen) TableName() string {
 	dbPrefix := "char"
 	return dbPrefix + "_" + "wealth"
+}
+
+// DerivedBonuses contains all calculated bonus values
+type DerivedBonuses struct {
+	AusdauerBonus         int
+	SchadensBonus         int
+	AngriffsBonus         int
+	AbwehrBonus           int
+	ZauberBonus           int
+	ResistenzBonusKoerper int
+	ResistenzBonusGeist   int
+}
+
+// GetAttributeValue returns the value of an attribute by name
+func (char *Char) GetAttributeValue(name string) int {
+	for _, attr := range char.Eigenschaften {
+		if attr.Name == name {
+			return attr.Value
+		}
+	}
+	return 0
+}
+
+// CalculateBonuses calculates all derived bonuses from attributes
+func (char *Char) CalculateBonuses() DerivedBonuses {
+	st := char.GetAttributeValue("St")
+	gs := char.GetAttributeValue("Gs")
+	gw := char.GetAttributeValue("Gw")
+	ko := char.GetAttributeValue("Ko")
+	in := char.GetAttributeValue("In")
+	zt := char.GetAttributeValue("Zt")
+
+	bonuses := DerivedBonuses{
+		// Ausdauer Bonus: Ko/10 + St/20
+		AusdauerBonus: (ko / 10) + (st / 20),
+
+		// Schadens Bonus: St/20 + Gs/30 - 3
+		SchadensBonus: (st / 20) + (gs / 30) - 3,
+
+		// Angriffs Bonus basierend auf GS
+		AngriffsBonus: calculateAttributeBonus(gs),
+
+		// Abwehr Bonus basierend auf GW
+		AbwehrBonus: calculateAttributeBonus(gw),
+
+		// Zauber Bonus basierend auf Zt
+		ZauberBonus: calculateAttributeBonus(zt),
+	}
+
+	// Resistenz Bonus Körper
+	bonuses.ResistenzBonusKoerper = calculateResistenzBonusKoerper(ko, char.Rasse, char.Typ)
+
+	// Resistenz Bonus Geist
+	bonuses.ResistenzBonusGeist = calculateResistenzBonusGeist(in, char.Rasse, char.Typ)
+
+	return bonuses
+}
+
+// Helper functions for bonus calculation
+
+func calculateAttributeBonus(value int) int {
+	if value <= 5 {
+		return -5
+	} else if value <= 20 {
+		return -1
+	} else if value <= 40 {
+		return 0
+	} else if value <= 60 {
+		return 1
+	} else if value <= 80 {
+		return 2
+	} else if value <= 95 {
+		return 3
+	} else {
+		return 4
+	}
+}
+
+func calculateResistenzBonusKoerper(ko int, rasse string, typ string) int {
+	bonus := 0
+
+	if rasse == "Mensch" || rasse == "Menschen" {
+		bonus = calculateAttributeBonus(ko)
+	} else {
+		switch rasse {
+		case "Elfen":
+			bonus = 2
+		case "Gnome", "Halblinge":
+			bonus = 4
+		case "Zwerge":
+			bonus = 3
+		}
+	}
+
+	// Klassenmodifikator
+	if isKaempfer(typ) {
+		bonus += 1
+	} else if isZauberer(typ) {
+		bonus += 2
+	}
+
+	return bonus
+}
+
+func calculateResistenzBonusGeist(in int, rasse string, typ string) int {
+	bonus := 0
+
+	if rasse == "Mensch" || rasse == "Menschen" {
+		bonus = calculateAttributeBonus(in)
+	} else {
+		switch rasse {
+		case "Elfen":
+			bonus = 2
+		case "Gnome", "Halblinge":
+			bonus = 4
+		case "Zwerge":
+			bonus = 3
+		}
+	}
+
+	// Klassenmodifikator (nur Zauberer bekommen Geist-Bonus)
+	if isZauberer(typ) {
+		bonus += 2
+	}
+
+	return bonus
+}
+
+func isKaempfer(typ string) bool {
+	kaempferClasses := []string{
+		"Krieger", "Barbar", "Spitzbube", "Assassine",
+		"Streiter", "Waldläufer", "Krieger Magier",
+	}
+	for _, class := range kaempferClasses {
+		if typ == class {
+			return true
+		}
+	}
+	return false
+}
+
+func isZauberer(typ string) bool {
+	zaubererClasses := []string{
+		"Magier", "Hexer", "Thaumaturg", "Krieger Magier",
+		"Priester", "Druide", "Schamane",
+	}
+	for _, class := range zaubererClasses {
+		if typ == class {
+			return true
+		}
+	}
+	return false
 }

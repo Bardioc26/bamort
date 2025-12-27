@@ -18,21 +18,21 @@ type CharacterSheetViewModel struct {
 
 // CharacterInfo contains basic character information
 type CharacterInfo struct {
-	Name       string
-	Player     string
-	Type       string // Charaktertyp (z.B. "Krieger", "Magier")
-	Grade      int
-	Birthdate  string
-	Age        int
-	Hand       string // "rechts." oder "links." händig
-	Height     int    // in cm
-	Weight     int    // in kg
-	IconBase64 string // base64-kodiertes Charakterbild als Data-URI
-	Gender     string
-	Homeland   string
-	Religion   string
-	Stand      string // Sozialer Stand
-	Vermoegen  WealthInfo
+	Name        string
+	Player      string
+	Type        string // Charaktertyp (z.B. "Krieger", "Magier")
+	Grade       int
+	Birthdate   string
+	Age         int
+	Hand        string // "rechts." oder "links." händig
+	Height      int    // in cm
+	Weight      int    // in kg
+	IconBase64  string // base64-kodiertes Charakterbild als Data-URI
+	Gender      string
+	Herkunft    string
+	Glaube      string
+	SocialClass string // Sozialer SocialClass
+	Vermoegen   WealthInfo
 }
 
 // WealthInfo contains character wealth/money
@@ -72,17 +72,21 @@ type DerivedValueSet struct {
 
 	// Kampfwerte
 	Abwehr       int // z.B. "Abwehr+12"
+	AbwehrBonus  int // Abwehr-Bonus
 	SchadenBonus int
 	AngriffBonus int
+	Raufen       int // Raufen-Wert
 
 	// Resistenzen
-	ResistenzGift    int
-	ResistenzKoerper int
-	ResistenzGeist   int
+	ResistenzGift         int
+	ResistenzKoerper      int
+	ResistenzBonusKoerper int // Resistenz Körper Bonus
+	ResistenzGeist        int
+	ResistenzBonusGeist   int // Resistenz Geist Bonus
 
 	// Zauberwerte
-	Zaubern      int // z.B. "+10/+9"
-	ZaubernBonus int // Erster Zauberbonus
+	Zaubern     int // z.B. "+10/+9"
+	ZauberBonus int // Zauber-Bonus
 
 	// Sonstige
 	Sehen     int // Sehen-Wert

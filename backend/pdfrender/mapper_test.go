@@ -44,6 +44,18 @@ func TestMapCharacterToViewModel_BasicInfo(t *testing.T) {
 	if vm.Character.Grade != 5 {
 		t.Errorf("Expected grade 5, got %d", vm.Character.Grade)
 	}
+
+	if vm.Character.Herkunft != "Clanngadarn" {
+		t.Errorf("Expected Herkunft 'Clanngadarn', got '%s'", vm.Character.Herkunft)
+	}
+
+	if vm.Character.Glaube != "Druide" {
+		t.Errorf("Expected Glaube 'Druide', got '%s'", vm.Character.Glaube)
+	}
+
+	if vm.Character.SocialClass != "Mittelschicht" {
+		t.Errorf("Expected SocialClass 'Mittelschicht', got '%s'", vm.Character.SocialClass)
+	}
 }
 
 func TestMapCharacterToViewModel_Attributes(t *testing.T) {
@@ -58,7 +70,7 @@ func TestMapCharacterToViewModel_Attributes(t *testing.T) {
 			{Name: "Gs", Value: 65},
 			{Name: "Gw", Value: 70},
 		},
-		B: models.B{Value: 10},
+		B: models.B{Max: 10},
 	}
 
 	// Act

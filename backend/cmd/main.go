@@ -56,6 +56,14 @@ func main() {
 	database.ConnectDatabase()
 	logger.Info("Datenbankverbindung erfolgreich")
 
+	// Initialize PDF templates
+	logger.Debug("Initialisiere PDF-Templates...")
+	if err := pdfrender.InitializeTemplates("/app/default_templates", cfg.TemplatesDir); err != nil {
+		logger.Warn("Fehler beim Initialisieren der Templates: %s", err.Error())
+	} else {
+		logger.Info("PDF-Templates erfolgreich initialisiert")
+	}
+
 	r := gin.Default()
 	router.SetupGin(r)
 

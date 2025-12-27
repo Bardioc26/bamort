@@ -134,6 +134,10 @@ func mapDerivedValues(char *models.Char) DerivedValueSet {
 		Horen:                 0, // TODO: Add to character model
 		Riechen:               0, // TODO: Add to character model
 		Sechster:              0, // TODO: Add to character model
+		RKMalus:               0,
+		RKSave:                2,
+		RKShort:               "LR",
+		RKName:                "Lederrüstung",
 	}
 }
 

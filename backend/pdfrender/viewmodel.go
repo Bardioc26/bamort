@@ -82,7 +82,11 @@ type DerivedValueSet struct {
 	ResistenzKoerper      int
 	ResistenzBonusKoerper int // Resistenz Körper Bonus
 	ResistenzGeist        int
-	ResistenzBonusGeist   int // Resistenz Geist Bonus
+	ResistenzBonusGeist   int    // Resistenz Geist Bonus
+	RKMalus               int    // RüstungsKlasse Malus
+	RKSave                int    // Rüstungs LP-Verlust Einsparung
+	RKShort               string // Rüstungs-KM Kurzbezeichnung
+	RKName                string // Rüstungs-KM Name
 
 	// Zauberwerte
 	Zaubern     int // z.B. "+10/+9"

@@ -4,6 +4,7 @@ import (
 	"bamort/character"
 	"bamort/config"
 	"bamort/database"
+	"bamort/equipment"
 	"bamort/gsmaster"
 	"bamort/importer"
 	"bamort/logger"
@@ -73,6 +74,7 @@ func main() {
 	// Register your module routes
 	gsmaster.RegisterRoutes(protected)
 	character.RegisterRoutes(protected)
+	equipment.RegisterRoutes(protected)
 	maintenance.RegisterRoutes(protected)
 	importer.RegisterRoutes(protected)
 	pdfrender.RegisterRoutes(protected)

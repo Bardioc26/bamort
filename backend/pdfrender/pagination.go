@@ -281,7 +281,7 @@ func (p *Paginator) applyFilter(items interface{}, filter string) interface{} {
 			include := false
 			switch filter {
 			case "learned":
-				include = skill.IsLearned && skill.Category != "Sprache"
+				include = (skill.IsLearned || skill.Category == "Waffenfertigkeit") && skill.Category != "Sprache"
 			case "unlearned":
 				include = !skill.IsLearned && skill.Category != "Sprache"
 			case "language", "languages":

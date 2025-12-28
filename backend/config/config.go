@@ -68,7 +68,7 @@ func LoadConfig() *Config {
 	fmt.Printf("DEBUG LoadConfig - DATABASE_TYPE aus ENV: '%s'\n", os.Getenv("DATABASE_TYPE"))
 
 	// Server Port
-	if port := os.Getenv("PORT"); port != "" {
+	if port := os.Getenv("API_PORT"); port != "" {
 		config.ServerPort = port
 	}
 	if port := os.Getenv("SERVER_PORT"); port != "" {
@@ -127,8 +127,8 @@ func LoadConfig() *Config {
 		config.ExportTempDir = exportTempDir
 	}
 
-	fmt.Printf("DEBUG LoadConfig - Finale Config: Environment='%s', DevTesting='%s', DatabaseType='%s'\n",
-		config.Environment, config.DevTesting, config.DatabaseType)
+	fmt.Printf("DEBUG LoadConfig - Finale Config: Environment='%s', DevTesting='%s', DatabaseType='%s'\n Complete: %v\n",
+		config.Environment, config.DevTesting, config.DatabaseType, config)
 
 	return config
 }

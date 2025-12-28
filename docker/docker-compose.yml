@@ -9,8 +9,9 @@ services:
     environment:
       - GO_ENV=production
       - CGO_ENABLED=1
-      - DATABASE_TYPE=mysql
-      - DATABASE_URL=bamort:${MARIADB_PASSWORD:-secure_user_password}@tcp(mariadb:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local
+      - DATABASE_TYPE=${DATABASE_TYPE:-mysql}
+      - DATABASE_URL=${DATABASE_URL:-bamort:${MARIADB_PASSWORD:-secure_user_password}@tcp(mariadb:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local}
+      - API_PORT=${API_PORT:-8180}
     depends_on:
       mariadb:
         condition: service_healthy
@@ -27,10 +28,10 @@ services:
     ports:
       - "8181:80"
     environment:
-      - ENVIRONMENT=production
-      - VITE_API_URL=${VITE_API_URL:-http://bamort.trokan.de:8180}
-      - BASE_URL=http://bamort.trokan.de
-      - PORT=8180      
+      - NODE_ENV=production
+      - VITE_API_URL=${API_URL:-http://bamort.trokan.de:8180}
+      - VITE_BASE_URL=${BASE_URL:-http://bamort.trokan.de}
+      - VITE_API_PORT=${API_PORT:-8180}
     depends_on:
       - backend
     restart: unless-stopped
@@ -43,8 +44,8 @@ services:
     #  - "3306:3306"
     environment:
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-secure_root_password}
-      MARIADB_DATABASE: bamort
-      MARIADB_USER: bamort
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-bamort}
+      MARIADB_USER: ${MARIADB_USER:-bamort}
       MARIADB_PASSWORD: ${MARIADB_PASSWORD:-secure_user_password}
       MARIADB_CHARSET: utf8mb4
       MARIADB_COLLATION: utf8mb4_unicode_ci

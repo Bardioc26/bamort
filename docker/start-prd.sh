@@ -17,6 +17,6 @@ echo "📦 Building and starting development containers..."
 docker-compose -f docker-compose.yml down
 
 # Baue und starte die Container
-docker-compose -d -f docker-compose.yml up --build
+docker-compose -f docker-compose.yml up --build -d
 
-echo "✅ Development environment stopped."
+echo "✅ Development environment started."

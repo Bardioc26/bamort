@@ -143,7 +143,7 @@ func mapDerivedValues(char *models.Char) DerivedValueSet {
 
 // mapSkills converts character skills to SkillViewModel
 func mapSkills(char *models.Char) []SkillViewModel {
-	skills := make([]SkillViewModel, 0, len(char.Fertigkeiten))
+	skills := make([]SkillViewModel, 0, len(char.Fertigkeiten)+len(char.Waffenfertigkeiten))
 
 	for _, skill := range char.Fertigkeiten {
 		skl := SkillViewModel{
@@ -161,13 +161,27 @@ func mapSkills(char *models.Char) []SkillViewModel {
 		skills = append(skills, skl)
 	}
 
+	// Append weapon skills to the skill list
+	for _, skill := range char.Waffenfertigkeiten {
+		skl := SkillViewModel{
+			Name:           skill.Name,
+			Category:       "Waffenfertigkeit",
+			Value:          skill.Fertigkeitswert,
+			Bonus:          skill.Bonus,
+			PracticePoints: skill.Pp,
+			IsLearned:      skill.Fertigkeitswert > 0,
+			Bemerkung:      skill.Bemerkung,
+		}
+		skills = append(skills, skl)
+	}
+
 	return skills
 }
 
 // mapWeapons converts equipped weapons to WeaponViewModel
 // EW = Waffenfertigkeit.Fertigkeitswert + Character.AngriffBonus + Weapon.Anb
 func mapWeapons(char *models.Char) []WeaponViewModel {
-	weapons := make([]WeaponViewModel, 0, len(char.Waffen))
+	weapons := make([]WeaponViewModel, 0, len(char.Waffen)+1)
 
 	// Calculate character's bonuses using character logic
 	attrs := mapAttributes(char)
@@ -182,6 +196,15 @@ func mapWeapons(char *models.Char) []WeaponViewModel {
 		Rasse: char.Rasse,
 		Typ:   char.Typ,
 		Grad:  char.Grad,
+	})
+
+	// Add Raufen as the first weapon
+	raufenDamage := fmt.Sprintf("1W6%+d", bonusValues.SchadensBonus)
+	weapons = append(weapons, WeaponViewModel{
+		Name:     "Raufen",
+		Value:    bonusValues.Raufen,
+		Damage:   raufenDamage,
+		IsRanged: false,
 	})
 
 	// Create a map of weapon skills for quick lookup

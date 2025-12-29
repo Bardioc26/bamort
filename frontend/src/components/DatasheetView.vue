@@ -3,7 +3,7 @@
       <!-- Character Overview -->
       <div class="character-overview">
         <div class="character-image">
-          <img :src="imageSrc" alt="Character Image" v-if="this.character.image"/>
+          <img :src="imageSrc" alt="Character Image"/>
         </div>
         <div class="character-stats">
           <div class="stat" v-for="(stat, index) in characterStats" :key="index">
@@ -100,7 +100,7 @@ export default {
     imageSrc() {
       return this.character.image
         ? `${this.character.image}`
-        : "";
+        : "/token_default.png";
     },
   },
   data() {

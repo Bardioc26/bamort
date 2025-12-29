@@ -470,5 +470,17 @@ export default {
     passwordUpdateSuccess: 'Passwort erfolgreich aktualisiert',
     passwordUpdateError: 'Fehler beim Aktualisieren des Passworts',
     currentPasswordIncorrect: 'Das aktuelle Passwort ist falsch'
-  }
+  },
+  character: {
+    uploadImage: 'Bild hochladen',
+    selectImage: 'Bild auswählen',
+    cropRect: 'Rechteckig',
+    cropRound: 'Rund',
+    preview: 'Vorschau',
+    changeImage: 'Bild ändern',
+    saveImage: 'Bild speichern',
+    imageUploadSuccess: 'Bild erfolgreich hochgeladen',
+    imageUploadError: 'Fehler beim Hochladen des Bildes'
+  },
+  uploading: 'Hochladen'
 }

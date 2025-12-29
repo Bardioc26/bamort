@@ -468,5 +468,17 @@ export default {
     passwordUpdateSuccess: 'Password updated successfully',
     passwordUpdateError: 'Failed to update password',
     currentPasswordIncorrect: 'Current password is incorrect'
-  }
+  },
+  character: {
+    uploadImage: 'Upload Image',
+    selectImage: 'Select Image',
+    cropRect: 'Rectangular',
+    cropRound: 'Round',
+    preview: 'Preview',
+    changeImage: 'Change Image',
+    saveImage: 'Save Image',
+    imageUploadSuccess: 'Image uploaded successfully',
+    imageUploadError: 'Failed to upload image'
+  },
+  uploading: 'Uploading'
 }

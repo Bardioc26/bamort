@@ -4,6 +4,10 @@
       <div class="character-overview">
         <div class="character-image">
           <img :src="imageSrc" alt="Character Image"/>
+          <ImageUploadCropper 
+            :characterId="character.id" 
+            @image-updated="handleImageUpdate"
+          />
         </div>
         <div class="character-stats">
           <div class="stat" v-for="(stat, index) in characterStats" :key="index">
@@ -81,6 +85,16 @@
   margin-top: 0; /* Kein zusätzlicher oberer Margin */
 }
 
+.character-image {
+  position: relative;
+}
+
+.character-image .image-upload-container {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
 .character-info {
   margin-top: 20px;
 }
@@ -88,8 +102,13 @@
 
 
 <script>
+import ImageUploadCropper from './ImageUploadCropper.vue'
+
 export default {
   name: "DatasheetView",
+  components: {
+    ImageUploadCropper
+  },
   props: {
     character: {
       type: Object,
@@ -125,6 +144,9 @@ export default {
     }
   },
   methods: {
+    handleImageUpdate(newImage) {
+      this.$emit('character-updated')
+    },
     getStat(path) {
       if (path === 'git' ){
         return '64!'

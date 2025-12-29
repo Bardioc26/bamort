@@ -38,6 +38,11 @@ export default {
     DeleteChar:'Delete Character',
     Profile:'Profile',
     //Character:'Charakter',
+    Dashboard:'Dashboard',
+    ImportData:'Import Data',
+    Logout:'Logout',
+    Register:'Register',
+    Maintenance:'Maintenance',
   },
   Equipment:'Equipment',
   equipment:{

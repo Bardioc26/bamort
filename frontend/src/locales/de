@@ -38,6 +38,11 @@ export default {
     DeleteChar:'Figur löschen',
     Profile:'Profil',
     //Character:'Charakter',
+    Dashboard:'Dashboard',
+    ImportData:'Daten importieren',
+    Logout:'Abmelden',
+    Register:'Registrieren',
+    Maintenance:'Wartung',
   },
   Equipment:'Ausrüstung',
   equipment:{

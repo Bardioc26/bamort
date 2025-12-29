@@ -14,6 +14,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // Character Handlers
@@ -100,14 +101,20 @@ func UpdateCharacter(c *gin.Context) {
 		return
 	}
 
+	// Store the original ID to preserve it
+	originalID := character.ID
+
 	// Bind the updated data
 	if err := c.ShouldBindJSON(&character); err != nil {
 		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	// Save the updated character
-	if err := database.DB.Save(&character).Error; err != nil {
+	// Restore the ID
+	character.ID = originalID
+
+	// Update all associations
+	if err := database.DB.Session(&gorm.Session{FullSaveAssociations: true}).Save(&character).Error; err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to update character")
 		return
 	}

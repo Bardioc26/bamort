@@ -87,7 +87,7 @@ func ExportCharacterToPDF(c *gin.Context) {
 	renderer := NewPDFRenderer()
 	currentDate := time.Now().Format("02.01.2006")
 
-	// Render all 4 pages with continuations
+	// Generate all pages with continuations if needed
 	var allPDFs [][]byte
 
 	// Page 1: Stats
@@ -96,7 +96,10 @@ func ExportCharacterToPDF(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render page 1: " + err.Error()})
 		return
 	}
-	allPDFs = append(allPDFs, page1PDFs...)
+	//allPDFs = append(allPDFs, page1PDFs...)
+	for _, pdf := range page1PDFs {
+		allPDFs = append(allPDFs, pdf)
+	}
 
 	// Page 2: Play
 	page2PDFs, err := RenderPageWithContinuations(viewModel, "page_2.html", 2, currentDate, loader, renderer)
@@ -104,7 +107,10 @@ func ExportCharacterToPDF(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render page 2: " + err.Error()})
 		return
 	}
-	allPDFs = append(allPDFs, page2PDFs...)
+	//allPDFs = append(allPDFs, page2PDFs...)
+	for _, pdf := range page2PDFs {
+		allPDFs = append(allPDFs, pdf)
+	}
 
 	// Page 3: Spells
 	page3PDFs, err := RenderPageWithContinuations(viewModel, "page_3.html", 3, currentDate, loader, renderer)
@@ -112,7 +118,10 @@ func ExportCharacterToPDF(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render page 3: " + err.Error()})
 		return
 	}
-	allPDFs = append(allPDFs, page3PDFs...)
+	//allPDFs = append(allPDFs, page3PDFs...)
+	for _, pdf := range page3PDFs {
+		allPDFs = append(allPDFs, pdf)
+	}
 
 	// Page 4: Equipment
 	page4PDFs, err := RenderPageWithContinuations(viewModel, "page_4.html", 4, currentDate, loader, renderer)
@@ -120,7 +129,10 @@ func ExportCharacterToPDF(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render page 4: " + err.Error()})
 		return
 	}
-	allPDFs = append(allPDFs, page4PDFs...)
+	//allPDFs = append(allPDFs, page4PDFs...)
+	for _, pdf := range page4PDFs {
+		allPDFs = append(allPDFs, pdf)
+	}
 
 	// Merge PDFs if needed
 	var finalPDF []byte
@@ -128,7 +140,7 @@ func ExportCharacterToPDF(c *gin.Context) {
 		finalPDF = allPDFs[0]
 	} else {
 		// Merge multiple PDFs
-		tmpDir := "/tmp/bamort_pdf_export"
+		tmpDir := fmt.Sprintf("/tmp/bamort_pdf_export_%d", time.Now().UnixNano())
 		if err := os.MkdirAll(tmpDir, 0755); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create temp directory"})
 			return
@@ -147,7 +159,7 @@ func ExportCharacterToPDF(c *gin.Context) {
 		}
 
 		// Merge PDFs
-		combinedPath := fmt.Sprintf("%s/combined.pdf", tmpDir)
+		combinedPath := fmt.Sprintf("%s/combined_%d.pdf", tmpDir, time.Now().UnixNano())
 		if err := api.MergeCreateFile(filePaths, combinedPath, false, nil); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to merge PDFs: " + err.Error()})
 			return

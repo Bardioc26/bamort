@@ -413,3 +413,137 @@ func ValidateResetToken(c *gin.Context) {
 		"expires":  user.ResetPwHashExpires,
 	})
 }
+
+// GetUserProfile Handler to get current user's profile information
+func GetUserProfile(c *gin.Context) {
+	logger.Debug("Lade Benutzerprofil...")
+
+	// Get user ID from context (set by AuthMiddleware)
+	userID, exists := c.Get("userID")
+	if !exists {
+		logger.Error("Benutzer-ID nicht im Context gefunden")
+		respondWithError(c, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	var user User
+	if err := user.FirstId(userID.(uint)); err != nil {
+		logger.Error("Benutzer mit ID %v nicht gefunden: %s", userID, err.Error())
+		respondWithError(c, http.StatusNotFound, "User not found")
+		return
+	}
+
+	logger.Debug("Benutzerprofil geladen für: %s (ID: %d)", user.Username, user.UserID)
+	c.JSON(http.StatusOK, gin.H{
+		"id":       user.UserID,
+		"username": user.Username,
+		"email":    user.Email,
+	})
+}
+
+// UpdateEmail Handler to update user's email address
+func UpdateEmail(c *gin.Context) {
+	logger.Debug("Starte E-Mail-Aktualisierung...")
+
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		logger.Error("Benutzer-ID nicht im Context gefunden")
+		respondWithError(c, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	var input struct {
+		Email string `json:"email" binding:"required,email"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		logger.Error("Fehler beim Parsen der E-Mail-Daten: %s", err.Error())
+		respondWithError(c, http.StatusBadRequest, "Valid email address required")
+		return
+	}
+
+	var user User
+	if err := user.FirstId(userID.(uint)); err != nil {
+		logger.Error("Benutzer mit ID %v nicht gefunden: %s", userID, err.Error())
+		respondWithError(c, http.StatusNotFound, "User not found")
+		return
+	}
+
+	// Check if email is already in use by another user
+	var existingUser User
+	if err := existingUser.FindByEmail(input.Email); err == nil {
+		if existingUser.UserID != user.UserID {
+			logger.Warn("E-Mail-Aktualisierung fehlgeschlagen - E-Mail bereits vergeben: %s", input.Email)
+			respondWithError(c, http.StatusConflict, "Email already in use")
+			return
+		}
+	}
+
+	user.Email = input.Email
+	if err := user.Save(); err != nil {
+		logger.Error("Fehler beim Speichern der E-Mail für Benutzer %s: %s", user.Username, err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to update email")
+		return
+	}
+
+	logger.Info("E-Mail erfolgreich aktualisiert für Benutzer: %s (ID: %d)", user.Username, user.UserID)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Email updated successfully",
+		"email":   user.Email,
+	})
+}
+
+// UpdatePassword Handler to update user's password
+func UpdatePassword(c *gin.Context) {
+	logger.Debug("Starte Passwort-Aktualisierung...")
+
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		logger.Error("Benutzer-ID nicht im Context gefunden")
+		respondWithError(c, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	var input struct {
+		CurrentPassword string `json:"current_password" binding:"required"`
+		NewPassword     string `json:"new_password" binding:"required,min=6"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		logger.Error("Fehler beim Parsen der Passwort-Daten: %s", err.Error())
+		respondWithError(c, http.StatusBadRequest, "Current password and new password (min 6 characters) required")
+		return
+	}
+
+	var user User
+	if err := user.FirstId(userID.(uint)); err != nil {
+		logger.Error("Benutzer mit ID %v nicht gefunden: %s", userID, err.Error())
+		respondWithError(c, http.StatusNotFound, "User not found")
+		return
+	}
+
+	// Verify current password
+	hashedCurrentPassword := md5.Sum([]byte(input.CurrentPassword))
+	if user.PasswordHash != hex.EncodeToString(hashedCurrentPassword[:]) {
+		logger.Warn("Passwort-Aktualisierung fehlgeschlagen - Aktuelles Passwort ungültig für Benutzer: %s", user.Username)
+		respondWithError(c, http.StatusUnauthorized, "Current password is incorrect")
+		return
+	}
+
+	// Hash new password
+	hashedNewPassword := md5.Sum([]byte(input.NewPassword))
+	user.PasswordHash = hex.EncodeToString(hashedNewPassword[:])
+
+	if err := user.Save(); err != nil {
+		logger.Error("Fehler beim Speichern des Passworts für Benutzer %s: %s", user.Username, err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to update password")
+		return
+	}
+
+	logger.Info("Passwort erfolgreich aktualisiert für Benutzer: %s (ID: %d)", user.Username, user.UserID)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Password updated successfully",
+	})
+}

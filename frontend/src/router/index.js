@@ -8,6 +8,7 @@ import DashboardView from "../views/DashboardView.vue";
 import AusruestungView from "../views/AusruestungView.vue";
 import MaintenanceView from "../views/MaintenanceView.vue";
 import FileUploadPage from "../views/FileUploadPage.vue";
+import UserProfileView from "../views/UserProfileView.vue";
 
 import CharacterDetails from "@/components/CharacterDetails.vue";
 import CharacterCreation from "@/components/CharacterCreation.vue";
@@ -21,6 +22,7 @@ const routes = [
   { path: "/forgot-password", name: "ForgotPassword", component: ForgotPasswordView },
   { path: "/reset-password", name: "ResetPassword", component: ResetPasswordView },
   { path: "/dashboard", name: "Dashboard", component: DashboardView, meta: { requiresAuth: true } },
+  { path: "/profile", name: "UserProfile", component: UserProfileView, meta: { requiresAuth: true } },
   { path: "/ausruestung/:characterId", name: "Ausruestung", component: AusruestungView, meta: { requiresAuth: true } },
   { path: "/maintenance", name: "Maintenance", component: MaintenanceView, meta: { requiresAuth: true } },
   { path: "/upload", name: "FileUpload", component: FileUploadPage },

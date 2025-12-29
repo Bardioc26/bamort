@@ -12,6 +12,7 @@ The transfer package provides character export and import functionality for the 
   - Learning data (all learning_* tables)
   - Audit log entries
   - GSM master data (skills, spells, weapons, equipment definitions)
+  - **Security**: Sensitive user data (password, updated_at, reset tokens) is removed from exports
 
 - **Smart Import**: 
   - Identifies existing GSM data by name (not ID) to avoid duplicates
@@ -52,7 +53,9 @@ Imports a character from JSON data
 
 ### Export a Character
 ```bash
-curl http://localhost:8180/api/transfer/export/18 > character_export.json
+curl http://localhost:8180/api/transfer/export/18 \
+  -H "Authorization: Bearer XXXXXXXXXXX" \
+  > character_export.json
 ```
 
 ### Download a Character
@@ -64,6 +67,7 @@ wget http://localhost:8180/api/transfer/download/18
 ```bash
 curl -X POST http://localhost:8180/api/transfer/import \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer XXXXXXXXXXX" \
   -d @character_export.json
 ```
 

@@ -64,7 +64,7 @@ func DownloadCharacterHandler(c *gin.Context) {
 // ImportCharacterHandler handles character import requests
 func ImportCharacterHandler(c *gin.Context) {
 	// Get user ID from context (set by auth middleware)
-	userID, exists := c.Get("user_id")
+	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return

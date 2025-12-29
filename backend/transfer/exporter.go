@@ -4,6 +4,7 @@ import (
 	"bamort/database"
 	"bamort/models"
 	"fmt"
+	"time"
 )
 
 // CharacterExport contains all data needed to export and import a character
@@ -60,6 +61,12 @@ func ExportCharacter(characterID uint) (*CharacterExport, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to load character: %w", err)
 	}
+
+	// Remove sensitive user information from export
+	char.User.PasswordHash = ""
+	char.User.UpdatedAt = time.Time{}
+	char.User.ResetPwHash = nil
+	char.User.ResetPwHashExpires = nil
 
 	export := &CharacterExport{
 		Character: char,

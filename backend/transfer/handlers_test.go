@@ -117,11 +117,11 @@ func TestImportCharacterHandlerAPI(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/api/transfer/import", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
 
-	// Mock user_id in context (normally set by auth middleware)
+	// Mock userID in context (normally set by auth middleware)
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = req
-	c.Set("user_id", uint(1))
+	c.Set("userID", uint(1))
 
 	ImportCharacterHandler(c)
 
@@ -170,7 +170,7 @@ func TestImportInvalidJSONAPI(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = req
-	c.Set("user_id", uint(1))
+	c.Set("userID", uint(1))
 
 	ImportCharacterHandler(c)
 

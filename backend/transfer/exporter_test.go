@@ -63,6 +63,15 @@ func TestExportCharacter(t *testing.T) {
 	if reimported.Character.ID != characterID {
 		t.Errorf("After JSON round-trip, expected character ID %d, got %d", characterID, reimported.Character.ID)
 	}
+
+	// Verify sensitive user data is removed
+	if exportData.Character.User.PasswordHash != "" {
+		t.Error("Password hash should be empty in export")
+	}
+
+	if !exportData.Character.User.UpdatedAt.IsZero() {
+		t.Error("UpdatedAt should be zero time in export")
+	}
 }
 
 func TestExportCharacterIncludesSkills(t *testing.T) {

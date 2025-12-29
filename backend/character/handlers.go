@@ -1917,7 +1917,9 @@ func GetAllSkillsWithLearningCosts(characterClass string) (map[string][]gin.H, e
 		difficulty := skillInfo.DifficultyName
 
 		var learnCost int
-		if err == nil && bestCategory != "" {
+		// error cannot be nil at this point
+		//if err == nil && bestCategory != "" {
+		if bestCategory != "" {
 			// Use the difficulty as a basis for learning cost
 			switch difficulty {
 			case "Leicht":

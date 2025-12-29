@@ -11,6 +11,7 @@ import (
 	"bamort/maintenance"
 	"bamort/pdfrender"
 	"bamort/router"
+	"bamort/transfer"
 	"bamort/user"
 
 	"github.com/gin-gonic/gin"
@@ -80,6 +81,7 @@ func main() {
 	maintenance.RegisterRoutes(protected)
 	importer.RegisterRoutes(protected)
 	pdfrender.RegisterRoutes(protected)
+	transfer.RegisterRoutes(protected)
 
 	// Register public routes (no authentication)
 	pdfrender.RegisterPublicRoutes(r)

@@ -200,3 +200,213 @@ func ImportSpellCSVHandler(c *gin.Context) {
 		"total_spells": spellCount,
 	})
 }
+
+// ExportCharacterVTTHandler exports a character to VTT JSON format
+// @Summary Export character to VTT JSON format
+// @Description Exports a character to VTT JSON format for use in other systems
+// @Tags importer
+// @Produce json
+// @Param id path int true "Character ID"
+// @Success 200 {object} CharacterImport "Export successful"
+// @Failure 400 {object} map[string]interface{} "Bad request - invalid character ID"
+// @Failure 404 {object} map[string]interface{} "Character not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error - export failed"
+// @Router /api/importer/export/vtt/{id} [get]
+func ExportCharacterVTTHandler(c *gin.Context) {
+	// Get character ID from URL parameter
+	charID := c.Param("id")
+	if charID == "" {
+		respondWithError(c, http.StatusBadRequest, "Character ID is required")
+		return
+	}
+
+	// Load character from database
+	var char models.Char
+	err := database.DB.Preload("Eigenschaften").
+		Preload("Fertigkeiten").
+		Preload("Waffenfertigkeiten").
+		Preload("Zauber").
+		Preload("Waffen").
+		Preload("Ausruestung").
+		Preload("Behaeltnisse").
+		Preload("Transportmittel").
+		First(&char, charID).Error
+
+	if err != nil {
+		respondWithError(c, http.StatusNotFound, "Character not found")
+		return
+	}
+
+	// Export to VTT format
+	vttChar, err := ExportCharToVTT(&char)
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to export character: %s", err.Error()))
+		return
+	}
+
+	// Return as JSON
+	c.JSON(http.StatusOK, vttChar)
+}
+
+// ExportCharacterVTTFileHandler exports a character to VTT JSON file
+// @Summary Export character to VTT JSON file
+// @Description Exports a character to VTT JSON file and returns it as a download
+// @Tags importer
+// @Produce json
+// @Param id path int true "Character ID"
+// @Success 200 {file} file "VTT JSON file"
+// @Failure 400 {object} map[string]interface{} "Bad request - invalid character ID"
+// @Failure 404 {object} map[string]interface{} "Character not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error - export failed"
+// @Router /api/importer/export/vtt/{id}/file [get]
+func ExportCharacterVTTFileHandler(c *gin.Context) {
+	// Get character ID from URL parameter
+	charID := c.Param("id")
+	if charID == "" {
+		respondWithError(c, http.StatusBadRequest, "Character ID is required")
+		return
+	}
+
+	// Load character from database
+	var char models.Char
+	err := database.DB.Preload("Eigenschaften").
+		Preload("Fertigkeiten").
+		Preload("Waffenfertigkeiten").
+		Preload("Zauber").
+		Preload("Waffen").
+		Preload("Ausruestung").
+		Preload("Behaeltnisse").
+		Preload("Transportmittel").
+		First(&char, charID).Error
+
+	if err != nil {
+		respondWithError(c, http.StatusNotFound, "Character not found")
+		return
+	}
+
+	// Create temp file
+	tempFile, err := os.CreateTemp("", fmt.Sprintf("vtt_export_%s_*.json", char.Name))
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to create temp file")
+		return
+	}
+	defer os.Remove(tempFile.Name())
+	tempFile.Close()
+
+	// Export to file
+	err = ExportCharToVTTFile(&char, tempFile.Name())
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to export character: %s", err.Error()))
+		return
+	}
+
+	// Send file as download
+	filename := fmt.Sprintf("%s_vtt_export.json", char.Name)
+	c.FileAttachment(tempFile.Name(), filename)
+}
+
+// ExportSpellsCSVHandler exports spell master data to CSV file
+// @Summary Export spells to CSV file
+// @Description Exports spell master data to CSV format
+// @Tags importer
+// @Produce text/csv
+// @Param game_system query string false "Game system filter (e.g., 'midgard')"
+// @Success 200 {file} file "CSV file"
+// @Failure 500 {object} map[string]interface{} "Internal server error - export failed"
+// @Router /api/importer/export/spells/csv [get]
+func ExportSpellsCSVHandler(c *gin.Context) {
+	gameSystem := c.Query("game_system")
+
+	// Load spells from database
+	var spells []models.Spell
+	query := database.DB
+	if gameSystem != "" {
+		query = query.Where("game_system = ?", gameSystem)
+	}
+	err := query.Find(&spells).Error
+
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to load spells")
+		return
+	}
+
+	// Create temp file
+	tempFile, err := os.CreateTemp("", "spells_export_*.csv")
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to create temp file")
+		return
+	}
+	defer os.Remove(tempFile.Name())
+	tempFile.Close()
+
+	// Export to CSV
+	err = ExportSpellsToCSV(spells, tempFile.Name())
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to export spells: %s", err.Error()))
+		return
+	}
+
+	// Send file as download
+	filename := "spells_export.csv"
+	if gameSystem != "" {
+		filename = fmt.Sprintf("spells_%s_export.csv", gameSystem)
+	}
+	c.FileAttachment(tempFile.Name(), filename)
+}
+
+// ExportCharacterCSVHandler exports a character to CSV file
+// @Summary Export character to CSV file
+// @Description Exports a character to CSV format (MOAM-compatible)
+// @Tags importer
+// @Produce text/csv
+// @Param id path int true "Character ID"
+// @Success 200 {file} file "CSV file"
+// @Failure 400 {object} map[string]interface{} "Bad request - invalid character ID"
+// @Failure 404 {object} map[string]interface{} "Character not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error - export failed"
+// @Router /api/importer/export/csv/{id} [get]
+func ExportCharacterCSVHandler(c *gin.Context) {
+	// Get character ID from URL parameter
+	charID := c.Param("id")
+	if charID == "" {
+		respondWithError(c, http.StatusBadRequest, "Character ID is required")
+		return
+	}
+
+	// Load character from database
+	var char models.Char
+	err := database.DB.Preload("Eigenschaften").
+		Preload("Fertigkeiten").
+		Preload("Waffenfertigkeiten").
+		Preload("Zauber").
+		Preload("Waffen").
+		Preload("Ausruestung").
+		Preload("Behaeltnisse").
+		Preload("Transportmittel").
+		First(&char, charID).Error
+
+	if err != nil {
+		respondWithError(c, http.StatusNotFound, "Character not found")
+		return
+	}
+
+	// Create temp file
+	tempFile, err := os.CreateTemp("", fmt.Sprintf("csv_export_%s_*.csv", char.Name))
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to create temp file")
+		return
+	}
+	defer os.Remove(tempFile.Name())
+	tempFile.Close()
+
+	// Export to CSV
+	err = ExportCharToCSV(&char, tempFile.Name())
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to export character: %s", err.Error()))
+		return
+	}
+
+	// Send file as download
+	filename := fmt.Sprintf("%s_export.csv", char.Name)
+	c.FileAttachment(tempFile.Name(), filename)
+}

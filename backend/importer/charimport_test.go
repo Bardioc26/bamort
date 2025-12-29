@@ -11,6 +11,7 @@ import (
 
 func TestImportVTT2Char(t *testing.T) {
 	database.SetupTestDB()
+	defer database.ResetTestDB()
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	char, err := ImportVTTJSON(fileName)
 	assert.NoError(t, err, "expected no error when saving imported Char")

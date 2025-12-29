@@ -243,6 +243,10 @@ func TestImportSkill2GSMaster(t *testing.T) {
 
 func TestImportWeaponSkill2GSMaster(t *testing.T) {
 	database.SetupTestDB()
+	defer database.ResetTestDB()
+	// Clear weapon skills to test actual import, not pre-existing data
+	database.DB.Exec("DELETE FROM gsm_weaponskills")
+	database.DB.Exec("DELETE FROM sqlite_sequence WHERE name='gsm_weaponskills'")
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")
@@ -327,6 +331,10 @@ func TestImportSpell2GSMaster(t *testing.T) {
 
 func TestImportWeapon2GSMaster(t *testing.T) {
 	database.SetupTestDB()
+	defer database.ResetTestDB()
+	// Clear weapons to test actual import, not pre-existing data
+	database.DB.Exec("DELETE FROM gsm_weapons")
+	database.DB.Exec("DELETE FROM sqlite_sequence WHERE name='gsm_weapons'")
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	character, err := readImportChar(fileName)
 	assert.NoError(t, err, "Expected no error when Unmarshal filecontent")

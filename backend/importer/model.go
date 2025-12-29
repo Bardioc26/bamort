@@ -251,7 +251,7 @@ func TransformImportWaffenFertigkeit2GSDMaster(object *Waffenfertigkeit) (*model
 	// if not found insert to masterdata
 	gsmobj.Name = object.Name
 	gsmobj.Beschreibung = object.Beschreibung
-	gsmobj.Initialwert = object.Fertigkeitswert
+	gsmobj.Initialwert = 5
 	gsmobj.Quelle = object.Quelle
 	gsmobj.Bonuseigenschaft = "check"
 	gsmobj.Improvable = true

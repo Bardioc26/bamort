@@ -8,11 +8,19 @@ import (
 	"gorm.io/gorm"
 )
 
+// Role constants
+const (
+	RoleStandardUser = "standard"
+	RoleMaintainer   = "maintainer"
+	RoleAdmin        = "admin"
+)
+
 type User struct {
 	UserID             uint       `gorm:"primaryKey" json:"id"`
 	Username           string     `gorm:"unique" json:"username"`
 	PasswordHash       string     `json:"password"`
 	Email              string     `gorm:"unique" json:"email"`
+	Role               string     `gorm:"default:standard" json:"role"`
 	ResetPwHash        *string    `gorm:"index" json:"-"` // Hash für Password-Reset (wird nicht serialisiert)
 	ResetPwHashExpires *time.Time `json:"-"`              // Ablaufzeit für Password-Reset-Hash
 	CreatedAt          time.Time  `json:"created_at"`
@@ -119,4 +127,29 @@ func (object *User) IsResetHashValid(resetHash string) bool {
 		return false
 	}
 	return *object.ResetPwHash == resetHash && time.Now().Before(*object.ResetPwHashExpires)
+}
+
+// HasRole checks if the user has the specified role
+func (u *User) HasRole(role string) bool {
+	return u.Role == role
+}
+
+// IsAdmin checks if the user is an admin
+func (u *User) IsAdmin() bool {
+	return u.Role == RoleAdmin
+}
+
+// IsMaintainer checks if the user is a maintainer or higher
+func (u *User) IsMaintainer() bool {
+	return u.Role == RoleMaintainer || u.Role == RoleAdmin
+}
+
+// IsStandardUser checks if the user is a standard user or higher
+func (u *User) IsStandardUser() bool {
+	return u.Role == RoleStandardUser || u.IsMaintainer()
+}
+
+// ValidateRole checks if the given role is valid
+func ValidateRole(role string) bool {
+	return role == RoleStandardUser || role == RoleMaintainer || role == RoleAdmin
 }

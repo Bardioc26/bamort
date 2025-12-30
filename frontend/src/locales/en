@@ -42,8 +42,7 @@ export default {
     ImportData:'Import Data',
     Logout:'Logout',
     Register:'Register',
-    Maintenance:'Maintenance',
-  },
+    Maintenance:'Maintenance',    UserManagement:'User Management',  },
   Equipment:'Equipment',
   equipment:{
     id:'ID',
@@ -441,6 +440,34 @@ export default {
     generating: 'Generating PDF...',
     pleaseWait: 'Please wait, this may take a moment',
     popupBlocked: 'Popup was blocked. Please allow popups for this site.'
+  },
+  userManagement: {
+    title: 'User Management',
+    loading: 'Loading users...',
+    loadError: 'Failed to load users',
+    id: 'ID',
+    username: 'Username',
+    email: 'Email',
+    role: 'Role',
+    createdAt: 'Created At',
+    actions: 'Actions',
+    changeRole: 'Change Role',
+    delete: 'Delete',
+    changeRoleTitle: 'Change User Role',
+    changeRoleFor: 'Change role for',
+    selectRole: 'Select Role',
+    save: 'Save',
+    cancel: 'Cancel',
+    deleteUserTitle: 'Delete User',
+    deleteConfirm: 'Do you really want to delete user',
+    deleteWarning: 'This action cannot be undone!',
+    updateError: 'Failed to update user role',
+    deleteError: 'Failed to delete user',
+    roles: {
+      standard: 'Standard User',
+      maintainer: 'Maintainer',
+      admin: 'Administrator'
+    }
   },
   profile: {
     title: 'User Profile',

@@ -60,6 +60,11 @@ func RegisterUser(c *gin.Context) {
 	user.PasswordHash = hex.EncodeToString(hashedPassword[:])
 	logger.Debug("Passwort-Hash erstellt für Benutzer: %s", user.Username)
 
+	// Set default role for new users
+	if user.Role == "" {
+		user.Role = RoleStandardUser
+	}
+
 	//fmt.Printf("pwdh: %s", user.PasswordHash)
 	if err := user.Create(); err != nil {
 		logger.Error("Fehler beim Erstellen des Benutzers %s: %s", user.Username, err.Error())
@@ -217,6 +222,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		// Set user information in context
 		c.Set("userID", user.UserID)
 		c.Set("username", user.Username)
+		c.Set("user", user)
 
 		c.Next()
 	}
@@ -438,6 +444,7 @@ func GetUserProfile(c *gin.Context) {
 		"id":       user.UserID,
 		"username": user.Username,
 		"email":    user.Email,
+		"role":     user.Role,
 	})
 }
 

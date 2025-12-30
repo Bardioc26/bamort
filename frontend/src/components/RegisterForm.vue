@@ -47,6 +47,8 @@ export default {
 </script>
 
 <style>
+/* All common styles moved to main.css */
+
 .error {
   color: red;
 }

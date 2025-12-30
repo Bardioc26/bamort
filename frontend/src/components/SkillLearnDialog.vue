@@ -739,18 +739,10 @@ export default {
 }
 </script>
 
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: block;
-  z-index: 1000;
-}
+<style>
+/* All common styles moved to main.css */
 
+/* SkillLearnDialog specific styles */
 .modal-content {
   background: white;
   border-radius: 0;

@@ -1468,3 +1468,480 @@ a,
     grid-template-columns: repeat(5, 1fr);
   }
 }
+
+/* ========================================
+   CONSOLIDATED MODAL STYLES
+   ======================================== */
+
+/* Modal overlay - covers entire viewport */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal content container */
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+/* Modal header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #dee2e6;
+  flex-shrink: 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+/* Modal body */
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Modal footer */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid #dee2e6;
+  flex-shrink: 0;
+}
+
+/* Modal actions (alternative to footer) */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+/* Close button */
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.close-button:hover {
+  color: #333;
+}
+
+/* Modal slide in animation */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ========================================
+   CONSOLIDATED BUTTON STYLES
+   ======================================== */
+
+/* Cancel button */
+.btn-cancel {
+  padding: 10px 20px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #f8f9fa;
+  color: #495057;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+/* Confirm button (success/submit) */
+.btn-confirm {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background: #1da766;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-confirm:hover:not(:disabled) {
+  background: #16a085;
+}
+
+.btn-confirm:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Export button */
+.btn-export {
+  padding: 10px 20px;
+  border: 1px solid #007bff;
+  border-radius: 6px;
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-export:hover:not(:disabled) {
+  background: #0056b3;
+  border-color: #0056b3;
+}
+
+.btn-export:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Small export button with icon */
+.export-button-small {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #007bff;
+  border-radius: 8px;
+  background: #007bff;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.export-button-small:hover {
+  background: #0056b3;
+  border-color: #0056b3;
+  transform: scale(1.05);
+}
+
+/* Delete button */
+.btn-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px 8px;
+  transition: transform 0.2s ease;
+  color: #dc3545;
+}
+
+.btn-delete:hover {
+  transform: scale(1.2);
+}
+
+/* Edit button */
+.btn-edit {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px 8px;
+  transition: transform 0.2s ease;
+  color: #007bff;
+}
+
+.btn-edit:hover {
+  transform: scale(1.2);
+}
+
+/* Add button */
+.btn-add,
+.btn-add-equipment,
+.btn-add-weapon,
+.btn-add-inline,
+.btn-add-spell {
+  padding: 8px 16px;
+  background: #1da766;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s ease;
+}
+
+.btn-add:hover,
+.btn-add-equipment:hover,
+.btn-add-weapon:hover,
+.btn-add-inline:hover,
+.btn-add-spell:hover {
+  background: #16a085;
+}
+
+/* Action button small (for table actions) */
+.btn-action {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.btn-action:hover {
+  transform: scale(1.1);
+}
+
+.btn-improve-small {
+  font-size: 1.2rem;
+}
+
+/* ========================================
+   CONSOLIDATED FORM STYLES
+   ======================================== */
+
+/* Form group container */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+/* Form control (input, select, textarea) */
+.form-control,
+.template-select,
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: white;
+  color: #495057;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus,
+.template-select:focus,
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-control:disabled,
+.template-select:disabled,
+.form-group input:disabled,
+.form-group select:disabled,
+.form-group textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #e9ecef;
+}
+
+/* Form row */
+.form-row {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+  }
+}
+
+/* Checkbox label */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: normal;
+  margin: 0;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* Help text */
+.help-text {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* ========================================
+   CONSOLIDATED LOADING INDICATORS
+   ======================================== */
+
+/* Loading overlay (absolute positioned within container) */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  border-radius: 8px;
+}
+
+.loading-overlay p {
+  color: #007bff;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Spinner animation */
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+/* Loading message (text only) */
+.loading-message {
+  text-align: center;
+  padding: 20px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* ========================================
+   CONSOLIDATED TABLE STYLES
+   ======================================== */
+
+/* Table header cell */
+.cd-table-header {
+  background-color: #1da766;
+  color: white;
+  font-weight: bold;
+  padding: 8px;
+  text-align: left;
+}
+
+/* Empty state for tables/lists */
+.empty-state {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 2rem;
+}
+
+.empty-state h3 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+}
+
+/* Action cell */
+.action-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* ========================================
+   CONSOLIDATED HEADER/LAYOUT STYLES
+   ======================================== */
+
+/* Header section */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Header content */
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
+}
+
+/* Character header */
+.character-header {
+  margin-bottom: 20px;
+}
+
+.character-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+  flex: 1;
+}

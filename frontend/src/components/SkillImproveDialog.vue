@@ -165,31 +165,8 @@
   </div>
 </template>
 
-<style scoped>
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 8px;
-  padding: 24px;
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  animation: modalSlideIn 0.3s ease;
-}
+<style>
+/* All common styles moved to main.css */
 
 .modal-wide {
   max-width: 700px;
@@ -330,27 +307,12 @@
   color: #6c757d;
 }
 
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
 .modal-content h3 {
   margin-top: 0;
   margin-bottom: 20px;
   color: #333;
   border-bottom: 2px solid #1da766;
   padding-bottom: 10px;
-}
-
-.form-group {
-  margin-bottom: 15px;
 }
 
 .form-row {
@@ -374,78 +336,12 @@
   min-width: 140px;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #555;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.form-group textarea {
-  height: 80px;
-  resize: vertical;
-}
-
 .help-text {
   display: block;
   margin-top: 5px;
   font-size: 12px;
   color: #6c757d;
   font-style: italic;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
-}
-
-.btn-confirm {
-  padding: 8px 20px;
-  background: #1da766;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background 0.2s ease;
-}
-
-.btn-confirm:hover:not(:disabled) {
-  background: #16a085;
-}
-
-.btn-confirm:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.btn-cancel {
-  padding: 8px 20px;
-  background: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.btn-cancel:hover:not(:disabled) {
-  background: #5a6268;
 }
 </style>
 

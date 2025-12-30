@@ -390,49 +390,8 @@ export default {
 }
 </script>
 
-<style scoped>
-.basic-info-form {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.basic-info-form h2 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #333;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #555;
-}
-
-input, select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  box-sizing: border-box;
-}
-
-input:focus, select:focus {
-  outline: none;
-  border-color: #2196f3;
-  box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
-}
+<style>
+/* All common styles moved to main.css */
 
 .belief-search {
   position: relative;
@@ -491,63 +450,6 @@ input:focus, select:focus {
   color: #f44336;
 }
 
-.form-actions {
-  text-align: center;
-  margin-top: 30px;
-}
-
-.next-btn {
-  background-color: #2196f3;
-  color: white;
-  padding: 12px 30px;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.next-btn:hover:not(:disabled) {
-  background-color: #1976d2;
-}
-
-.next-btn:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-/* Social class roll styles */
-.input-with-dice {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.input-with-dice select {
-  flex: 1;
-}
-
-.dice-btn {
-  padding: 10px 12px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
-  flex-shrink: 0;
-}
-
-.dice-btn:hover:not(:disabled) {
-  background-color: #45a049;
-}
-
-.dice-btn:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
 .roll-result {
   margin-top: 8px;
   padding: 8px;
@@ -557,7 +459,6 @@ input:focus, select:focus {
   color: #2e7d32;
 }
 
-/* Roll overlay styles */
 .roll-overlay {
   position: fixed;
   top: 0;

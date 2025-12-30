@@ -176,7 +176,9 @@
 </template>
 
 <style>
-/* DatasheetView spezifische Styles */
+/* All common styles moved to main.css */
+
+/* DatasheetView specific styles */
 .datasheet-container {
   padding-top: 10px;
 }

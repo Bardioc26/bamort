@@ -431,7 +431,10 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
+/* All common styles moved to main.css */
+
+/* AuditLogView specific styles */
 .audit-log-view {
   padding: 20px;
   background: #f8f9fa;

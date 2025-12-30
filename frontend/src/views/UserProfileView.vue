@@ -95,7 +95,9 @@
   </div>
 </template>
 
-<style scoped>
+<style>
+/* All common styles moved to main.css */
+
 .user-profile {
   padding: var(--padding-lg);
   margin-top: 2%;
@@ -162,49 +164,6 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: var(--margin-md);
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--margin-xs);
-}
-
-.form-group label {
-  font-weight: bold;
-  color: var(--color-text-secondary);
-}
-
-.form-group input {
-  padding: var(--padding-sm);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius);
-  font-size: 1em;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
-.btn-primary {
-  background-color: var(--color-primary);
-  color: white;
-  padding: var(--padding-sm) var(--padding-md);
-  border: none;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-size: 1em;
-  align-self: flex-start;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: var(--color-primary-dark);
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .badge-role-standard {

@@ -132,8 +132,9 @@ export default {
 }
 </script>
 
-<style scoped>
-/* Spezifische Styles nur für CharacterList */
+<style>
+/* All common styles moved to main.css */
+
 .create-character-section {
   margin-bottom: 30px;
   padding: 20px;

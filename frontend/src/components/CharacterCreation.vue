@@ -359,7 +359,9 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
+/* All common styles moved to main.css */
+
 .character-creation {
   width: 100%;
   max-width: none;

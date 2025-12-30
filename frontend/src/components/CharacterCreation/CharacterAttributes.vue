@@ -336,22 +336,8 @@ export default {
 }
 </script>
 
-<style scoped>
-.attributes-form {
-  max-width: 800px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  padding-bottom: 20px;
-}
-
-.attributes-form h2 {
-  text-align: center;
-  margin-bottom: 10px;
-  color: #333;
-  flex-shrink: 0;
-}
+<style>
+/* All common styles moved to main.css */
 
 .instruction {
   text-align: center;
@@ -359,63 +345,6 @@ export default {
   color: #666;
   font-style: italic;
   flex-shrink: 0;
-}
-
-.attributes-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-bottom: 20px;
-  max-height: 50vh;
-  overflow-y: auto;
-  padding: 5px;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  background-color: #fefefe;
-}
-
-.attribute-group {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: #fafafa;
-  min-width: 0; /* Prevent overflow */
-}
-
-.attribute-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.input-with-dice {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.attribute-label {
-  font-weight: bold;
-  color: #333;
-  flex: 1;
-  margin: 0;
-}
-
-.attribute-input {
-  width: 60px;
-  padding: 6px 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  text-align: center;
-  font-weight: bold;
-}
-
-.attribute-input:focus {
-  outline: none;
-  border-color: #2196f3;
-  box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
 }
 
 .attribute-description {
@@ -467,63 +396,10 @@ export default {
   background-color: #f57c00;
 }
 
-.form-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
-}
-
 .attributes-form-content {
   display: flex;
   flex-direction: column;
   flex: 1;
-}
-
-.prev-btn, .next-btn {
-  padding: 12px 30px;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.prev-btn {
-  background-color: #6c757d;
-  color: white;
-}
-
-.prev-btn:hover {
-  background-color: #5a6268;
-}
-
-.next-btn {
-  background-color: #2196f3;
-  color: white;
-}
-
-.next-btn:hover:not(:disabled) {
-  background-color: #1976d2;
-}
-
-.next-btn:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-/* Responsive Design für sehr kleine Bildschirme */
-@media (max-width: 600px) {
-  .attributes-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .attribute-group {
-    padding: 10px;
-  }
 }
 </style>
 

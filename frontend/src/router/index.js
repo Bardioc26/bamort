@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { isLoggedIn } from "../utils/auth"; // Import the helper function
+import LandingView from "../views/LandingView.vue";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import ForgotPasswordView from "../views/ForgotPasswordView.vue";
@@ -18,7 +19,8 @@ import CharacterCreation from "@/components/CharacterCreation.vue";
 
 
 const routes = [
-  { path: "/", name: "Login", component: LoginView },
+  { path: "/", name: "Landing", component: LandingView },
+  { path: "/login", name: "Login", component: LoginView },
   { path: "/register", name: "Register", component: RegisterView },
   { path: "/forgot-password", name: "ForgotPassword", component: ForgotPasswordView },
   { path: "/reset-password", name: "ResetPassword", component: ResetPasswordView },

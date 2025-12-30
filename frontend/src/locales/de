@@ -44,6 +44,15 @@ export default {
     Register:'Registrieren',
     Maintenance:'Wartung',
     UserManagement:'Benutzerverwaltung',
+    Home:'Startseite',
+  },
+  landing:{
+    title:'BaMoRT - Charakterverwaltung für Rollenspiele',
+    description:'Bamort ist ein modernes Werkzeug zur Charakterverwaltung für Rollenspiele. Es bietet umfassende Funktionen zur Charaktererstellung, -entwicklung und -verwaltung mit Unterstützung für Fertigkeiten, Zauber, Ausrüstung und mehr.',
+    version:'Version',
+    commit:'Commit',
+    login:'Zum Login',
+    github:'Projekt auf GitHub',
   },
   Equipment:'Ausrüstung',
   equipment:{

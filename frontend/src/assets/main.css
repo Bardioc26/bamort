@@ -3759,3 +3759,129 @@ a,
   outline: none;
   border-color: #0056b3;
 }
+
+/* ===================================
+   LANDING PAGE STYLES
+   =================================== */
+
+.landing-page {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url('/Abgrund-DD2.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.landing-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  padding: 2rem;
+  text-align: center;
+  color: white;
+}
+
+.dragon-container {
+  margin-bottom: 2rem;
+}
+
+.dragon-image {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.info-container h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  line-height: 1.2;
+}
+
+.info-container .description {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.version-info {
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.version-info p {
+  margin: 0.5rem 0;
+  line-height: 1.4;
+}
+
+.action-links {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-links .btn {
+  min-width: 150px;
+  font-size: 1.1rem;
+  padding: 12px 24px;
+}
+
+@media (max-width: 768px) {
+  .landing-content {
+    padding: 1rem;
+  }
+
+  .dragon-image {
+    max-width: 200px;
+  }
+
+  .info-container h1 {
+    font-size: 1.8rem;
+  }
+
+  .info-container .description {
+    font-size: 1rem;
+  }
+
+  .action-links {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .action-links .btn {
+    width: 100%;
+    max-width: 300px;
+  }
+}

@@ -42,7 +42,17 @@ export default {
     ImportData:'Import Data',
     Logout:'Logout',
     Register:'Register',
-    Maintenance:'Maintenance',    UserManagement:'User Management',  },
+    Maintenance:'Maintenance',    UserManagement:'User Management',
+    Home:'Home',
+  },
+  landing:{
+    title:'BaMoRT - Character Management for Role-Playing Games',
+    description:'Bamort is a modern character management tool for role-playing games. It provides comprehensive features for character creation, development, and management with support for skills, spells, equipment, and more.',
+    version:'Version',
+    commit:'Commit',
+    login:'Login',
+    github:'Project on GitHub',
+  },
   Equipment:'Equipment',
   equipment:{
     id:'ID',

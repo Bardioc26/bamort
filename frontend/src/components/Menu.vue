@@ -2,6 +2,9 @@
   <nav class="top-nav"><!---<nav class="menu"> --->
     <ul>
       <li>
+        <router-link to="/" active-class="active">{{ $t('menu.Home') }}</router-link>
+      </li>
+      <li>
         <router-link to="/dashboard" active-class="active">{{ $t('menu.Dashboard') }}</router-link>
       </li>
       <li>

@@ -20,6 +20,6 @@ func RegisterRoutes(r *gin.RouterGroup) {
 
 // RegisterPublicRoutes registers public PDF routes (no authentication required)
 func RegisterPublicRoutes(r *gin.Engine) {
-	// Get PDF file from xporttemp (public - for direct browser access)
+	// Get PDF file from export_temp (public - for direct browser access)
 	r.GET("/api/pdf/file/:filename", GetPDFFile)
 }

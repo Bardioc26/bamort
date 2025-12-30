@@ -3,7 +3,7 @@
     <!-- Character Header -->
     <div class="character-header">
       <div class="header-content">
-        <button @click="showExportDialog = true" class="export-button-small" :title="$t('export.exportPDF')">
+        <button @click="showExportDialog = true" class="export-button-small" :title="$t('export.title')">
           📄
         </button>
         <h2>{{ $t('char') }}: {{ character.name }} ({{ $t(currentView) }})</h2>
@@ -11,7 +11,7 @@
     </div>
 
     <!-- Export Dialog -->
-    <ExportPdfDialog 
+    <ExportDialog 
       :characterId="id" 
       :showDialog="showExportDialog"
       @update:showDialog="showExportDialog = $event"
@@ -169,7 +169,7 @@
 
 <script>
 import API from '../utils/api'
-import ExportPdfDialog from "./ExportPdfDialog.vue";
+import ExportDialog from "./ExportDialog.vue";
 import DatasheetView from "./DatasheetView.vue"; // Component for character stats
 import SkillView from "./SkillView.vue"; // Component for character history
 import WeaponView from "./WeaponView.vue"; // Component for character history
@@ -183,7 +183,7 @@ export default {
   name: "CharacterDetails",
   props: ["id"], // Receive the route parameter as a prop
   components: {
-    ExportPdfDialog,
+    ExportDialog,
     DatasheetView,
     SkillView,
     WeaponView,

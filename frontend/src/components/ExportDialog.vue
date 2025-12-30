@@ -2,7 +2,7 @@
   <div v-if="showDialog" class="modal-overlay" @click.self="closeDialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>{{ $t('export.exportPDF') }}</h3>
+        <h3>{{ $t('export.title') }}</h3>
         <button @click="closeDialog" class="close-button">&times;</button>
       </div>
       <div class="modal-body">
@@ -11,6 +11,15 @@
           <p>{{ $t('export.generating') }}</p>
         </div>
         <div class="form-group">
+          <label>{{ $t('export.selectFormat') }}:</label>
+          <select v-model="selectedFormat" class="template-select" :disabled="isExporting">
+            <option value="">{{ $t('export.pleaseSelectFormat') }}</option>
+            <option value="pdf">{{ $t('export.formatPDF') }}</option>
+            <option value="vtt">{{ $t('export.formatVTT') }}</option>
+            <option value="bamort">{{ $t('export.formatBamort') }}</option>
+          </select>
+        </div>
+        <div v-if="selectedFormat === 'pdf'" class="form-group">
           <label>{{ $t('export.selectTemplate') }}:</label>
           <select v-model="selectedTemplate" class="template-select" :disabled="isExporting">
             <option value="">{{ $t('export.pleaseSelectTemplate') }}</option>
@@ -19,7 +28,7 @@
             </option>
           </select>
         </div>
-        <div class="form-group">
+        <div v-if="selectedFormat === 'pdf'" class="form-group">
           <label class="checkbox-label">
             <input type="checkbox" v-model="showUserName" :disabled="isExporting">
             {{ $t('export.showUserName') }}
@@ -30,7 +39,7 @@
         <button @click="closeDialog" class="btn-cancel" :disabled="isExporting">
           {{ $t('export.cancel') }}
         </button>
-        <button @click="exportToPDF" class="btn-export" :disabled="!selectedTemplate || isExporting">
+        <button @click="performExport" class="btn-export" :disabled="!canExport || isExporting">
           <span v-if="!isExporting">{{ $t('export.export') }}</span>
           <span v-else>{{ $t('export.exporting') }}</span>
         </button>
@@ -233,7 +242,7 @@
 import API from '../utils/api'
 
 export default {
-  name: "ExportPdfDialog",
+  name: "ExportDialog",
   props: {
     characterId: {
       type: [String, Number],
@@ -247,9 +256,17 @@ export default {
   data() {
     return {
       templates: [],
+      selectedFormat: "",
       selectedTemplate: "",
       showUserName: false,
       isExporting: false
+    }
+  },
+  computed: {
+    canExport() {
+      if (!this.selectedFormat) return false
+      if (this.selectedFormat === 'pdf' && !this.selectedTemplate) return false
+      return true
     }
   },
   async created() {
@@ -266,6 +283,21 @@ export default {
         }
       } catch (error) {
         console.error('Failed to load templates:', error)
+      }
+    },
+    
+    async performExport() {
+      if (!this.selectedFormat) {
+        alert(this.$t('export.pleaseSelectFormat'))
+        return
+      }
+
+      if (this.selectedFormat === 'pdf') {
+        await this.exportToPDF()
+      } else if (this.selectedFormat === 'vtt') {
+        await this.exportToVTT()
+      } else if (this.selectedFormat === 'bamort') {
+        await this.exportToBamort()
       }
     },
     
@@ -305,6 +337,66 @@ export default {
         this.closeDialog()
       } catch (error) {
         console.error('Failed to export PDF:', error)
+        alert(this.$t('export.exportFailed') + ': ' + (error.response?.data?.error || error.message))
+      } finally {
+        this.isExporting = false
+      }
+    },
+
+    async exportToVTT() {
+      this.isExporting = true
+      
+      try {
+        // Get VTT data and trigger download
+        const response = await API.get(`/api/importer/export/vtt/${this.characterId}/file`, {
+          responseType: 'blob'
+        })
+        
+        // Create download link
+        const blob = new Blob([response.data], { type: 'application/json' })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `character_${this.characterId}_vtt.json`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+        
+        this.$emit('export-success')
+        this.closeDialog()
+      } catch (error) {
+        console.error('Failed to export VTT:', error)
+        alert(this.$t('export.exportFailed') + ': ' + (error.response?.data?.error || error.message))
+      } finally {
+        this.isExporting = false
+      }
+    },
+
+    async exportToBamort() {
+      this.isExporting = true
+      
+      try {
+        // Get Bamort JSON data and trigger download
+        const response = await API.get(`/api/transfer/download/${this.characterId}`, {
+          responseType: 'blob'
+        })
+        
+        // Create download link
+        const blob = new Blob([response.data], { type: 'application/json' })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `character_${this.characterId}_bamort.json`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+        
+        this.$emit('export-success')
+        this.closeDialog()
+      } catch (error) {
+        console.error('Failed to export Bamort format:', error)
         alert(this.$t('export.exportFailed') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.isExporting = false

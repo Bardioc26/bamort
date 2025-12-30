@@ -429,15 +429,21 @@ export default {
     notes: 'Notes'
   },
   export: {
+    title: 'Export Character',
+    selectFormat: 'Select Format',
+    formatPDF: 'PDF',
+    formatVTT: 'VTT Format',
+    formatBamort: 'Bamort Format (JSON)',
     selectTemplate: 'Template',
     exportPDF: 'Export PDF',
     exporting: 'Exporting...',
     pleaseSelectTemplate: 'Please select a template',
-    exportFailed: 'PDF export failed',
+    pleaseSelectFormat: 'Please select a format',
+    exportFailed: 'Export failed',
     showUserName: 'Show username',
     cancel: 'Cancel',
     export: 'Export',
-    generating: 'Generating PDF...',
+    generating: 'Generating file...',
     pleaseWait: 'Please wait, this may take a moment',
     popupBlocked: 'Popup was blocked. Please allow popups for this site.'
   },

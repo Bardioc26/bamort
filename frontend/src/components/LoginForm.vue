@@ -56,6 +56,7 @@
 
 <script>
 import API from '../utils/api'
+import { useUserStore } from '../stores/userStore'
 
 export default {
   data() {
@@ -73,6 +74,11 @@ export default {
           password: this.password,
         })
         localStorage.setItem('token', response.data.token)
+        
+        // Fetch user profile to get role information
+        const userStore = useUserStore()
+        await userStore.fetchCurrentUser()
+        
         // Emit auth change event
         window.dispatchEvent(new Event('auth-changed'))
         this.$router.push('/dashboard')

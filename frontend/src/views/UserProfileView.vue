@@ -19,6 +19,12 @@
             <label>{{ $t('profile.currentEmail') }}:</label>
             <span>{{ userProfile.email }}</span>
           </div>
+          <div class="info-row">
+            <label>{{ $t('profile.role') }}:</label>
+            <span :class="getRoleBadgeClass(userProfile.role)">
+              {{ $t(`userManagement.roles.${userProfile.role}`) }}
+            </span>
+          </div>
         </div>
 
         <!-- Change Email Section -->
@@ -200,6 +206,33 @@ h1 {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.badge-role-standard {
+  background-color: #6c757d;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.badge-role-maintainer {
+  background-color: #0dcaf0;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.badge-role-admin {
+  background-color: #dc3545;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
 </style>
 
 <script>
@@ -213,7 +246,8 @@ export default {
       isUpdating: false,
       userProfile: {
         username: '',
-        email: ''
+        email: '',
+        role: 'standard'
       },
       emailForm: {
         newEmail: ''
@@ -241,6 +275,9 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+    getRoleBadgeClass(role) {
+      return `badge-role-${role}`
     },
     async updateEmail() {
       if (!this.emailForm.newEmail) {

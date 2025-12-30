@@ -9,6 +9,7 @@ import AusruestungView from "../views/AusruestungView.vue";
 import MaintenanceView from "../views/MaintenanceView.vue";
 import FileUploadPage from "../views/FileUploadPage.vue";
 import UserProfileView from "../views/UserProfileView.vue";
+import UserManagementView from "../views/UserManagementView.vue";
 
 import CharacterDetails from "@/components/CharacterDetails.vue";
 import CharacterCreation from "@/components/CharacterCreation.vue";
@@ -23,6 +24,7 @@ const routes = [
   { path: "/reset-password", name: "ResetPassword", component: ResetPasswordView },
   { path: "/dashboard", name: "Dashboard", component: DashboardView, meta: { requiresAuth: true } },
   { path: "/profile", name: "UserProfile", component: UserProfileView, meta: { requiresAuth: true } },
+  { path: "/users", name: "UserManagement", component: UserManagementView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: "/ausruestung/:characterId", name: "Ausruestung", component: AusruestungView, meta: { requiresAuth: true } },
   { path: "/maintenance", name: "Maintenance", component: MaintenanceView, meta: { requiresAuth: true } },
   { path: "/upload", name: "FileUpload", component: FileUploadPage },
@@ -39,10 +41,26 @@ const router = createRouter({
 });
 
 // Navigation guard
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth && !isLoggedIn()) {
     // Redirect to login if not authenticated
     next({ name: "Login" });
+  } else if (to.meta.requiresAdmin) {
+    // Check if route requires admin role
+    const { useUserStore } = await import('../stores/userStore')
+    const userStore = useUserStore()
+    
+    // Fetch user if not already loaded
+    if (!userStore.currentUser) {
+      await userStore.fetchCurrentUser()
+    }
+    
+    if (!userStore.isAdmin) {
+      // Redirect to dashboard if not admin
+      next({ name: "Dashboard" });
+    } else {
+      next();
+    }
   } else {
     next(); // Allow navigation
   }

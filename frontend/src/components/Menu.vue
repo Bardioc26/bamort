@@ -13,8 +13,11 @@
       <li v-if="!isLoggedIn">
         <router-link to="/register" active-class="active">{{ $t('menu.Register') }}</router-link>
       </li>
-      <li v-if="isLoggedIn">
+      <li v-if="isLoggedIn && isMaintainer">
         <router-link to="/maintenance" active-class="active">{{ $t('menu.Maintenance') }}</router-link>
+      </li>
+      <li v-if="isLoggedIn && isAdmin">
+        <router-link to="/users" active-class="active">{{ $t('menu.UserManagement') }}</router-link>
       </li>
     </ul>
     <div class="menu-right">
@@ -27,6 +30,7 @@
 <script>
 import { isLoggedIn, logout } from "../utils/auth";
 import LanguageSwitcher from "./LanguageSwitcher.vue";
+import { useUserStore } from "../stores/userStore";
 
 
 export default {
@@ -34,18 +38,48 @@ export default {
   components: {
     LanguageSwitcher,
   },
+  data() {
+    return {
+      userStore: null
+    }
+  },
+  async created() {
+    this.userStore = useUserStore()
+    if (isLoggedIn() && !this.userStore.currentUser) {
+      await this.userStore.fetchCurrentUser()
+    }
+    // Listen for auth changes to refresh user data
+    window.addEventListener('auth-changed', this.handleAuthChange)
+  },
+  beforeUnmount() {
+    window.removeEventListener('auth-changed', this.handleAuthChange)
+  },
   computed: {
     isLoggedIn() {
       return isLoggedIn();
     },
+    isAdmin() {
+      return this.userStore?.isAdmin || false
+    },
+    isMaintainer() {
+      return this.userStore?.isMaintainer || false
+    }
   },
   methods: {
     logout() {
       logout();
+      this.userStore.clearUser()
       // Emit auth change event
       window.dispatchEvent(new Event('auth-changed'));
       this.$router.push("/");
     },
+    async handleAuthChange() {
+      if (isLoggedIn()) {
+        await this.userStore.fetchCurrentUser()
+      } else {
+        this.userStore.clearUser()
+      }
+    }
   },
 };
 </script>

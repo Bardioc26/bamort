@@ -48,6 +48,8 @@ export default {
   landing:{
     title:'BaMoRT - Character Management for Role-Playing Games',
     description:'Bamort is a modern character management tool for role-playing games. It provides comprehensive features for character creation, development, and management with support for skills, spells, equipment, and more.',
+    frontendVersion:'Frontend Version',
+    backendVersion:'Backend Version',
     version:'Version',
     commit:'Commit',
     login:'Login',

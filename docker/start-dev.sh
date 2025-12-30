@@ -11,6 +11,10 @@ fi
 # Gehe ins Docker-Verzeichnis
 cd "$(dirname "$0")"
 
+# Get current git commit
+export GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+echo "📝 Git Commit: $GIT_COMMIT"
+
 echo "📦 Building and starting development containers..."
 
 # Stoppe vorhandene Container

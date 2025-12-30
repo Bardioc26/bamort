@@ -10,8 +10,8 @@
         <p class="description">{{ $t('landing.description') }}</p>
         
         <div class="version-info">
-          <p>{{ $t('landing.version') }}: {{ version }}</p>
-          <p>{{ $t('landing.commit') }}: {{ commit }}</p>
+          <p>{{ $t('landing.frontendVersion') }}: {{ frontendVersion }}<!-- ({{ frontendCommit }})--> </p>
+          <p>{{ $t('landing.backendVersion') }}: {{ backendVersion }}<!-- ({{ backendCommit }})-->  </p>
         </div>
         
         <div class="action-links">
@@ -32,28 +32,37 @@
 </style>
 
 <script>
+import axios from 'axios'
+import { getVersion, getGitCommit } from '../version'
+
 export default {
   name: "LandingView",
   data() {
     return {
-      version: "0.1.0",
-      commit: "9775290",
+      frontendVersion: getVersion(),
+      frontendCommit: getGitCommit(),
+      backendVersion: "Loading...",
+      backendCommit: "Loading...",
       githubUrl: "https://github.com/Bardioc26/bamort"
     }
   },
   mounted() {
-    // Fetch version and commit from API if available
-    this.fetchVersionInfo()
+    this.fetchBackendVersion()
   },
   methods: {
-    async fetchVersionInfo() {
+    async fetchBackendVersion() {
       try {
-        // For now, using static values
-        // In future, could fetch from backend API endpoint
-        this.version = import.meta.env.VITE_APP_VERSION || "0.1.0"
-        this.commit = import.meta.env.VITE_GIT_COMMIT || "9775290"
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8180'
+        const response = await axios.get(`${apiUrl}/api/public/version`)
+        
+        if (response.data) {
+          this.backendVersion = response.data.version || "Unknown"
+          this.backendCommit = response.data.gitCommit || "Unknown"
+        }
       } catch (error) {
-        console.warn("Could not fetch version info:", error)
+        console.warn("Could not fetch backend version:", error)
+        this.backendVersion = "Unavailable"
+        this.backendCommit = "N/A"
       }
     }
   }

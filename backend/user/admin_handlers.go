@@ -3,6 +3,8 @@ package user
 import (
 	"bamort/database"
 	"bamort/logger"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -190,5 +192,54 @@ func DeleteUser(c *gin.Context) {
 	logger.Info("User deleted: %s (ID: %d) by %s", user.Username, user.UserID, requestingUser.Username)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User deleted successfully",
+	})
+}
+
+// ChangeUserPassword allows admin to change a user's password (admin only)
+func ChangeUserPassword(c *gin.Context) {
+	logger.Debug("Admin changing user password...")
+
+	userIDParam := c.Param("id")
+	targetUserID, err := strconv.ParseUint(userIDParam, 10, 32)
+	if err != nil {
+		logger.Error("Invalid user ID: %s", userIDParam)
+		respondWithError(c, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	var input struct {
+		NewPassword string `json:"new_password" binding:"required,min=6"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		logger.Error("Failed to parse password data: %s", err.Error())
+		respondWithError(c, http.StatusBadRequest, "New password (min 6 characters) is required")
+		return
+	}
+
+	var user User
+	if err := user.FirstId(uint(targetUserID)); err != nil {
+		logger.Error("User not found: %d", targetUserID)
+		respondWithError(c, http.StatusNotFound, "User not found")
+		return
+	}
+
+	// Get requesting user for logging
+	requestingUserInterface, _ := c.Get("user")
+	requestingUser, _ := requestingUserInterface.(*User)
+
+	// Hash new password using MD5 (same as registration)
+	hashedPassword := md5.Sum([]byte(input.NewPassword))
+	user.PasswordHash = hex.EncodeToString(hashedPassword[:])
+
+	if err := user.Save(); err != nil {
+		logger.Error("Failed to update password for user %s: %s", user.Username, err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to update password")
+		return
+	}
+
+	logger.Info("Password changed for user %s (ID: %d) by admin %s", user.Username, user.UserID, requestingUser.Username)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Password updated successfully",
 	})
 }

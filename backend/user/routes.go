@@ -21,6 +21,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 		adminGroup.GET("", ListUsers)
 		adminGroup.GET("/:id", GetUser)
 		adminGroup.PUT("/:id/role", UpdateUserRole)
+		adminGroup.PUT("/:id/password", ChangeUserPassword)
 		adminGroup.DELETE("/:id", DeleteUser)
 	}
 }

@@ -40,8 +40,14 @@
                 {{ $t('userManagement.changeRole') }}
               </button>
               <button 
+                @click="openPasswordDialog(user)" 
+                class="btn btn-sm"
+              >
+                {{ $t('userManagement.changePassword') }}
+              </button>
+              <button 
                 @click="confirmDeleteUser(user)" 
-                class="btn btn-danger btn-sm"
+                class="btn btn-sm"
                 :disabled="user.id === currentUser.id"
               >
                 {{ $t('userManagement.delete') }}
@@ -95,6 +101,46 @@
             {{ $t('userManagement.delete') }}
           </button>
           <button @click="showDeleteDialog = false" class="btn btn-secondary">
+            {{ $t('userManagement.cancel') }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Change Password Dialog -->
+    <div v-if="showPasswordDialog" class="modal-overlay" @click.self="showPasswordDialog = false">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>{{ $t('userManagement.changePasswordTitle') }}</h3>
+        </div>
+        <div class="modal-body">
+          <p>{{ $t('userManagement.changePasswordFor') }}: <strong>{{ selectedUser.username }}</strong></p>
+          <div class="form-group">
+            <label>{{ $t('userManagement.newPassword') }}</label>
+            <input 
+              v-model="newPassword" 
+              type="password" 
+              class="form-control" 
+              :placeholder="$t('userManagement.newPasswordPlaceholder')"
+              minlength="6"
+            />
+          </div>
+          <div class="form-group">
+            <label>{{ $t('userManagement.confirmPassword') }}</label>
+            <input 
+              v-model="confirmPassword" 
+              type="password" 
+              class="form-control" 
+              :placeholder="$t('userManagement.confirmPasswordPlaceholder')"
+              minlength="6"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="changeUserPassword" class="btn btn-primary">
+            {{ $t('userManagement.save') }}
+          </button>
+          <button @click="showPasswordDialog = false" class="btn btn-secondary">
             {{ $t('userManagement.cancel') }}
           </button>
         </div>
@@ -219,8 +265,11 @@ export default {
       error: null,
       showRoleDialog: false,
       showDeleteDialog: false,
+      showPasswordDialog: false,
       selectedUser: null,
-      newRole: ''
+      newRole: '',
+      newPassword: '',
+      confirmPassword: ''
     }
   },
   computed: {
@@ -275,6 +324,36 @@ export default {
       } catch (error) {
         console.error('Failed to delete user:', error)
         this.error = this.$t('userManagement.deleteError')
+      }
+    },
+    openPasswordDialog(user) {
+      this.selectedUser = user
+      this.newPassword = ''
+      this.confirmPassword = ''
+      this.showPasswordDialog = true
+    },
+    async changeUserPassword() {
+      if (!this.newPassword || !this.confirmPassword) {
+        this.error = this.$t('userManagement.passwordRequired')
+        return
+      }
+      if (this.newPassword.length < 6) {
+        this.error = this.$t('userManagement.passwordTooShort')
+        return
+      }
+      if (this.newPassword !== this.confirmPassword) {
+        this.error = this.$t('userManagement.passwordMismatch')
+        return
+      }
+      try {
+        await API.put(`/api/users/${this.selectedUser.id}/password`, {
+          new_password: this.newPassword
+        })
+        this.showPasswordDialog = false
+        this.error = null
+      } catch (error) {
+        console.error('Failed to change password:', error)
+        this.error = this.$t('userManagement.passwordChangeError')
       }
     },
     getRoleBadgeClass(role) {

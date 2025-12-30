@@ -254,20 +254,9 @@
 <style scoped>
 /* Component-specific styles - common styles are in main.css */
 
-.cd-table {
-  width: 100%;
-}
-
+/* Only component-specific overrides remain here */
 .cd-table-header {
   background-color: #1da766;
-  font-weight: bold;
-}
-
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 15px;
 }
 
 .resource-icon {
@@ -283,52 +272,6 @@
     opacity: 1;
     transform: translateX(0);
   }
-}
-
-.btn-add {
-  width: 40px;
-  height: 40px;
-  border: 2px solid #17a2b8;
-  background: white;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.btn-add:hover {
-  background: #17a2b8;
-  color: white;
-}
-
-.action-cell {
-  text-align: center;
-  padding: 4px;
-}
-
-.btn-action {
-  padding: 4px 8px;
-  border: 1px solid #28a745;
-  background: white;
-  color: #28a745;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.btn-action:hover {
-  background: #28a745;
-  color: white;
-}
-
-.icon {
-  font-size: 14px;
 }
 </style>
 

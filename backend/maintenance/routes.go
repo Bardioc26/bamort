@@ -7,6 +7,7 @@ import (
 func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp := r.Group("/maintenance")
 	charGrp.GET("/setupcheck", SetupCheck)
+	charGrp.GET("/setupcheck-dev", SetupCheckDev)
 	charGrp.GET("/mktestdata", MakeTestdataFromLive)
 	charGrp.GET("/reconndb", ReconnectDataBase) // Datenbank neu verbinden
 	charGrp.GET("/reloadenv", ReloadENV)

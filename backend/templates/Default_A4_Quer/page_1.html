@@ -52,14 +52,14 @@
                 <!-- left column block stats4 -->
                 <div class="margin-bottom-3">
                     <div class="attr-box attr-box-80"><div class="attr-label">B</div><div class="attr-value">{{.Attributes.B}}</div></div>
-                    <div class="attr-box attr-box-100"><div class="attr-label">Raufen</div><div class="attr-value">+ 5</div></div>
+                    <div class="attr-box attr-box-100"><div class="attr-label">Raufen</div><div class="attr-value">+ {{.DerivedValues.Raufen}}</div></div>
                 </div>
                 <!-- left column block boni -->
                 <div class="margin-top-2">
                     <div><strong>persönlicher Bonus für:</strong></div>
                     <div class="margin-top-2">
                         <div class="bonus-row"><span>Ausdauer <u>{{.DerivedValues.AusdauerBonus}}</u></span><span>Schaden <u>{{.DerivedValues.SchadenBonus}}</u></span><span>Angriff <u>{{.DerivedValues.AngriffBonus}}</u></span></div>
-                        <div class="bonus-row"><span>Abwehr <u>{{.DerivedValues.Abwehr}}</u></span><span>Resistenz <u>{{.DerivedValues.ResistenzGift}}/{{.DerivedValues.ResistenzGeist}}</u></span><span>Zaubern <u>{{.DerivedValues.Zaubern}}</u></span></div>
+                        <div class="bonus-row"><span>Abwehr <u>{{.DerivedValues.AbwehrBonus}}</u></span><span>Resistenz <u>{{.DerivedValues.ResistenzBonusKoerper}}/{{.DerivedValues.ResistenzBonusGeist}}</u></span><span>Zaubern <u>{{.DerivedValues.ZauberBonus}}</u></span></div>
                     </div>
                 </div>
             </div>
@@ -84,15 +84,15 @@
                     </tr>
                     <tr>
                         <td><strong>Stand</strong></td>
-                        <td>{{.Character.Stand}}</td>
+                        <td>{{.Character.SocialClass}}</td>
                     </tr>
                     <tr>
                         <td><strong>Heimat</strong></td>
-                        <td>{{.Character.Homeland}}</td>
+                        <td>{{.Character.Herkunft}}</td>
                     </tr>
                     <tr>
                         <td><strong>Glaube</strong></td>
-                        <td>{{.Character.Religion}}</td>
+                        <td>{{if .Character.Glaube}}{{.Character.Glaube}}{{else}}---{{end}}</td>
                     </tr>
                     <tr>
                         <td colspan="2"><strong>Besondere Merkmale:</strong><br/><br/><br/><br/><br/><br/><br/><br/></td>

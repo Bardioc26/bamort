@@ -92,7 +92,7 @@ func PreparePaginatedPageData(viewModel *CharacterSheetViewModel, templateName s
 		for _, skill := range viewModel.Skills {
 			if skill.Category == "Sprache" {
 				languageSkills = append(languageSkills, skill)
-			} else if skill.IsLearned {
+			} else if skill.IsLearned || skill.Category == "Waffenfertigkeit" {
 				learnedSkills = append(learnedSkills, skill)
 			}
 		}

@@ -1,6 +1,7 @@
 package pdfrender
 
 import (
+	"bamort/config"
 	"bamort/database"
 	"bamort/models"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/pdfcpu/pdfcpu/pkg/api"
 )
@@ -519,10 +521,10 @@ func TestVisualInspection_AllPages(t *testing.T) {
 	database.SetupTestDB()
 
 	// Load character Fanjo Vetrani with ID 18 from test database
+	charID := "18"
 	char := &models.Char{}
-	err := char.FirstID("18")
-	if err != nil {
-		t.Fatalf("Failed to load character with ID 18 (Fanjo Vetrani): %v", err)
+	if err := char.FirstID(charID); err != nil {
+		t.Fatalf("Failed to load character with ID %s (Fanjo Vetrani): %v", charID, err)
 	}
 
 	// Verify we loaded the correct character
@@ -537,25 +539,32 @@ func TestVisualInspection_AllPages(t *testing.T) {
 		t.Fatalf("Failed to map character: %v", err)
 	}
 
+	templateID := "Default_A4_Quer"
 	// Load templates
-	loader := NewTemplateLoader("../templates/Default_A4_Quer")
-	if err = loader.LoadTemplates(); err != nil {
+	templateDir := filepath.Join(config.Cfg.TemplatesDir, templateID)
+
+	// Load templates
+	loader := NewTemplateLoader(templateDir)
+	if err := loader.LoadTemplates(); err != nil {
 		t.Fatalf("Failed to load templates: %v", err)
 	}
 
 	renderer := NewPDFRenderer()
+	currentDate := time.Now().Format("02.01.2006")
 
 	// Generate all pages with continuations if needed
-	allPDFs := [][]byte{}
+	var allPDFs [][]byte
+	//#####################################
 	var filePaths []string
 	outputDir := "/tmp/bamort_pdf_test"
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		t.Fatalf("Failed to create output directory: %v", err)
 	}
+	//#####################################
 
 	// Page 1: Stats page with skills (may have continuations)
 	t.Log("Generating Page 1: Stats...")
-	page1PDFs, err := RenderPageWithContinuations(viewModel, "page_1.html", 1, "18.12.2025", loader, renderer)
+	page1PDFs, err := RenderPageWithContinuations(viewModel, "page_1.html", 1, currentDate, loader, renderer)
 	if err != nil {
 		t.Fatalf("Failed to generate page1: %v", err)
 	}
@@ -580,7 +589,7 @@ func TestVisualInspection_AllPages(t *testing.T) {
 
 	// Page 2: Play/Adventure page with weapons (may have continuations)
 	t.Log("Generating Page 2: Play...")
-	page2PDFs, err := RenderPageWithContinuations(viewModel, "page_2.html", 2, "18.12.2025", loader, renderer)
+	page2PDFs, err := RenderPageWithContinuations(viewModel, "page_2.html", 2, currentDate, loader, renderer)
 	if err != nil {
 		t.Fatalf("Failed to generate page2: %v", err)
 	}
@@ -605,7 +614,7 @@ func TestVisualInspection_AllPages(t *testing.T) {
 
 	// Page 3: Spells page (may have continuations)
 	t.Log("Generating Page 3: Spells...")
-	page3PDFs, err := RenderPageWithContinuations(viewModel, "page_3.html", 3, "18.12.2025", loader, renderer)
+	page3PDFs, err := RenderPageWithContinuations(viewModel, "page_3.html", 3, currentDate, loader, renderer)
 	if err != nil {
 		t.Fatalf("Failed to generate page3: %v", err)
 	}

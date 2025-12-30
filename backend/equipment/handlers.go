@@ -77,3 +77,66 @@ func DeleteAusruestung(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Ausruestung deleted successfully"})
 }
+
+/*
+Endpoints for Managing Weapons (Waffen)
+*/
+
+func CreateWaffe(c *gin.Context) {
+	var waffe models.EqWaffe
+	if err := c.ShouldBindJSON(&waffe); err != nil {
+		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := database.DB.Create(&waffe).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to create Waffe")
+		return
+	}
+
+	c.JSON(http.StatusCreated, waffe)
+}
+
+func ListWaffen(c *gin.Context) {
+	characterID := c.Param("character_id")
+
+	var waffen []models.EqWaffe
+	if err := database.DB.Where("character_id = ?", characterID).Find(&waffen).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve Waffen")
+		return
+	}
+
+	c.JSON(http.StatusOK, waffen)
+}
+
+func UpdateWaffe(c *gin.Context) {
+	waffeID := c.Param("waffe_id")
+	var waffe models.EqWaffe
+
+	if err := database.DB.First(&waffe, waffeID).Error; err != nil {
+		respondWithError(c, http.StatusNotFound, "Waffe not found")
+		return
+	}
+
+	if err := c.ShouldBindJSON(&waffe); err != nil {
+		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := database.DB.Save(&waffe).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to update Waffe")
+		return
+	}
+
+	c.JSON(http.StatusOK, waffe)
+}
+
+func DeleteWaffe(c *gin.Context) {
+	waffeID := c.Param("waffe_id")
+	if err := database.DB.Delete(&models.EqWaffe{}, waffeID).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to delete Waffe")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Waffe deleted successfully"})
+}

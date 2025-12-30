@@ -510,6 +510,38 @@ func SetupCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Setup Check OK"})
 }
 
+func SetupCheckDev(c *gin.Context) {
+	logger.Info("Starte Setup-Check... PreparedTestDB")
+
+	// Use the prepared test database for development setup check
+	db, dberr := gorm.Open(sqlite.Open(database.PreparedTestDB), &gorm.Config{})
+	if dberr != nil {
+		logger.Error("SetupTestDB: Fehler beim Verbinden mit der Test-Datenbank: %s", dberr.Error())
+		panic("failed to connect to the test database: " + dberr.Error())
+	}
+	database.DB = db
+
+	logger.Debug("Erfolgreich mit Datenbank für Setup-Check verbunden")
+
+	logger.Debug("Führe Strukturmigration durch...")
+	err := migrateAllStructures(db)
+	if err != nil {
+		logger.Error("Fehler bei der Strukturmigration: %s", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	logger.Debug("Führe Datenmigration durch...")
+	err = migrateDataIfNeeded(db)
+	if err != nil {
+		logger.Error("Fehler bei der Datenmigration: %s", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to migrate data: " + err.Error()})
+		return
+	}
+
+	logger.Info("Setup-Check erfolgreich abgeschlossen")
+	c.JSON(http.StatusOK, gin.H{"message": "Setup Check OK"})
+}
 func ReconnectDataBase(c *gin.Context) {
 	logger.Info("Führe Datenbank-Reconnect durch...")
 

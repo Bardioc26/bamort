@@ -34,6 +34,27 @@
   --color-text: var(--vt-c-text-light-1);
 
   --section-gap: 160px;
+
+  /* Additional semantic colors */
+  --color-primary: #007bff;
+  --color-primary-dark: #0056b3;
+  --color-bg-secondary: #f8f9fa;
+  --color-text-primary: #333;
+  --color-text-secondary: #495057;
+
+  /* Spacing variables */
+  --padding-xs: 4px;
+  --padding-sm: 8px;
+  --padding-md: 16px;
+  --padding-lg: 24px;
+  --margin-xs: 4px;
+  --margin-sm: 8px;
+  --margin-md: 16px;
+  --margin-lg: 24px;
+
+  /* Other utilities */
+  --border-radius: 6px;
+  --box-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -47,6 +68,11 @@
 
     --color-heading: var(--vt-c-text-dark-1);
     --color-text: var(--vt-c-text-dark-2);
+
+    /* Dark mode adjustments for additional colors */
+    --color-bg-secondary: #2a2a2a;
+    --color-text-primary: #e9ecef;
+    --color-text-secondary: #adb5bd;
   }
 }
 

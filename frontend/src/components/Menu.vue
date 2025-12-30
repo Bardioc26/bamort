@@ -2,22 +2,25 @@
   <nav class="top-nav"><!---<nav class="menu"> --->
     <ul>
       <li>
-        <router-link to="/dashboard" active-class="active">Dashboard</router-link>
+        <router-link to="/dashboard" active-class="active">{{ $t('menu.Dashboard') }}</router-link>
       </li>
       <li>
-        <router-link to="/upload" active-class="active">Import Data</router-link>
+        <router-link to="/upload" active-class="active">{{ $t('menu.ImportData') }}</router-link>
       </li>
       <li v-if="isLoggedIn">
-        <button @click="logout">Logout</button>
+        <button @click="logout">{{ $t('menu.Logout') }}</button>
       </li>
       <li v-if="!isLoggedIn">
-        <router-link to="/register" active-class="active">Register</router-link>
+        <router-link to="/register" active-class="active">{{ $t('menu.Register') }}</router-link>
       </li>
       <li v-if="isLoggedIn">
-        <router-link to="/maintenance" active-class="active">Maintenance</router-link>
+        <router-link to="/maintenance" active-class="active">{{ $t('menu.Maintenance') }}</router-link>
       </li>
     </ul>
-    <LanguageSwitcher />
+    <div class="menu-right">
+      <LanguageSwitcher />
+      <router-link v-if="isLoggedIn" to="/profile" active-class="active" class="profile-link">{{ $t('menu.Profile') }}</router-link>
+    </div>
   </nav>
 </template>
 
@@ -79,5 +82,29 @@ export default {
   border: none;
   color: white;
   cursor: pointer;
+}
+
+.menu-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-link {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  transition: background-color 0.2s;
+}
+
+.profile-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+}
+
+.profile-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
 }
 </style>

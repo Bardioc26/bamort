@@ -23,6 +23,7 @@ type CalculateStaticFieldsRequest struct {
 	// Charakterdaten
 	Rasse string `json:"rasse" binding:"required"`
 	Typ   string `json:"typ" binding:"required"`
+	Grad  int    `json:"grad" binding:"omitempty,min=1,max=100"` // Charaktergrad (optional, default 1)
 }
 
 // StaticFieldsResponse für berechnete Felder ohne Würfelwürfe
@@ -69,17 +70,8 @@ type RolledFieldResponse struct {
 	Details interface{} `json:"details"`
 }
 
-// CalculateStaticFields berechnet alle Felder ohne Würfelwürfe
-func CalculateStaticFields(c *gin.Context) {
-	var req CalculateStaticFieldsRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		logger.Error("Fehler beim Parsen der Static Fields Anfrage: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Anfrage"})
-		return
-	}
-
-	logger.Info("Berechne statische Felder für %s %s", req.Rasse, req.Typ)
-
+// CalculateStaticFieldsLogic contains the pure business logic for static field calculation
+func CalculateStaticFieldsLogic(req CalculateStaticFieldsRequest) StaticFieldsResponse {
 	response := StaticFieldsResponse{}
 
 	// Ausdauer Bonus: Ko/10 + St/20
@@ -103,20 +95,42 @@ func CalculateStaticFields(c *gin.Context) {
 	// Resistenz Bonus Geist
 	response.ResistenzBonusGeist = calculateResistenzBonusGeist(req.In, req.Rasse, req.Typ)
 
-	// Finale Resistenzwerte
-	response.ResistenzKoerper = 11 + response.ResistenzBonusKoerper
-	response.ResistenzGeist = 11 + response.ResistenzBonusGeist
+	// Grad standardmäßig auf 1 setzen wenn nicht angegeben
+	grad := req.Grad
+	if grad < 1 {
+		grad = 1
+	}
 
-	// Finale Kampfwerte
-	response.Abwehr = 11 + response.AbwehrBonus
-	response.Zaubern = 11 + response.ZauberBonus
+	// Finale Resistenzwerte (mit Gradbonus)
+	response.ResistenzKoerper = getResistenzBaseByGrade(grad) // + response.ResistenzBonusKoerper
+	response.ResistenzGeist = getResistenzBaseByGrade(grad)   //+ response.ResistenzBonusGeist
+
+	// Finale Kampfwerte (mit Gradbonus)
+	response.Abwehr = getAbwehrBaseByGrade(grad)   //+ response.AbwehrBonus
+	response.Zaubern = getZaubernBaseByGrade(grad) //+ response.ZauberBonus
 
 	// Raufen: (St + GW)/20 + angriffs_bonus + Rassenboni
 	raceBonus := 0
-	if req.Rasse == "Zwerge" {
+	if req.Rasse == "Zwerg" {
 		raceBonus = 1
 	}
-	response.Raufen = (req.St+req.Gw)/20 + response.AngriffsBonus + raceBonus
+	response.Raufen = (req.St+req.Gw)/20 + raceBonus //+ response.AngriffsBonus
+
+	return response
+}
+
+// CalculateStaticFields berechnet alle Felder ohne Würfelwürfe (HTTP Handler)
+func CalculateStaticFields(c *gin.Context) {
+	var req CalculateStaticFieldsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Error("Fehler beim Parsen der Static Fields Anfrage: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ungültige Anfrage"})
+		return
+	}
+
+	logger.Info("Berechne statische Felder für %s %s", req.Rasse, req.Typ)
+
+	response := CalculateStaticFieldsLogic(req)
 
 	c.JSON(http.StatusOK, response)
 }
@@ -291,19 +305,17 @@ func calculateAttributeBonus(value int) int {
 
 // calculateResistenzBonusKoerper berechnet den Körper-Resistenzbonus
 func calculateResistenzBonusKoerper(ko int, rasse string, typ string) int {
-	bonus := 0
+	bonus := calculateAttributeBonus(ko)
 
-	if rasse == "Menschen" {
-		bonus = calculateAttributeBonus(ko)
-	} else {
-		switch rasse {
-		case "Elfen":
-			bonus = 2
-		case "Gnome", "Halblinge":
-			bonus = 4
-		case "Zwerge":
-			bonus = 3
-		}
+	switch rasse {
+	//case "Mensch":
+	// bonus = calculateAttributeBonus(ko)
+	case "Elf":
+		bonus = 2
+	case "Gnom", "Halbling":
+		bonus = 4
+	case "Zwerg":
+		bonus = 3
 	}
 
 	// Klassenmodifikator
@@ -318,19 +330,17 @@ func calculateResistenzBonusKoerper(ko int, rasse string, typ string) int {
 
 // calculateResistenzBonusGeist berechnet den Geist-Resistenzbonus
 func calculateResistenzBonusGeist(in int, rasse string, typ string) int {
-	bonus := 0
+	bonus := calculateAttributeBonus(in)
 
-	if rasse == "Menschen" {
-		bonus = calculateAttributeBonus(in)
-	} else {
-		switch rasse {
-		case "Elfen":
-			bonus = 2
-		case "Gnome", "Halblinge":
-			bonus = 4
-		case "Zwerge":
-			bonus = 3
-		}
+	switch rasse {
+	//case "Mensch":
+	//bonus = calculateAttributeBonus(in)
+	case "Elf":
+		bonus = 2
+	case "Gnom", "Halbling":
+		bonus = 4
+	case "Zwerg":
+		bonus = 3
 	}
 
 	// Klassenmodifikator (nur Zauberer bekommen Geist-Bonus)
@@ -354,7 +364,7 @@ func isKaempfer(typ string) bool {
 
 // isZauberer prüft ob eine Klasse als Zauberer gilt
 func isZauberer(typ string) bool {
-	zaubererKlassen := []string{"Magier", "Druide", "Priester", "Schamane"}
+	zaubererKlassen := []string{"Magier", "Druide", "Priester", "Schamane", "Hexer"}
 	for _, z := range zaubererKlassen {
 		if z == typ {
 			return true
@@ -399,4 +409,52 @@ func getMovementBaseAndFormula(rasse string) (int, string) {
 	default: // Menschen, Elfen
 		return 16, "4d3 + 16"
 	}
+}
+
+// getAbwehrBaseByGrade gibt den Basis-Fertigkeitswert für Abwehr nach Grad zurück
+// Grad: 1->11, 2->12, 5->13, 10->14, 15->15, 20->16, 25->17, 30->18
+func getAbwehrBaseByGrade(grad int) int {
+	if grad >= 30 {
+		return 18
+	} else if grad >= 25 {
+		return 17
+	} else if grad >= 20 {
+		return 16
+	} else if grad >= 15 {
+		return 15
+	} else if grad >= 10 {
+		return 14
+	} else if grad >= 5 {
+		return 13
+	} else if grad >= 2 {
+		return 12
+	}
+	return 11
+}
+
+// getResistenzBaseByGrade gibt den Basis-Fertigkeitswert für Resistenz nach Grad zurück
+// Verwendet dieselbe Tabelle wie Abwehr
+func getResistenzBaseByGrade(grad int) int {
+	return getAbwehrBaseByGrade(grad)
+}
+
+// getZaubernBaseByGrade gibt den Basis-Fertigkeitswert für Zaubern nach Grad zurück
+// Grad: 1->11, 2->12, 4->13, 6->14, 8->15, 10->16, 15->17, 20->18
+func getZaubernBaseByGrade(grad int) int {
+	if grad >= 20 {
+		return 18
+	} else if grad >= 15 {
+		return 17
+	} else if grad >= 10 {
+		return 16
+	} else if grad >= 8 {
+		return 15
+	} else if grad >= 6 {
+		return 14
+	} else if grad >= 4 {
+		return 13
+	} else if grad >= 2 {
+		return 12
+	}
+	return 11
 }

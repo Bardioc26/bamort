@@ -3,6 +3,7 @@ package pdfrender
 import (
 	"fmt"
 
+	"bamort/character"
 	"bamort/database"
 	"bamort/models"
 )
@@ -20,18 +21,18 @@ func MapCharacterToViewModel(char *models.Char) (*CharacterSheetViewModel, error
 
 	// Map basic character info
 	vm.Character = CharacterInfo{
-		Name:       char.Name,
-		Type:       char.Typ,
-		Grade:      char.Grad,
-		Age:        char.Alter,
-		Height:     char.Groesse,
-		Weight:     char.Gewicht,
-		Gender:     char.Gender,
-		Hand:       char.Hand,
-		Homeland:   char.Herkunft,
-		Religion:   char.Glaube,
-		Stand:      char.SocialClass,
-		IconBase64: "", // Will be set later if image exists
+		Name:        char.Name,
+		Type:        char.Typ,
+		Grade:       char.Grad,
+		Age:         char.Alter,
+		Height:      char.Groesse,
+		Weight:      char.Gewicht,
+		Gender:      char.Gender,
+		Hand:        char.Hand,
+		Herkunft:    char.Herkunft,
+		Glaube:      char.Glaube,
+		SocialClass: char.SocialClass,
+		IconBase64:  "", // Will be set later if image exists
 		Vermoegen: WealthInfo{
 			Goldstuecke:   char.Vermoegen.Goldstuecke,
 			Silberstuecke: char.Vermoegen.Silberstuecke,
@@ -80,14 +81,14 @@ func mapAttributes(char *models.Char) AttributeValues {
 			attrs.Zt = e.Value
 		case "Au":
 			attrs.Au = e.Value
-		case "pA":
+		case "PA":
 			attrs.PA = e.Value
 		case "Wk":
 			attrs.Wk = e.Value
 		}
 	}
 
-	attrs.B = char.B.Value
+	attrs.B = char.B.Max
 
 	return attrs
 }
@@ -96,20 +97,53 @@ func mapAttributes(char *models.Char) AttributeValues {
 func mapDerivedValues(char *models.Char) DerivedValueSet {
 	// Get attributes for bonus calculations
 	attrs := mapAttributes(char)
+	// Get Bonus values from character logic
+	bonusValues := character.CalculateStaticFieldsLogic(character.CalculateStaticFieldsRequest{
+		St:    attrs.St,
+		Gs:    attrs.Gs,
+		Gw:    attrs.Gw,
+		Ko:    attrs.Ko,
+		In:    attrs.In,
+		Zt:    attrs.Zt,
+		Au:    attrs.Au,
+		Rasse: char.Rasse,
+		Typ:   char.Typ,
+		Grad:  char.Grad,
+	})
 
 	return DerivedValueSet{
-		LPMax:        char.Lp.Max,
-		LPAktuell:    char.Lp.Value,
-		APMax:        char.Ap.Max,
-		APAktuell:    char.Ap.Value,
-		AngriffBonus: calculateAttributeBonus(attrs.Gs),
-		SchadenBonus: (attrs.St / 20) + (attrs.Gs / 30) - 3,
+		LPMax:                 char.Lp.Max,
+		LPAktuell:             char.Lp.Value,
+		APMax:                 char.Ap.Max,
+		APAktuell:             char.Ap.Value,
+		AusdauerBonus:         bonusValues.AusdauerBonus,
+		SchadenBonus:          bonusValues.SchadensBonus,
+		AngriffBonus:          bonusValues.AngriffsBonus,
+		Abwehr:                bonusValues.Abwehr,
+		AbwehrBonus:           bonusValues.AbwehrBonus,
+		Zaubern:               bonusValues.Zaubern,
+		ZauberBonus:           bonusValues.ZauberBonus,
+		ResistenzKoerper:      bonusValues.ResistenzKoerper,
+		ResistenzBonusKoerper: bonusValues.ResistenzBonusKoerper,
+		ResistenzGeist:        bonusValues.ResistenzGeist,
+		ResistenzBonusGeist:   bonusValues.ResistenzBonusGeist,
+		Raufen:                bonusValues.Raufen,
+		GG:                    char.B.Max,
+		SG:                    char.B.Max / 2,
+		Sehen:                 0, // TODO: Add to character model
+		Horen:                 0, // TODO: Add to character model
+		Riechen:               0, // TODO: Add to character model
+		Sechster:              0, // TODO: Add to character model
+		RKMalus:               0,
+		RKSave:                2,
+		RKShort:               "LR",
+		RKName:                "Lederrüstung",
 	}
 }
 
 // mapSkills converts character skills to SkillViewModel
 func mapSkills(char *models.Char) []SkillViewModel {
-	skills := make([]SkillViewModel, 0, len(char.Fertigkeiten))
+	skills := make([]SkillViewModel, 0, len(char.Fertigkeiten)+len(char.Waffenfertigkeiten))
 
 	for _, skill := range char.Fertigkeiten {
 		skl := SkillViewModel{
@@ -127,18 +161,51 @@ func mapSkills(char *models.Char) []SkillViewModel {
 		skills = append(skills, skl)
 	}
 
+	// Append weapon skills to the skill list
+	for _, skill := range char.Waffenfertigkeiten {
+		skl := SkillViewModel{
+			Name:           skill.Name,
+			Category:       "Waffenfertigkeit",
+			Value:          skill.Fertigkeitswert,
+			Bonus:          skill.Bonus,
+			PracticePoints: skill.Pp,
+			IsLearned:      skill.Fertigkeitswert > 0,
+			Bemerkung:      skill.Bemerkung,
+		}
+		skills = append(skills, skl)
+	}
+
 	return skills
 }
 
 // mapWeapons converts equipped weapons to WeaponViewModel
 // EW = Waffenfertigkeit.Fertigkeitswert + Character.AngriffBonus + Weapon.Anb
 func mapWeapons(char *models.Char) []WeaponViewModel {
-	weapons := make([]WeaponViewModel, 0, len(char.Waffen))
+	weapons := make([]WeaponViewModel, 0, len(char.Waffen)+1)
 
-	// Calculate character's bonuses once
+	// Calculate character's bonuses using character logic
 	attrs := mapAttributes(char)
-	angriffsBonus := calculateAttributeBonus(attrs.Gs)
-	schadenBonus := calculateAttributeBonus(attrs.St)
+	bonusValues := character.CalculateStaticFieldsLogic(character.CalculateStaticFieldsRequest{
+		St:    attrs.St,
+		Gs:    attrs.Gs,
+		Gw:    attrs.Gw,
+		Ko:    attrs.Ko,
+		In:    attrs.In,
+		Zt:    attrs.Zt,
+		Au:    attrs.Au,
+		Rasse: char.Rasse,
+		Typ:   char.Typ,
+		Grad:  char.Grad,
+	})
+
+	// Add Raufen as the first weapon
+	raufenDamage := fmt.Sprintf("1W6%+d", bonusValues.SchadensBonus)
+	weapons = append(weapons, WeaponViewModel{
+		Name:     "Raufen",
+		Value:    bonusValues.Raufen,
+		Damage:   raufenDamage,
+		IsRanged: false,
+	})
 
 	// Create a map of weapon skills for quick lookup
 	weaponSkills := make(map[string]int)
@@ -162,10 +229,10 @@ func mapWeapons(char *models.Char) []WeaponViewModel {
 			if baseWeapon.SkillRequired != "" {
 				skillValue = weaponSkills[baseWeapon.SkillRequired]
 			}
-			vm.Value = skillValue + angriffsBonus + equippedWeapon.Anb
+			vm.Value = skillValue + bonusValues.AngriffsBonus + equippedWeapon.Anb
 
 			// Calculate damage: Base weapon damage + character bonus + weapon damage bonus
-			vm.Damage = calculateWeaponDamageWithBase(baseWeapon, schadenBonus, equippedWeapon.Schb)
+			vm.Damage = calculateWeaponDamageWithBase(baseWeapon, bonusValues.SchadensBonus, equippedWeapon.Schb)
 
 			// Add range information for ranged weapons
 			if baseWeapon.IsRanged() {
@@ -177,7 +244,7 @@ func mapWeapons(char *models.Char) []WeaponViewModel {
 			}
 		} else {
 			// Weapon not found in gsm_weapons, use basic info
-			vm.Value = angriffsBonus + equippedWeapon.Anb
+			vm.Value = bonusValues.AngriffsBonus + equippedWeapon.Anb
 		}
 
 		weapons = append(weapons, vm)

@@ -1,6 +1,7 @@
 <template>
   <div class="upload-page">
     <h2>Import Data</h2>
+    <br/>
     <form @submit.prevent="handleUpload">
       <div>
         <label for="file_vtt">Char VTT:</label>
@@ -79,7 +80,8 @@ export default {
 
 <style>
 .upload-page {
-  padding: 1rem;
+  padding: var(--padding-lg);
+  margin-top: 2%;
 }
 
 .error {

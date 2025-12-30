@@ -4,12 +4,14 @@ import (
 	"bamort/character"
 	"bamort/config"
 	"bamort/database"
+	"bamort/equipment"
 	"bamort/gsmaster"
 	"bamort/importer"
 	"bamort/logger"
 	"bamort/maintenance"
 	"bamort/pdfrender"
 	"bamort/router"
+	"bamort/user"
 
 	"github.com/gin-gonic/gin"
 )
@@ -71,8 +73,10 @@ func main() {
 	logger.Debug("Registriere API-Routen...")
 	protected := router.BaseRouterGrp(r)
 	// Register your module routes
+	user.RegisterRoutes(protected)
 	gsmaster.RegisterRoutes(protected)
 	character.RegisterRoutes(protected)
+	equipment.RegisterRoutes(protected)
 	maintenance.RegisterRoutes(protected)
 	importer.RegisterRoutes(protected)
 	pdfrender.RegisterRoutes(protected)

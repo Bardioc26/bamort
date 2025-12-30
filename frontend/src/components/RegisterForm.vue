@@ -7,6 +7,9 @@
     <button type="submit">Register</button>
     <p v-if="error" class="error">{{ error }}</p>
     <p v-if="success" class="success">{{ success }}</p>
+    <p class="back-to-login">
+      <router-link to="/">Back to Login</router-link>
+    </p>
   </form>
 </template>
 
@@ -26,7 +29,7 @@ export default {
   methods: {
     async register() {
       try {
-        const response = await API.post('/api/register', {
+        const response = await API.post('/register', {
           username: this.username,
           password: this.password,
           email: this.email
@@ -49,5 +52,16 @@ export default {
 }
 .success {
   color: green;
+}
+.back-to-login {
+  margin-top: 15px;
+  text-align: center;
+}
+.back-to-login a {
+  color: #1da766;
+  text-decoration: none;
+}
+.back-to-login a:hover {
+  text-decoration: underline;
 }
 </style>

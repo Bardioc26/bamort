@@ -74,7 +74,10 @@
   </div>
 </template>
 
-<style scoped>
+<style>
+/* All common styles moved to main.css */
+
+/* ImageUploadCropper specific styles */
 .btn-upload {
   padding: 8px 16px;
   background-color: var(--primary-color);
@@ -150,19 +153,6 @@
 .preview-container canvas {
   border: 1px solid #ccc;
   background-color: white;
-}
-
-.btn-secondary {
-  padding: 10px 20px;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-secondary:hover {
-  background-color: #5a6268;
 }
 </style>
 

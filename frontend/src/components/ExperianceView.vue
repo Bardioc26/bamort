@@ -93,8 +93,8 @@
   </div>
 </template>
 
-<style scoped>
-/* ExperianceView spezifische Styles */
+<style>
+/* All common styles moved to main.css */
 
 .experience-section, 
 .wealth-section {

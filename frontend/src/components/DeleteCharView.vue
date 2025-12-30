@@ -39,13 +39,7 @@ export default {
 }
 </script>
 
-  <style>
-    /*
-  .cd-view {
-    text-align: center;
-  }
-  button {
-    margin: 5px;
-  }*/
-  </style>
+<style>
+/* All common styles moved to main.css */
+</style>
 

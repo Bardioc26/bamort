@@ -636,10 +636,9 @@ export default {
 }
 </script>
 
-<style scoped>
-/* Minimal custom styles - most styling comes from main.css */
+<style>
+/* All common styles moved to main.css */
 
-/* Spell Points Display */
 .spell-points-display {
   margin: 0 20px 30px 20px;
   padding: 16px;
@@ -703,7 +702,6 @@ export default {
   font-weight: 600;
 }
 
-/* Override global fullwidth-page padding to achieve true full-width */
 .fullwidth-page {
   padding: 0 !important;
   margin: 0 !important;
@@ -712,30 +710,26 @@ export default {
   box-sizing: border-box !important;
 }
 
-/* Add minimal padding only where needed */
 .page-header {
   padding: 15px 20px;
   margin-bottom: 20px;
 }
 
-/* Full-width three column grid layout */
 .three-column-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 30px;
-  margin: 0 20px 30px 20px; /* Add horizontal margins for content readability */
-  width: calc(100vw - 40px); /* Use viewport width minus margins */
+  margin: 0 20px 30px 20px;
+  width: calc(100vw - 40px);
   max-width: calc(100vw - 40px);
   box-sizing: border-box;
 }
 
-/* Ensure grid takes full available width */
 .spells-content {
   width: 100%;
   max-width: 100%;
 }
 
-/* Spell-specific styles */
 .spell-item {
   padding: 12px;
   border: 1px solid #ddd;
@@ -828,7 +822,6 @@ export default {
   text-align: right;
 }
 
-/* Selected spells styles */
 .selected-spell-item {
   padding: 12px;
   border: 1px solid #007bff;
@@ -842,14 +835,6 @@ export default {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 6px;
-}
-
-.spell-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1;
-  margin-right: 8px;
 }
 
 .selected-spell-item .spell-category {
@@ -880,7 +865,6 @@ export default {
   background-color: #c82333;
 }
 
-/* Category selection styles */
 .category-item {
   padding: 12px;
   border: 1px solid #ddd;
@@ -924,7 +908,6 @@ export default {
   border-radius: 4px;
 }
 
-/* Total costs display */
 .total-costs {
   border-top: 1px solid #dee2e6;
   padding-top: 12px;
@@ -948,12 +931,10 @@ export default {
   color: #007bff;
 }
 
-/* Utility classes for dynamic styling that can't be expressed in main.css */
 .opacity-50 {
   opacity: 0.6;
 }
 
-/* Message styles */
 .no-selection-message,
 .no-spells-message,
 .no-categories-message {
@@ -963,7 +944,6 @@ export default {
   padding: 20px;
 }
 
-/* Badge styles */
 .category-badge,
 .count-badge,
 .info-badge {
@@ -984,7 +964,6 @@ export default {
   color: white;
 }
 
-/* Responsive behavior for smaller screens */
 @media (max-width: 1200px) {
   .three-column-grid {
     grid-template-columns: 1fr 1fr;

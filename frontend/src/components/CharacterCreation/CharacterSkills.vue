@@ -705,10 +705,9 @@ export default {
 }
 </script>
 
-<style scoped>
-/* Minimal custom styles - most styling comes from main.css */
+<style>
+/* All common styles moved to main.css */
 
-/* Override global fullwidth-page padding to achieve true full-width */
 .fullwidth-page {
   padding: 0 !important;
   margin: 0 !important;
@@ -717,35 +716,30 @@ export default {
   box-sizing: border-box !important;
 }
 
-/* Add minimal padding only where needed */
 .page-header {
   padding: 15px 20px;
   margin-bottom: 20px;
 }
 
-/* Full-width three column grid layout */
 .three-column-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 30px;
-  margin: 0 20px 30px 20px; /* Add horizontal margins for content readability */
-  width: calc(100vw - 40px); /* Use viewport width minus margins */
+  margin: 0 20px 30px 20px;
+  width: calc(100vw - 40px);
   max-width: calc(100vw - 40px);
   box-sizing: border-box;
 }
 
-/* Ensure grid takes full available width */
 .skills-content {
   width: 100%;
   max-width: 100%;
 }
 
-/* Utility classes for dynamic styling that can't be expressed in main.css */
 .opacity-50 {
   opacity: 0.6;
 }
 
-/* Border color variants for category states */
 .border-primary {
   border-color: #007bff !important;
   background-color: #f8fcff;
@@ -761,7 +755,6 @@ export default {
   background-color: #ffebee;
 }
 
-/* Responsive behavior for smaller screens */
 @media (max-width: 1200px) {
   .three-column-grid {
     grid-template-columns: 1fr 1fr;

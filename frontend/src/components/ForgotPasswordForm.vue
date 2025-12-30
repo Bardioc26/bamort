@@ -95,6 +95,6 @@ export default {
 }
 </script>
 
-<style scoped>
-/* No custom CSS needed - using main.css classes */
+<style>
+/* All common styles moved to main.css */
 </style>

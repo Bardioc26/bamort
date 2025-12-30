@@ -58,7 +58,9 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
+/* All common styles moved to main.css */
+
 .sessions-section {
   margin-bottom: 30px;
 }
@@ -97,7 +99,6 @@ export default {
   font-size: 0.8rem;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .session-header {
     flex-direction: column;

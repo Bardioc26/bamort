@@ -1,7 +1,15 @@
 import axios from 'axios'
 
+// Use runtime config if available, fallback to build-time env, then localhost
+const getApiUrl = () => {
+  if (window.runtimeConfig?.apiUrl) {
+    return window.runtimeConfig.apiUrl
+  }
+  return import.meta.env.VITE_API_URL || 'http://localhost:8180'
+}
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8180', // Use env variable with fallback
+  baseURL: getApiUrl(),
 })
 
 // Request interceptor to add auth token

@@ -739,10 +739,9 @@ export default {
 }
 </script>
 
-<style>
-/* All common styles moved to main.css */
+<style scoped>
+/* Component-specific styles - common styles are in main.css */
 
-/* SkillLearnDialog specific styles */
 .modal-content {
   background: white;
   border-radius: 0;
@@ -823,61 +822,13 @@ export default {
   font-size: 1.1rem;
 }
 
-.current-resources {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
 .resource-display-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
   background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  flex: 1;
-  min-width: 200px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.resource-display-card .resource-icon {
-  font-size: 20px;
-}
-
-.resource-info {
-  flex: 1;
-}
-
-.resource-label {
-  font-size: 12px;
-  color: #6c757d;
-  font-weight: 500;
-}
-
 .resource-amount {
-  font-size: 16px;
-  font-weight: bold;
   color: #1da766;
-}
-
-.resource-remaining {
-  margin-top: 4px;
-}
-
-.resource-remaining small {
-  color: #6c757d;
-  font-weight: normal;
-}
-
-.text-warning {
-  color: #f0ad4e !important;
-}
-
-.text-danger {
-  color: #d9534f !important;
 }
 
 .text-info {
@@ -928,18 +879,6 @@ export default {
   padding: 24px;
   flex: 1;
   overflow-y: auto;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #495057;
-  font-size: 0.95rem;
 }
 
 .form-input,
@@ -1017,14 +956,7 @@ export default {
 }
 
 .modal-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 20px 24px;
-  background: #f8f9fa;
   border-radius: 0;
-  border-top: 1px solid #dee2e6;
   flex-shrink: 0;
 }
 
@@ -1448,14 +1380,6 @@ export default {
   transform: scale(1.1);
 }
 
-.total-costs {
-  margin-top: 16px;
-  padding: 12px;
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 6px;
-}
-
 .total-costs-header {
   font-weight: 600;
   color: #856404;
@@ -1489,10 +1413,6 @@ export default {
 
 .text-success {
   color: #28a745;
-}
-
-.text-danger {
-  color: #dc3545;
 }
 
 .loading-skills {

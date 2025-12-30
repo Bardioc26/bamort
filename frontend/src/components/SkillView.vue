@@ -251,34 +251,18 @@
 
 </template>
 
-<style>
-/* All common styles moved to main.css */
-
-/* SkillView specific styles */
-.tables-container {
-  display: flex;
-  gap: 1rem;
-  width: 100%;
-}
-
-.table-wrapper-left {
-  flex: 6;
-  min-width: 0; /* Prevent table from overflowing */
-}
-.table-wrapper-right {
-  flex: 4;
-  min-width: 0; /* Prevent table from overflowing */
-}
+<style scoped>
+/* Component-specific styles - common styles are in main.css */
 
 .cd-table {
   width: 100%;
 }
+
 .cd-table-header {
   background-color: #1da766;
   font-weight: bold;
 }
 
-/* Header mit Lernmodus-Kontrollen */
 .header-section {
   display: flex;
   justify-content: space-between;
@@ -286,71 +270,8 @@
   margin-bottom: 15px;
 }
 
-.learning-mode-controls {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-/* Ressourcen-Anzeige */
-.resources-display {
-  display: flex;
-  gap: 15px;
-  animation: slideIn 0.3s ease;
-}
-
-.resource-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  font-weight: bold;
-  color: #495057;
-}
-
 .resource-icon {
   font-size: 16px;
-}
-
-.resource-value {
-  font-size: 14px;
-  white-space: nowrap;
-}
-
-/* Lernmodus Toggle Button */
-.btn-learning-mode {
-  padding: 8px 16px;
-  border: 2px solid #1da766;
-  background: white;
-  color: #1da766;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.btn-learning-mode:hover {
-  background: #1da766;
-  color: white;
-}
-
-.btn-learning-mode.active {
-  background: #1da766;
-  color: white;
-}
-
-/* Lernmodus Action Buttons */
-.learning-actions {
-  display: flex;
-  gap: 5px;
-  animation: slideIn 0.3s ease;
 }
 
 @keyframes slideIn {
@@ -364,12 +285,10 @@
   }
 }
 
-.btn-learn-new,
-.btn-improve,
 .btn-add {
   width: 40px;
   height: 40px;
-  border: 2px solid #007bff;
+  border: 2px solid #17a2b8;
   background: white;
   border-radius: 6px;
   cursor: pointer;
@@ -381,30 +300,11 @@
   position: relative;
 }
 
-.btn-learn-new:hover {
-  background: #007bff;
-  color: white;
-}
-
-.btn-improve {
-  border-color: #28a745;
-}
-
-.btn-improve:hover {
-  background: #28a745;
-  color: white;
-}
-
-.btn-add {
-  border-color: #17a2b8;
-}
-
 .btn-add:hover {
   background: #17a2b8;
   color: white;
 }
 
-/* Aktions-Buttons in der Tabelle */
 .action-cell {
   text-align: center;
   padding: 4px;
@@ -429,76 +329,6 @@
 
 .icon {
   font-size: 14px;
-}
-
-/* PP-Button Styles */
-.pp-cell {
-  padding: 4px 8px;
-}
-
-.pp-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-}
-
-.pp-btn {
-  width: 20px;
-  height: 20px;
-  border: 1px solid #007bff;
-  background: white;
-  color: #007bff;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  line-height: 1;
-  padding: 0;
-}
-
-.pp-btn:hover:not(:disabled) {
-  background: #007bff;
-  color: white;
-}
-
-.pp-btn:disabled {
-  border-color: #ccc;
-  color: #ccc;
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.pp-btn-plus {
-  border-color: #28a745;
-  color: #28a745;
-}
-
-.pp-btn-plus:hover:not(:disabled) {
-  background: #28a745;
-  color: white;
-}
-
-.pp-btn-minus {
-  border-color: #dc3545;
-  color: #dc3545;
-}
-
-.pp-btn-minus:hover:not(:disabled) {
-  background: #dc3545;
-  color: white;
-}
-
-.pp-value {
-  min-width: 20px;
-  text-align: center;
-  font-weight: bold;
-  color: #495057;
-  font-size: 13px;
 }
 </style>
 

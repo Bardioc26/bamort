@@ -31,20 +31,12 @@ FROM nginx:alpine
 # Copy production build to Nginx html folder.
 COPY --from=build /usr/src/app/dist /usr/share/nginx/html
 
-# Create entrypoint script for runtime config
-RUN echo '#!/bin/sh' > /docker-entrypoint.sh && \
-    echo 'if [ -n "$VITE_API_URL" ]; then' >> /docker-entrypoint.sh && \
-    echo '  cat > /usr/share/nginx/html/config.js <<EOF' >> /docker-entrypoint.sh && \
-    echo 'window.runtimeConfig = {' >> /docker-entrypoint.sh && \
-    echo '  apiUrl: "'"'$VITE_API_URL'"'"' >> /docker-entrypoint.sh && \
-    echo '}' >> /docker-entrypoint.sh && \
-    echo 'EOF' >> /docker-entrypoint.sh && \
-    echo 'fi' >> /docker-entrypoint.sh && \
-    echo 'nginx -g "daemon off;"' >> /docker-entrypoint.sh && \
-    chmod +x /docker-entrypoint.sh
+# Copy entrypoint script
+COPY frontend-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # Expose HTTP port
 EXPOSE 80
 
 # Run entrypoint script
-CMD ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/docker-entrypoint.sh"]

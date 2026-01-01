@@ -1,6 +1,6 @@
 ---
 description: 'Instructions for writing Vue 3 components following project conventions and best practices'
-applyTo: '**/*.vue'
+applyTo: '**/*.vue, **/*.ts, **/*.js, **/*.scss'
 ---
 
 # Vue 3 Development Instructions

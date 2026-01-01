@@ -45,7 +45,9 @@ export default {
   },
   methods: {
     async methodName() {
-      // Method implementation
+      // Use const/let, never var
+      const response = await API.get('/api/endpoint')
+      this.items = response.data
     }
   }
 }
@@ -67,6 +69,48 @@ const data = await API.post('/api/characters', character)
 
 **Never** manually add Authorization headers - the interceptor handles this.
 
+### Environment Variables
+API base URL from Vite:
+```js
+import API from '../utils/api'
+// API uses: import.meta.env.VITE_API_URL || 'http://localhost:8180'
+```
+
+### API Configuration (`utils/api.js`)
+Standard Axios instance with interceptors:
+```js
+import axios from 'axios'
+
+const API = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8180'
+})
+
+// Request interceptor - adds auth token
+API.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
+// Response interceptor - handles 401
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+    }
+    return Promise.reject(error)
+  }
+)
+
+export default API
+```
+
 ### Error Handling Pattern
 ```js
 try {
@@ -74,7 +118,8 @@ try {
   this.data = response.data
 } catch (error) {
   console.error('Failed to load data:', error)
-  alert(this.$t('errors.loadFailed') + ': ' + (error.response?.data?.error || error.message))
+  const errorMsg = error.response?.data?.error ?? error.message
+  alert(`${this.$t('errors.loadFailed')}: ${errorMsg}`)
 }
 ```
 
@@ -191,6 +236,24 @@ export default {
 
 ## State Management
 
+### Pinia Store Pattern (`stores/`)
+For global state (language, auth, etc.):
+```js
+import { defineStore } from 'pinia'
+
+export const useLanguageStore = defineStore('language', {
+  state: () => ({
+    currentLanguage: localStorage.getItem('language') || 'de'
+  }),
+  actions: {
+    setLanguage(lang) {
+      this.currentLanguage = lang
+      localStorage.setItem('language', lang)
+    }
+  }
+})
+```
+
 ### Loading States
 Always show feedback for async operations:
 
@@ -225,6 +288,31 @@ export default {
 ```vue
 <select v-model="selected" :disabled="isLoading">
 <input type="checkbox" v-model="option" :disabled="isLoading">
+```
+
+## Form Validation
+
+### Validation Pattern
+```js
+methods: {
+  validateForm() {
+    if (!this.selectedTemplate) {
+      alert(this.$t('export.pleaseSelectTemplate'))
+      return false
+    }
+    return true
+  },
+  async submit() {
+    if (!this.validateForm()) return
+    
+    this.isLoading = true
+    try {
+      await API.post('/api/endpoint', this.data)
+    } finally {
+      this.isLoading = false
+    }
+  }
+}
 ```
 
 ## Browser Compatibility
@@ -287,20 +375,23 @@ export default {
 
 ## Best Practices
 
-1. **use global CSS definition to ensure consistent style 
+1. **Use global CSS definition** to ensure consistent styling
 2. **Always use scoped styles** to avoid CSS conflicts
 3. **Name components with PascalCase** (e.g., `CharacterDetails.vue`)
-4. **Use meaningful prop names** and validate when possible
-5. **Handle errors gracefully** with user-friendly messages
-6. **Keep template logic simple** - move complex logic to methods
-7. **Clean up resources** in `beforeUnmount` if needed
-8. **Test with actual API** running in Docker container
-9. **Check HMR reload** - view logs: `docker logs bamort-frontend-dev`
+4. **Use `const` by default, `let` when needed** - never use `var`
+5. **Use optional chaining `?.` and nullish coalescing `??`** for safe property access
+6. **Handle errors gracefully** with user-friendly messages
+7. **Keep template logic simple** - move complex logic to methods
+8. **Clean up resources** in `beforeUnmount` if needed
+9. **Test with actual API** running in Docker container
+10. **Check HMR reload** - view logs: `docker logs bamort-frontend-dev`
 
 ## Anti-Patterns to Avoid
 
 ❌ Don't use `v-if` and `v-for` on the same element
 ❌ Don't mutate props directly
+❌ Don't use `var` - use `const` or `let`
+❌ Don't use `==` - always use `===` for comparisons
 ❌ Don't forget to handle loading and error states
 ❌ Don't use inline styles - use scoped CSS
 ❌ Don't call API methods in template expressions

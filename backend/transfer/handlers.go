@@ -1,6 +1,7 @@
 package transfer
 
 import (
+	"bamort/config"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -93,5 +94,55 @@ func ImportCharacterHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Character imported successfully",
 		"character_id": charID,
+	})
+}
+
+// ExportDatabaseHandler handles full database export requests
+func ExportDatabaseHandler(c *gin.Context) {
+	// Use configured export directory
+	exportDir := config.Cfg.ExportTempDir
+	if exportDir == "" {
+		exportDir = "./backend/export_temp"
+	}
+
+	// Export database
+	result, err := ExportDatabase(exportDir)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to export database: %v", err)})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Database exported successfully",
+		"filename":     result.Filename,
+		"filepath":     result.FilePath,
+		"record_count": result.RecordCount,
+		"timestamp":    result.Timestamp,
+	})
+}
+
+// ImportDatabaseHandler handles full database import requests
+func ImportDatabaseHandler(c *gin.Context) {
+	// Parse request body with filepath
+	var req struct {
+		FilePath string `json:"filepath" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid request: %v", err)})
+		return
+	}
+
+	// Import database
+	result, err := ImportDatabase(req.FilePath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to import database: %v", err)})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Database imported successfully",
+		"record_count": result.RecordCount,
+		"timestamp":    result.Timestamp,
 	})
 }

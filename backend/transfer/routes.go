@@ -16,5 +16,9 @@ func RegisterRoutes(r *gin.RouterGroup) {
 
 		// Import character from JSON
 		transfer.POST("/import", ImportCharacterHandler)
+
+		// Full database export/import
+		transfer.POST("/database/export", ExportDatabaseHandler)
+		transfer.POST("/database/import", ImportDatabaseHandler)
 	}
 }

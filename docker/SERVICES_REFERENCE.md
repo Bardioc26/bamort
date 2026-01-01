@@ -13,9 +13,9 @@
 
 | Service | URL | Credentials | Description |
 |---------|-----|-------------|-------------|
-| **Frontend** | http://localhost:5173 | - | Vue.js Application |
-| **Backend API** | http://localhost:8180 | - | Go REST API |
-| **MariaDB** | localhost:3306 | bamort/[ENV_VAR] | Direct Database Connection |
+| **Frontend** | http://frontend.domain | - | Vue.js Application |
+| **Backend API** | http://backend.domain | - | Go REST API |
+| **MariaDB** | mariadb:3306 Not exposed| bamort/[ENV_VAR] | Direct Database Connection |
 
 > **Note**: phpMyAdmin is disabled in production by default. Uncomment the service in `docker-compose.yml` if needed (Port 8081).
 
@@ -88,9 +88,9 @@ docker exec -it bamort-mariadb-dev mysql -u bamort -p bamort
 
 ### Production  
 - **3306**: MariaDB
-- **5173**: Vue.js Frontend
+- **443**: Vue.js Frontend
 - **8081**: phpMyAdmin (disabled by default)
-- **8180**: Go Backend API
+- **443**: Go Backend API
 
 ## Enabling phpMyAdmin in Production
 

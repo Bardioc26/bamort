@@ -52,10 +52,10 @@ func defaultConfig() *Config {
 		DebugMode:     false,
 		LogLevel:      "INFO",
 		Environment:   "production",
-		DevTesting:    "no",          // Default to "no", can be overridden in tests
+		DevTesting:    "no",                    // Default to "no", can be overridden in tests
 		FrontendURL:   "http://localhost:5173", // Default frontend URL for development
-		TemplatesDir:  "./templates", // Default templates directory
-		ExportTempDir: "./xporttemp", // Default export temp directory
+		TemplatesDir:  "./templates",           // Default templates directory
+		ExportTempDir: "./xporttemp",           // Default export temp directory
 	}
 }
 
@@ -124,6 +124,7 @@ func LoadConfig() *Config {
 	// Frontend URL
 	if frontendURL := os.Getenv("BASE_URL"); frontendURL != "" {
 		config.FrontendURL = frontendURL
+	}
 
 	// Templates Directory
 	if templatesDir := os.Getenv("TEMPLATES_DIR"); templatesDir != "" {

@@ -1,4 +1,7 @@
 # Frontend 
+
+* verbessere Versionserstellung
+
 ## Refaktor
 
 * .github/instructions/vuejs3.instructions.md und .github/instructions/vue.instructions.md zusammen führen
@@ -21,10 +24,17 @@
         * Regeln
         * Charakterdaten
         * Userdaten
+* API Dokumentation
+* ./testdata  neu erstellen und aktuell halten
+* in jedem Package eine README.md erstellen in der kurz erklärt wird wozu das package dient, welche Abhängigkeiten bestehen, wie es zu benutzen ist und wie die tests funktionieren.
+* verbessere Versionserstellung
 
 ## Refaktor
 
 * Export Import Module neu grupieren
+* export_temp sollte nicht im backend liegen
+* routing verbessern
+* templates für PDF export sollten nicht direkt im backend liegen
 
 ### refactor multi game system
 

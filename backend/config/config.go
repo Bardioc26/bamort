@@ -26,6 +26,9 @@ type Config struct {
 
 	DevTesting string // "yes" or "no", used to determine if we are in a test environment
 
+	// Frontend URLs for CORS
+	FrontendURL string // Frontend URL for CORS configuration
+
 	// PDF Templates
 	TemplatesDir  string // Directory where PDF templates are stored
 	ExportTempDir string // Directory for temporary PDF exports
@@ -49,9 +52,10 @@ func defaultConfig() *Config {
 		DebugMode:     false,
 		LogLevel:      "INFO",
 		Environment:   "production",
-		DevTesting:    "no",          // Default to "no", can be overridden in tests
-		TemplatesDir:  "./templates", // Default templates directory
-		ExportTempDir: "./xporttemp", // Default export temp directory
+		DevTesting:    "no",                    // Default to "no", can be overridden in tests
+		FrontendURL:   "http://localhost:5173", // Default frontend URL for development
+		TemplatesDir:  "./templates",           // Default templates directory
+		ExportTempDir: "./xporttemp",           // Default export temp directory
 	}
 }
 
@@ -115,6 +119,11 @@ func LoadConfig() *Config {
 	} else {
 		config.DevTesting = "no" // Default to "no"
 		fmt.Printf("DEBUG LoadConfig - DEVTESTING nicht gefunden, setze DevTesting auf 'no'\n")
+	}
+
+	// Frontend URL
+	if frontendURL := os.Getenv("BASE_URL"); frontendURL != "" {
+		config.FrontendURL = frontendURL
 	}
 
 	// Templates Directory

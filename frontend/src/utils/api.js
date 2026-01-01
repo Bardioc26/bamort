@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8180', // Use env variable with fallback
+  baseURL: import.meta.env.VITE_API_URL || 'https://bamort-api.trokan.de', // Use env variable with fallback
 })
 
 // Request interceptor to add auth token

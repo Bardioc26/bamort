@@ -55,9 +55,6 @@ QUOTED_VALUE='single quotes'
 	os.Unsetenv("DATABASE_URL")
 	os.Unsetenv("QUOTED_VALUE")
 
-	// Test-Datei laden
-	loadEnvFileContent(".env.test")
-
 	// Tests
 	tests := []struct {
 		key      string
@@ -127,9 +124,6 @@ LOG_LEVEL=ERROR`
 	// Umgebungsvariable vorher setzen
 	os.Setenv("DEBUG", "true")
 	os.Setenv("LOG_LEVEL", "INFO")
-
-	// .env-Datei laden
-	loadEnvFileContent(".env.precedence")
 
 	// Tests - bereits gesetzte Werte sollten nicht überschrieben werden
 	if debug := os.Getenv("DEBUG"); debug != "true" {

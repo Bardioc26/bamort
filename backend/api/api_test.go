@@ -107,13 +107,13 @@ func TestListCharacters(t *testing.T) {
 	err := json.Unmarshal(respRecorder.Body.Bytes(), &allCharacters)
 	listOfCharacter := allCharacters.SelfOwned
 	assert.NoError(t, err)
-	assert.Equal(t, "Harsk Hammerhuter, Zen", listOfCharacter[5].Name)
-	assert.Equal(t, "Zwerg", listOfCharacter[5].Rasse)
-	assert.Equal(t, 20, int(listOfCharacter[5].ID)) // Check the simulated ID
-	assert.Equal(t, "Krieger", listOfCharacter[5].Typ)
-	assert.Equal(t, 3, listOfCharacter[5].Grad)
-	assert.Equal(t, "bebe", listOfCharacter[5].Owner)
-	assert.Equal(t, false, listOfCharacter[5].Public)
+	assert.Equal(t, "Harsk Hammerhuter, Zen", listOfCharacter[4].Name)
+	assert.Equal(t, "Zwerg", listOfCharacter[4].Rasse)
+	assert.Equal(t, 20, int(listOfCharacter[4].ID)) // Check the simulated ID
+	assert.Equal(t, "Krieger", listOfCharacter[4].Typ)
+	assert.Equal(t, 3, listOfCharacter[4].Grad)
+	assert.Equal(t, "bebe", listOfCharacter[4].Owner)
+	assert.Equal(t, false, listOfCharacter[4].Public)
 
 }
 
@@ -230,7 +230,7 @@ func TestGetSkillCost(t *testing.T) {
 	// Use "Abrichten" which character 20 definitely doesn't have in prepared_test_data.db
 	skillCostRequest := gsmaster.LernCostRequest{
 		CharId:       20,
-		Name:         "Abrichten",
+		Name:         "Musizieren",
 		CurrentLevel: 0,
 		Type:         "skill",
 		Action:       "learn",

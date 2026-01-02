@@ -60,7 +60,7 @@ export default {
         if (this.file_csv) formData.append("file_csv", this.file_csv);
 
         const token = localStorage.getItem("token"); // Get token from storage
-        const response = await API.post("/api/upload", formData, {
+        const response = await API.post("/api/importer/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
             "Authorization": `Bearer ${token}`, // Include token in the header

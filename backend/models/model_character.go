@@ -69,9 +69,9 @@ type Bennies struct {
 
 type Vermoegen struct {
 	BamortCharTrait
-	Goldstuecke   int `json:"goldstücke"`   // GS
-	Silberstuecke int `json:"silberstücke"` // SS
-	Kupferstuecke int `json:"kupferstücke"` // KS
+	Goldstuecke   int `gorm:"column:goldstuecke" json:"goldstücke"`     // GS
+	Silberstuecke int `gorm:"column:silberstuecke" json:"silberstücke"` // SS
+	Kupferstuecke int `gorm:"column:kupferstuecke" json:"kupferstücke"` // KS
 }
 
 type Char struct {

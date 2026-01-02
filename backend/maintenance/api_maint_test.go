@@ -43,7 +43,9 @@ func TestMaintSetupCheck(t *testing.T) {
 }
 
 func TestGetMasterData(t *testing.T) {
-	database.SetupTestDB() //(false)
+	// Ensure fresh database connection
+	database.DB = nil
+	database.SetupTestDB()
 	// Initialize a Gin router
 	r := gin.Default()
 	router.SetupGin(r)
@@ -56,7 +58,9 @@ func TestGetMasterData(t *testing.T) {
 		c.JSON(http.StatusOK, gin.H{"status": "Test OK"})
 	})
 	u := user.User{}
-	u.FirstId(1)
+	err := u.FirstId(1)
+	require.NoError(t, err, "Failed to load user with ID 1")
+	require.Equal(t, "admin", u.Role, "User 1 should be admin")
 
 	// Create a test HTTP request
 	req, _ := http.NewRequest("GET", "/api/maintenance", nil)
@@ -82,8 +86,8 @@ func TestGetMasterData(t *testing.T) {
 		Weapons      []models.Weapon      `json:"weapons"`
 	}
 	var dta dtaStruct
-	err := json.Unmarshal(respRecorder.Body.Bytes(), &dta)
-	assert.NoError(t, err)
+	errUnmarshal := json.Unmarshal(respRecorder.Body.Bytes(), &dta)
+	assert.NoError(t, errUnmarshal)
 }
 
 func TestGetMDSkillCategories(t *testing.T) {

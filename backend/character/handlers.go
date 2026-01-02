@@ -193,10 +193,10 @@ func splitSkills(object []models.SkFertigkeit) ([]models.SkFertigkeit, []models.
 type ExperienceAndWealthResponse struct {
 	ExperiencePoints int `json:"experience_points"`
 	Wealth           struct {
-		Goldstücke   int `json:"gold_coins"`   // GS
-		Silberstücke int `json:"silver_coins"` // SS
-		Kupferstücke int `json:"copper_coins"` // KS
-		TotalInGS    int `json:"total_in_ss"`  // Gesamt in Silberstücken
+		Goldstuecke   int `json:"gold_coins"`   // GS
+		Silberstuecke int `json:"silver_coins"` // SS
+		Kupferstuecke int `json:"copper_coins"` // KS
+		TotalInGS     int `json:"total_in_ss"`  // Gesamt in Silberstücken
 	} `json:"wealth"`
 }
 
@@ -225,9 +225,9 @@ func GetCharacterExperienceAndWealth(c *gin.Context) {
 	response := ExperienceAndWealthResponse{
 		ExperiencePoints: character.Erfahrungsschatz.EP,
 	}
-	response.Wealth.Goldstücke = gs
-	response.Wealth.Silberstücke = ss
-	response.Wealth.Kupferstücke = ks
+	response.Wealth.Goldstuecke = gs
+	response.Wealth.Silberstuecke = ss
+	response.Wealth.Kupferstuecke = ks
 	response.Wealth.TotalInGS = totalInSS
 
 	c.JSON(http.StatusOK, response)

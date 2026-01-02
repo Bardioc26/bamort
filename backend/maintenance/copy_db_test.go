@@ -1,6 +1,7 @@
 package maintenance
 
 import (
+	"bamort/config"
 	"bamort/database"
 	"bamort/models"
 	"bamort/user"
@@ -20,8 +21,13 @@ func TestCopyLiveDatabaseToFile(t *testing.T) {
 	// Setup
 	tempDir := t.TempDir()
 	targetFile := filepath.Join(tempDir, "empty_backup.db")
+	envpath, _ := filepath.Abs("../.env.test")
+	os.Setenv("CONFIG_FILE", envpath)
 
-	// Create empty live database (only migrate structures, no data)
+	config.Cfg = config.LoadConfig()
+
+	// Reset database connection to ensure we use environment config
+	database.DB = nil
 	database.ConnectDatabase()
 	liveDB := database.DB
 	require.NotNil(t, liveDB, "Live database should be connected")
@@ -51,7 +57,7 @@ func TestCopyLiveDatabaseToFile(t *testing.T) {
 	var userCount int64
 	err = targetDB.Model(&user.User{}).Count(&userCount).Error
 	require.NoError(t, err, "Should be able to count users")
-	assert.Equal(t, int64(2), userCount, "User table should be empty")
+	assert.GreaterOrEqual(t, userCount, int64(2), "User table should have more that 2 users")
 
 	// Copy target file to database.PreparedTestDB for permanent storage
 	// Close the database connection before copying

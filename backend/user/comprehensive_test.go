@@ -565,6 +565,7 @@ func TestRegisterUser(t *testing.T) {
 		Username:     "bebe",
 		PasswordHash: "osiris",
 		Email:        "frank@wuenscheonline.de",
+		Role:         "admin",
 	}
 
 	hashedPassword := md5.Sum([]byte(usr.PasswordHash))
@@ -576,6 +577,7 @@ func TestRegisterUser(t *testing.T) {
 		Username:     "bubnu",
 		PasswordHash: "osiris",
 		Email:        "spacer@wuenscheonline.de",
+		Role:         "standard",
 	}
 	hashedPassword = md5.Sum([]byte(usr2.PasswordHash))
 	usr2.PasswordHash = hex.EncodeToString(hashedPassword[:])
@@ -591,6 +593,7 @@ func TestLoginUser(t *testing.T) {
 		Username:     "logintest",
 		PasswordHash: "osiris",
 		Email:        "login@test.com",
+		Role:         "standard",
 	}
 	hashedPassword := md5.Sum([]byte(usr.PasswordHash))
 	usr.PasswordHash = hex.EncodeToString(hashedPassword[:])
@@ -686,6 +689,7 @@ func TestUser_EdgeCases(t *testing.T) {
 		Username:     "",
 		PasswordHash: "",
 		Email:        "",
+		Role:         "standard",
 	}
 	err := user.Save()
 	assert.NoError(t, err, "Should save user with empty strings")
@@ -704,6 +708,7 @@ func TestUser_EdgeCases(t *testing.T) {
 		Username:     "longuser",
 		PasswordHash: longString,
 		Email:        "long@example.com",
+		Role:         "standard",
 	}
 	err = user2.Create()
 	assert.NoError(t, err, "Should create user with long password hash")
@@ -717,6 +722,7 @@ func TestUser_ConcurrentAccess(t *testing.T) {
 		Username:     "concurrentuser",
 		PasswordHash: "hash",
 		Email:        "concurrent@example.com",
+		Role:         "standard",
 	}
 	err := user.Create()
 	require.NoError(t, err, "Should be able to create test user")

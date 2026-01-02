@@ -145,6 +145,10 @@ func LoadConfig() *Config {
 // loadEnvFile lädt eine .env-Datei falls vorhanden
 func loadEnvFile() {
 	envFiles := []string{".env", ".env.local"}
+	configFile := os.Getenv("CONFIG_FILE")
+	if configFile != "" {
+		envFiles = append(envFiles, configFile)
+	}
 
 	for _, envFile := range envFiles {
 		if _, err := os.Stat(envFile); err == nil {

@@ -27,8 +27,11 @@ func RegisterRoutes(r *gin.RouterGroup) {
 		maintGrp.DELETE("/weaponskills/:id", DeleteMDWeaponSkill)
 
 		maintGrp.GET("/spells", GetMDSpells)
+		maintGrp.GET("/spells-enhanced", GetEnhancedMDSpells) // New enhanced endpoint
 		maintGrp.GET("/spells/:id", GetMDSpell)
+		maintGrp.GET("/spells-enhanced/:id", GetEnhancedMDSpell) // New enhanced endpoint
 		maintGrp.PUT("/spells/:id", UpdateMDSpell)
+		maintGrp.PUT("/spells-enhanced/:id", UpdateEnhancedMDSpell) // New enhanced endpoint
 		maintGrp.POST("/spells", AddSpell)
 		maintGrp.DELETE("/spells/:id", DeleteMDSpell)
 

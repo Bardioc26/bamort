@@ -161,6 +161,7 @@ func GetMasterData(c *gin.Context) {
 		Weapons         []models.Weapon      `json:"weapons"`
 		SkillCategories []string             `json:"skillcategories"`
 		SpellCategories []string             `json:"spellcategories"`
+		Sources         []models.Source      `json:"sources"`
 	}
 	var dta dtaStruct
 	var err error
@@ -184,6 +185,10 @@ func GetMasterData(c *gin.Context) {
 	}
 	if err := database.DB.Find(&dta.Weapons).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Weapons"})
+		return
+	}
+	if err := database.DB.Find(&dta.Sources).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve Sources"})
 		return
 	}
 	dta.SkillCategories, err = ski.GetSkillCategories()

@@ -433,16 +433,16 @@ CREATE TABLE `char_wealth` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `name` longtext DEFAULT NULL,
   `character_id` bigint(20) UNSIGNED DEFAULT NULL,
-  `goldstücke` bigint(20) DEFAULT NULL,
-  `silberstücke` bigint(20) DEFAULT NULL,
-  `kupferstücke` bigint(20) DEFAULT NULL
+  `goldstuecke` bigint(20) DEFAULT NULL,
+  `silberstuecke` bigint(20) DEFAULT NULL,
+  `kupferstuecke` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Daten für Tabelle `char_wealth`
 --
 
-INSERT INTO `char_wealth` (`id`, `name`, `character_id`, `goldstücke`, `silberstücke`, `kupferstücke`) VALUES
+INSERT INTO `char_wealth` (`id`, `name`, `character_id`, `goldstuecke`, `silberstuecke`, `kupferstuecke`) VALUES
 (1, '', 20, 310, 0, 0),
 (2, '', 15, 250, 50, 200);
 

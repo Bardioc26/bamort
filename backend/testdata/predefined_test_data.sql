@@ -873,7 +873,7 @@ INSERT INTO char_bennies VALUES(17,'bennies',17,0,0,5);
 INSERT INTO char_bennies VALUES(18,'bennies',18,5,0,12);
 INSERT INTO char_bennies VALUES(19,'bennies',19,0,0,4);
 INSERT INTO char_bennies VALUES(20,'bennies',20,0,0,1);
-CREATE TABLE `char_wealth` (`id` integer PRIMARY KEY AUTOINCREMENT,`name` text,`character_id` integer,`goldstücke` integer,`silberstücke` integer,`kupferstücke` integer,CONSTRAINT `fk_char_chars_vermoegen` FOREIGN KEY (`character_id`) REFERENCES `char_chars`(`id`) ON DELETE CASCADE ON UPDATE CASCADE);
+CREATE TABLE `char_wealth` (`id` integer PRIMARY KEY AUTOINCREMENT,`name` text,`character_id` integer,`goldstuecke` integer,`silberstuecke` integer,`kupferstuecke` integer,CONSTRAINT `fk_char_chars_vermoegen` FOREIGN KEY (`character_id`) REFERENCES `char_chars`(`id`) ON DELETE CASCADE ON UPDATE CASCADE);
 INSERT INTO char_wealth VALUES(1,'',20,310,0,0);
 INSERT INTO char_wealth VALUES(2,'',15,250,50,200);
 INSERT INTO char_wealth VALUES(3,'',18,1900,0,0);

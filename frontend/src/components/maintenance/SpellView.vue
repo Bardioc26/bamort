@@ -69,6 +69,27 @@
             <option v-for="ursprung in availableUrsprungs" :key="ursprung" :value="ursprung">{{ ursprung }}</option>
           </select>
         </div>
+        <div class="filter-item">
+          <label>{{ $t('spell.reichweite') }}:</label>
+          <select v-model="filterReichweite">
+            <option value="">{{ $t('all') || 'All' }}</option>
+            <option v-for="reichweite in availableReichweiten" :key="reichweite" :value="reichweite">{{ reichweite }}</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>{{ $t('spell.wirkungsziel') }}:</label>
+          <select v-model="filterWirkungsziel">
+            <option value="">{{ $t('all') || 'All' }}</option>
+            <option v-for="wirkungsziel in availableWirkungsziele" :key="wirkungsziel" :value="wirkungsziel">{{ wirkungsziel }}</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>{{ $t('spell.quelle') }}:</label>
+          <select v-model="filterQuelle">
+            <option value="">{{ $t('all') || 'All' }}</option>
+            <option v-for="quelle in availableQuellen" :key="quelle" :value="quelle">{{ quelle }}</option>
+          </select>
+        </div>
         <button @click="clearFilters" class="btn-clear-filters">{{ $t('clearFilters') || 'Clear Filters' }}</button>
       </div>
 
@@ -358,6 +379,9 @@ export default {
       filterCategory: '',
       filterLevel: '',
       filterUrsprung: '',
+      filterReichweite: '',
+      filterWirkungsziel: '',
+      filterQuelle: '',
       enhancedSpells: [],
       availableSources: []
     }
@@ -387,6 +411,32 @@ export default {
       })
       return Array.from(ursprungs).sort()
     },
+    availableReichweiten() {
+      const reichweiten = new Set()
+      this.enhancedSpells.forEach(spell => {
+        if (spell.reichweite) reichweiten.add(spell.reichweite)
+      })
+      return Array.from(reichweiten).sort()
+    },
+    availableWirkungsziele() {
+      const wirkungsziele = new Set()
+      this.enhancedSpells.forEach(spell => {
+        if (spell.wirkungsziel) wirkungsziele.add(spell.wirkungsziel)
+      })
+      return Array.from(wirkungsziele).sort()
+    },
+    availableQuellen() {
+      const quellen = new Set()
+      this.enhancedSpells.forEach(spell => {
+        if (spell.source_id && this.availableSources.length > 0) {
+          const source = this.availableSources.find(s => s.id === spell.source_id)
+          if (source) {
+            quellen.add(source.code)
+          }
+        }
+      })
+      return Array.from(quellen).sort()
+    },
     filteredAndSortedSpells() {
       let filtered = [...this.enhancedSpells]
 
@@ -412,6 +462,27 @@ export default {
       // Apply ursprung filter
       if (this.filterUrsprung) {
         filtered = filtered.filter(spell => spell.ursprung === this.filterUrsprung)
+      }
+
+      // Apply Reichweite filter
+      if (this.filterReichweite) {
+        filtered = filtered.filter(spell => spell.reichweite === this.filterReichweite)
+      }
+
+      // Apply Wirkungsziel filter
+      if (this.filterWirkungsziel) {
+        filtered = filtered.filter(spell => spell.wirkungsziel === this.filterWirkungsziel)
+      }
+
+      // Apply Quelle filter (only by source code, ignoring page number)
+      if (this.filterQuelle) {
+        filtered = filtered.filter(spell => {
+          if (spell.source_id && this.availableSources.length > 0) {
+            const source = this.availableSources.find(s => s.id === spell.source_id)
+            return source && source.code === this.filterQuelle
+          }
+          return false
+        })
       }
 
       // Apply sorting
@@ -615,6 +686,9 @@ export default {
       this.filterCategory = ''
       this.filterLevel = ''
       this.filterUrsprung = ''
+      this.filterReichweite = ''
+      this.filterWirkungsziel = ''
+      this.filterQuelle = ''
     }
   }
 };

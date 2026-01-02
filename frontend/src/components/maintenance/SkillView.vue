@@ -73,7 +73,7 @@
               <th class="cd-table-header">{{ $t('skill.innateskill') }}</th>
               <th class="cd-table-header">{{ $t('skill.description') }}</th>
               <th class="cd-table-header">{{ $t('skill.bonusskill') }}</th>
-              <th class="cd-table-header">{{ $t('skill.quelle') }}</th>
+              <th class="cd-table-header">{{ $t('skill.quelle') }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
               <th class="cd-table-header">{{ $t('skill.system') }}</th>
               <th class="cd-table-header"> </th>
             </tr>
@@ -370,7 +370,13 @@ export default {
       if (skill.source_id && this.availableSources.length > 0) {
         const source = this.availableSources.find(s => s.id === skill.source_id)
         if (source) {
-          return skill.page_number ? `${source.code}:${skill.page_number}` : source.code
+          if (skill.page_number) {
+            return `${source.code}:${skill.page_number}`
+          } else {
+            // No page number - show code and quelle if available
+            const quelle = skill.quelle ? ` (${skill.quelle})` : ''
+            return `${source.code}${quelle}`
+          }
         }
       }
       return skill.quelle || '-'

@@ -45,27 +45,27 @@ func TestUploadFiles(t *testing.T) {
 	defer os.RemoveAll("./uploads") // Cleanup after test
 
 	// Read test files from testdata
-	vttFilePath := filepath.Join("..", "testdata", "Vincente.json")
-	csvFilePath := filepath.Join("..", "testdata", "Vincente.csv")
+	vttFilePath := filepath.Join("..", "testdata", "TestImportChar.json")
+	csvFilePath := filepath.Join("..", "testdata", "TestImportChar.csv")
 
 	vttContent, err := os.ReadFile(vttFilePath)
-	assert.NoError(t, err, "Should be able to read Vincente.json from testdata")
+	assert.NoError(t, err, "Should be able to read TestImportChar.json from testdata")
 
 	csvContent, err := os.ReadFile(csvFilePath)
-	assert.NoError(t, err, "Should be able to read Vincente.csv from testdata")
+	assert.NoError(t, err, "Should be able to read TestImportChar.csv from testdata")
 
 	// Create multipart form
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
 	// Add file_vtt (JSON file)
-	vttPart, err := writer.CreateFormFile("file_vtt", "Vincente.json")
+	vttPart, err := writer.CreateFormFile("file_vtt", "TestImportChar.json")
 	assert.NoError(t, err)
 	_, err = io.Copy(vttPart, bytes.NewReader(vttContent))
 	assert.NoError(t, err)
 
 	// Add file_csv (CSV file)
-	csvPart, err := writer.CreateFormFile("file_csv", "Vincente.csv")
+	csvPart, err := writer.CreateFormFile("file_csv", "TestImportChar.csv")
 	assert.NoError(t, err)
 	_, err = io.Copy(csvPart, bytes.NewReader(csvContent))
 	assert.NoError(t, err)

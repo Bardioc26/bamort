@@ -12,6 +12,8 @@ func SetupGin(r *gin.Engine) {
 	allowedOrigins := []string{
 		config.Cfg.FrontendURL,
 		"http://localhost:5173",    // Development frontend
+		"http://192.168.0.48:5173", // Development frontend
+		"http://192.168.0.36:5173", // Development frontend
 		"https://bamort.trokan.de", // Production frontend
 	}
 

@@ -28,6 +28,7 @@ export default {
 
         if (response.status === 200 || response.status === 204) {
           this.$emit('deleted')
+          this.$router.push('/dashboard')
         } else {
           console.error('Failed to delete character')
         }

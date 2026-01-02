@@ -409,12 +409,12 @@ func GetImprovementCost(skillName string, categoryName string, difficultyName st
 	var result SkillImprovementCost
 
 	err := database.DB.Raw(`
-		SELECT sic.te_required
-		FROM learning_skill_improvement_costs sic
-		JOIN learning_skill_category_difficulties scd ON sic.skill_category_difficulty_id = scd.id
-		JOIN gsm_skills s ON scd.skill_id = s.id
-		WHERE s.name = ? AND scd.skill_category = ? AND scd.skill_difficulty = ? AND sic.current_level = ?
-	`, skillName, categoryName, difficultyName, currentLevel).Scan(&result).Error
+        SELECT sic.te_required
+        FROM learning_skill_improvement_costs sic
+        JOIN learning_skill_category_difficulties scd ON sic.skill_category_difficulty_id = scd.id
+        JOIN gsm_skills s ON scd.skill_id = s.id
+        WHERE s.name = ? AND scd.skill_category = ? AND scd.skill_difficulty = ? AND sic.current_level = ?
+    `, skillName, categoryName, difficultyName, currentLevel).Scan(&result).Error
 
 	if err != nil {
 		return 0, err

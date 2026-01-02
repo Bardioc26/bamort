@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -299,19 +300,30 @@ func copyTableData(sourceDB, targetDB *gorm.DB, model interface{}) error {
 	batchSize := 100
 	totalBatches := (int(count) + batchSize - 1) / batchSize
 
+	// Get the element type for creating slice of records
+	modelType := reflect.TypeOf(model).Elem()
+
 	for offset := 0; offset < int(count); offset += batchSize {
 		batchNum := (offset / batchSize) + 1
 		logger.Debug("Kopiere Batch %d/%d für %s (Offset: %d, Limit: %d)", batchNum, totalBatches, tableName, offset, batchSize)
 
-		var records []map[string]interface{}
+		// Create a slice of the model type using reflection
+		sliceType := reflect.SliceOf(modelType)
+		recordsValue := reflect.MakeSlice(sliceType, 0, batchSize)
+		recordsPtr := reflect.New(sliceType)
+		recordsPtr.Elem().Set(recordsValue)
 
-		// Batch aus MariaDB lesen
-		if err := sourceDB.Model(model).Offset(offset).Limit(batchSize).Find(&records).Error; err != nil {
+		// Batch aus MariaDB lesen (use proper struct type instead of map)
+		if err := sourceDB.Model(model).Offset(offset).Limit(batchSize).Find(recordsPtr.Interface()).Error; err != nil {
 			logger.Error("Fehler beim Lesen von Batch %d für %s: %s", batchNum, tableName, err.Error())
 			return err
 		}
 
-		if len(records) == 0 {
+		// Get the actual records from reflection
+		records := recordsPtr.Elem().Interface()
+		recordsLen := recordsPtr.Elem().Len()
+
+		if recordsLen == 0 {
 			logger.Debug("Keine weiteren Datensätze für %s", tableName)
 			break
 		}
@@ -320,12 +332,12 @@ func copyTableData(sourceDB, targetDB *gorm.DB, model interface{}) error {
 		// Verwende Clauses.OnConflict um bestehende Datensätze zu ersetzen
 		if err := targetDB.Model(model).Clauses(clause.OnConflict{
 			UpdateAll: true,
-		}).Create(&records).Error; err != nil {
+		}).Create(records).Error; err != nil {
 			logger.Error("Fehler beim Einfügen von Batch %d für %s: %s", batchNum, tableName, err.Error())
 			return err
 		}
 
-		logger.Debug("Batch %d/%d für %s erfolgreich kopiert (%d Datensätze)", batchNum, totalBatches, tableName, len(records))
+		logger.Debug("Batch %d/%d für %s erfolgreich kopiert (%d Datensätze)", batchNum, totalBatches, tableName, recordsLen)
 	}
 
 	logger.Info("Tabelle %s erfolgreich kopiert (%d Datensätze total)", tableName, count)

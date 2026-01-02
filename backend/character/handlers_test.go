@@ -599,6 +599,7 @@ func TestFinalizeCharacterCreation(t *testing.T) {
 			UserID:   1,
 			Username: "bebe",
 			Email:    "frank@wuenscheonline.de",
+			Role: "admin",
 		}
 		err = database.DB.Create(&testUser).Error
 		assert.NoError(t, err)

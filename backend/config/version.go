@@ -1,7 +1,7 @@
 package config
 
 // Version is the application version
-const Version = "0.1.31"
+const Version = "0.1.32"
 
 var (
 	// GitCommit will be set by build flags or detected at runtime

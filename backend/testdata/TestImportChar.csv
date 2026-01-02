@@ -1,0 +1,113 @@
+Name;Typ;Grad;Stand;Glaube;Herkunft
+TestImportChar;Bestienjäger;15;Mittelschicht;"";Lidralien, Cossura
+Spezialisierung;Handaxt
+
+Basiseigenschaften
+St;99
+Gs;85
+Gw;79
+Ko;79
+In;78
+Zt;100
+Au;42
+pA;30
+Wk;100
+LP;AP;B;SchB;AbB;AnB
+17;50;24;3;0;1
+
+Raufen;Abwehr
+8;15
+Resistenz Geist;Resistenz Körper
+15;15
+Bonus Resistenz Geist;Bonus Resistenz Körper
+2;2
+
+Waffe;Erfolgswert;Angriffsbonus;Schadensbonus;Abwehrbonus;Praxispunkte
+Blasrohr:kurz;8;0;0;0;0
+Dolch;12;0;0;0;0
+Handaxt;12;0;0;0;0
+Langschwert;8;0;0;0;0
+Magierstab;12;0;0;0;0
+Ochsenzunge;12;0;0;0;0
+Schild:groß (geeignet zur Parade aller Angriffsarten);4;0;0;0;0
+Wurfspeer;4;0;0;0;0
+
+Rüstung;RK;Rüstungsbonus
+Kettenrüstung;3;0
+
+Fertigkeit;Erfolgswert;Bonus;Praxispunkte
+Wahrnehmung (+8);8;0;0
+Einprägen (+4);4;0;0
+Akrobatik;8;0;0
+Alchimie;8;0;0
+Balancieren;12;0;0
+Beidhändiger Kampf;12;0;1
+Beredsamkeit;9;0;0
+Blasrohre;8;0;0
+Einhandschlagwaffen;12;0;1
+Einhandschwerter;8;0;0
+Erste Hilfe;9;0;1
+Etikette;8;0;0
+Fallen entdecken;8;0;1
+Gassenwissen;8;0;1
+Gaukeln;13;0;0
+Geländelauf;14;0;1
+Klettern;12;0;0
+Laufen;8;0;0
+Lesen von Zauberschrift;8;0;0
+Naturkunde;9;0;0
+Pflanzenkunde;8;0;0
+Reiten;12;0;0
+Schilde;4;0;0
+Schleichen;8;0;1
+Schmerzen ertragen;9;0;0
+Schreiben (Muttersprache);10;0;0
+Seilkunst;12;0;0
+Spießwaffen;7;0;0
+Sprache (Maralinga);9;0;0
+Sprache (Muttersprache);12;0;0
+Spurensuche;11;0;0
+Stichwaffen;12;0;0
+Tarnen;8;0;1
+Tierkunde;12;0;1
+Überleben (Wald);11;0;1
+Verhören;8;0;0
+Zauberkunde;10;0;2
+Zauberstäbe;12;0;0
+Zweihandschwerter;9;0;0
+
+Zaubern;ZauB
+17;2
+Zauber;Bonus;Praxispunkte
+Aktivieren Krafttrunk (2W6);0;0
+Angst;0;0
+Bannen von Zauberwerk;0;0
+Besänftigen;0;0
+Beschleunigen;0;0
+Blicksalz;0;0
+Eisenhaut;0;0
+Erkennen von Krankheit;0;0
+Erkennen von Leben;0;0
+Erkennen von Zauberei;0;0
+Fährtenduft;0;0
+Flammenklinge;0;0
+Flicken;0;0
+Goldene Sphäre;0;0
+Goldener Panzer;0;0
+Hitzeschutz;0;0
+Hören von Fernem;0;0
+Kälteschutz;0;0
+Macht über die Sinne;0;0
+Mutlosigkeit;0;0
+Schwäche;0;0
+Silberne Bannsphäre;0;0
+Silberstaub;0;0
+Stärke;0;0
+Zähmen;0;0
+
+Ausrüstung
+Blasrohrnadel;Decke, warm;Fackeln;GiT erhöhen(wegen geschafter GiT bei magischem Essen);Pergament;Schreibpinsel;Seil;Siegelwachs;Tgesrationen;Tusche;Zeichenkohle
+
+Erfahrung
+Erfahrungsschatz;EP;Gold
+4700;4;1037.0

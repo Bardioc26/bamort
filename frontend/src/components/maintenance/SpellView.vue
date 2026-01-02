@@ -46,13 +46,66 @@
 
   <div class="cd-view">
     <div class="cd-list">
+      <!-- Filter Row -->
+      <div class="filter-row">
+        <div class="filter-item">
+          <label>{{ $t('spell.category') }}:</label>
+          <select v-model="filterCategory">
+            <option value="">{{ $t('all') || 'All' }}</option>
+            <option v-for="cat in availableCategories" :key="cat" :value="cat">{{ cat }}</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>{{ $t('spell.level') }}:</label>
+          <select v-model="filterLevel">
+            <option value="">{{ $t('all') || 'All' }}</option>
+            <option v-for="level in availableLevels" :key="level" :value="level">{{ level }}</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>{{ $t('spell.ursprung') }}:</label>
+          <select v-model="filterUrsprung">
+            <option value="">{{ $t('all') || 'All' }}</option>
+            <option v-for="ursprung in availableUrsprungs" :key="ursprung" :value="ursprung">{{ ursprung }}</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>{{ $t('spell.reichweite') }}:</label>
+          <select v-model="filterReichweite">
+            <option value="">{{ $t('all') || 'All' }}</option>
+            <option v-for="reichweite in availableReichweiten" :key="reichweite" :value="reichweite">{{ reichweite }}</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>{{ $t('spell.wirkungsziel') }}:</label>
+          <select v-model="filterWirkungsziel">
+            <option value="">{{ $t('all') || 'All' }}</option>
+            <option v-for="wirkungsziel in availableWirkungsziele" :key="wirkungsziel" :value="wirkungsziel">{{ wirkungsziel }}</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>{{ $t('spell.quelle') }}:</label>
+          <select v-model="filterQuelle">
+            <option value="">{{ $t('all') || 'All' }}</option>
+            <option v-for="quelle in availableQuellen" :key="quelle" :value="quelle">{{ quelle }}</option>
+          </select>
+        </div>
+        <button @click="clearFilters" class="btn-clear-filters">{{ $t('clearFilters') || 'Clear Filters' }}</button>
+      </div>
+
       <div class="tables-container">
           <table class="cd-table">
             <thead>
               <tr>
                 <th class="cd-table-header">{{ $t('spell.id') }}</th>
-                <th class="cd-table-header">{{ $t('spell.category') }}<button @click="sortBy('category')">-{{ sortField === 'category' ? (sortAsc ? '↑' : '↓') : '' }}</button></th>
-                <th class="cd-table-header">{{ $t('spell.name') }} <button @click="sortBy('name')">-{{ sortField === 'name' ? (sortAsc ? '↑' : '↓') : '' }}</button></th>
+                <th class="cd-table-header">
+                  {{ $t('spell.category') }}
+                  <button @click="sortBy('category')">{{ sortField === 'category' ? (sortAsc ? '↑' : '↓') : '-' }}</button>
+                </th>
+                <th class="cd-table-header">
+                  {{ $t('spell.name') }}
+                  <button @click="sortBy('name')">{{ sortField === 'name' ? (sortAsc ? '↑' : '↓') : '-' }}</button>
+                </th>
                 <th class="cd-table-header">{{ $t('spell.level') }}</th>
                 <th class="cd-table-header">{{ $t('spell.apverbrauch') }}</th>
                 <th class="cd-table-header">{{ $t('spell.zauberdauer') }}</th>
@@ -82,36 +135,103 @@
                   <td>{{ dtaItem.wirkungsdauer || '-' }}</td>
                   <td>{{ dtaItem.ursprung || '-' }}</td>
                   <td>{{ dtaItem.beschreibung || '-' }}</td>
-                  <td>{{ dtaItem.quelle || '-' }}</td>
+                  <td>{{ formatQuelle(dtaItem) }}</td>
                   <td>{{ dtaItem.system || 'midgard' }}</td>
                   <td>
                     <button @click="startEdit(index)">Edit</button>
                   </td>
                 </tr>
+                <!-- Edit Mode -->
                 <tr v-else>
-                  <td><input v-model="editedItem.id" style="width:20px;"/></td>
-                  <td><select v-model="editedItem.category" style="width:80px;">
-                    <option v-for="category in mdata['spellcategories']"
-                            :key="category"
-                            :value="category">
-                      {{ category }}
-                    </option>
-                  </select></td>
-                  <td><input v-model="editedItem.name"/></td>
-                  <td><input v-model.number="editedItem.level" type="number" style="width:40px;"/></td>
-                  <td><input v-model="editedItem.ap" style="width:40px;"/></td>
-                  <td><input v-model="editedItem.zauberdauer" /></td>
-                  <td><input v-model="editedItem.reichweite" style="width:40px;"/></td>
-                  <td><input v-model="editedItem.wirkungsziel" /></td>
-                  <td><input v-model="editedItem.wirkungsbereich" /></td>
-                  <td><input v-model="editedItem.wirkungsdauer" /></td>
-                  <td><input v-model="editedItem.ursprung" /></td>
-                  <td><input v-model="editedItem.beschreibung" /></td>
-                  <td><input v-model="editedItem.quelle"  style="width:80px;"/></td>
-                  <td><input v-model="editedItem.system"  style="width:80px;"/></td>
-                  <td>
-                    <button @click="saveEdit(index)">Save</button>
-                    <button @click="cancelEdit">Cancel</button>
+                  <td><input v-model="editedItem.id" style="width:20px;" disabled /></td>
+                  <td colspan="14">
+                    <!-- Expanded edit form -->
+                    <div class="edit-form">
+                      <div class="edit-row">
+                        <div class="edit-field">
+                          <label>{{ $t('spell.name') }}:</label>
+                          <input v-model="editedItem.name" />
+                        </div>
+                        <div class="edit-field">
+                          <label>{{ $t('spell.category') }}:</label>
+                          <select v-model="editedItem.category" style="width:120px;">
+                            <option v-for="category in mdata['spellcategories']" :key="category" :value="category">
+                              {{ category }}
+                            </option>
+                          </select>
+                        </div>
+                        <div class="edit-field">
+                          <label>{{ $t('spell.level') }}:</label>
+                          <input v-model.number="editedItem.level" type="number" style="width:60px;" />
+                        </div>
+                        <div class="edit-field">
+                          <label>{{ $t('spell.apverbrauch') }}:</label>
+                          <input v-model="editedItem.ap" style="width:60px;" />
+                        </div>
+                      </div>
+
+                      <div class="edit-row">
+                        <div class="edit-field">
+                          <label>{{ $t('spell.zauberdauer') }}:</label>
+                          <input v-model="editedItem.zauberdauer" style="width:120px;" />
+                        </div>
+                        <div class="edit-field">
+                          <label>{{ $t('spell.reichweite') }}:</label>
+                          <input v-model="editedItem.reichweite" style="width:120px;" />
+                        </div>
+                        <div class="edit-field">
+                          <label>{{ $t('spell.wirkungsdauer') }}:</label>
+                          <input v-model="editedItem.wirkungsdauer" style="width:120px;" />
+                        </div>
+                      </div>
+
+                      <div class="edit-row">
+                        <div class="edit-field">
+                          <label>{{ $t('spell.wirkungsziel') }}:</label>
+                          <input v-model="editedItem.wirkungsziel" style="width:150px;" />
+                        </div>
+                        <div class="edit-field">
+                          <label>{{ $t('spell.wirkungsbereich') }}:</label>
+                          <input v-model="editedItem.wirkungsbereich" style="width:150px;" />
+                        </div>
+                        <div class="edit-field">
+                          <label>{{ $t('spell.ursprung') }}:</label>
+                          <input v-model="editedItem.ursprung" style="width:120px;" />
+                        </div>
+                      </div>
+
+                      <div class="edit-row">
+                        <div class="edit-field full-width">
+                          <label>{{ $t('spell.description') }}:</label>
+                          <input v-model="editedItem.beschreibung" />
+                        </div>
+                      </div>
+
+                      <div class="edit-row">
+                        <div class="edit-field">
+                          <label>{{ $t('spell.quelle') }}:</label>
+                          <select v-model="editedItem.sourceCode" style="width:100px;">
+                            <option value="">-</option>
+                            <option v-for="source in availableSources" :key="source.code" :value="source.code">
+                              {{ source.code }}
+                            </option>
+                          </select>
+                        </div>
+                        <div class="edit-field">
+                          <label>{{ $t('spell.page') || 'Page' }}:</label>
+                          <input v-model.number="editedItem.page_number" type="number" style="width:60px;" />
+                        </div>
+                        <div class="edit-field">
+                          <label>{{ $t('spell.system') }}:</label>
+                          <input v-model="editedItem.system" style="width:100px;" />
+                        </div>
+                      </div>
+
+                      <div class="edit-actions">
+                        <button @click="saveEdit(index)" class="btn-save">Save</button>
+                        <button @click="cancelEdit" class="btn-cancel">Cancel</button>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               </template>
@@ -255,27 +375,124 @@ export default {
       editedItem: null,
       selectedFile: null,
       importing: false,
-      importResult: null
+      importResult: null,
+      filterCategory: '',
+      filterLevel: '',
+      filterUrsprung: '',
+      filterReichweite: '',
+      filterWirkungsziel: '',
+      filterQuelle: '',
+      enhancedSpells: [],
+      availableSources: []
     }
   },
+  async created() {
+    await this.loadEnhancedSpells()
+  },
   computed: {
+    availableCategories() {
+      const categories = new Set()
+      this.enhancedSpells.forEach(spell => {
+        if (spell.category) categories.add(spell.category)
+      })
+      return Array.from(categories).sort()
+    },
+    availableLevels() {
+      const levels = new Set()
+      this.enhancedSpells.forEach(spell => {
+        if (spell.level !== null && spell.level !== undefined) levels.add(spell.level)
+      })
+      return Array.from(levels).sort((a, b) => a - b)
+    },
+    availableUrsprungs() {
+      const ursprungs = new Set()
+      this.enhancedSpells.forEach(spell => {
+        if (spell.ursprung) ursprungs.add(spell.ursprung)
+      })
+      return Array.from(ursprungs).sort()
+    },
+    availableReichweiten() {
+      const reichweiten = new Set()
+      this.enhancedSpells.forEach(spell => {
+        if (spell.reichweite) reichweiten.add(spell.reichweite)
+      })
+      return Array.from(reichweiten).sort()
+    },
+    availableWirkungsziele() {
+      const wirkungsziele = new Set()
+      this.enhancedSpells.forEach(spell => {
+        if (spell.wirkungsziel) wirkungsziele.add(spell.wirkungsziel)
+      })
+      return Array.from(wirkungsziele).sort()
+    },
+    availableQuellen() {
+      const quellen = new Set()
+      this.enhancedSpells.forEach(spell => {
+        if (spell.source_id && this.availableSources.length > 0) {
+          const source = this.availableSources.find(s => s.id === spell.source_id)
+          if (source) {
+            quellen.add(source.code)
+          }
+        }
+      })
+      return Array.from(quellen).sort()
+    },
     filteredAndSortedSpells() {
-      if (!this.mdata?.spells) return [];
+      let filtered = [...this.enhancedSpells]
 
-      return [...this.mdata.spells]
-        .filter(spell => {
-          const searchLower = this.searchTerm.toLowerCase();
-          return !this.searchTerm ||
-            spell.name?.toLowerCase().includes(searchLower) ||
-            spell.category?.toLowerCase().includes(searchLower);
+      // Apply search filter
+      if (this.searchTerm) {
+        const searchLower = this.searchTerm.toLowerCase()
+        filtered = filtered.filter(spell =>
+          spell.name?.toLowerCase().includes(searchLower) ||
+          spell.category?.toLowerCase().includes(searchLower)
+        )
+      }
+
+      // Apply category filter
+      if (this.filterCategory) {
+        filtered = filtered.filter(spell => spell.category === this.filterCategory)
+      }
+
+      // Apply level filter
+      if (this.filterLevel !== '') {
+        filtered = filtered.filter(spell => spell.level === this.filterLevel)
+      }
+
+      // Apply ursprung filter
+      if (this.filterUrsprung) {
+        filtered = filtered.filter(spell => spell.ursprung === this.filterUrsprung)
+      }
+
+      // Apply Reichweite filter
+      if (this.filterReichweite) {
+        filtered = filtered.filter(spell => spell.reichweite === this.filterReichweite)
+      }
+
+      // Apply Wirkungsziel filter
+      if (this.filterWirkungsziel) {
+        filtered = filtered.filter(spell => spell.wirkungsziel === this.filterWirkungsziel)
+      }
+
+      // Apply Quelle filter (only by source code, ignoring page number)
+      if (this.filterQuelle) {
+        filtered = filtered.filter(spell => {
+          if (spell.source_id && this.availableSources.length > 0) {
+            const source = this.availableSources.find(s => s.id === spell.source_id)
+            return source && source.code === this.filterQuelle
+          }
+          return false
         })
-        .sort((a, b) => {
-          const aValue = (a[this.sortField] || '').toLowerCase();
-          const bValue = (b[this.sortField] || '').toLowerCase();
-          return this.sortAsc
-            ? aValue.localeCompare(bValue)
-            : bValue.localeCompare(aValue);
-        });
+      }
+
+      // Apply sorting
+      filtered.sort((a, b) => {
+        const aValue = (a[this.sortField] || '').toString().toLowerCase()
+        const bValue = (b[this.sortField] || '').toString().toLowerCase()
+        return this.sortAsc ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
+      })
+
+      return filtered
     },
     sortedSpells() {
       return [...this.mdata.spells].sort((a, b) => {
@@ -288,15 +505,55 @@ export default {
     }
   },
   methods: {
-    startEdit(index) {
-      this.editingIndex = index;
-      this.editedItem = { ...this.filteredAndSortedSpells[index] };
+    async loadEnhancedSpells() {
+      try {
+        const response = await API.get('/api/maintenance/spells-enhanced')
+        this.enhancedSpells = response.data.spells || []
+        this.availableSources = response.data.sources || []
+        // Also update mdata for compatibility
+        if (response.data.categories) {
+          this.mdata.spellcategories = response.data.categories
+        }
+      } catch (error) {
+        console.error('Failed to load enhanced spells:', error)
+      }
     },
-    saveEdit(index) {
-      //this.$emit('update-spell', { index, spell: this.editedItem });
-      this.handleSpellUpdate( { index, spell: this.editedItem });
-      this.editingIndex = -1;
-      this.editedItem = null;
+    startEdit(index) {
+      const spell = this.filteredAndSortedSpells[index]
+      this.editedItem = {
+        ...spell,
+        sourceCode: this.getSourceCode(spell.source_id)
+      }
+      this.editingIndex = index
+    },
+    async saveEdit(index) {
+      try {
+        // Find source ID from code
+        const source = this.availableSources.find(s => s.code === this.editedItem.sourceCode)
+        
+        const updateData = {
+          ...this.editedItem,
+          source_id: source ? source.id : null,
+          page_number: this.editedItem.page_number || 0
+        }
+        
+        const response = await API.put(
+          `/api/maintenance/spells-enhanced/${this.editedItem.id}`,
+          updateData
+        )
+
+        // Update the spell in the list using splice for proper reactivity
+        const spellIndex = this.enhancedSpells.findIndex(s => s.id === this.editedItem.id)
+        if (spellIndex !== -1) {
+          this.enhancedSpells.splice(spellIndex, 1, response.data)
+        }
+
+        this.editingIndex = -1
+        this.editedItem = null
+      } catch (error) {
+        console.error('Failed to save spell:', error)
+        alert('Failed to save spell: ' + (error.response?.data?.error || error.message))
+      }
     },
     cancelEdit() {
       this.editingIndex = -1;
@@ -397,9 +654,41 @@ export default {
         if (response.data.spells) {
           this.mdata.spells = response.data.spells;
         }
+        if (response.data.sources) {
+          this.availableSources = response.data.sources;
+        }
       } catch (error) {
         console.error('Failed to refresh spells data:', error);
       }
+    },
+    formatQuelle(spell) {
+      if (spell.source_id && this.availableSources.length > 0) {
+        const source = this.availableSources.find(s => s.id === spell.source_id)
+        if (source) {
+          if (spell.page_number) {
+            return `${source.code}:${spell.page_number}`
+          } else {
+            // No page number - show code and quelle if available
+            const quelle = spell.quelle ? ` (${spell.quelle})` : ''
+            return `${source.code}${quelle}`
+          }
+        }
+      }
+      return spell.quelle || '-'
+    },
+    getSourceCode(sourceId) {
+      if (!sourceId || !this.availableSources.length) return ''
+      const source = this.availableSources.find(s => s.id === sourceId)
+      return source ? source.code : ''
+    },
+    clearFilters() {
+      this.searchTerm = ''
+      this.filterCategory = ''
+      this.filterLevel = ''
+      this.filterUrsprung = ''
+      this.filterReichweite = ''
+      this.filterWirkungsziel = ''
+      this.filterQuelle = ''
     }
   }
 };

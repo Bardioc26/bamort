@@ -70,7 +70,7 @@ func ConnectDatabaseOrig() *gorm.DB {
 	// Falls keine URL konfiguriert ist, verwende Standard-MySQL-Konfiguration als Fallback
 	dbURL := cfg.DatabaseURL
 	if dbURL == "" {
-		dbURL = "bamort:bG4)efozrc@tcp(192.168.0.5:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
+		dbURL = "bamort:bG4)efozrc@tcp(localhost:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
 		logger.Warn("Keine DATABASE_URL konfiguriert, verwende Standard-MySQL-Konfiguration")
 		cfg.DatabaseType = "mysql"
 	}

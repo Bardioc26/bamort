@@ -107,6 +107,7 @@ export default {
     improvable:'verbesserbar',
     category:'Kategorie',
     initialwert:'Startwert',
+    difficulty:'Schwierigkeit',
   },
   spell:{
     id:'ID',
@@ -169,6 +170,11 @@ export default {
     personal_item:'Pers',
     quelle:'Quelle',
     system:'System',
+    skillrequired:'Waffenfertigkeit',
+    rangenear:'Reichweite Nah',
+    rangemiddle:'Reichweite Mittel',
+    rangefar:'Reichweite Fern',
+    page:'Seite',
     add: 'Waffe hinzufügen',
     addWeapon: 'Waffe hinzufügen',
     search: 'Suche',
@@ -496,7 +502,7 @@ export default {
     passwordMismatch: 'Die Passwörter stimmen nicht überein',
     passwordChangeError: 'Fehler beim Ändern des Passworts',
     roles: {
-      standard: 'Standard-Benutzer',
+      standard: 'Standard',
       maintainer: 'Maintainer',
       admin: 'Administrator'
     }

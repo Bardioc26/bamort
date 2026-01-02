@@ -17,6 +17,6 @@ echo "📦 Building and starting production containers..."
 docker-compose -f docker-compose.yml down
 
 # Baue und starte die Container
-docker-compose -f docker-compose.yml up --build -d
+COMPOSE_PROJECT_NAME=bamort docker-compose -f docker-compose.yml up --build -d
 
 echo "✅ Production environment started."

@@ -502,7 +502,7 @@ export default {
     passwordMismatch: 'Die Passwörter stimmen nicht überein',
     passwordChangeError: 'Fehler beim Ändern des Passworts',
     roles: {
-      standard: 'Standard-Benutzer',
+      standard: 'Standard',
       maintainer: 'Maintainer',
       admin: 'Administrator'
     }

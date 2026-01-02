@@ -498,7 +498,7 @@ export default {
     passwordMismatch: 'Passwords do not match',
     passwordChangeError: 'Failed to change password',
     roles: {
-      standard: 'Standard User',
+      standard: 'Standard',
       maintainer: 'Maintainer',
       admin: 'Administrator'
     }

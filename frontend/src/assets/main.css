@@ -19,6 +19,17 @@ a,
   padding: 3px;
 }
 
+a:visited {
+  color: hsla(160, 100%, 37%, 1);
+}
+
+a:active,
+a:focus {
+  color: hsla(160, 100%, 37%, 1);
+  outline: 2px solid hsla(160, 100%, 37%, 0.3);
+  outline-offset: 2px;
+}
+
 @media (hover: hover) {
   a:hover {
     background-color: hsla(160, 100%, 37%, 0.2);
@@ -537,6 +548,36 @@ a,
 
 .cd-table tr:nth-child(even) {
   background-color: #f9f9f9;
+  color: #000000;
+}
+
+/* Data table (used in UserManagementView and other components) */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #000000;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+  color: #000000;
+}
+
+.data-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #000000;
+}
+
+.data-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.data-table tr:nth-child(even) {
+  background-color: #ffffff;
   color: #000000;
 }
 

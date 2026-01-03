@@ -1,6 +1,7 @@
 package pdfrender
 
 import (
+	"bamort/config"
 	"fmt"
 	"os"
 )
@@ -91,7 +92,9 @@ func LoadTemplateSetFromFiles(templateDir string) (TemplateSet, error) {
 // Now loads from actual template files instead of hardcoded values
 func DefaultA4QuerTemplateSet() TemplateSet {
 	// Try to load from files
-	templateSet, err := LoadTemplateSetFromFiles("backend/templates/Default_A4_Quer")
+	cfg := config.Cfg
+	templateDir := cfg.TemplatesDir + "/Default_A4_Quer"
+	templateSet, err := LoadTemplateSetFromFiles(templateDir)
 	if err != nil {
 		// Fallback to relative path from test directory
 		templateSet, err = LoadTemplateSetFromFiles("../templates/Default_A4_Quer")

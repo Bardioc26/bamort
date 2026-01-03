@@ -30,6 +30,11 @@
 * verbessere Versionserstellung
 * Waffenfertigkeiten haben keine Bonuseigenschaft.
 * waffenfertigkeiten müssen in andere Katagorien eingeteilt werden. Nahkampf, Schusswaffen, Verteidigungswaffen etc.
+* ersetzen:
+    	if dbURL == "" {
+		    dbURL = "bamort:bG4)efozrc@tcp(192.168.0.5:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
+* fehlgeschlagene Tests ausbessern
+    ./backend$ go test ./...  -v 2>&1 |grep FAIL 
 
 ## Refaktor
 

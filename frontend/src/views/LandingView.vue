@@ -43,11 +43,19 @@ export default {
       frontendCommit: getGitCommit(),
       backendVersion: "Loading...",
       backendCommit: "Loading...",
-      githubUrl: "https://github.com/Bardioc26/bamort"
+      githubUrl: "https://github.com/Bardioc26/bamort",
+      retryCount: 0,
+      maxRetries: 24,
+      retryInterval: null
     }
   },
   mounted() {
     this.fetchBackendVersion()
+  },
+  beforeUnmount() {
+    if (this.retryInterval) {
+      clearInterval(this.retryInterval)
+    }
   },
   methods: {
     async fetchBackendVersion() {
@@ -58,11 +66,29 @@ export default {
         if (response.data) {
           this.backendVersion = response.data.version || "Unknown"
           this.backendCommit = response.data.gitCommit || "Unknown"
+          if (this.retryInterval) {
+            clearInterval(this.retryInterval)
+            this.retryInterval = null
+          }
         }
       } catch (error) {
         console.warn("Could not fetch backend version:", error)
         this.backendVersion = "Unavailable"
         this.backendCommit = "N/A"
+        
+        if (this.retryCount < this.maxRetries && !this.retryInterval) {
+          this.retryInterval = setInterval(() => {
+            this.retryCount++
+            if (this.retryCount >= this.maxRetries) {
+              clearInterval(this.retryInterval)
+              this.retryInterval = null
+              console.warn("Max retries reached for backend version")
+              this.backendVersion = "Unreachable"
+              return
+            }
+            this.fetchBackendVersion()
+          }, 5000)
+        }
       }
     }
   }

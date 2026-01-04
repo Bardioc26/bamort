@@ -128,51 +128,6 @@ type Believe struct {
 	PageNumber   int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
 }
 
-/*
-func (object *LookupList) Create() error {
-	gameSystem := "midgard"
-	object.GameSystem = gameSystem
-	err := database.DB.Transaction(func(tx *gorm.DB) error {
-		// Save the main character record
-		if err := tx.Create(&object).Error; err != nil {
-			return fmt.Errorf("failed to save Lookup: %w", err)
-		}
-		return nil
-	})
-
-	return err
-}
-
-func (object *LookupList) First(value string) error {
-	gameSystem := "midgard"
-	err := database.DB.First(&object, "game_system=? AND name!='Placeholder' AND name = ?", gameSystem, value).Error
-	if err != nil {
-		// zauber found
-		return err
-	}
-	return nil
-}
-
-func (object *LookupList) FirstId(value uint) error {
-	gameSystem := "midgard"
-	err := database.DB.First(&object, "game_system=? AND name!='Placeholder' AND id = ?", gameSystem, value).Error
-	if err != nil {
-		// zauber found
-		return err
-	}
-	return nil
-}
-
-func (object *LookupList) Save() error {
-	err := database.DB.Save(&object).Error
-	if err != nil {
-		// zauber found
-		return err
-	}
-	return nil
-}
-*/
-
 func (object *Skill) TableName() string {
 	dbPrefix := "gsm"
 	return dbPrefix + "_" + "skills"

@@ -292,6 +292,73 @@ func TestUpdateSkillWithCategories(t *testing.T) {
 		t.Error("Expected to find 'Alltag/normal' category after update")
 	}
 }
+func TestUpdateSkillBooleanFields(t *testing.T) {
+	setupTestEnvironment(t)
+	database.SetupTestDB()
+
+	// Create test data with improvable=true and innateskill=false
+	source := getOrCreateSource("TSTBOOL", "TestBoolean")
+	skill := models.Skill{
+		Name:        "TestBooleanSkill",
+		GameSystem:  "midgard",
+		Initialwert: 5,
+		Improvable:  true,
+		InnateSkill: false,
+		SourceID:    source.ID,
+	}
+	database.DB.Create(&skill)
+
+	category := getOrCreateCategory("Alltag", source.ID)
+	difficulty := getOrCreateDifficulty("normal")
+
+	scd := models.SkillCategoryDifficulty{
+		SkillID:           skill.ID,
+		SkillCategoryID:   category.ID,
+		SkillDifficultyID: difficulty.ID,
+		LearnCost:         10,
+		SCategory:         category.Name,
+		SDifficulty:       difficulty.Name,
+	}
+	database.DB.Create(&scd)
+
+	// Update to set improvable=false and innateskill=true
+	updateReq := SkillUpdateRequest{
+		Skill: models.Skill{
+			ID:          skill.ID,
+			Name:        "TestBooleanSkill",
+			GameSystem:  "midgard",
+			Initialwert: 5,
+			Improvable:  false, // Change to false
+			InnateSkill: true,  // Change to true
+			SourceID:    source.ID,
+		},
+		CategoryDifficulties: []CategoryDifficultyPair{
+			{
+				CategoryID:   category.ID,
+				DifficultyID: difficulty.ID,
+			},
+		},
+	}
+
+	err := UpdateSkillWithCategories(skill.ID, updateReq)
+	if err != nil {
+		t.Fatalf("UpdateSkillWithCategories failed: %v", err)
+	}
+
+	// Verify boolean fields were updated correctly
+	var updatedSkill models.Skill
+	if err := database.DB.First(&updatedSkill, skill.ID).Error; err != nil {
+		t.Fatalf("Failed to retrieve updated skill: %v", err)
+	}
+
+	if updatedSkill.Improvable != false {
+		t.Errorf("Expected improvable to be false, got %v", updatedSkill.Improvable)
+	}
+
+	if updatedSkill.InnateSkill != true {
+		t.Errorf("Expected innateskill to be true, got %v", updatedSkill.InnateSkill)
+	}
+}
 
 func TestGetDefaultLearnCost(t *testing.T) {
 	tests := []struct {

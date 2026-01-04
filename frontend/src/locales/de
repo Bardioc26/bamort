@@ -109,6 +109,8 @@ export default {
     initialwert:'Startwert',
     basiswert:'Basiswert (ungelernt)',
     difficulty:'Schwierigkeit',
+    page:'Seite',
+    categories:'Kategorien',
   },
   spell:{
     id:'ID',
@@ -233,6 +235,8 @@ export default {
   },
   search:'Suche',
   Skill:'Fertigkeit',
+  newSkill:'Neue Fertigkeit',
+  createSkill:'Fertigkeit erstellen',
   common: {
     loading: 'Laden...',
     cancel: 'Abbrechen',

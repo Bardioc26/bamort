@@ -7,6 +7,7 @@
         v-model="searchTerm"
         :placeholder="`${$t('search')} ${$t('Skill')}...`"
       />
+      <button @click="startCreate" class="btn-primary">{{ $t('newSkill') }}</button>
     </div>
   </div>
 
@@ -80,6 +81,117 @@
             </tr>
           </thead>
           <tbody>
+            <!-- Create New Skill Row -->
+            <tr v-if="creatingNew">
+              <td>New</td>
+              <td colspan="11">
+                <!-- Create form -->
+                <div class="edit-form">
+                  <div class="edit-row">
+                    <div class="edit-field">
+                      <label>{{ $t('skill.name') }}:</label>
+                      <input v-model="editedItem.name" />
+                    </div>
+                    <div class="edit-field">
+                      <label>{{ $t('skill.initialwert') }}:</label>
+                      <input v-model.number="editedItem.initialwert" type="number" style="width:60px;" />
+                    </div>
+                    <div class="edit-field">
+                      <label>{{ $t('skill.basiswert') }}:</label>
+                      <input v-model.number="editedItem.basiswert" type="number" style="width:60px;" />
+                    </div>
+                    <div class="edit-field">
+                      <label>{{ $t('skill.bonusskill') }}:</label>
+                      <select v-model="editedItem.bonuseigenschaft" style="width:80px;">
+                        <option value="">-</option>
+                        <option value="St">St</option>
+                        <option value="Gs">Gs</option>
+                        <option value="Gw">Gw</option>
+                        <option value="Ko">Ko</option>
+                        <option value="In">In</option>
+                        <option value="Zt">Zt</option>
+                        <option value="Au">Au</option>
+                        <option value="pA">pA</option>
+                        <option value="Wk">Wk</option>
+                        <option value="B">B</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="edit-row">
+                    <div class="edit-field">
+                      <label>{{ $t('skill.improvable') }}:</label>
+                      <input type="checkbox" v-model="editedItem.improvable" />
+                    </div>
+                    <div class="edit-field">
+                      <label>{{ $t('skill.innateskill') }}:</label>
+                      <input type="checkbox" v-model="editedItem.innateskill" />
+                    </div>
+                  </div>
+
+                  <div class="edit-row">
+                    <div class="edit-field full-width">
+                      <label>{{ $t('skill.description') }}:</label>
+                      <input v-model="editedItem.beschreibung" />
+                    </div>
+                  </div>
+
+                  <div class="edit-row">
+                    <div class="edit-field">
+                      <label>{{ $t('skill.quelle') }}:</label>
+                      <select v-model="editedItem.sourceCode" style="width:100px;">
+                        <option v-for="source in availableSources" :key="source.code" :value="source.code">
+                          {{ source.code }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="edit-field">
+                      <label>{{ $t('skill.page') || 'Page' }}:</label>
+                      <input v-model.number="editedItem.page_number" type="number" style="width:60px;" />
+                    </div>
+                  </div>
+
+                  <div class="edit-row">
+                    <div class="edit-field full-width">
+                      <label>{{ $t('skill.categories') || 'Categories' }}:</label>
+                      <div class="category-checkboxes">
+                        <div v-for="category in mdata.categories" :key="category.id" class="category-checkbox">
+                          <input 
+                            type="checkbox" 
+                            :value="category.id"
+                            v-model="editedItem.selectedCategories"
+                            @change="onCategoryToggle(category.id)"
+                          />
+                          <label>{{ category.name }}</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="edit-row">
+                    <div class="edit-field full-width">
+                      <label>{{ $t('skill.difficulty') || 'Difficulty' }}:</label>
+                      <div class="difficulty-selects">
+                        <div v-for="catId in editedItem.selectedCategories" :key="catId" class="difficulty-select">
+                          <span>{{ getCategoryName(catId) }}:</span>
+                          <select v-model="editedItem.categoryDifficulties[catId]" style="width:120px;">
+                            <option v-for="diff in mdata.difficulties" :key="diff.id" :value="diff.id">
+                              {{ diff.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="edit-actions">
+                    <button @click="saveCreate" class="btn-save">{{ $t('createSkill') }}</button>
+                    <button @click="cancelCreate" class="btn-cancel">Cancel</button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
             <template v-for="(dtaItem, index) in filteredAndSortedSkills" :key="dtaItem.id">
               <!-- Display Mode -->
               <tr v-if="editingIndex !== index">
@@ -189,7 +301,7 @@
 
                     <div class="edit-row">
                       <div class="edit-field full-width">
-                        <label>{{ $t('skill.difficulties') || 'Difficulties' }}:</label>
+                        <label>{{ $t('skill.difficulty') || 'Difficulty' }}:</label>
                         <div class="difficulty-selects">
                           <div v-for="catId in editedItem.selectedCategories" :key="catId" class="difficulty-select">
                             <span>{{ getCategoryName(catId) }}:</span>
@@ -246,6 +358,7 @@ export default {
       sortAsc: true,
       editingIndex: -1,
       editedItem: null,
+      creatingNew: false,
       filterCategory: '',
       filterDifficulty: '',
       filterImprovable: '',
@@ -492,6 +605,76 @@ export default {
       this.filterImprovable = ''
       this.filterInnateskill = ''
       this.filterBonuseigenschaft = ''
+    },
+    startCreate() {
+      // Initialize new skill object with defaults
+      this.editedItem = {
+        name: '',
+        beschreibung: '',
+        game_system: 'midgard',
+        initialwert: 5,
+        basiswert: 0,
+        bonuseigenschaft: '',
+        improvable: true,
+        innateskill: false,
+        sourceCode: this.availableSources.length > 0 ? this.availableSources[0].code : '',
+        page_number: 0,
+        selectedCategories: [],
+        categoryDifficulties: {}
+      }
+      this.creatingNew = true
+    },
+    async saveCreate() {
+      try {
+        // Validate required fields
+        if (!this.editedItem.name) {
+          alert('Skill name is required')
+          return
+        }
+
+        // Find source ID from code
+        const source = this.availableSources.find(s => s.code === this.editedItem.sourceCode)
+        
+        // Build category_difficulties array
+        const categoryDifficulties = this.editedItem.selectedCategories.map(catId => ({
+          category_id: catId,
+          difficulty_id: this.editedItem.categoryDifficulties[catId]
+        }))
+
+        const createData = {
+          name: this.editedItem.name,
+          beschreibung: this.editedItem.beschreibung,
+          game_system: this.editedItem.game_system || 'midgard',
+          initialwert: this.editedItem.initialwert,
+          basiswert: this.editedItem.basiswert || 0,
+          bonuseigenschaft: this.editedItem.bonuseigenschaft,
+          improvable: this.editedItem.improvable,
+          innateskill: this.editedItem.innateskill,
+          source_id: source ? source.id : null,
+          page_number: this.editedItem.page_number || 0,
+          category_difficulties: categoryDifficulties
+        }
+
+        const response = await API.post(
+          '/api/maintenance/skills-enhanced',
+          createData
+        )
+
+        // Add the new skill to the list
+        this.enhancedSkills.push(response.data)
+
+        // Hide the create dialog
+        this.creatingNew = false
+        this.editedItem = null
+      } catch (error) {
+        console.error('Failed to create skill:', error)
+        alert('Failed to create skill: ' + (error.response?.data?.error || error.message))
+        // Don't close dialog on error so user can fix the issue
+      }
+    },
+    cancelCreate() {
+      this.creatingNew = false
+      this.editedItem = null
     }
   }
 }

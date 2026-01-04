@@ -12,7 +12,8 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	{
 		maintGrp.GET("", GetMasterData)
 		maintGrp.GET("/skills", GetMDSkills)
-		maintGrp.GET("/skills-enhanced", GetEnhancedMDSkills) // New enhanced endpoint
+		maintGrp.GET("/skills-enhanced", GetEnhancedMDSkills)    // New enhanced endpoint
+		maintGrp.POST("/skills-enhanced", CreateEnhancedMDSkill) // Create new skill
 		maintGrp.GET("/skills/:id", GetMDSkill)
 		maintGrp.GET("/skills-enhanced/:id", GetEnhancedMDSkill) // New enhanced endpoint
 		maintGrp.PUT("/skills/:id", UpdateMDSkill)

@@ -15,7 +15,7 @@
         </div>
         
         <div class="action-links">
-          <router-link to="/login" class="btn btn-primary">
+          <router-link to="/login" class="btn btn-primary" :class="{ disabled: !isBackendAvailable }" :event="isBackendAvailable ? 'click' : ''">
             {{ $t('landing.login') }}
           </router-link>
           <a :href="githubUrl" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
@@ -55,6 +55,14 @@ export default {
   beforeUnmount() {
     if (this.retryInterval) {
       clearInterval(this.retryInterval)
+    }
+  },
+  computed: {
+    isBackendAvailable() {
+      return this.backendVersion !== "Loading..." && 
+             this.backendVersion !== "Unavailable" && 
+             this.backendVersion !== "Unreachable" &&
+             this.backendVersion !== "Unknown"
     }
   },
   methods: {

@@ -163,7 +163,7 @@ func UpdateSkillWithCategories(skillID uint, req SkillUpdateRequest) error {
 		// Update skill basic info - use Select to explicitly include boolean fields
 		// This ensures false values are also updated (GORM skips zero values by default in Updates)
 		if err := tx.Model(&models.Skill{}).Where("id = ?", skillID).
-			Select("name", "beschreibung", "game_system", "initialwert", "basis_wert", 
+			Select("name", "beschreibung", "game_system", "initialwert", "basis_wert",
 				"bonuseigenschaft", "improvable", "innate_skill", "source_id", "page_number").
 			Updates(req.Skill).Error; err != nil {
 			return err

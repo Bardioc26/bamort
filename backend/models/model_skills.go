@@ -6,6 +6,7 @@ type SkFertigkeit struct {
 	BamortCharTrait
 	Beschreibung    string    `json:"beschreibung"`
 	Fertigkeitswert int       `json:"fertigkeitswert"`
+	BasisWert       int       `json:"basiswert"`
 	Bonus           int       `json:"bonus,omitempty"`
 	Pp              int       `json:"pp,omitempty"` //Praxispunkte
 	Bemerkung       string    `json:"bemerkung"`

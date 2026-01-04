@@ -107,6 +107,7 @@ export default {
     improvable:'verbesserbar',
     category:'Kategorie',
     initialwert:'Startwert',
+    basiswert:'Basiswert (ungelernt)',
     difficulty:'Schwierigkeit',
   },
   spell:{

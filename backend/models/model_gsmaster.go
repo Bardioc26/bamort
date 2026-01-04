@@ -52,6 +52,7 @@ type Skill struct {
 	SourceID         uint   `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
 	PageNumber       int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
 	Initialwert      int    `gorm:"default:5" json:"initialwert"`
+	BasisWert        int    `gorm:"default:0" json:"basiswert"`
 	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
 	Improvable       bool   `gorm:"default:true" json:"improvable"`
 	InnateSkill      bool   `gorm:"default:false" json:"innateskill"`

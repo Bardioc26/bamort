@@ -69,6 +69,7 @@
               </th>
               <th class="cd-table-header">{{ $t('skill.difficulty') }}</th>
               <th class="cd-table-header">{{ $t('skill.initialwert') }}</th>
+              <th class="cd-table-header">{{ $t('skill.basiswert') }}</th>
               <th class="cd-table-header">{{ $t('skill.improvable') }}</th>
               <th class="cd-table-header">{{ $t('skill.innateskill') }}</th>
               <th class="cd-table-header">{{ $t('skill.description') }}</th>
@@ -87,6 +88,7 @@
                 <td>{{ dtaItem.name || '-' }}</td>
                 <td>{{ formatDifficulties(dtaItem.difficulties) }}</td>
                 <td>{{ dtaItem.initialwert || '0' }}</td>
+                <td>{{ dtaItem.basiswert || '0' }}</td>
                 <td><input type="checkbox" :checked="dtaItem.improvable" disabled /></td>
                 <td><input type="checkbox" :checked="dtaItem.innateskill" disabled /></td>
                 <td>{{ dtaItem.beschreibung || '-' }}</td>
@@ -112,6 +114,10 @@
                       <div class="edit-field">
                         <label>{{ $t('skill.initialwert') }}:</label>
                         <input v-model.number="editedItem.initialwert" type="number" style="width:60px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('skill.basiswert') }}:</label>
+                        <input v-model.number="editedItem.basiswert" type="number" style="width:60px;" />
                       </div>
                       <div class="edit-field">
                         <label>{{ $t('skill.bonusskill') }}:</label>
@@ -440,6 +446,7 @@ export default {
           beschreibung: this.editedItem.beschreibung,
           game_system: this.editedItem.game_system || 'midgard',
           initialwert: this.editedItem.initialwert,
+          basiswert: this.editedItem.basiswert || 0,
           bonuseigenschaft: this.editedItem.bonuseigenschaft,
           improvable: this.editedItem.improvable,
           innateskill: this.editedItem.innateskill,

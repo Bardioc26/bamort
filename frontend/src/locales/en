@@ -104,6 +104,7 @@ export default {
     improvable:'improvable',
     category:'Category',
     initialwert:'Initial value',
+    basiswert:'Base value (untrained)',
   },
   spell:{
     id:'ID',

@@ -59,4 +59,3 @@ func TestSkAngeboreneFertigkeitBasisWert(t *testing.T) {
 		t.Errorf("Expected BasisWert to be 7, got %d", innateSkill.BasisWert)
 	}
 }
-

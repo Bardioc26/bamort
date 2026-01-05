@@ -11,20 +11,28 @@ import (
 	"gorm.io/gorm"
 )
 
+// ExportableCategoryDifficulty represents a category/difficulty combination for a skill
+type ExportableCategoryDifficulty struct {
+	Category   string `json:"category"`
+	Difficulty string `json:"difficulty"`
+	LearnCost  int    `json:"learn_cost"`
+}
+
 // ExportableSkill represents a skill without database IDs for export
 type ExportableSkill struct {
-	Name             string `json:"name"`
-	GameSystem       string `json:"game_system"`
-	Beschreibung     string `json:"beschreibung"`
-	SourceCode       string `json:"source_code"` // Instead of SourceID
-	PageNumber       int    `json:"page_number"`
-	Initialwert      int    `json:"initialwert"`
-	BasisWert        int    `json:"basiswert"`
-	Bonuseigenschaft string `json:"bonuseigenschaft"`
-	Improvable       bool   `json:"improvable"`
-	InnateSkill      bool   `json:"innate_skill"`
-	Category         string `json:"category"`
-	Difficulty       string `json:"difficulty"`
+	Name                   string                         `json:"name"`
+	GameSystem             string                         `json:"game_system"`
+	Beschreibung           string                         `json:"beschreibung"`
+	SourceCode             string                         `json:"source_code"` // Instead of SourceID
+	PageNumber             int                            `json:"page_number"`
+	Initialwert            int                            `json:"initialwert"`
+	BasisWert              int                            `json:"basiswert"`
+	Bonuseigenschaft       string                         `json:"bonuseigenschaft"`
+	Improvable             bool                           `json:"improvable"`
+	InnateSkill            bool                           `json:"innate_skill"`
+	Category               string                         `json:"category"`                // Deprecated: use CategoriesDifficulties
+	Difficulty             string                         `json:"difficulty"`              // Deprecated: use CategoriesDifficulties
+	CategoriesDifficulties []ExportableCategoryDifficulty `json:"categories_difficulties"` // All category/difficulty combinations
 }
 
 // ExportableSource represents a source for export
@@ -233,22 +241,37 @@ func ExportSkills(outputDir string) error {
 		sourceMap[s.ID] = s.Code
 	}
 
+	// Get all skill category difficulties
+	var scds []models.SkillCategoryDifficulty
+	database.DB.Preload("SkillCategory").Preload("SkillDifficulty").Find(&scds)
+
+	// Build map of skill_id -> []category/difficulty combinations
+	scdMap := make(map[uint][]ExportableCategoryDifficulty)
+	for _, scd := range scds {
+		scdMap[scd.SkillID] = append(scdMap[scd.SkillID], ExportableCategoryDifficulty{
+			Category:   scd.SkillCategory.Name,
+			Difficulty: scd.SkillDifficulty.Name,
+			LearnCost:  scd.LearnCost,
+		})
+	}
+
 	// Convert to exportable format
 	exportable := make([]ExportableSkill, len(skills))
 	for i, skill := range skills {
 		exportable[i] = ExportableSkill{
-			Name:             skill.Name,
-			GameSystem:       skill.GameSystem,
-			Beschreibung:     skill.Beschreibung,
-			SourceCode:       sourceMap[skill.SourceID],
-			PageNumber:       skill.PageNumber,
-			Initialwert:      skill.Initialwert,
-			BasisWert:        skill.BasisWert,
-			Bonuseigenschaft: skill.Bonuseigenschaft,
-			Improvable:       skill.Improvable,
-			InnateSkill:      skill.InnateSkill,
-			Category:         skill.Category,
-			Difficulty:       skill.Difficulty,
+			Name:                   skill.Name,
+			GameSystem:             skill.GameSystem,
+			Beschreibung:           skill.Beschreibung,
+			SourceCode:             sourceMap[skill.SourceID],
+			PageNumber:             skill.PageNumber,
+			Initialwert:            skill.Initialwert,
+			BasisWert:              skill.BasisWert,
+			Bonuseigenschaft:       skill.Bonuseigenschaft,
+			Improvable:             skill.Improvable,
+			InnateSkill:            skill.InnateSkill,
+			Category:               skill.Category,
+			Difficulty:             skill.Difficulty,
+			CategoriesDifficulties: scdMap[skill.ID],
 		}
 	}
 
@@ -268,6 +291,28 @@ func ImportSkills(inputDir string) error {
 	sourceMap := make(map[string]uint)
 	for _, s := range sources {
 		sourceMap[s.Code] = s.ID
+	}
+
+	// Get all categories for mapping
+	var categories []models.SkillCategory
+	database.DB.Find(&categories)
+	categoryMap := make(map[string]map[string]uint) // game_system -> name -> id
+	for _, c := range categories {
+		if categoryMap[c.GameSystem] == nil {
+			categoryMap[c.GameSystem] = make(map[string]uint)
+		}
+		categoryMap[c.GameSystem][c.Name] = c.ID
+	}
+
+	// Get all difficulties for mapping
+	var difficulties []models.SkillDifficulty
+	database.DB.Find(&difficulties)
+	difficultyMap := make(map[string]map[string]uint) // game_system -> name -> id
+	for _, d := range difficulties {
+		if difficultyMap[d.GameSystem] == nil {
+			difficultyMap[d.GameSystem] = make(map[string]uint)
+		}
+		difficultyMap[d.GameSystem][d.Name] = d.ID
 	}
 
 	for _, exp := range exportable {
@@ -312,6 +357,34 @@ func ImportSkills(inputDir string) error {
 
 			if err := database.DB.Save(&skill).Error; err != nil {
 				return fmt.Errorf("failed to update skill %s: %w", exp.Name, err)
+			}
+		}
+
+		// Import category/difficulty combinations if present
+		if len(exp.CategoriesDifficulties) > 0 {
+			// Delete existing relationships for this skill
+			database.DB.Where("skill_id = ?", skill.ID).Delete(&models.SkillCategoryDifficulty{})
+
+			// Create new relationships
+			for _, cd := range exp.CategoriesDifficulties {
+				categoryID := categoryMap[exp.GameSystem][cd.Category]
+				difficultyID := difficultyMap[exp.GameSystem][cd.Difficulty]
+
+				if categoryID == 0 || difficultyID == 0 {
+					continue // Skip if category or difficulty not found
+				}
+
+				scd := models.SkillCategoryDifficulty{
+					SkillID:           skill.ID,
+					SkillCategoryID:   categoryID,
+					SkillDifficultyID: difficultyID,
+					LearnCost:         cd.LearnCost,
+					SCategory:         cd.Category,
+					SDifficulty:       cd.Difficulty,
+				}
+				if err := database.DB.Create(&scd).Error; err != nil {
+					return fmt.Errorf("failed to create skill category difficulty for %s: %w", exp.Name, err)
+				}
 			}
 		}
 	}

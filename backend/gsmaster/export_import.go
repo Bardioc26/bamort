@@ -233,13 +233,7 @@ func ExportSkills(outputDir string) error {
 		return fmt.Errorf("failed to fetch skills: %w", err)
 	}
 
-	// Get all sources for mapping
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[uint]string)
-	for _, s := range sources {
-		sourceMap[s.ID] = s.Code
-	}
+	sourceMap := buildSourceMap()
 
 	// Get all skill category difficulties
 	var scds []models.SkillCategoryDifficulty
@@ -285,35 +279,9 @@ func ImportSkills(inputDir string) error {
 		return err
 	}
 
-	// Get all sources for mapping
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[string]uint)
-	for _, s := range sources {
-		sourceMap[s.Code] = s.ID
-	}
-
-	// Get all categories for mapping
-	var categories []models.SkillCategory
-	database.DB.Find(&categories)
-	categoryMap := make(map[string]map[string]uint) // game_system -> name -> id
-	for _, c := range categories {
-		if categoryMap[c.GameSystem] == nil {
-			categoryMap[c.GameSystem] = make(map[string]uint)
-		}
-		categoryMap[c.GameSystem][c.Name] = c.ID
-	}
-
-	// Get all difficulties for mapping
-	var difficulties []models.SkillDifficulty
-	database.DB.Find(&difficulties)
-	difficultyMap := make(map[string]map[string]uint) // game_system -> name -> id
-	for _, d := range difficulties {
-		if difficultyMap[d.GameSystem] == nil {
-			difficultyMap[d.GameSystem] = make(map[string]uint)
-		}
-		difficultyMap[d.GameSystem][d.Name] = d.ID
-	}
+	sourceMap := buildSourceMapReverse()
+	categoryMap := buildCategoryMap()
+	difficultyMap := buildDifficultyMap()
 
 	for _, exp := range exportable {
 		var skill models.Skill
@@ -426,43 +394,21 @@ func ImportSources(inputDir string) error {
 	}
 
 	for _, exp := range exportable {
-		var source models.Source
-		result := database.DB.Where("code = ?", exp.Code).First(&source)
+		source := models.Source{
+			Code:        exp.Code,
+			Name:        exp.Name,
+			FullName:    exp.FullName,
+			Edition:     exp.Edition,
+			Publisher:   exp.Publisher,
+			PublishYear: exp.PublishYear,
+			Description: exp.Description,
+			IsCore:      exp.IsCore,
+			IsActive:    exp.IsActive,
+			GameSystem:  exp.GameSystem,
+		}
 
-		if result.Error == gorm.ErrRecordNotFound {
-			// Create new source
-			source = models.Source{
-				Code:        exp.Code,
-				Name:        exp.Name,
-				FullName:    exp.FullName,
-				Edition:     exp.Edition,
-				Publisher:   exp.Publisher,
-				PublishYear: exp.PublishYear,
-				Description: exp.Description,
-				IsCore:      exp.IsCore,
-				IsActive:    exp.IsActive,
-				GameSystem:  exp.GameSystem,
-			}
-			if err := database.DB.Create(&source).Error; err != nil {
-				return fmt.Errorf("failed to create source %s: %w", exp.Code, err)
-			}
-		} else if result.Error != nil {
-			return fmt.Errorf("failed to query source %s: %w", exp.Code, result.Error)
-		} else {
-			// Update existing source
-			source.Name = exp.Name
-			source.FullName = exp.FullName
-			source.Edition = exp.Edition
-			source.Publisher = exp.Publisher
-			source.PublishYear = exp.PublishYear
-			source.Description = exp.Description
-			source.IsCore = exp.IsCore
-			source.IsActive = exp.IsActive
-			source.GameSystem = exp.GameSystem
-
-			if err := database.DB.Save(&source).Error; err != nil {
-				return fmt.Errorf("failed to update source %s: %w", exp.Code, err)
-			}
+		if err := findOrCreateByCode(exp.Code, &source, "source"); err != nil {
+			return err
 		}
 	}
 
@@ -600,13 +546,7 @@ func ExportSkillCategories(outputDir string) error {
 		return fmt.Errorf("failed to fetch skill categories: %w", err)
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[uint]string)
-	for _, s := range sources {
-		sourceMap[s.ID] = s.Code
-	}
+	sourceMap := buildSourceMap()
 
 	exportable := make([]ExportableSkillCategory, len(categories))
 	for i, cat := range categories {
@@ -627,36 +567,17 @@ func ImportSkillCategories(inputDir string) error {
 		return err
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[string]uint)
-	for _, s := range sources {
-		sourceMap[s.Code] = s.ID
-	}
+	sourceMap := buildSourceMapReverse()
 
 	for _, exp := range exportable {
-		var category models.SkillCategory
-		result := database.DB.Where("name = ? AND game_system = ?", exp.Name, exp.GameSystem).First(&category)
+		category := models.SkillCategory{
+			Name:       exp.Name,
+			GameSystem: exp.GameSystem,
+			SourceID:   sourceMap[exp.SourceCode],
+		}
 
-		sourceID := sourceMap[exp.SourceCode]
-
-		if result.Error == gorm.ErrRecordNotFound {
-			category = models.SkillCategory{
-				Name:       exp.Name,
-				GameSystem: exp.GameSystem,
-				SourceID:   sourceID,
-			}
-			if err := database.DB.Create(&category).Error; err != nil {
-				return fmt.Errorf("failed to create category %s: %w", exp.Name, err)
-			}
-		} else if result.Error != nil {
-			return fmt.Errorf("failed to query category %s: %w", exp.Name, result.Error)
-		} else {
-			category.SourceID = sourceID
-			if err := database.DB.Save(&category).Error; err != nil {
-				return fmt.Errorf("failed to update category %s: %w", exp.Name, err)
-			}
+		if err := findOrCreateByNameAndSystem(exp.Name, exp.GameSystem, &category, "skill category"); err != nil {
+			return err
 		}
 	}
 
@@ -689,21 +610,14 @@ func ImportSkillDifficulties(inputDir string) error {
 	}
 
 	for _, exp := range exportable {
-		var difficulty models.SkillDifficulty
-		result := database.DB.Where("name = ? AND game_system = ?", exp.Name, exp.GameSystem).First(&difficulty)
-
-		if result.Error == gorm.ErrRecordNotFound {
-			difficulty = models.SkillDifficulty{
-				Name:       exp.Name,
-				GameSystem: exp.GameSystem,
-			}
-			if err := database.DB.Create(&difficulty).Error; err != nil {
-				return fmt.Errorf("failed to create difficulty %s: %w", exp.Name, err)
-			}
-		} else if result.Error != nil {
-			return fmt.Errorf("failed to query difficulty %s: %w", exp.Name, result.Error)
+		difficulty := models.SkillDifficulty{
+			Name:       exp.Name,
+			GameSystem: exp.GameSystem,
 		}
-		// No update needed for difficulties (only name and game_system)
+
+		if err := findOrCreateByNameAndSystem(exp.Name, exp.GameSystem, &difficulty, "skill difficulty"); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -716,13 +630,7 @@ func ExportSpells(outputDir string) error {
 		return fmt.Errorf("failed to fetch spells: %w", err)
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[uint]string)
-	for _, s := range sources {
-		sourceMap[s.ID] = s.Code
-	}
+	sourceMap := buildSourceMap()
 
 	exportable := make([]ExportableSpell, len(spells))
 	for i, spell := range spells {
@@ -757,13 +665,7 @@ func ImportSpells(inputDir string) error {
 		return err
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[string]uint)
-	for _, s := range sources {
-		sourceMap[s.Code] = s.ID
-	}
+	sourceMap := buildSourceMapReverse()
 
 	for _, exp := range exportable {
 		var spell models.Spell
@@ -830,13 +732,7 @@ func ExportCharacterClasses(outputDir string) error {
 		return fmt.Errorf("failed to fetch character classes: %w", err)
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[uint]string)
-	for _, s := range sources {
-		sourceMap[s.ID] = s.Code
-	}
+	sourceMap := buildSourceMap()
 
 	exportable := make([]ExportableCharacterClass, len(classes))
 	for i, class := range classes {
@@ -859,42 +755,19 @@ func ImportCharacterClasses(inputDir string) error {
 		return err
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[string]uint)
-	for _, s := range sources {
-		sourceMap[s.Code] = s.ID
-	}
+	sourceMap := buildSourceMapReverse()
 
 	for _, exp := range exportable {
-		var class models.CharacterClass
-		result := database.DB.Where("code = ?", exp.Code).First(&class)
+		class := models.CharacterClass{
+			Code:        exp.Code,
+			Name:        exp.Name,
+			Description: exp.Description,
+			SourceID:    sourceMap[exp.SourceCode],
+			GameSystem:  exp.GameSystem,
+		}
 
-		sourceID := sourceMap[exp.SourceCode]
-
-		if result.Error == gorm.ErrRecordNotFound {
-			class = models.CharacterClass{
-				Code:        exp.Code,
-				Name:        exp.Name,
-				Description: exp.Description,
-				SourceID:    sourceID,
-				GameSystem:  exp.GameSystem,
-			}
-			if err := database.DB.Create(&class).Error; err != nil {
-				return fmt.Errorf("failed to create character class %s: %w", exp.Code, err)
-			}
-		} else if result.Error != nil {
-			return fmt.Errorf("failed to query character class %s: %w", exp.Code, result.Error)
-		} else {
-			class.Name = exp.Name
-			class.Description = exp.Description
-			class.SourceID = sourceID
-			class.GameSystem = exp.GameSystem
-
-			if err := database.DB.Save(&class).Error; err != nil {
-				return fmt.Errorf("failed to update character class %s: %w", exp.Code, err)
-			}
+		if err := findOrCreateByCode(exp.Code, &class, "character class"); err != nil {
+			return err
 		}
 	}
 
@@ -908,13 +781,7 @@ func ExportSpellSchools(outputDir string) error {
 		return fmt.Errorf("failed to fetch spell schools: %w", err)
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[uint]string)
-	for _, s := range sources {
-		sourceMap[s.ID] = s.Code
-	}
+	sourceMap := buildSourceMap()
 
 	exportable := make([]ExportableSpellSchool, len(schools))
 	for i, school := range schools {
@@ -986,6 +853,7 @@ func ExportClassCategoryEPCosts(outputDir string) error {
 		return fmt.Errorf("failed to fetch class category EP costs: %w", err)
 	}
 
+	// Build reverse maps for export (ID -> Code/Name)
 	var classes []models.CharacterClass
 	database.DB.Find(&classes)
 	classMap := make(map[uint]string)
@@ -1019,13 +887,9 @@ func ImportClassCategoryEPCosts(inputDir string) error {
 		return err
 	}
 
-	var classes []models.CharacterClass
-	database.DB.Find(&classes)
-	classMap := make(map[string]uint)
-	for _, c := range classes {
-		classMap[c.Code] = c.ID
-	}
+	classMap := buildCharacterClassMap()
 
+	// Build category map (name -> id) - need to aggregate by name since we don't have game_system in the exportable
 	var categories []models.SkillCategory
 	database.DB.Find(&categories)
 	categoryMap := make(map[string]uint)
@@ -1073,6 +937,7 @@ func ExportClassSpellSchoolEPCosts(outputDir string) error {
 		return fmt.Errorf("failed to fetch class spell school EP costs: %w", err)
 	}
 
+	// Build reverse maps for export
 	var classes []models.CharacterClass
 	database.DB.Find(&classes)
 	classMap := make(map[uint]string)
@@ -1106,13 +971,9 @@ func ImportClassSpellSchoolEPCosts(inputDir string) error {
 		return err
 	}
 
-	var classes []models.CharacterClass
-	database.DB.Find(&classes)
-	classMap := make(map[string]uint)
-	for _, c := range classes {
-		classMap[c.Code] = c.ID
-	}
+	classMap := buildCharacterClassMap()
 
+	// Build spell school map (name -> id)
 	var schools []models.SpellSchool
 	database.DB.Find(&schools)
 	schoolMap := make(map[string]uint)

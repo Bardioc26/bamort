@@ -12,59 +12,32 @@ import (
 // ExportSkillImprovementCosts exports all skill improvement costs to a JSON file
 func ExportSkillImprovementCosts(outputDir string) error {
 	var costs []models.SkillImprovementCost
-	if err := database.DB.Find(&costs).Error; err != nil {
+	if err := database.DB.Preload("SkillCategoryDifficulty.Skill").
+		Preload("SkillCategoryDifficulty.SkillCategory").
+		Preload("SkillCategoryDifficulty.SkillDifficulty").
+		Find(&costs).Error; err != nil {
 		return fmt.Errorf("failed to fetch skill improvement costs: %w", err)
 	}
 
-	// Build maps for skill category difficulties
-	var scds []models.SkillCategoryDifficulty
-	database.DB.Find(&scds)
-	scdMap := make(map[uint]models.SkillCategoryDifficulty)
-	for _, scd := range scds {
-		scdMap[scd.ID] = scd
-	}
+	exportable := make([]ExportableSkillImprovementCost, 0, len(costs))
+	for _, cost := range costs {
+		// Skip records with incomplete relationships
+		if cost.SkillCategoryDifficulty.Skill.Name == "" ||
+			cost.SkillCategoryDifficulty.SkillCategory.Name == "" ||
+			cost.SkillCategoryDifficulty.SkillDifficulty.Name == "" {
+			continue
+		}
 
-	// Get skills
-	var skills []models.Skill
-	database.DB.Find(&skills)
-	skillMap := make(map[uint]models.Skill)
-	for _, s := range skills {
-		skillMap[s.ID] = s
-	}
-
-	// Get categories
-	var categories []models.SkillCategory
-	database.DB.Find(&categories)
-	categoryMap := make(map[uint]models.SkillCategory)
-	for _, c := range categories {
-		categoryMap[c.ID] = c
-	}
-
-	// Get difficulties
-	var difficulties []models.SkillDifficulty
-	database.DB.Find(&difficulties)
-	difficultyMap := make(map[uint]models.SkillDifficulty)
-	for _, d := range difficulties {
-		difficultyMap[d.ID] = d
-	}
-
-	exportable := make([]ExportableSkillImprovementCost, len(costs))
-	for i, cost := range costs {
-		scd := scdMap[cost.SkillCategoryDifficultyID]
-		skill := skillMap[scd.SkillID]
-		category := categoryMap[scd.SkillCategoryID]
-		difficulty := difficultyMap[scd.SkillDifficultyID]
-
-		exportable[i] = ExportableSkillImprovementCost{
-			SkillName:        skill.Name,
-			SkillSystem:      skill.GameSystem,
-			CategoryName:     category.Name,
-			CategorySystem:   category.GameSystem,
-			DifficultyName:   difficulty.Name,
-			DifficultySystem: difficulty.GameSystem,
+		exportable = append(exportable, ExportableSkillImprovementCost{
+			SkillName:        cost.SkillCategoryDifficulty.Skill.Name,
+			SkillSystem:      cost.SkillCategoryDifficulty.Skill.GameSystem,
+			CategoryName:     cost.SkillCategoryDifficulty.SkillCategory.Name,
+			CategorySystem:   cost.SkillCategoryDifficulty.SkillCategory.GameSystem,
+			DifficultyName:   cost.SkillCategoryDifficulty.SkillDifficulty.Name,
+			DifficultySystem: cost.SkillCategoryDifficulty.SkillDifficulty.GameSystem,
 			CurrentLevel:     cost.CurrentLevel,
 			TERequired:       cost.TERequired,
-		}
+		})
 	}
 
 	return writeJSON(filepath.Join(outputDir, "skill_improvement_costs.json"), exportable)
@@ -77,30 +50,36 @@ func ImportSkillImprovementCosts(inputDir string) error {
 		return err
 	}
 
+	// Build lookup maps using helpers
+	skillMap := buildSkillMap()
+	categoryMap := buildCategoryMap()
+	difficultyMap := buildDifficultyMap()
+
 	for _, exp := range exportable {
-		// Find skill
-		var skill models.Skill
-		if err := database.DB.Where("name = ? AND game_system = ?", exp.SkillName, exp.SkillSystem).First(&skill).Error; err != nil {
-			return fmt.Errorf("skill not found: %s: %w", exp.SkillName, err)
+		// Find skill ID
+		skillID, ok := skillMap[exp.SkillSystem][exp.SkillName]
+		if !ok {
+			return fmt.Errorf("skill not found: %s (%s)", exp.SkillName, exp.SkillSystem)
 		}
 
-		// Find category
-		var category models.SkillCategory
-		if err := database.DB.Where("name = ? AND game_system = ?", exp.CategoryName, exp.CategorySystem).First(&category).Error; err != nil {
-			return fmt.Errorf("category not found: %s: %w", exp.CategoryName, err)
+		// Find category ID
+		categoryID, ok := categoryMap[exp.CategorySystem][exp.CategoryName]
+		if !ok {
+			return fmt.Errorf("category not found: %s (%s)", exp.CategoryName, exp.CategorySystem)
 		}
 
-		// Find difficulty
-		var difficulty models.SkillDifficulty
-		if err := database.DB.Where("name = ? AND game_system = ?", exp.DifficultyName, exp.DifficultySystem).First(&difficulty).Error; err != nil {
-			return fmt.Errorf("difficulty not found: %s: %w", exp.DifficultyName, err)
+		// Find difficulty ID
+		difficultyID, ok := difficultyMap[exp.DifficultySystem][exp.DifficultyName]
+		if !ok {
+			return fmt.Errorf("difficulty not found: %s (%s)", exp.DifficultyName, exp.DifficultySystem)
 		}
 
 		// Find SkillCategoryDifficulty
 		var scd models.SkillCategoryDifficulty
 		if err := database.DB.Where("skill_id = ? AND skill_category_id = ? AND skill_difficulty_id = ?",
-			skill.ID, category.ID, difficulty.ID).First(&scd).Error; err != nil {
-			return fmt.Errorf("skill category difficulty not found: %w", err)
+			skillID, categoryID, difficultyID).First(&scd).Error; err != nil {
+			return fmt.Errorf("skill category difficulty not found for %s/%s/%s: %w",
+				exp.SkillName, exp.CategoryName, exp.DifficultyName, err)
 		}
 
 		// Find or create SkillImprovementCost
@@ -137,13 +116,7 @@ func ExportWeaponSkills(outputDir string) error {
 		return fmt.Errorf("failed to fetch weapon skills: %w", err)
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[uint]string)
-	for _, s := range sources {
-		sourceMap[s.ID] = s.Code
-	}
+	sourceMap := buildSourceMap()
 
 	exportable := make([]ExportableWeaponSkill, len(skills))
 	for i, skill := range skills {
@@ -173,13 +146,7 @@ func ImportWeaponSkills(inputDir string) error {
 		return err
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[string]uint)
-	for _, s := range sources {
-		sourceMap[s.Code] = s.ID
-	}
+	sourceMap := buildSourceMapReverse()
 
 	for _, exp := range exportable {
 		var skill models.WeaponSkill
@@ -237,13 +204,7 @@ func ExportEquipment(outputDir string) error {
 		return fmt.Errorf("failed to fetch equipment: %w", err)
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[uint]string)
-	for _, s := range sources {
-		sourceMap[s.ID] = s.Code
-	}
+	sourceMap := buildSourceMap()
 
 	exportable := make([]ExportableEquipment, len(equipment))
 	for i, eq := range equipment {
@@ -269,13 +230,7 @@ func ImportEquipment(inputDir string) error {
 		return err
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[string]uint)
-	for _, s := range sources {
-		sourceMap[s.Code] = s.ID
-	}
+	sourceMap := buildSourceMapReverse()
 
 	for _, exp := range exportable {
 		var eq models.Equipment
@@ -323,13 +278,7 @@ func ExportWeapons(outputDir string) error {
 		return fmt.Errorf("failed to fetch weapons: %w", err)
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[uint]string)
-	for _, s := range sources {
-		sourceMap[s.ID] = s.Code
-	}
+	sourceMap := buildSourceMap()
 
 	exportable := make([]ExportableWeapon, len(weapons))
 	for i, weapon := range weapons {
@@ -360,13 +309,7 @@ func ImportWeapons(inputDir string) error {
 		return err
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[string]uint)
-	for _, s := range sources {
-		sourceMap[s.Code] = s.ID
-	}
+	sourceMap := buildSourceMapReverse()
 
 	for _, exp := range exportable {
 		var weapon models.Weapon
@@ -426,13 +369,7 @@ func ExportContainers(outputDir string) error {
 		return fmt.Errorf("failed to fetch containers: %w", err)
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[uint]string)
-	for _, s := range sources {
-		sourceMap[s.ID] = s.Code
-	}
+	sourceMap := buildSourceMap()
 
 	exportable := make([]ExportableContainer, len(containers))
 	for i, container := range containers {
@@ -460,13 +397,7 @@ func ImportContainers(inputDir string) error {
 		return err
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[string]uint)
-	for _, s := range sources {
-		sourceMap[s.Code] = s.ID
-	}
+	sourceMap := buildSourceMapReverse()
 
 	for _, exp := range exportable {
 		var container models.Container
@@ -520,13 +451,7 @@ func ExportTransportation(outputDir string) error {
 		return fmt.Errorf("failed to fetch transportation: %w", err)
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[uint]string)
-	for _, s := range sources {
-		sourceMap[s.ID] = s.Code
-	}
+	sourceMap := buildSourceMap()
 
 	exportable := make([]ExportableTransportation, len(transportation))
 	for i, trans := range transportation {
@@ -554,13 +479,7 @@ func ImportTransportation(inputDir string) error {
 		return err
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[string]uint)
-	for _, s := range sources {
-		sourceMap[s.Code] = s.ID
-	}
+	sourceMap := buildSourceMapReverse()
 
 	for _, exp := range exportable {
 		var trans models.Transportation
@@ -616,13 +535,7 @@ func ExportBelieves(outputDir string) error {
 		return fmt.Errorf("failed to fetch believes: %w", err)
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[uint]string)
-	for _, s := range sources {
-		sourceMap[s.ID] = s.Code
-	}
+	sourceMap := buildSourceMap()
 
 	exportable := make([]ExportableBelieve, len(believes))
 	for i, believe := range believes {
@@ -645,13 +558,7 @@ func ImportBelieves(inputDir string) error {
 		return err
 	}
 
-	// Get source map
-	var sources []models.Source
-	database.DB.Find(&sources)
-	sourceMap := make(map[string]uint)
-	for _, s := range sources {
-		sourceMap[s.Code] = s.ID
-	}
+	sourceMap := buildSourceMapReverse()
 
 	for _, exp := range exportable {
 		var believe models.Believe

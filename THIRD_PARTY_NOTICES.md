@@ -1,10 +1,13 @@
 # Third-Party Notices
 
-This repository depends on third-party open-source components. Those components remain licensed under their own terms.
+This repository depends on third-party components. Those components remain licensed under their own terms.
 
 ## Backend (Go)
 
-A license inventory is recorded in `backend/tmp/go-licenses.txt`.
+You can generate a license inventory locally, for example:
+
+- `cd backend && go install github.com/google/go-licenses@latest`
+- `cd backend && go-licenses report ./...`
 
 Notable licenses included:
 - MIT
@@ -14,7 +17,10 @@ Notable licenses included:
 
 ## Frontend (Node/Vue)
 
-A license inventory is recorded in `frontend/tmp/npm-licenses.json`.
+You can generate a license inventory locally, for example:
+
+- `cd frontend && npm install`
+- `cd frontend && npx license-checker --production --summary`
 
 Notable licenses included:
 - MIT

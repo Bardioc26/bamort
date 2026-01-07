@@ -65,14 +65,13 @@ Monorepo mit zwei Hauptteilen: Backend und Frontend.
 - frontend/src/views — Haupt‑UI für Charakterarbeiten
 
 ## Lizenz
-Dieses Projekt ist unter der **Bamort Community License (BCL) v1.0** lizenziert (siehe `LICENSE`).
+Dieses Projekt ist unter der **PolyForm Noncommercial License 1.0.0** lizenziert (siehe `LICENSE`).
 
 Kurzfassung:
-- Du darfst den Source Code nutzen, kopieren, verändern und weitergeben.
-- Du darfst ihn **nicht weiterverkaufen** oder als Teil eines bezahlten Produkts vertreiben.
-- Du darfst ihn **nicht als SaaS/Managed Service** für Dritte anbieten (gilt für alle Anbieter, auch kostenlos).
+- Nicht-kommerzielle Nutzung ist erlaubt.
+- Für kommerzielle Nutzung ist eine separate kommerzielle Lizenz nötig; siehe `LICENSE-COMMERCIAL.md`.
 
-Für kommerzielle und nicht kommerzielle Nutzung in diesen Szenarien (Weiterverkauf / SaaS) ist eine separate kommerzielle Lizenz nötig; siehe `LICENSE-COMMERCIAL.md`.
+Commercial licensing: contact **(Bamort Admin / Bamort@trokan.de)**.
 
 # BaMoRT for english readers
 
@@ -141,11 +140,10 @@ Monorepo with two primary parts: backend and frontend.
 - frontend/src/views — primary UI entry points for character workflows
 
 ## License
-This project is licensed under the **Bamort Community License (BCL) v1.0** (see `LICENSE`).
+This project is licensed under the **PolyForm Noncommercial License 1.0.0** (see `LICENSE`).
 
 Summary:
-- You may use, copy, modify, and distribute the source code.
-- You may **not resell** the Software or distribute it as part of a paid product.
-- You may **not offer it as a hosted/managed service (SaaS)** to third parties (applies to everyone, even for free).
+- Noncommercial use is permitted.
+- Commercial use requires a separate commercial license; see `LICENSE-COMMERCIAL.md`.
 
-Commercial and non commercial licensing for prohibited uses (resale / SaaS) is available; see `LICENSE-COMMERCIAL.md`.
+Commercial licensing: contact **(Bamort Admin / Bamort@trokan.de)**.

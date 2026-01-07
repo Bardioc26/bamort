@@ -1,12 +1,10 @@
 # Commercial licensing
 
-The repository is published under the Bamort Community License (BCL) v1.0 (see `LICENSE`).
+The repository is published under the PolyForm Noncommercial License 1.0.0 (see `LICENSE`).
 
-If you want to:
-- resell the Software (or derivative works), or
-- offer the Software as a hosted/managed service (SaaS) to third parties (free or paid, regardless of provider type),
+If you want to use the Software for commercial purposes, you need a separate commercial license.
 
-then you need a separate commercial license.
+Commercial licensing: contact (fill in name/email) below.
 
 Contact:
 - Name: (fill in)

@@ -65,7 +65,13 @@ Monorepo mit zwei Hauptteilen: Backend und Frontend.
 - frontend/src/views — Haupt‑UI für Charakterarbeiten
 
 ## Lizenz
-Lege eine passende LICENSE‑Datei im Repository an.
+Dieses Projekt ist unter der **PolyForm Noncommercial License 1.0.0** lizenziert (siehe `LICENSE`).
+
+Kurzfassung:
+- Nicht-kommerzielle Nutzung ist erlaubt.
+- Für kommerzielle Nutzung ist eine separate kommerzielle Lizenz nötig; siehe `LICENSE-COMMERCIAL.md`.
+
+Commercial licensing: contact **(Bamort Admin / Bamort@trokan.de)**.
 
 # BaMoRT for english readers
 
@@ -134,4 +140,10 @@ Monorepo with two primary parts: backend and frontend.
 - frontend/src/views — primary UI entry points for character workflows
 
 ## License
-Choose an appropriate license for the project in a LICENSE file.
+This project is licensed under the **PolyForm Noncommercial License 1.0.0** (see `LICENSE`).
+
+Summary:
+- Noncommercial use is permitted.
+- Commercial use requires a separate commercial license; see `LICENSE-COMMERCIAL.md`.
+
+Commercial licensing: contact **(Bamort Admin / Bamort@trokan.de)**.

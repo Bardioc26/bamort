@@ -15,7 +15,7 @@
         </div>
         
         <div class="action-links">
-          <router-link to="/login" class="btn btn-primary">
+          <router-link to="/login" class="btn btn-primary" :class="{ disabled: !isBackendAvailable }" :event="isBackendAvailable ? 'click' : ''">
             {{ $t('landing.login') }}
           </router-link>
           <a :href="githubUrl" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
@@ -43,11 +43,27 @@ export default {
       frontendCommit: getGitCommit(),
       backendVersion: "Loading...",
       backendCommit: "Loading...",
-      githubUrl: "https://github.com/Bardioc26/bamort"
+      githubUrl: "https://github.com/Bardioc26/bamort",
+      retryCount: 0,
+      maxRetries: 24,
+      retryInterval: null
     }
   },
   mounted() {
     this.fetchBackendVersion()
+  },
+  beforeUnmount() {
+    if (this.retryInterval) {
+      clearInterval(this.retryInterval)
+    }
+  },
+  computed: {
+    isBackendAvailable() {
+      return this.backendVersion !== "Loading..." && 
+             this.backendVersion !== "Unavailable" && 
+             this.backendVersion !== "Unreachable" &&
+             this.backendVersion !== "Unknown"
+    }
   },
   methods: {
     async fetchBackendVersion() {
@@ -58,11 +74,29 @@ export default {
         if (response.data) {
           this.backendVersion = response.data.version || "Unknown"
           this.backendCommit = response.data.gitCommit || "Unknown"
+          if (this.retryInterval) {
+            clearInterval(this.retryInterval)
+            this.retryInterval = null
+          }
         }
       } catch (error) {
         console.warn("Could not fetch backend version:", error)
         this.backendVersion = "Unavailable"
         this.backendCommit = "N/A"
+        
+        if (this.retryCount < this.maxRetries && !this.retryInterval) {
+          this.retryInterval = setInterval(() => {
+            this.retryCount++
+            if (this.retryCount >= this.maxRetries) {
+              clearInterval(this.retryInterval)
+              this.retryInterval = null
+              console.warn("Max retries reached for backend version")
+              this.backendVersion = "Unreachable"
+              return
+            }
+            this.fetchBackendVersion()
+          }, 5000)
+        }
       }
     }
   }

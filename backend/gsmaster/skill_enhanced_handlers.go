@@ -95,12 +95,77 @@ type CategoryDifficultyPair struct {
 	LearnCost    int  `json:"learn_cost,omitempty"`
 }
 
+// CreateSkillWithCategories creates a new skill with category-difficulty relationships
+func CreateSkillWithCategories(req SkillUpdateRequest) (uint, error) {
+	// Validate required fields
+	if req.Skill.Name == "" {
+		return 0, fmt.Errorf("skill name is required")
+	}
+
+	var skillID uint
+
+	// Start transaction
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		// Create skill
+		if err := tx.Create(&req.Skill).Error; err != nil {
+			return err
+		}
+
+		skillID = req.Skill.ID
+
+		// Create category-difficulty relationships
+		for _, cd := range req.CategoryDifficulties {
+			// Get category and difficulty names for denormalized fields
+			var category models.SkillCategory
+			if err := tx.First(&category, cd.CategoryID).Error; err != nil {
+				return fmt.Errorf("category not found: %w", err)
+			}
+
+			var difficulty models.SkillDifficulty
+			if err := tx.First(&difficulty, cd.DifficultyID).Error; err != nil {
+				return fmt.Errorf("difficulty not found: %w", err)
+			}
+
+			learnCost := cd.LearnCost
+			if learnCost == 0 {
+				// Use default based on difficulty
+				learnCost = getDefaultLearnCost(difficulty.Name)
+			}
+
+			scd := models.SkillCategoryDifficulty{
+				SkillID:           skillID,
+				SkillCategoryID:   cd.CategoryID,
+				SkillDifficultyID: cd.DifficultyID,
+				LearnCost:         learnCost,
+				SCategory:         category.Name,
+				SDifficulty:       difficulty.Name,
+			}
+
+			if err := tx.Create(&scd).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	return skillID, nil
+}
+
 // UpdateSkillWithCategories updates a skill and its category-difficulty relationships
 func UpdateSkillWithCategories(skillID uint, req SkillUpdateRequest) error {
 	// Start transaction
 	return database.DB.Transaction(func(tx *gorm.DB) error {
-		// Update skill basic info
-		if err := tx.Model(&models.Skill{}).Where("id = ?", skillID).Updates(req.Skill).Error; err != nil {
+		// Update skill basic info - use Select to explicitly include boolean fields
+		// This ensures false values are also updated (GORM skips zero values by default in Updates)
+		if err := tx.Model(&models.Skill{}).Where("id = ?", skillID).
+			Select("name", "beschreibung", "game_system", "initialwert", "basis_wert",
+				"bonuseigenschaft", "improvable", "innate_skill", "source_id", "page_number").
+			Updates(req.Skill).Error; err != nil {
 			return err
 		}
 
@@ -239,4 +304,29 @@ func UpdateEnhancedMDSkill(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, skill)
+}
+
+// CreateEnhancedMDSkill creates a new skill with categories
+func CreateEnhancedMDSkill(c *gin.Context) {
+	var req SkillUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Invalid request: "+err.Error())
+		return
+	}
+
+	// Create the skill
+	skillID, err := CreateSkillWithCategories(req)
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to create skill: "+err.Error())
+		return
+	}
+
+	// Return created skill
+	skill, err := GetSkillWithCategories(skillID)
+	if err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve created skill")
+		return
+	}
+
+	c.JSON(http.StatusCreated, skill)
 }

@@ -104,6 +104,9 @@ export default {
     improvable:'improvable',
     category:'Category',
     initialwert:'Initial value',
+    basiswert:'Base value (untrained)',
+    page:'Page',
+    categories:'Categories',
   },
   spell:{
     id:'ID',
@@ -124,7 +127,7 @@ export default {
     quelle:'Source',
     import: 'Import',
     selectCsv: 'select CSV',
-    system: 'System'
+    system: 'System',
   },
   spells: {
     learn: {
@@ -228,6 +231,8 @@ export default {
   },
   search:'Suche',
   Skill:'Fertigkeit',
+  newSkill:'New Skill',
+  createSkill:'Create Skill',
   common: {
     loading: 'Laden...',
     cancel: 'Abbrechen',

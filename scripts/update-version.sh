@@ -69,8 +69,12 @@ echo "1. Review changes: git diff"
 if [ "$BACKEND_VERSION" = "$FRONTEND_VERSION" ]; then
     echo "2. Commit changes: git commit -am 'Bump version to $BACKEND_VERSION'"
     echo "3. Tag release: git tag v$BACKEND_VERSION"
+    git tag v$BACKEND_VERSION
 else
     echo "2. Commit changes: git commit -am 'Bump backend to $BACKEND_VERSION, frontend to $FRONTEND_VERSION'"
     echo "3. Tag releases: git tag backend-v$BACKEND_VERSION && git tag frontend-v$FRONTEND_VERSION"
+    git tag backend-v$BACKEND_VERSION 
+    git tag frontend-v$FRONTEND_VERSION
+    git tag v$BACKEND_VERSION -m "Backend version $BACKEND_VERSION, Frontend version $FRONTEND_VERSION"
 fi
 echo "4. Push: git push && git push --tags"

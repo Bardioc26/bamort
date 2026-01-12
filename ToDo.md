@@ -36,7 +36,7 @@
 * fehlgeschlagene Tests ausbessern
     ./backend$ go test ./...  -v 2>&1 |grep FAIL 
 * API endpunkte für Export/Import aus Commit 2dcb4e00faaf316b98eb28e83cc5137bf0d1385d
-
+* wouldn't it be a good idea to remove the GameSystem from all the records and define it in a kind of manifest. The values in the manifest could be applied to all records (where needed) during the import session. export_import.go
 ## Refaktor
 
 * Export Import Module neu grupieren

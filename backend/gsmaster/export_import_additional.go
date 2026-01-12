@@ -1,5 +1,7 @@
 package gsmaster
 
+/*
+
 import (
 	"bamort/database"
 	"bamort/models"
@@ -592,3 +594,4 @@ func ImportBelieves(inputDir string) error {
 
 	return nil
 }
+*/

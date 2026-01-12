@@ -219,6 +219,10 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 		&models.SkillCategoryDifficulty{},
 		&models.WeaponSkillCategoryDifficulty{},
 		&models.SkillImprovementCost{},
+		&models.ClassLearningPoints{},
+		&models.ClassSpellPoints{},
+		&models.ClassTypicalSkill{},
+		&models.ClassTypicalSpell{},
 
 		// GSMaster Basis-Daten
 		//&models.LookupList{}, // Basis für Skills, Spells, Equipment
@@ -561,6 +565,22 @@ func SetupCheckDev(c *gin.Context) {
 	logger.Info("Setup-Check erfolgreich abgeschlossen")
 	c.JSON(http.StatusOK, gin.H{"message": "Setup Check OK"})
 }
+
+// PopulateClassLearningPoints populates the class learning points tables from hardcoded data
+func PopulateClassLearningPoints(c *gin.Context) {
+	logger.Info("Starte Population der Class Learning Points Daten...")
+
+	err := models.PopulateClassLearningPointsData()
+	if err != nil {
+		logger.Error("Fehler beim Populieren der Class Learning Points: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to populate class learning points: "+err.Error())
+		return
+	}
+
+	logger.Info("Class Learning Points erfolgreich populiert")
+	c.JSON(http.StatusOK, gin.H{"message": "Class learning points data populated successfully"})
+}
+
 func ReconnectDataBase(c *gin.Context) {
 	logger.Info("Führe Datenbank-Reconnect durch...")
 
@@ -735,6 +755,10 @@ func copySQLiteToMariaDB(sqliteDB, mariaDB *gorm.DB) error {
 		&models.SkillCategoryDifficulty{}, // Jetzt nach Skills
 		&models.WeaponSkillCategoryDifficulty{},
 		&models.SkillImprovementCost{},
+		&models.ClassLearningPoints{},
+		&models.ClassSpellPoints{},
+		&models.ClassTypicalSkill{},
+		&models.ClassTypicalSpell{},
 
 		// Charaktere (Basis)
 		&models.Char{},
@@ -885,6 +909,30 @@ func copyTableDataReverse(sourceDB, targetDB *gorm.DB, model interface{}) error 
 			records = batch
 		case *models.SkillImprovementCost:
 			var batch []models.SkillImprovementCost
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.ClassLearningPoints:
+			var batch []models.ClassLearningPoints
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.ClassSpellPoints:
+			var batch []models.ClassSpellPoints
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.ClassTypicalSkill:
+			var batch []models.ClassTypicalSkill
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.ClassTypicalSpell:
+			var batch []models.ClassTypicalSpell
 			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
 				return fmt.Errorf("failed to read batch from source: %w", err)
 			}
@@ -1104,6 +1152,10 @@ func clearMariaDBData(db *gorm.DB) error {
 		&models.SpellLevelLECost{},
 		&models.ClassSpellSchoolEPCost{},
 		&models.ClassCategoryEPCost{},
+		&models.ClassTypicalSpell{},
+		&models.ClassTypicalSkill{},
+		&models.ClassSpellPoints{},
+		&models.ClassLearningPoints{},
 
 		// GSMaster Basis-Daten
 		&models.Believe{},

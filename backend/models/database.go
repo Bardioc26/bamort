@@ -157,6 +157,10 @@ func learningMigrateStructure(db ...*gorm.DB) error {
 		&SkillCategoryDifficulty{},
 		&WeaponSkillCategoryDifficulty{},
 		&SkillImprovementCost{},
+		&ClassLearningPoints{},
+		&ClassSpellPoints{},
+		&ClassTypicalSkill{},
+		&ClassTypicalSpell{},
 		&AuditLogEntry{},
 	)
 	if err != nil {

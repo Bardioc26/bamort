@@ -73,6 +73,17 @@ type ExportableSkillCategoryDifficulty struct {
 	LearnCost        int    `json:"learn_cost"`
 }
 
+// ExportableWeaponSkillCategoryDifficulty represents the weapon skill relationship for export
+type ExportableWeaponSkillCategoryDifficulty struct {
+	WeaponSkillName  string `json:"weapon_skill_name"`
+	SkillSystem      string `json:"skill_system"`
+	CategoryName     string `json:"category_name"`
+	CategorySystem   string `json:"category_system"`
+	DifficultyName   string `json:"difficulty_name"`
+	DifficultySystem string `json:"difficulty_system"`
+	LearnCost        int    `json:"learn_cost"`
+}
+
 // ExportableSpell represents a spell for export
 type ExportableSpell struct {
 	Name             string `json:"name"`
@@ -146,18 +157,19 @@ type ExportableSkillImprovementCost struct {
 
 // ExportableWeaponSkill represents a weapon skill for export
 type ExportableWeaponSkill struct {
-	Name             string `json:"name"`
-	GameSystem       string `json:"game_system"`
-	Beschreibung     string `json:"beschreibung"`
-	SourceCode       string `json:"source_code"`
-	PageNumber       int    `json:"page_number"`
-	Initialwert      int    `json:"initialwert"`
-	BasisWert        int    `json:"basiswert"`
-	Bonuseigenschaft string `json:"bonuseigenschaft"`
-	Improvable       bool   `json:"improvable"`
-	InnateSkill      bool   `json:"innate_skill"`
-	Category         string `json:"category"`
-	Difficulty       string `json:"difficulty"`
+	Name                   string                         `json:"name"`
+	GameSystem             string                         `json:"game_system"`
+	Beschreibung           string                         `json:"beschreibung"`
+	SourceCode             string                         `json:"source_code"`
+	PageNumber             int                            `json:"page_number"`
+	Initialwert            int                            `json:"initialwert"`
+	BasisWert              int                            `json:"basiswert"`
+	Bonuseigenschaft       string                         `json:"bonuseigenschaft"`
+	Improvable             bool                           `json:"improvable"`
+	InnateSkill            bool                           `json:"innate_skill"`
+	Category               string                         `json:"category"`                // Deprecated: use CategoriesDifficulties
+	Difficulty             string                         `json:"difficulty"`              // Deprecated: use CategoriesDifficulties
+	CategoriesDifficulties []ExportableCategoryDifficulty `json:"categories_difficulties"` // All category/difficulty combinations
 }
 
 // ExportableEquipment represents equipment for export
@@ -499,6 +511,98 @@ func ImportSkillCategoryDifficulties(inputDir string) error {
 			scd.SDifficulty = difficulty.Name
 
 			if err := database.DB.Save(&scd).Error; err != nil {
+				return fmt.Errorf("failed to update relationship: %w", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+// ExportWeaponSkillCategoryDifficulties exports weapon skill-category-difficulty relationships
+func ExportWeaponSkillCategoryDifficulties(outputDir string) error {
+	var wscds []models.WeaponSkillCategoryDifficulty
+	if err := database.DB.Find(&wscds).Error; err != nil {
+		return fmt.Errorf("failed to fetch weapon skill category difficulties: %w", err)
+	}
+
+	exportable := make([]ExportableWeaponSkillCategoryDifficulty, len(wscds))
+	for i, wscd := range wscds {
+		var weaponSkill models.WeaponSkill
+		var category models.SkillCategory
+		var difficulty models.SkillDifficulty
+
+		database.DB.First(&weaponSkill, wscd.WeaponSkillID)
+		database.DB.First(&category, wscd.SkillCategoryID)
+		database.DB.First(&difficulty, wscd.SkillDifficultyID)
+
+		exportable[i] = ExportableWeaponSkillCategoryDifficulty{
+			WeaponSkillName:  weaponSkill.Name,
+			SkillSystem:      weaponSkill.GameSystem,
+			CategoryName:     category.Name,
+			CategorySystem:   category.GameSystem,
+			DifficultyName:   difficulty.Name,
+			DifficultySystem: difficulty.GameSystem,
+			LearnCost:        wscd.LearnCost,
+		}
+	}
+
+	return writeJSON(filepath.Join(outputDir, "weaponskill_category_difficulties.json"), exportable)
+}
+
+// ImportWeaponSkillCategoryDifficulties imports weapon skill-category-difficulty relationships
+func ImportWeaponSkillCategoryDifficulties(inputDir string) error {
+	var exportable []ExportableWeaponSkillCategoryDifficulty
+	if err := readJSON(filepath.Join(inputDir, "weaponskill_category_difficulties.json"), &exportable); err != nil {
+		return err
+	}
+
+	for _, exp := range exportable {
+		// Find the weapon skill
+		var weaponSkill models.WeaponSkill
+		if err := database.DB.Where("name = ? AND game_system = ?", exp.WeaponSkillName, exp.SkillSystem).First(&weaponSkill).Error; err != nil {
+			return fmt.Errorf("weapon skill not found: %s/%s", exp.WeaponSkillName, exp.SkillSystem)
+		}
+
+		// Find the category
+		var category models.SkillCategory
+		if err := database.DB.Where("name = ? AND game_system = ?", exp.CategoryName, exp.CategorySystem).First(&category).Error; err != nil {
+			return fmt.Errorf("category not found: %s/%s", exp.CategoryName, exp.CategorySystem)
+		}
+
+		// Find the difficulty
+		var difficulty models.SkillDifficulty
+		if err := database.DB.Where("name = ? AND game_system = ?", exp.DifficultyName, exp.DifficultySystem).First(&difficulty).Error; err != nil {
+			return fmt.Errorf("difficulty not found: %s/%s", exp.DifficultyName, exp.DifficultySystem)
+		}
+
+		// Check if relationship exists
+		var wscd models.WeaponSkillCategoryDifficulty
+		result := database.DB.Where("weapon_skill_id = ? AND skill_category_id = ? AND skill_difficulty_id = ?",
+			weaponSkill.ID, category.ID, difficulty.ID).First(&wscd)
+
+		if result.Error == gorm.ErrRecordNotFound {
+			// Create new relationship
+			wscd = models.WeaponSkillCategoryDifficulty{
+				WeaponSkillID:     weaponSkill.ID,
+				SkillCategoryID:   category.ID,
+				SkillDifficultyID: difficulty.ID,
+				LearnCost:         exp.LearnCost,
+				SCategory:         category.Name,
+				SDifficulty:       difficulty.Name,
+			}
+			if err := database.DB.Create(&wscd).Error; err != nil {
+				return fmt.Errorf("failed to create relationship: %w", err)
+			}
+		} else if result.Error != nil {
+			return fmt.Errorf("failed to query relationship: %w", result.Error)
+		} else {
+			// Update existing relationship
+			wscd.LearnCost = exp.LearnCost
+			wscd.SCategory = category.Name
+			wscd.SDifficulty = difficulty.Name
+
+			if err := database.DB.Save(&wscd).Error; err != nil {
 				return fmt.Errorf("failed to update relationship: %w", err)
 			}
 		}
@@ -1175,21 +1279,36 @@ func ExportWeaponSkills(outputDir string) error {
 
 	sourceMap := buildSourceMap()
 
+	// Get all weapon skill category difficulties
+	var wscds []models.WeaponSkillCategoryDifficulty
+	database.DB.Preload("SkillCategory").Preload("SkillDifficulty").Find(&wscds)
+
+	// Build map of weapon_skill_id -> []category/difficulty combinations
+	wscdMap := make(map[uint][]ExportableCategoryDifficulty)
+	for _, wscd := range wscds {
+		wscdMap[wscd.WeaponSkillID] = append(wscdMap[wscd.WeaponSkillID], ExportableCategoryDifficulty{
+			Category:   wscd.SkillCategory.Name,
+			Difficulty: wscd.SkillDifficulty.Name,
+			LearnCost:  wscd.LearnCost,
+		})
+	}
+
 	exportable := make([]ExportableWeaponSkill, len(skills))
 	for i, skill := range skills {
 		exportable[i] = ExportableWeaponSkill{
-			Name:             skill.Name,
-			GameSystem:       skill.GameSystem,
-			Beschreibung:     skill.Beschreibung,
-			SourceCode:       sourceMap[skill.SourceID],
-			PageNumber:       skill.PageNumber,
-			Initialwert:      skill.Initialwert,
-			BasisWert:        skill.BasisWert,
-			Bonuseigenschaft: skill.Bonuseigenschaft,
-			Improvable:       skill.Improvable,
-			InnateSkill:      skill.InnateSkill,
-			Category:         skill.Category,
-			Difficulty:       skill.Difficulty,
+			Name:                   skill.Name,
+			GameSystem:             skill.GameSystem,
+			Beschreibung:           skill.Beschreibung,
+			SourceCode:             sourceMap[skill.SourceID],
+			PageNumber:             skill.PageNumber,
+			Initialwert:            skill.Initialwert,
+			BasisWert:              skill.BasisWert,
+			Bonuseigenschaft:       skill.Bonuseigenschaft,
+			Improvable:             skill.Improvable,
+			InnateSkill:            skill.InnateSkill,
+			Category:               skill.Category,
+			Difficulty:             skill.Difficulty,
+			CategoriesDifficulties: wscdMap[skill.ID],
 		}
 	}
 
@@ -1247,6 +1366,37 @@ func ImportWeaponSkills(inputDir string) error {
 
 			if err := database.DB.Save(&skill).Error; err != nil {
 				return fmt.Errorf("failed to update weapon skill %s: %w", exp.Name, err)
+			}
+		}
+
+		// Handle category/difficulty relationships if present
+		if len(exp.CategoriesDifficulties) > 0 {
+			// Delete existing relationships
+			database.DB.Where("weapon_skill_id = ?", skill.ID).Delete(&models.WeaponSkillCategoryDifficulty{})
+
+			// Create new relationships
+			for _, cd := range exp.CategoriesDifficulties {
+				var category models.SkillCategory
+				var difficulty models.SkillDifficulty
+
+				if err := database.DB.Where("name = ?", cd.Category).First(&category).Error; err != nil {
+					continue // Skip if category not found
+				}
+				if err := database.DB.Where("name = ?", cd.Difficulty).First(&difficulty).Error; err != nil {
+					continue // Skip if difficulty not found
+				}
+
+				wscd := models.WeaponSkillCategoryDifficulty{
+					WeaponSkillID:     skill.ID,
+					SkillCategoryID:   category.ID,
+					SkillDifficultyID: difficulty.ID,
+					LearnCost:         cd.LearnCost,
+					SCategory:         category.Name,
+					SDifficulty:       difficulty.Name,
+				}
+				if err := database.DB.Create(&wscd).Error; err != nil {
+					return fmt.Errorf("failed to create weapon skill category difficulty: %w", err)
+				}
 			}
 		}
 	}
@@ -1695,6 +1845,9 @@ func ExportAll(outputDir string) error {
 	if err := ExportWeaponSkills(outputDir); err != nil {
 		return err
 	}
+	if err := ExportWeaponSkillCategoryDifficulties(outputDir); err != nil {
+		return err
+	}
 	if err := ExportEquipment(outputDir); err != nil {
 		return err
 	}
@@ -1754,6 +1907,9 @@ func ImportAll(inputDir string) error {
 		return err
 	}
 	if err := ImportWeaponSkills(inputDir); err != nil {
+		return err
+	}
+	if err := ImportWeaponSkillCategoryDifficulties(inputDir); err != nil {
 		return err
 	}
 	if err := ImportEquipment(inputDir); err != nil {

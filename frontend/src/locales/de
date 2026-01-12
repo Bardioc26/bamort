@@ -223,6 +223,7 @@ export default {
     improvable:'verbesserbar',
     category:'Kategorie',
     initialwert:'Startwert',
+    difficulty:'Schwierigkeit',
   },
   WaeponSkill:'Waffenfertigkeiten',
   maintenance:'Wartung',

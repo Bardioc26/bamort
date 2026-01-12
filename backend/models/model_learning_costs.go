@@ -111,6 +111,21 @@ type SkillCategoryDifficulty struct {
 	SCategory         string          `gorm:"column:skill_category;size:25;not null;index;default:Alltag" json:"skillCategory"`     // SkillCategory
 }
 
+// WeaponSkillCategoryDifficulty definiert die Schwierigkeit einer Waffenfertigkeit in einer bestimmten Kategorie
+// Separate Tabelle für Waffenfertigkeiten, da diese in gsm_weaponskills gespeichert sind
+type WeaponSkillCategoryDifficulty struct {
+	ID                uint            `gorm:"primaryKey" json:"id"`
+	WeaponSkillID     uint            `gorm:"not null;index" json:"weapon_skill_id"`
+	SkillCategoryID   uint            `gorm:"not null;index" json:"skill_category_id"`
+	SkillDifficultyID uint            `gorm:"not null;index" json:"skill_difficulty_id"`
+	LearnCost         int             `gorm:"not null" json:"learn_cost"` // LE-Kosten für das Erlernen
+	WeaponSkill       WeaponSkill     `gorm:"foreignKey:WeaponSkillID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"weapon_skill"`
+	SkillCategory     SkillCategory   `gorm:"foreignKey:SkillCategoryID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"skill_category"`
+	SkillDifficulty   SkillDifficulty `gorm:"foreignKey:SkillDifficultyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"skill_difficulty"`
+	SDifficulty       string          `gorm:"column:skill_difficulty;size:15;not null;index;default:normal" json:"skillDifficulty"`
+	SCategory         string          `gorm:"column:skill_category;size:25;not null;index;default:Waffen" json:"skillCategory"`
+}
+
 // SkillImprovementCost definiert TE-Kosten für Verbesserungen basierend auf Kategorie, Schwierigkeit und aktuellem Wert
 type SkillImprovementCost struct {
 	ID                        uint                    `gorm:"primaryKey" json:"id"`
@@ -202,6 +217,10 @@ func (SkillCategoryDifficulty) TableName() string {
 	return "learning_skill_category_difficulties"
 }
 
+func (WeaponSkillCategoryDifficulty) TableName() string {
+	return "learning_weaponskill_category_difficulties"
+}
+
 func (SkillImprovementCost) TableName() string {
 	return "learning_skill_improvement_costs"
 }
@@ -272,6 +291,10 @@ func (sllc *SpellLevelLECost) Create() error {
 
 func (scd *SkillCategoryDifficulty) Create() error {
 	return database.DB.Create(scd).Error
+}
+
+func (wscd *WeaponSkillCategoryDifficulty) Create() error {
+	return database.DB.Create(wscd).Error
 }
 
 func (sic *SkillImprovementCost) Create() error {

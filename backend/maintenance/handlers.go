@@ -217,6 +217,7 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 		&models.ClassSpellSchoolEPCost{},
 		&models.SpellLevelLECost{},
 		&models.SkillCategoryDifficulty{},
+		&models.WeaponSkillCategoryDifficulty{},
 		&models.SkillImprovementCost{},
 
 		// GSMaster Basis-Daten
@@ -253,6 +254,12 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 		&models.EqAusruestung{},
 		&models.EqWaffe{},
 		&models.EqContainer{},
+
+		// Character Creation Sessions (abhängig von Char)
+		&models.CharacterCreationSession{},
+
+		// Audit Logging (abhängig von Char)
+		&models.AuditLogEntry{},
 
 		// View-Strukturen ohne eigene Tabellen werden nicht kopiert:
 		// SkillLearningInfo, SpellLearningInfo, CharList, FeChar, etc.
@@ -726,6 +733,7 @@ func copySQLiteToMariaDB(sqliteDB, mariaDB *gorm.DB) error {
 		&models.ClassSpellSchoolEPCost{},
 		&models.SpellLevelLECost{},
 		&models.SkillCategoryDifficulty{}, // Jetzt nach Skills
+		&models.WeaponSkillCategoryDifficulty{},
 		&models.SkillImprovementCost{},
 
 		// Charaktere (Basis)
@@ -751,6 +759,12 @@ func copySQLiteToMariaDB(sqliteDB, mariaDB *gorm.DB) error {
 		&models.EqAusruestung{},
 		&models.EqWaffe{},
 		&models.EqContainer{},
+
+		// Character Creation Sessions (abhängig von Char)
+		&models.CharacterCreationSession{},
+
+		// Audit Logging (abhängig von Char)
+		&models.AuditLogEntry{},
 	}
 
 	logger.Info("Kopiere Daten für %d Tabellen von SQLite zu MariaDB...", len(tables))
@@ -859,6 +873,12 @@ func copyTableDataReverse(sourceDB, targetDB *gorm.DB, model interface{}) error 
 			records = batch
 		case *models.SkillCategoryDifficulty:
 			var batch []models.SkillCategoryDifficulty
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.WeaponSkillCategoryDifficulty:
+			var batch []models.WeaponSkillCategoryDifficulty
 			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
 				return fmt.Errorf("failed to read batch from source: %w", err)
 			}
@@ -1013,6 +1033,18 @@ func copyTableDataReverse(sourceDB, targetDB *gorm.DB, model interface{}) error 
 				return fmt.Errorf("failed to read batch from source: %w", err)
 			}
 			records = batch
+		case *models.CharacterCreationSession:
+			var batch []models.CharacterCreationSession
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.AuditLogEntry:
+			var batch []models.AuditLogEntry
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
 		default:
 			return fmt.Errorf("unsupported model type: %T", model)
 		}
@@ -1037,7 +1069,11 @@ func clearMariaDBData(db *gorm.DB) error {
 	// Clear tables in reverse order due to foreign key constraints
 	// (reverse of the insertion order in copySQLiteToMariaDB)
 	tables := []interface{}{
-		// Charakter-Equipment (abhängig von Char und Equipment) - zuerst löschen
+		// Audit Logging und Character Creation Sessions (abhängig von Char) - zuerst löschen
+		&models.AuditLogEntry{},
+		&models.CharacterCreationSession{},
+
+		// Charakter-Equipment (abhängig von Char und Equipment)
 		&models.EqContainer{},
 		&models.EqWaffe{},
 		&models.EqAusruestung{},
@@ -1063,6 +1099,7 @@ func clearMariaDBData(db *gorm.DB) error {
 
 		// Learning Costs System - Abhängige Tabellen (vor Skills/Spells löschen)
 		&models.SkillImprovementCost{},
+		&models.WeaponSkillCategoryDifficulty{},
 		&models.SkillCategoryDifficulty{},
 		&models.SpellLevelLECost{},
 		&models.ClassSpellSchoolEPCost{},

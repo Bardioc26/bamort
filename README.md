@@ -58,6 +58,8 @@ Monorepo mit zwei Hauptteilen: Backend und Frontend.
 - Neue UI‑Strings in beiden `src/locales/de` und `src/locales/en` ergänzen.
 - Änderungen modular pro Domänenmodul halten (Backend‑Modulkonvention beachten).
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M11S4NJR)
+
 ## Wo anfangen
 - backend/character — Charakter‑Handler und Routen
 - backend/models  — Datenmodelle
@@ -132,6 +134,8 @@ Monorepo with two primary parts: backend and frontend.
 - Follow KISS and TDD: write failing tests first, implement minimal change.
 - Add translations to both `src/locales/de` and `src/locales/en` for new UI strings.
 - Keep changes modular per domain module (see backend module pattern).
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M11S4NJR)
 
 ## Where to look first
 - backend/character — character handlers and routes

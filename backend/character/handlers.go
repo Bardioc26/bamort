@@ -171,11 +171,19 @@ func splitSkills(object []models.SkFertigkeit) ([]models.SkFertigkeit, []models.
 	categories := make(map[string][]models.SkFertigkeit)
 	for _, skill := range object {
 		gsmsk := skill.GetSkillByName()
-		if gsmsk.Improvable {
-			category := "Unkategorisiert"
-			if gsmsk.ID != 0 && gsmsk.Category != "" {
-				category = gsmsk.Category
+		if gsmsk != nil && gsmsk.Improvable {
+			// Use GetCategory() which fetches from learning_skill_category_difficulties table
+			// with lowest ID when multiple categories exist
+			category := skill.GetCategory()
+			normSkills = append(normSkills, skill)
+			if _, exists := categories[category]; !exists {
+				categories[category] = make([]models.SkFertigkeit, 0)
 			}
+			categories[category] = append(categories[category], skill)
+		} else if gsmsk == nil {
+			// Skill not found in gsmaster - could be custom skill
+			// Treat as improvable and use GetCategory which will return Unkategorisiert
+			category := skill.GetCategory()
 			normSkills = append(normSkills, skill)
 			if _, exists := categories[category]; !exists {
 				categories[category] = make([]models.SkFertigkeit, 0)

@@ -152,7 +152,8 @@ func (stamm *Skill) First(name string) error {
 		return fmt.Errorf("name cannot be empty")
 	}
 	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
+	// Order by ID to get the record with the lowest ID when multiple categories exist
+	err := database.DB.Where("game_system=? AND name = ?", gameSystem, name).Order("id ASC").First(&stamm).Error
 	if err != nil {
 		// Fertigkeit found
 		return err
@@ -266,7 +267,8 @@ func (stamm *WeaponSkill) First(name string) error {
 		return fmt.Errorf("name cannot be empty")
 	}
 	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
+	// Order by ID to get the record with the lowest ID when multiple categories exist
+	err := database.DB.Where("game_system=? AND name = ?", gameSystem, name).Order("id ASC").First(&stamm).Error
 	if err != nil {
 		// Fertigkeit found
 		return err

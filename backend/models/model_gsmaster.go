@@ -173,7 +173,7 @@ func (object *Skill) FirstId(value uint) error {
 func (object *Skill) Select(fieldName string, value string) ([]Skill, error) {
 	gameSystem := "midgard"
 	var skills []Skill
-	err := database.DB.Find(&skills, "game_system=? AND name != 'Placeholder' AND "+fieldName+" = ?", gameSystem, value).Error
+	err := database.DB.Find(&skills, "game_system=? AND "+fieldName+" = ?", gameSystem, value).Error
 	if err != nil {
 		return nil, err
 	}
@@ -193,12 +193,12 @@ func SelectSkills(opts ...string) ([]Skill, error) {
 
 	var skills []Skill
 	if fieldName == "" {
-		err := database.DB.Find(&skills, "game_system=? AND name != 'Placeholder'", gameSystem).Error
+		err := database.DB.Find(&skills, "game_system=?", gameSystem).Error
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		err := database.DB.Find(&skills, "game_system=? AND name != 'Placeholder' AND "+fieldName+" = ?", gameSystem, value).Error
+		err := database.DB.Find(&skills, "game_system=? AND "+fieldName+" = ?", gameSystem, value).Error
 		if err != nil {
 			return nil, err
 		}
@@ -357,12 +357,12 @@ func SelectSpells(opts ...string) ([]Spell, error) {
 
 	var spells []Spell
 	if fieldName == "" {
-		err := database.DB.Find(&spells, "game_system=? AND name != 'Placeholder'", gameSystem).Error
+		err := database.DB.Find(&spells, "game_system=?", gameSystem).Error
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		err := database.DB.Find(&spells, "game_system=? AND name != 'Placeholder' AND "+fieldName+" = ?", gameSystem, value).Error
+		err := database.DB.Find(&spells, "game_system=? AND "+fieldName+" = ?", gameSystem, value).Error
 		if err != nil {
 			return nil, err
 		}

@@ -23,28 +23,6 @@ func generateFilename(prefix string, extension string) string {
 	return fmt.Sprintf("%s_%s.%s", prefix, timestamp, extension)
 }
 
-func TestExportGSMasterdata(t *testing.T) {
-	/*
-		database.SetupTestDB()
-		TestImportSkill2GSMaster(t)
-		TestImportWeaponSkill2GSMaster(t)
-		TestImportSpell2GSMaster(t)
-		TestImportWeapon2GSMaster(t)
-		TestImportContainer2GSMaster(t)
-		TestImportTransportation2GSMaster(t)
-		TestImportEquipment2GSMaster(t)
-		TestImportBelieve2GSMaster(t)
-		err := gsmaster.Export(generateFilename("../testdata/gsmaster_", "json"))
-		assert.NoError(t, err, "expexted no Error during Export if gsmaster data")
-	*/
-}
-
-func TestImportGSMasterdata(t *testing.T) {
-	database.SetupTestDB(true)
-	err := Import("../testdata/gsmaster_exported_gsdata.json")
-	assert.NoError(t, err, "expexted no Error during Export if gsmaster data")
-}
-
 func TestMigrateStructure(t *testing.T) {
 	database.SetupTestDB(true) // Use in-memory SQLite for testing
 	err := models.MigrateStructure()

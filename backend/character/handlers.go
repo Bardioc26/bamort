@@ -1357,7 +1357,7 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 	}
 	// For character creation (char_id = 0), learnedSkills remains empty
 
-	// Hole alle verfügbaren Fertigkeiten aus der gsmaster Datenbank, aber filtere Placeholder aus
+	// Hole alle verfügbaren Fertigkeiten aus der gsmaster Datenbank
 	var allSkills []models.Skill
 
 	allSkills, err := models.SelectSkills("", "")
@@ -1365,11 +1365,6 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve skills from gsmaster")
 		return
 	}
-	/*if err := database.DB.Where("name != ?", "Placeholder").Find(&allSkills).Error; err != nil {
-		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve skills")
-		return
-	}
-	*/
 
 	// Organisiere Fertigkeiten nach Kategorien
 	skillsByCategory := make(map[string][]gin.H)
@@ -1377,10 +1372,6 @@ func GetAvailableSkillsNewSystem(c *gin.Context) {
 	for _, skill := range allSkills {
 		// Überspringe bereits gelernte Fertigkeiten
 		if learnedSkills[skill.Name] {
-			continue
-		}
-		// Überspringe Placeholder-Fertigkeiten (zusätzliche Sicherheit)
-		if skill.Name == "Placeholder" {
 			continue
 		}
 
@@ -1803,8 +1794,7 @@ func GetAllSkillsWithLE() (map[string][]gin.H, error) {
 
 		// For each skill in this category, add it with its LE cost and difficulty
 		for _, scd := range skillCategoryDifficulties {
-			// Skip Placeholder skills
-			if category.Name == "Unbekannt" || scd.Skill.Name == "Placeholder" || scd.Skill.InnateSkill {
+			if category.Name == "Unbekannt" || scd.Skill.InnateSkill {
 				continue
 			}
 
@@ -1896,11 +1886,6 @@ func GetAllSkillsWithLearningCosts(characterClass string) (map[string][]gin.H, e
 	allCategories := []string{"Alltag", "Kampf", "Körper", "Sozial", "Wissen", "Halbwelt", "Unterwelt", "Freiland", "Sonstige"}
 
 	for _, skill := range skills {
-		// Skip Placeholder skills
-		if skill.Name == "Placeholder" {
-			continue
-		}
-
 		// First, always add to the skill's original category
 		originalCategory := skill.Category
 		if originalCategory == "" {
@@ -2053,7 +2038,7 @@ func GetAvailableSpellsNewSystem(c *gin.Context) {
 	}
 
 	charakteClass := getCharacterClass(&character)
-	// Hole alle verfügbaren Zauber aus der gsmaster Datenbank, aber filtere Placeholder aus
+	// Hole alle verfügbaren Zauber aus der gsmaster Datenbank
 	var allSpells []models.Spell
 
 	allSpells, err := models.SelectSpells("", "")
@@ -2074,10 +2059,6 @@ func GetAvailableSpellsNewSystem(c *gin.Context) {
 	for _, spell := range allSpells {
 		// Überspringe bereits gelernte Zauber
 		if learnedSpells[spell.Name] {
-			continue
-		}
-		// Überspringe Placeholder-Zauber (zusätzliche Sicherheit)
-		if spell.Name == "Placeholder" {
 			continue
 		}
 

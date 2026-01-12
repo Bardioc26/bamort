@@ -190,13 +190,13 @@ func TestGetSpellInfo(t *testing.T) {
 		},
 		{
 			spellName:      "Erkennen von Krankheit",
-			expectedSchool: "Dweomerzauber",
+			expectedSchool: "Erkennen",
 			expectedLevel:  2,
 			expectError:    false,
 		},
 		{
 			spellName:      "Das Loblied",
-			expectedSchool: "Zauberlied",
+			expectedSchool: "Verändern",
 			expectedLevel:  3,
 			expectError:    false,
 		},

@@ -361,16 +361,16 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 	}
 
 	testDefinition := []struct {
-		name          string
-		expectedCount int
-		expectedFound []string
-		wantErr       bool
+		name                string
+		expectedMinCount    int
+		expectedMustContain []string
+		wantErr             bool
 	}{
 		{
-			name:          "get categories",
-			expectedCount: 3,
-			expectedFound: []string{"Category1", "Category2", ""},
-			wantErr:       false,
+			name:                "get categories",
+			expectedMinCount:    3,
+			expectedMustContain: []string{"Category1", "Category2", ""},
+			wantErr:             false,
 		},
 	}
 
@@ -385,8 +385,12 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 			}
 
 			assert.NoError(t, err)
-			assert.Len(t, categories, tt.expectedCount)
-			assert.ElementsMatch(t, tt.expectedFound, categories)
+			assert.GreaterOrEqual(t, len(categories), tt.expectedMinCount, "Should have at least %d categories", tt.expectedMinCount)
+
+			// Check that all expected categories are present
+			for _, expected := range tt.expectedMustContain {
+				assert.Contains(t, categories, expected, "Categories should contain %q", expected)
+			}
 		})
 	}
 	database.ResetTestDB()

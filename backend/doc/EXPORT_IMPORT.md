@@ -12,7 +12,7 @@ The export/import mechanism allows exporting all master data from the `model_gsm
 ## Supported Entities
 
 ### From `model_learning_costs.go`:
-- **Sources** (`learning_sources`) - Game books and source materials
+- **Sources** (`gsm_lit_sources`) - Game books and source materials
 - **SkillCategories** (`learning_skill_categories`) - Skill classification categories
 - **SkillDifficulties** (`learning_skill_difficulties`) - Difficulty levels
 - **SkillCategoryDifficulties** (`learning_skill_category_difficulties`) - Relationship between skills, categories, and difficulties with learning costs

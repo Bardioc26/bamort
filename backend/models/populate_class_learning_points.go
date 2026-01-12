@@ -335,7 +335,7 @@ func PopulateClassLearningPointsData() error {
 				continue
 			}
 
-			learningPoints := ClassLearningPoints{
+			learningPoints := ClassCategoryLearningPoints{
 				CharacterClassID: charClass.ID,
 				SkillCategoryID:  category.ID,
 				Points:           points,

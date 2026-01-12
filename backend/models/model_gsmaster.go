@@ -54,8 +54,8 @@ type Skill struct {
 	Initialwert      int    `gorm:"default:5" json:"initialwert"`
 	BasisWert        int    `gorm:"default:0" json:"basiswert"`
 	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
-	Improvable       bool   `gorm:"default:true" json:"improvable"`
-	InnateSkill      bool   `gorm:"default:false" json:"innateskill"`
+	Improvable       bool   `json:"improvable"`
+	InnateSkill      bool   `json:"innateskill"`
 	Category         string `json:"category"`
 	Difficulty       string `json:"difficulty"`
 }
@@ -136,6 +136,14 @@ func (object *Skill) TableName() string {
 func (stamm *Skill) Create() error {
 	gameSystem := "midgard"
 	stamm.GameSystem = gameSystem
+
+	// Set default values for boolean fields if not explicitly set
+	// Note: We cannot rely on GORM defaults anymore since they interfere with copying operations
+	if !stamm.Improvable && !stamm.InnateSkill {
+		// If both are false, set Improvable to true as default (most skills are improvable)
+		stamm.Improvable = true
+	}
+
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
@@ -250,6 +258,12 @@ func (object *WeaponSkill) TableName() string {
 func (stamm *WeaponSkill) Create() error {
 	gameSystem := "midgard"
 	stamm.GameSystem = gameSystem
+
+	// Set default values for boolean fields if not explicitly set
+	if !stamm.Improvable && !stamm.InnateSkill {
+		stamm.Improvable = true
+	}
+
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
@@ -649,8 +663,8 @@ func (object *Believe) Save() error {
 func GetBelievesByActiveSources(gameSystem string) ([]Believe, error) {
 	var believes []Believe
 	err := database.DB.
-		Joins("LEFT JOIN learning_sources ON gsm_believes.source_id = learning_sources.id").
-		Where("gsm_believes.game_system = ? AND (learning_sources.is_active = ? OR gsm_believes.source_id IS NULL)", gameSystem, true).
+		Joins("LEFT JOIN gsm_lit_sources ON gsm_believes.source_id = gsm_lit_sources.id").
+		Where("gsm_believes.game_system = ? AND (gsm_lit_sources.is_active = ? OR gsm_believes.source_id IS NULL)", gameSystem, true).
 		Order("gsm_believes.name ASC").
 		Find(&believes).Error
 	return believes, err

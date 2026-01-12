@@ -182,11 +182,13 @@ type AuditLogEntry struct {
 
 // TableName-Methoden für GORM
 func (Source) TableName() string {
-	return "learning_sources"
+	//learning_sources
+	return "gsm_lit_sources"
 }
 
 func (CharacterClass) TableName() string {
-	return "learning_character_classes"
+	//learning_character_classes
+	return "gsm_character_classes"
 }
 
 func (SkillCategory) TableName() string {
@@ -479,8 +481,8 @@ func GetSourcesByGameSystem(gameSystem string) ([]Source, error) {
 func GetSkillsByActiveSources(gameSystem string) ([]Skill, error) {
 	var skills []Skill
 	err := database.DB.
-		Joins("LEFT JOIN learning_sources ON gsm_skills.source_id = learning_sources.id").
-		Where("gsm_skills.game_system = ? AND (learning_sources.is_active = ? OR gsm_skills.source_id IS NULL)", gameSystem, true).
+		Joins("LEFT JOIN gsm_lit_sources ON gsm_skills.source_id = gsm_lit_sources.id").
+		Where("gsm_skills.game_system = ? AND (gsm_lit_sourcesis_active = ? OR gsm_skills.source_id IS NULL)", gameSystem, true).
 		Find(&skills).Error
 	return skills, err
 }
@@ -489,8 +491,8 @@ func GetSkillsByActiveSources(gameSystem string) ([]Skill, error) {
 func GetSpellsByActiveSources(gameSystem string) ([]Spell, error) {
 	var spells []Spell
 	err := database.DB.
-		Joins("LEFT JOIN learning_sources ON gsm_spells.source_id = learning_sources.id").
-		Where("gsm_spells.game_system = ? AND (learning_sources.is_active = ? OR gsm_spells.source_id IS NULL)", gameSystem, true).
+		Joins("LEFT JOIN gsm_lit_sources ON gsm_spells.source_id = gsm_lit_sources.id").
+		Where("gsm_spells.game_system = ? AND (gsm_lit_sources.is_active = ? OR gsm_spells.source_id IS NULL)", gameSystem, true).
 		Find(&spells).Error
 	return spells, err
 }
@@ -499,8 +501,8 @@ func GetSpellsByActiveSources(gameSystem string) ([]Spell, error) {
 func GetCharacterClassesByActiveSources(gameSystem string) ([]CharacterClass, error) {
 	var classes []CharacterClass
 	err := database.DB.
-		Joins("LEFT JOIN learning_sources ON learning_character_classes.source_id = learning_sources.id").
-		Where("learning_character_classes.game_system = ? AND (learning_sources.is_active = ? OR learning_character_classes.source_id IS NULL)", gameSystem, true).
+		Joins("LEFT JOIN gsm_lit_sources ON gsm_character_classes.source_id = gsm_lit_sources.id").
+		Where("gsm_character_classes.game_system = ? AND (gsm_lit_sources.is_active = ? OR gsm_character_classes.source_id IS NULL)", gameSystem, true).
 		Find(&classes).Error
 	return classes, err
 }

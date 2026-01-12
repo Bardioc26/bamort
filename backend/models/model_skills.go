@@ -34,15 +34,15 @@ type SkZauber struct {
 }
 
 func (object *SkFertigkeit) TableName() string {
-	dbPrefix := "skill"
+	dbPrefix := "char"
 	return dbPrefix + "_" + "skills"
 }
 func (object *SkWaffenfertigkeit) TableName() string {
-	dbPrefix := "skill"
+	dbPrefix := "char"
 	return dbPrefix + "_" + "weaponskills"
 }
 func (object *SkZauber) TableName() string {
-	dbPrefix := "skill"
+	dbPrefix := "char"
 	return dbPrefix + "_" + "spells"
 }
 
@@ -67,7 +67,7 @@ func (object *SkWaffenfertigkeit) GetSkillByName() *Skill {
 }
 
 func (object *SkFertigkeit) GetCategory() string {
-	// Always fetch category from gsmaster, ignoring the category field in skill_skills
+	// Always fetch category from gsmaster, ignoring the category field in char_skills
 	var gsmsk Skill
 	gsmsk.First(object.Name)
 	if gsmsk.ID == 0 {

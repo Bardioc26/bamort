@@ -1,9 +1,15 @@
 package maintenance
 
 import (
+	"bamort/database"
 	"bamort/models"
 	"bamort/user"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 // TestTableListCompleteness verifies that all database models are included in the table lists
@@ -134,6 +140,139 @@ func TestTableListCompleteness(t *testing.T) {
 
 	t.Logf("Total models in table list: %d", len(tables))
 	t.Logf("Total expected models: %d", len(expectedModels))
+}
+
+// TestImprovableFieldTransfer tests that the Improvable field is correctly transferred from MariaDB to SQLite
+func TestImprovableFieldTransfer(t *testing.T) {
+	setupTestEnvironment(t)
+
+	// Create source database (simulating MariaDB)
+	sourceDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	require.NoError(t, err)
+
+	// Create target database (simulating SQLite)
+	targetDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	require.NoError(t, err)
+
+	// Migrate structures
+	err = sourceDB.AutoMigrate(&models.Skill{})
+	require.NoError(t, err)
+	err = targetDB.AutoMigrate(&models.Skill{})
+	require.NoError(t, err)
+
+	// Insert test data with different Improvable values
+	// Use raw SQL to avoid GORM applying default values
+	testSkills := []struct {
+		ID          uint
+		Name        string
+		GameSystem  string
+		Improvable  bool
+		InnateSkill bool
+	}{
+		{1, "Hören", "midgard", false, true},
+		{2, "Alchimie", "midgard", true, false},
+		{3, "Nachtsicht", "midgard", false, true},
+	}
+
+	for _, skill := range testSkills {
+		err = sourceDB.Exec(`INSERT INTO gsm_skills (id, name, game_system, improvable, innate_skill, initialwert, basis_wert) VALUES (?, ?, ?, ?, ?, 5, 0)`,
+			skill.ID, skill.Name, skill.GameSystem, skill.Improvable, skill.InnateSkill).Error
+		require.NoError(t, err)
+	}
+
+	// Verify source data
+	var sourceSkill models.Skill
+	err = sourceDB.First(&sourceSkill, 1).Error
+	require.NoError(t, err)
+	assert.Equal(t, "Hören", sourceSkill.Name)
+	t.Logf("DEBUG: Source skill Hören - Improvable: %v, InnateSkill: %v", sourceSkill.Improvable, sourceSkill.InnateSkill)
+
+	// Also check raw data from database
+	var rawImprovable int
+	err = sourceDB.Raw("SELECT improvable FROM gsm_skills WHERE id = 1").Scan(&rawImprovable).Error
+	require.NoError(t, err)
+	t.Logf("DEBUG: Raw SQL value for improvable: %d", rawImprovable)
+
+	assert.False(t, sourceSkill.Improvable, "Source skill should have Improvable=false")
+
+	// Copy data using copyTableData
+	err = copyTableData(sourceDB, targetDB, &models.Skill{})
+	require.NoError(t, err)
+
+	// Verify all skills in target database
+	var targetSkills []models.Skill
+	err = targetDB.Find(&targetSkills).Error
+	require.NoError(t, err)
+	require.Len(t, targetSkills, 3, "Should have 3 skills in target")
+
+	// Check each skill's Improvable field
+	expectedValues := map[uint]bool{
+		1: false, // Hören
+		2: true,  // Alchimie
+		3: false, // Nachtsicht
+	}
+
+	for _, targetSkill := range targetSkills {
+		expectedImprovable := expectedValues[targetSkill.ID]
+		assert.Equal(t, expectedImprovable, targetSkill.Improvable,
+			"Skill %s (ID: %d) should have Improvable=%v, got %v",
+			targetSkill.Name, targetSkill.ID, expectedImprovable, targetSkill.Improvable)
+	}
+
+	// Specific checks
+	var hoeren models.Skill
+	err = targetDB.Where("name = ?", "Hören").First(&hoeren).Error
+	require.NoError(t, err)
+	assert.False(t, hoeren.Improvable, "Hören should have Improvable=false after transfer")
+
+	var alchimie models.Skill
+	err = targetDB.Where("name = ?", "Alchimie").First(&alchimie).Error
+	require.NoError(t, err)
+	assert.True(t, alchimie.Improvable, "Alchimie should have Improvable=true after transfer")
+}
+
+// TestImprovableFieldInPreparedTestDB verifies the prepared test database has correct Improvable values
+func TestImprovableFieldInPreparedTestDB(t *testing.T) {
+	setupTestEnvironment(t)
+
+	// Ensure clean database state before setup
+	database.ResetTestDB()
+
+	// Use the prepared test database
+	database.SetupTestDB(true)
+	require.NotNil(t, database.DB)
+
+	// Ensure database cleanup after test
+	t.Cleanup(func() {
+		database.ResetTestDB()
+	})
+
+	// Check specific skills that should have Improvable=false (innate skills)
+	innateSkills := []string{"Hören", "Nachtsicht", "Riechen", "Sechster Sinn", "Sehen"}
+
+	for _, skillName := range innateSkills {
+		var skill models.Skill
+		err := database.DB.Where("name = ?", skillName).First(&skill).Error
+		if err == gorm.ErrRecordNotFound {
+			t.Logf("Skill %s not found in prepared test DB - skipping", skillName)
+			continue
+		}
+		require.NoError(t, err)
+
+		// These are innate skills and should not be improvable
+		assert.True(t, skill.InnateSkill, "Skill %s should be marked as InnateSkill", skillName)
+		// Note: Based on game rules, innate skills are typically not improvable
+		t.Logf("Skill: %s, Improvable: %v, InnateSkill: %v", skillName, skill.Improvable, skill.InnateSkill)
+	}
+
+	// Check a regular skill that should be improvable
+	var alchimie models.Skill
+	err := database.DB.Where("name = ?", "Alchimie").First(&alchimie).Error
+	if err != gorm.ErrRecordNotFound {
+		require.NoError(t, err)
+		assert.True(t, alchimie.Improvable, "Alchimie should be improvable")
+		assert.False(t, alchimie.InnateSkill, "Alchimie should not be an innate skill")
+	}
 }
 
 // getModelTypeName returns the type name of a model

@@ -36,7 +36,7 @@ func createTestSkill(name string) *Skill {
 
 func TestSkFertigkeit_TableName(t *testing.T) {
 	skill := SkFertigkeit{}
-	expected := "skill_skills"
+	expected := "char_skills"
 	actual := skill.TableName()
 	assert.Equal(t, expected, actual)
 }
@@ -176,7 +176,7 @@ func TestSkFertigkeit_StructTags(t *testing.T) {
 
 func TestSkWaffenfertigkeit_TableName(t *testing.T) {
 	weaponSkill := SkWaffenfertigkeit{}
-	expected := "skill_weaponskills"
+	expected := "char_weaponskills"
 	actual := weaponSkill.TableName()
 	assert.Equal(t, expected, actual)
 }
@@ -283,7 +283,7 @@ func TestSkAngeboreneFertigkeit_Inheritance(t *testing.T) {
 
 func TestSkZauber_TableName(t *testing.T) {
 	spell := SkZauber{}
-	expected := "skill_spells"
+	expected := "char_spells"
 	actual := spell.TableName()
 	assert.Equal(t, expected, actual)
 }
@@ -417,14 +417,14 @@ func TestTableNames_Consistency(t *testing.T) {
 	weaponSkill := SkWaffenfertigkeit{}
 	spell := SkZauber{}
 
-	assert.Equal(t, "skill_skills", skill.TableName())
-	assert.Equal(t, "skill_weaponskills", weaponSkill.TableName())
-	assert.Equal(t, "skill_spells", spell.TableName())
+	assert.Equal(t, "char_skills", skill.TableName())
+	assert.Equal(t, "char_weaponskills", weaponSkill.TableName())
+	assert.Equal(t, "char_spells", spell.TableName())
 
-	// All table names should start with "skill_"
-	assert.Contains(t, skill.TableName(), "skill_")
-	assert.Contains(t, weaponSkill.TableName(), "skill_")
-	assert.Contains(t, spell.TableName(), "skill_")
+	// All table names should start with "char_"
+	assert.Contains(t, skill.TableName(), "char_")
+	assert.Contains(t, weaponSkill.TableName(), "char_")
+	assert.Contains(t, spell.TableName(), "char_")
 }
 
 func TestSkFertigkeit_EdgeCases(t *testing.T) {

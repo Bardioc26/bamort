@@ -219,7 +219,7 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 		&models.SkillCategoryDifficulty{},
 		&models.WeaponSkillCategoryDifficulty{},
 		&models.SkillImprovementCost{},
-		&models.ClassLearningPoints{},
+		&models.ClassCategoryLearningPoints{},
 		&models.ClassSpellPoints{},
 		&models.ClassTypicalSkill{},
 		&models.ClassTypicalSpell{},
@@ -330,25 +330,24 @@ func copyTableData(sourceDB, targetDB *gorm.DB, model interface{}) error {
 			return err
 		}
 
-		// Get the actual records from reflection
-		records := recordsPtr.Elem().Interface()
-		recordsLen := recordsPtr.Elem().Len()
-
-		if recordsLen == 0 {
+		// Get the records for iteration
+		recordsVal := recordsPtr.Elem()
+		if recordsVal.Len() == 0 {
 			logger.Debug("Keine weiteren Datensätze für %s", tableName)
 			break
 		}
 
-		// Batch in SQLite einfügen mit Konflikt-Behandlung
-		// Verwende Clauses.OnConflict um bestehende Datensätze zu ersetzen
-		if err := targetDB.Model(model).Clauses(clause.OnConflict{
-			UpdateAll: true,
-		}).Create(records).Error; err != nil {
-			logger.Error("Fehler beim Einfügen von Batch %d für %s: %s", batchNum, tableName, err.Error())
-			return err
+		// Batch in SQLite einfügen
+		// Use Save() instead of Create() to avoid GORM applying default values to zero values (e.g., false for booleans)
+		for i := 0; i < recordsVal.Len(); i++ {
+			record := recordsVal.Index(i).Addr().Interface()
+			if err := targetDB.Save(record).Error; err != nil {
+				logger.Error("Fehler beim Speichern von Datensatz in Batch %d für %s: %s", batchNum, tableName, err.Error())
+				return err
+			}
 		}
 
-		logger.Debug("Batch %d/%d für %s erfolgreich kopiert (%d Datensätze)", batchNum, totalBatches, tableName, recordsLen)
+		logger.Debug("Batch %d/%d für %s erfolgreich kopiert (%d Datensätze)", batchNum, totalBatches, tableName, recordsVal.Len())
 	}
 
 	logger.Info("Tabelle %s erfolgreich kopiert (%d Datensätze total)", tableName, count)
@@ -755,7 +754,7 @@ func copySQLiteToMariaDB(sqliteDB, mariaDB *gorm.DB) error {
 		&models.SkillCategoryDifficulty{}, // Jetzt nach Skills
 		&models.WeaponSkillCategoryDifficulty{},
 		&models.SkillImprovementCost{},
-		&models.ClassLearningPoints{},
+		&models.ClassCategoryLearningPoints{},
 		&models.ClassSpellPoints{},
 		&models.ClassTypicalSkill{},
 		&models.ClassTypicalSpell{},
@@ -913,8 +912,8 @@ func copyTableDataReverse(sourceDB, targetDB *gorm.DB, model interface{}) error 
 				return fmt.Errorf("failed to read batch from source: %w", err)
 			}
 			records = batch
-		case *models.ClassLearningPoints:
-			var batch []models.ClassLearningPoints
+		case *models.ClassCategoryLearningPoints:
+			var batch []models.ClassCategoryLearningPoints
 			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
 				return fmt.Errorf("failed to read batch from source: %w", err)
 			}
@@ -1155,7 +1154,7 @@ func clearMariaDBData(db *gorm.DB) error {
 		&models.ClassTypicalSpell{},
 		&models.ClassTypicalSkill{},
 		&models.ClassSpellPoints{},
-		&models.ClassLearningPoints{},
+		&models.ClassCategoryLearningPoints{},
 
 		// GSMaster Basis-Daten
 		&models.Believe{},

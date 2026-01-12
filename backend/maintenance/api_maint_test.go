@@ -96,8 +96,12 @@ func TestGetMDSkillCategories(t *testing.T) {
 	ski := models.Skill{}
 	categories, err := ski.GetSkillCategories()
 	assert.NoError(t, err)
-	assert.LessOrEqual(t, 1, len(categories))
-	assert.Equal(t, "Wissen", categories[0])
+	assert.GreaterOrEqual(t, len(categories), 1, "Should have at least one skill category")
+	// Check that categories come from learning_skill_categories table
+	assert.Contains(t, categories, "Alltag", "Should contain 'Alltag' category")
+	assert.Contains(t, categories, "Wissen", "Should contain 'Wissen' category")
+	assert.Contains(t, categories, "Kampf", "Should contain 'Kampf' category")
+	assert.Contains(t, categories, "Schilde und Parierwaﬀen", "Should contain 'Schilde und Parierwaﬀen' category")
 }
 
 func TestGetMDSkills(t *testing.T) {

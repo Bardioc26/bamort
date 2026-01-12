@@ -231,10 +231,9 @@ func (object *Skill) GetSkillCategories() ([]string, error) {
 	var categories []string
 	gameSystem := "midgard"
 
-	result := database.DB.Model(&Skill{}).
-		Where("game_system = ? and category is not null", gameSystem).
-		Distinct().
-		Pluck("category", &categories)
+	result := database.DB.Model(&SkillCategory{}).
+		Where("game_system = ?", gameSystem).
+		Pluck("name", &categories)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -376,10 +375,9 @@ func (object *Spell) GetSpellCategories() ([]string, error) {
 	var categories []string
 	gameSystem := "midgard"
 
-	result := database.DB.Model(&Spell{}).
-		Where("game_system=? and category is not null", gameSystem).
-		Distinct().
-		Pluck("category", &categories)
+	result := database.DB.Model(&SpellSchool{}).
+		Where("game_system = ?", gameSystem).
+		Pluck("name", &categories)
 
 	if result.Error != nil {
 		return nil, result.Error

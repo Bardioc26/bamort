@@ -509,6 +509,7 @@ export default {
       
       // Try to find by learning category mapping first (most likely scenario)
       const learningCategory = this.learningCategories?.find(cat => cat.name === selectedCategoryName)
+      
       if (learningCategory && this.availableSkillsByCategory[learningCategory.displayName]) {
         return learningCategory.displayName
       }

@@ -1806,9 +1806,13 @@ func GetAllSkillsWithLE() (map[string][]gin.H, error) {
 				continue
 			}
 
+			// For character creation, use reduced costs based on category and difficulty
+			// Regular learning costs (LearnCost) are for existing characters
+			creationCost := getSkillCreationCost(category.Name, scd.SkillDifficulty.Name)
+
 			skillInfo := gin.H{
 				"name":       scd.Skill.Name,
-				"leCost":     scd.LearnCost,
+				"leCost":     creationCost,
 				"difficulty": scd.SkillDifficulty.Name,
 			}
 
@@ -1826,6 +1830,133 @@ func GetAllSkillsWithLE() (map[string][]gin.H, error) {
 	}
 
 	return skillsByCategory, nil
+}
+
+// getSkillCreationCost returns the LE cost for learning a skill during character creation
+// These costs are much lower than regular learning costs, as they represent initial training
+// Costs vary by both category and difficulty level
+func getSkillCreationCost(category string, difficulty string) int {
+	// Normalize difficulty string for comparison
+	difficultyLower := strings.ToLower(difficulty)
+	
+	// Define cost mapping per category and difficulty
+	switch category {
+	case "Alltag":
+		switch difficultyLower {
+		case "leicht":
+			return 1
+		case "normal":
+			return 1
+		case "schwer":
+			return 2
+		default:
+			return 1
+		}
+	case "Freiland":
+		switch difficultyLower {
+		case "leicht":
+			return 1
+		case "normal":
+			return 2
+		case "schwer":
+			return 2
+		default:
+			return 2
+		}
+	case "Halbwelt":
+		switch difficultyLower {
+		case "leicht":
+			return 1
+		case "normal":
+			return 2
+		case "schwer":
+			return 2
+		default:
+			return 2
+		}
+	case "Kampf":
+		switch difficultyLower {
+		case "leicht":
+			return 1
+		case "normal":
+			return 2
+		case "schwer":
+			return 3
+		default:
+			return 2
+		}
+	case "Körper":
+		switch difficultyLower {
+		case "leicht":
+			return 1
+		case "normal":
+			return 1
+		case "schwer":
+			return 2
+		default:
+			return 1
+		}
+	case "Sozial":
+		switch difficultyLower {
+		case "leicht":
+			return 2
+		case "normal":
+			return 2
+		case "schwer":
+			return 4
+		default:
+			return 2
+		}
+	case "Unterwelt":
+		switch difficultyLower {
+		case "leicht":
+			return 2
+		case "normal":
+			return 4
+		case "schwer":
+			return 6
+		default:
+			return 4
+		}
+	case "Waffen":
+		switch difficultyLower {
+		case "leicht":
+			return 2
+		case "normal":
+			return 4
+		case "schwer":
+			return 6
+		case "sehr schwer":
+			return 8
+		default:
+			return 4
+		}
+	case "Wissen":
+		switch difficultyLower {
+		case "leicht":
+			return 1
+		case "normal":
+			return 2
+		case "schwer":
+			return 2
+		default:
+			return 2
+		}
+	default:
+		// Default fallback for unknown categories
+		switch difficultyLower {
+		case "leicht":
+			return 1
+		case "normal":
+			return 2
+		case "schwer":
+			return 3
+		case "sehr schwer":
+			return 4
+		default:
+			return 2
+		}
+	}
 }
 
 // GetWeaponSkillsWithLE returns all weapon skills with their learning costs

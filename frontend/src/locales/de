@@ -420,7 +420,7 @@ export default {
       previousAttributes: 'Zurück: Attribute',
       recalculate: 'Aus Attributen neu berechnen',
       calculating: 'Berechne...',
-      nextSkills: 'Weiter: Fertigkeiten & Zauber',
+      nextSkills: 'Weiter: Fertigkeiten',
       paRollTooltip: 'PA würfeln: 1d100 + 4×(In/10) - 20',
       wkRollTooltip: 'WK würfeln: 1d100 + 2×(Ko/10 + In/10) - 20',
       lpRollTooltip: 'LP würfeln: 1d3 + 7 + (Ko/10)', 

@@ -1130,3 +1130,199 @@ func TestExportImportOrderIsCorrect(t *testing.T) {
 
 	t.Logf("\nTotal: %d tables", len(correctOrder))
 }
+
+// TestExportImportClassCategoryLearningPoints tests export and import of class category learning points
+func TestExportImportClassCategoryLearningPoints(t *testing.T) {
+	setupTestEnvironment(t)
+	database.SetupTestDB()
+
+	// Create test data with unique names
+	class := models.CharacterClass{
+		Code:       "TEST_KRI",
+		Name:       "Test-Krieger",
+		GameSystem: "midgard",
+	}
+	database.DB.Create(&class)
+
+	category := models.SkillCategory{
+		Name:       "Test-Kampf",
+		GameSystem: "midgard",
+	}
+	database.DB.Create(&category)
+
+	record := models.ClassCategoryLearningPoints{
+		CharacterClassID: class.ID,
+		SkillCategoryID:  category.ID,
+		Points:           10,
+	}
+	database.DB.Create(&record)
+
+	// Export
+	tmpDir := t.TempDir()
+	err := ExportClassCategoryLearningPoints(tmpDir)
+	assert.NoError(t, err)
+
+	// Verify file exists
+	exportFile := filepath.Join(tmpDir, "class_category_learning_points.json")
+	assert.FileExists(t, exportFile)
+
+	// Delete record
+	database.DB.Delete(&record)
+
+	// Import back
+	err = ImportClassCategoryLearningPoints(tmpDir)
+	assert.NoError(t, err)
+
+	// Verify record was imported
+	var imported models.ClassCategoryLearningPoints
+	err = database.DB.Where("character_class_id = ? AND skill_category_id = ?", class.ID, category.ID).First(&imported).Error
+	assert.NoError(t, err)
+	assert.Equal(t, 10, imported.Points)
+}
+
+// TestExportImportClassSpellPoints tests export and import of class spell points
+func TestExportImportClassSpellPoints(t *testing.T) {
+	setupTestEnvironment(t)
+	database.SetupTestDB()
+
+	// Create test data with unique name
+	class := models.CharacterClass{
+		Code:       "TEST_MAG",
+		Name:       "Test-Magier",
+		GameSystem: "midgard",
+	}
+	database.DB.Create(&class)
+
+	record := models.ClassSpellPoints{
+		CharacterClassID: class.ID,
+		SpellPoints:      50,
+	}
+	database.DB.Create(&record)
+
+	// Export
+	tmpDir := t.TempDir()
+	err := ExportClassSpellPoints(tmpDir)
+	assert.NoError(t, err)
+
+	// Verify file exists
+	exportFile := filepath.Join(tmpDir, "class_spell_points.json")
+	assert.FileExists(t, exportFile)
+
+	// Delete record
+	database.DB.Delete(&record)
+
+	// Import back
+	err = ImportClassSpellPoints(tmpDir)
+	assert.NoError(t, err)
+
+	// Verify record was imported
+	var imported models.ClassSpellPoints
+	err = database.DB.Where("character_class_id = ?", class.ID).First(&imported).Error
+	assert.NoError(t, err)
+	assert.Equal(t, 50, imported.SpellPoints)
+}
+
+// TestExportImportClassTypicalSkills tests export and import of class typical skills
+func TestExportImportClassTypicalSkills(t *testing.T) {
+	setupTestEnvironment(t)
+	database.SetupTestDB()
+
+	// Create test data with unique names
+	class := models.CharacterClass{
+		Code:       "TEST_WAL",
+		Name:       "Test-Waldläufer",
+		GameSystem: "midgard",
+	}
+	database.DB.Create(&class)
+
+	skill := models.Skill{
+		Name:        "Test-Spurenlesen",
+		GameSystem:  "midgard",
+		Improvable:  true,
+		InnateSkill: false,
+	}
+	database.DB.Create(&skill)
+
+	record := models.ClassTypicalSkill{
+		CharacterClassID: class.ID,
+		SkillID:          skill.ID,
+		Bonus:            4,
+		Attribute:        "In",
+		Notes:            "Typische Fertigkeit",
+	}
+	database.DB.Create(&record)
+
+	// Export
+	tmpDir := t.TempDir()
+	err := ExportClassTypicalSkills(tmpDir)
+	assert.NoError(t, err)
+
+	// Verify file exists
+	exportFile := filepath.Join(tmpDir, "class_typical_skills.json")
+	assert.FileExists(t, exportFile)
+
+	// Delete record
+	database.DB.Delete(&record)
+
+	// Import back
+	err = ImportClassTypicalSkills(tmpDir)
+	assert.NoError(t, err)
+
+	// Verify record was imported
+	var imported models.ClassTypicalSkill
+	err = database.DB.Where("character_class_id = ? AND skill_id = ?", class.ID, skill.ID).First(&imported).Error
+	assert.NoError(t, err)
+	assert.Equal(t, 4, imported.Bonus)
+	assert.Equal(t, "In", imported.Attribute)
+	assert.Equal(t, "Typische Fertigkeit", imported.Notes)
+}
+
+// TestExportImportClassTypicalSpells tests export and import of class typical spells
+func TestExportImportClassTypicalSpells(t *testing.T) {
+	setupTestEnvironment(t)
+	database.SetupTestDB()
+
+	// Create test data with unique names
+	class := models.CharacterClass{
+		Code:       "TEST_DRU",
+		Name:       "Test-Druide",
+		GameSystem: "midgard",
+	}
+	database.DB.Create(&class)
+
+	spell := models.Spell{
+		Name:       "Test-Heilen",
+		GameSystem: "midgard",
+		Stufe:      1,
+	}
+	database.DB.Create(&spell)
+
+	record := models.ClassTypicalSpell{
+		CharacterClassID: class.ID,
+		SpellID:          spell.ID,
+		Notes:            "Immer verfügbar",
+	}
+	database.DB.Create(&record)
+
+	// Export
+	tmpDir := t.TempDir()
+	err := ExportClassTypicalSpells(tmpDir)
+	assert.NoError(t, err)
+
+	// Verify file exists
+	exportFile := filepath.Join(tmpDir, "class_typical_spells.json")
+	assert.FileExists(t, exportFile)
+
+	// Delete record
+	database.DB.Delete(&record)
+
+	// Import back
+	err = ImportClassTypicalSpells(tmpDir)
+	assert.NoError(t, err)
+
+	// Verify record was imported
+	var imported models.ClassTypicalSpell
+	err = database.DB.Where("character_class_id = ? AND spell_id = ?", class.ID, spell.ID).First(&imported).Error
+	assert.NoError(t, err)
+	assert.Equal(t, "Immer verfügbar", imported.Notes)
+}

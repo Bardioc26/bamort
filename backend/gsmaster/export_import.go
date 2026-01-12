@@ -238,6 +238,42 @@ type ExportableBelieve struct {
 	PageNumber   int    `json:"page_number"`
 }
 
+// ExportableClassCategoryLearningPoints represents learning points allocation for export
+type ExportableClassCategoryLearningPoints struct {
+	ClassName      string `json:"class_name"`
+	ClassSystem    string `json:"class_system"`
+	CategoryName   string `json:"category_name"`
+	CategorySystem string `json:"category_system"`
+	Points         int    `json:"points"`
+}
+
+// ExportableClassSpellPoints represents spell points for export
+type ExportableClassSpellPoints struct {
+	ClassName   string `json:"class_name"`
+	ClassSystem string `json:"class_system"`
+	SpellPoints int    `json:"spell_points"`
+}
+
+// ExportableClassTypicalSkill represents typical skills for export
+type ExportableClassTypicalSkill struct {
+	ClassName   string `json:"class_name"`
+	ClassSystem string `json:"class_system"`
+	SkillName   string `json:"skill_name"`
+	SkillSystem string `json:"skill_system"`
+	Bonus       int    `json:"bonus"`
+	Attribute   string `json:"attribute,omitempty"`
+	Notes       string `json:"notes,omitempty"`
+}
+
+// ExportableClassTypicalSpell represents typical spells for export
+type ExportableClassTypicalSpell struct {
+	ClassName   string `json:"class_name"`
+	ClassSystem string `json:"class_system"`
+	SpellName   string `json:"spell_name"`
+	SpellSystem string `json:"spell_system"`
+	Notes       string `json:"notes,omitempty"`
+}
+
 // ExportSkills exports all skills to a JSON file
 func ExportSkills(outputDir string) error {
 	var skills []models.Skill
@@ -1800,6 +1836,271 @@ func ImportBelieves(inputDir string) error {
 	return nil
 }
 
+// ExportClassCategoryLearningPoints exports class category learning points to a JSON file
+func ExportClassCategoryLearningPoints(outputDir string) error {
+	var records []models.ClassCategoryLearningPoints
+	if err := database.DB.Preload("CharacterClass").Preload("SkillCategory").Find(&records).Error; err != nil {
+		return fmt.Errorf("failed to fetch class category learning points: %w", err)
+	}
+
+	exportable := make([]ExportableClassCategoryLearningPoints, len(records))
+	for i, record := range records {
+		exportable[i] = ExportableClassCategoryLearningPoints{
+			ClassName:      record.CharacterClass.Name,
+			ClassSystem:    record.CharacterClass.GameSystem,
+			CategoryName:   record.SkillCategory.Name,
+			CategorySystem: record.SkillCategory.GameSystem,
+			Points:         record.Points,
+		}
+	}
+
+	return writeJSON(filepath.Join(outputDir, "class_category_learning_points.json"), exportable)
+}
+
+// ImportClassCategoryLearningPoints imports class category learning points from a JSON file
+func ImportClassCategoryLearningPoints(inputDir string) error {
+	var exportable []ExportableClassCategoryLearningPoints
+	if err := readJSON(filepath.Join(inputDir, "class_category_learning_points.json"), &exportable); err != nil {
+		return err
+	}
+
+	for _, exp := range exportable {
+		// Find class
+		var class models.CharacterClass
+		if err := database.DB.Where("name = ? AND game_system = ?", exp.ClassName, exp.ClassSystem).First(&class).Error; err != nil {
+			return fmt.Errorf("failed to find class %s: %w", exp.ClassName, err)
+		}
+
+		// Find category
+		var category models.SkillCategory
+		if err := database.DB.Where("name = ? AND game_system = ?", exp.CategoryName, exp.CategorySystem).First(&category).Error; err != nil {
+			return fmt.Errorf("failed to find category %s: %w", exp.CategoryName, err)
+		}
+
+		// Check if record exists
+		var record models.ClassCategoryLearningPoints
+		result := database.DB.Where("character_class_id = ? AND skill_category_id = ?", class.ID, category.ID).First(&record)
+
+		if result.Error == gorm.ErrRecordNotFound {
+			record = models.ClassCategoryLearningPoints{
+				CharacterClassID: class.ID,
+				SkillCategoryID:  category.ID,
+				Points:           exp.Points,
+			}
+			if err := database.DB.Create(&record).Error; err != nil {
+				return fmt.Errorf("failed to create class category learning points: %w", err)
+			}
+		} else if result.Error != nil {
+			return fmt.Errorf("failed to query class category learning points: %w", result.Error)
+		} else {
+			record.Points = exp.Points
+			if err := database.DB.Save(&record).Error; err != nil {
+				return fmt.Errorf("failed to update class category learning points: %w", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+// ExportClassSpellPoints exports class spell points to a JSON file
+func ExportClassSpellPoints(outputDir string) error {
+	var records []models.ClassSpellPoints
+	if err := database.DB.Preload("CharacterClass").Find(&records).Error; err != nil {
+		return fmt.Errorf("failed to fetch class spell points: %w", err)
+	}
+
+	exportable := make([]ExportableClassSpellPoints, len(records))
+	for i, record := range records {
+		exportable[i] = ExportableClassSpellPoints{
+			ClassName:   record.CharacterClass.Name,
+			ClassSystem: record.CharacterClass.GameSystem,
+			SpellPoints: record.SpellPoints,
+		}
+	}
+
+	return writeJSON(filepath.Join(outputDir, "class_spell_points.json"), exportable)
+}
+
+// ImportClassSpellPoints imports class spell points from a JSON file
+func ImportClassSpellPoints(inputDir string) error {
+	var exportable []ExportableClassSpellPoints
+	if err := readJSON(filepath.Join(inputDir, "class_spell_points.json"), &exportable); err != nil {
+		return err
+	}
+
+	for _, exp := range exportable {
+		// Find class
+		var class models.CharacterClass
+		if err := database.DB.Where("name = ? AND game_system = ?", exp.ClassName, exp.ClassSystem).First(&class).Error; err != nil {
+			return fmt.Errorf("failed to find class %s: %w", exp.ClassName, err)
+		}
+
+		// Check if record exists
+		var record models.ClassSpellPoints
+		result := database.DB.Where("character_class_id = ?", class.ID).First(&record)
+
+		if result.Error == gorm.ErrRecordNotFound {
+			record = models.ClassSpellPoints{
+				CharacterClassID: class.ID,
+				SpellPoints:      exp.SpellPoints,
+			}
+			if err := database.DB.Create(&record).Error; err != nil {
+				return fmt.Errorf("failed to create class spell points: %w", err)
+			}
+		} else if result.Error != nil {
+			return fmt.Errorf("failed to query class spell points: %w", result.Error)
+		} else {
+			record.SpellPoints = exp.SpellPoints
+			if err := database.DB.Save(&record).Error; err != nil {
+				return fmt.Errorf("failed to update class spell points: %w", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+// ExportClassTypicalSkills exports class typical skills to a JSON file
+func ExportClassTypicalSkills(outputDir string) error {
+	var records []models.ClassTypicalSkill
+	if err := database.DB.Preload("CharacterClass").Preload("Skill").Find(&records).Error; err != nil {
+		return fmt.Errorf("failed to fetch class typical skills: %w", err)
+	}
+
+	exportable := make([]ExportableClassTypicalSkill, len(records))
+	for i, record := range records {
+		exportable[i] = ExportableClassTypicalSkill{
+			ClassName:   record.CharacterClass.Name,
+			ClassSystem: record.CharacterClass.GameSystem,
+			SkillName:   record.Skill.Name,
+			SkillSystem: record.Skill.GameSystem,
+			Bonus:       record.Bonus,
+			Attribute:   record.Attribute,
+			Notes:       record.Notes,
+		}
+	}
+
+	return writeJSON(filepath.Join(outputDir, "class_typical_skills.json"), exportable)
+}
+
+// ImportClassTypicalSkills imports class typical skills from a JSON file
+func ImportClassTypicalSkills(inputDir string) error {
+	var exportable []ExportableClassTypicalSkill
+	if err := readJSON(filepath.Join(inputDir, "class_typical_skills.json"), &exportable); err != nil {
+		return err
+	}
+
+	for _, exp := range exportable {
+		// Find class
+		var class models.CharacterClass
+		if err := database.DB.Where("name = ? AND game_system = ?", exp.ClassName, exp.ClassSystem).First(&class).Error; err != nil {
+			return fmt.Errorf("failed to find class %s: %w", exp.ClassName, err)
+		}
+
+		// Find skill
+		var skill models.Skill
+		if err := database.DB.Where("name = ? AND game_system = ?", exp.SkillName, exp.SkillSystem).First(&skill).Error; err != nil {
+			return fmt.Errorf("failed to find skill %s: %w", exp.SkillName, err)
+		}
+
+		// Check if record exists
+		var record models.ClassTypicalSkill
+		result := database.DB.Where("character_class_id = ? AND skill_id = ?", class.ID, skill.ID).First(&record)
+
+		if result.Error == gorm.ErrRecordNotFound {
+			record = models.ClassTypicalSkill{
+				CharacterClassID: class.ID,
+				SkillID:          skill.ID,
+				Bonus:            exp.Bonus,
+				Attribute:        exp.Attribute,
+				Notes:            exp.Notes,
+			}
+			if err := database.DB.Create(&record).Error; err != nil {
+				return fmt.Errorf("failed to create class typical skill: %w", err)
+			}
+		} else if result.Error != nil {
+			return fmt.Errorf("failed to query class typical skill: %w", result.Error)
+		} else {
+			record.Bonus = exp.Bonus
+			record.Attribute = exp.Attribute
+			record.Notes = exp.Notes
+			if err := database.DB.Save(&record).Error; err != nil {
+				return fmt.Errorf("failed to update class typical skill: %w", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+// ExportClassTypicalSpells exports class typical spells to a JSON file
+func ExportClassTypicalSpells(outputDir string) error {
+	var records []models.ClassTypicalSpell
+	if err := database.DB.Preload("CharacterClass").Preload("Spell").Find(&records).Error; err != nil {
+		return fmt.Errorf("failed to fetch class typical spells: %w", err)
+	}
+
+	exportable := make([]ExportableClassTypicalSpell, len(records))
+	for i, record := range records {
+		exportable[i] = ExportableClassTypicalSpell{
+			ClassName:   record.CharacterClass.Name,
+			ClassSystem: record.CharacterClass.GameSystem,
+			SpellName:   record.Spell.Name,
+			SpellSystem: record.Spell.GameSystem,
+			Notes:       record.Notes,
+		}
+	}
+
+	return writeJSON(filepath.Join(outputDir, "class_typical_spells.json"), exportable)
+}
+
+// ImportClassTypicalSpells imports class typical spells from a JSON file
+func ImportClassTypicalSpells(inputDir string) error {
+	var exportable []ExportableClassTypicalSpell
+	if err := readJSON(filepath.Join(inputDir, "class_typical_spells.json"), &exportable); err != nil {
+		return err
+	}
+
+	for _, exp := range exportable {
+		// Find class
+		var class models.CharacterClass
+		if err := database.DB.Where("name = ? AND game_system = ?", exp.ClassName, exp.ClassSystem).First(&class).Error; err != nil {
+			return fmt.Errorf("failed to find class %s: %w", exp.ClassName, err)
+		}
+
+		// Find spell
+		var spell models.Spell
+		if err := database.DB.Where("name = ? AND game_system = ?", exp.SpellName, exp.SpellSystem).First(&spell).Error; err != nil {
+			return fmt.Errorf("failed to find spell %s: %w", exp.SpellName, err)
+		}
+
+		// Check if record exists
+		var record models.ClassTypicalSpell
+		result := database.DB.Where("character_class_id = ? AND spell_id = ?", class.ID, spell.ID).First(&record)
+
+		if result.Error == gorm.ErrRecordNotFound {
+			record = models.ClassTypicalSpell{
+				CharacterClassID: class.ID,
+				SpellID:          spell.ID,
+				Notes:            exp.Notes,
+			}
+			if err := database.DB.Create(&record).Error; err != nil {
+				return fmt.Errorf("failed to create class typical spell: %w", err)
+			}
+		} else if result.Error != nil {
+			return fmt.Errorf("failed to query class typical spell: %w", result.Error)
+		} else {
+			record.Notes = exp.Notes
+			if err := database.DB.Save(&record).Error; err != nil {
+				return fmt.Errorf("failed to update class typical spell: %w", err)
+			}
+		}
+	}
+
+	return nil
+}
+
 // Note: SkillImprovementCost, WeaponSkill, Equipment, Weapon, Container, Transportation, Believe
 // export/import functions follow similar patterns - implement as needed
 
@@ -1861,6 +2162,18 @@ func ExportAll(outputDir string) error {
 		return err
 	}
 	if err := ExportBelieves(outputDir); err != nil {
+		return err
+	}
+	if err := ExportClassCategoryLearningPoints(outputDir); err != nil {
+		return err
+	}
+	if err := ExportClassSpellPoints(outputDir); err != nil {
+		return err
+	}
+	if err := ExportClassTypicalSkills(outputDir); err != nil {
+		return err
+	}
+	if err := ExportClassTypicalSpells(outputDir); err != nil {
 		return err
 	}
 
@@ -1925,6 +2238,18 @@ func ImportAll(inputDir string) error {
 		return err
 	}
 	if err := ImportBelieves(inputDir); err != nil {
+		return err
+	}
+	if err := ImportClassCategoryLearningPoints(inputDir); err != nil {
+		return err
+	}
+	if err := ImportClassSpellPoints(inputDir); err != nil {
+		return err
+	}
+	if err := ImportClassTypicalSkills(inputDir); err != nil {
+		return err
+	}
+	if err := ImportClassTypicalSpells(inputDir); err != nil {
 		return err
 	}
 

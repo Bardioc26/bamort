@@ -1838,7 +1838,7 @@ func GetAllSkillsWithLE() (map[string][]gin.H, error) {
 func getSkillCreationCost(category string, difficulty string) int {
 	// Normalize difficulty string for comparison
 	difficultyLower := strings.ToLower(difficulty)
-	
+
 	// Define cost mapping per category and difficulty
 	switch category {
 	case "Alltag":

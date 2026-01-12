@@ -45,6 +45,18 @@ func TestGetCharacterClassLearningPoints(t *testing.T) {
 		expectedSpells  int
 	}{
 		{
+			name:            "Valid Spitzbube class Mittelschicht stand",
+			classParam:      "Spitzbube",
+			standParam:      "Mittelschicht",
+			expectedStatus:  http.StatusOK,
+			expectError:     false,
+			expectedClass:   "Spitzbube",
+			checkWeapons:    true,
+			expectedWeapons: 20,
+			checkSpells:     true,
+			expectedSpells:  0,
+		},
+		{
 			name:            "Valid Hexer class without stand",
 			classParam:      "Hexer",
 			standParam:      "",

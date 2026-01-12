@@ -134,7 +134,7 @@ export default {
     await this.loadSkillCategories()
   },
   methods: {
-    async loadSession() {
+    async loadSession(preserveCurrentStep = false) {
       try {
         const token = localStorage.getItem('token')
         const response = await API.get(`/api/characters/create-session/${this.sessionId}`, {
@@ -142,7 +142,10 @@ export default {
         })
         
         this.sessionData = response.data
-        this.currentStep = response.data.current_step || 1
+        // Only update currentStep if not preserving it
+        if (!preserveCurrentStep) {
+          this.currentStep = response.data.current_step || 1
+        }
       } catch (error) {
         console.error('Error loading session:', error)
         this.$router.push('/dashboard')
@@ -178,6 +181,10 @@ export default {
         
         // Save progress for current step before moving to next
         await this.saveProgressForStep(this.currentStep, data)
+        
+        // Reload session data from backend to ensure consistent state
+        // Preserve currentStep as we'll increment it after
+        await this.loadSession(true)
         
         // Move to next step
         this.currentStep++

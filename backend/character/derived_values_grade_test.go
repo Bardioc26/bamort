@@ -158,7 +158,7 @@ func TestCalculateStaticFieldsLogic_WithGrade(t *testing.T) {
 				In:    50,
 				Zt:    50,
 				Au:    50,
-				Rasse: "Menschen",
+				Rasse: "Mensch",
 				Typ:   "Krieger",
 				Grad:  tt.grad,
 			}

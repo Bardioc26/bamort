@@ -102,12 +102,12 @@ func CalculateStaticFieldsLogic(req CalculateStaticFieldsRequest) StaticFieldsRe
 	}
 
 	// Finale Resistenzwerte (mit Gradbonus)
-	response.ResistenzKoerper = getResistenzBaseByGrade(grad) // + response.ResistenzBonusKoerper
-	response.ResistenzGeist = getResistenzBaseByGrade(grad)   //+ response.ResistenzBonusGeist
+	response.ResistenzKoerper = getResistenzBaseByGrade(grad) + response.ResistenzBonusKoerper
+	response.ResistenzGeist = getResistenzBaseByGrade(grad) + response.ResistenzBonusGeist
 
 	// Finale Kampfwerte (mit Gradbonus)
-	response.Abwehr = getAbwehrBaseByGrade(grad)   //+ response.AbwehrBonus
-	response.Zaubern = getZaubernBaseByGrade(grad) //+ response.ZauberBonus
+	response.Abwehr = getAbwehrBaseByGrade(grad) + response.AbwehrBonus
+	response.Zaubern = getZaubernBaseByGrade(grad) + response.ZauberBonus
 
 	// Raufen: (St + GW)/20 + angriffs_bonus + Rassenboni
 	raceBonus := 0
@@ -376,11 +376,11 @@ func isZauberer(typ string) bool {
 // getRaceModifierLP gibt den LP-Modifikator für eine Rasse zurück
 func getRaceModifierLP(rasse string) int {
 	switch rasse {
-	case "Gnome":
+	case "Gnom":
 		return -3
-	case "Halblinge":
+	case "Halbling":
 		return -2
-	case "Zwerge":
+	case "Zwerg":
 		return 1
 	default:
 		return 0
@@ -402,11 +402,11 @@ func getClassModifierAP(typ string) int {
 // getMovementBaseAndFormula gibt den Basiswert und die Formel für Bewegung zurück
 func getMovementBaseAndFormula(rasse string) (int, string) {
 	switch rasse {
-	case "Gnome", "Halblinge":
+	case "Gnom", "Halbling":
 		return 8, "2d3 + 8"
-	case "Zwerge":
+	case "Zwerg":
 		return 12, "3d3 + 12"
-	default: // Menschen, Elfen
+	default: // Mensch, Elf
 		return 16, "4d3 + 16"
 	}
 }

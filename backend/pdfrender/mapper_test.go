@@ -248,11 +248,18 @@ func TestMapCharacterToViewModel_Weapons(t *testing.T) {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	if len(vm.Weapons) != 1 {
-		t.Fatalf("Expected 1 weapon, got %d", len(vm.Weapons))
+	// Expect 2 weapons: Raufen (always first) + Langschwert
+	if len(vm.Weapons) != 2 {
+		t.Fatalf("Expected 2 weapons (Raufen + Langschwert), got %d", len(vm.Weapons))
 	}
 
-	weapon := vm.Weapons[0]
+	// Check first weapon is Raufen
+	if vm.Weapons[0].Name != "Raufen" {
+		t.Errorf("Expected first weapon to be 'Raufen', got '%s'", vm.Weapons[0].Name)
+	}
+
+	// Check second weapon is Langschwert
+	weapon := vm.Weapons[1]
 	if weapon.Name != "Langschwert" {
 		t.Errorf("Expected weapon name 'Langschwert', got '%s'", weapon.Name)
 	}

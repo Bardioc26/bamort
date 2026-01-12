@@ -286,19 +286,24 @@ func TestSkill_Select(t *testing.T) {
 func TestSkill_GetSkillCategories(t *testing.T) {
 	setupGSMasterTestDB(t)
 
-	// Create test skills with different categories
-	skill1 := createTestGSMSkill("TestCategorySkill1")
-	skill1.Category = "TestCategory1"
-	err := skill1.Create()
+	// Create test skill categories in the lookup table
+	cat1 := &SkillCategory{
+		GameSystem: "midgard",
+		Name:       "TestCategory1",
+	}
+	err := cat1.Create()
 	require.NoError(t, err)
 
-	skill2 := createTestGSMSkill("TestCategorySkill2")
-	skill2.Category = "TestCategory2"
-	err = skill2.Create()
+	cat2 := &SkillCategory{
+		GameSystem: "midgard",
+		Name:       "TestCategory2",
+	}
+	err = cat2.Create()
 	require.NoError(t, err)
 
 	// Test GetSkillCategories
-	categories, err := skill1.GetSkillCategories()
+	skill := &Skill{}
+	categories, err := skill.GetSkillCategories()
 
 	assert.NoError(t, err)
 	assert.Contains(t, categories, "TestCategory1")
@@ -523,19 +528,24 @@ func TestSpell_Save(t *testing.T) {
 func TestSpell_GetSpellCategories(t *testing.T) {
 	setupGSMasterTestDB(t)
 
-	// Create test spells with different categories
-	spell1 := createTestSpell("TestSpellCategory1")
-	spell1.Category = "TestSpellCat1"
-	err := spell1.Create()
+	// Create test spell categories in the lookup table (SpellSchool)
+	school1 := &SpellSchool{
+		GameSystem: "midgard",
+		Name:       "TestSpellCat1",
+	}
+	err := school1.Create()
 	require.NoError(t, err)
 
-	spell2 := createTestSpell("TestSpellCategory2")
-	spell2.Category = "TestSpellCat2"
-	err = spell2.Create()
+	school2 := &SpellSchool{
+		GameSystem: "midgard",
+		Name:       "TestSpellCat2",
+	}
+	err = school2.Create()
 	require.NoError(t, err)
 
 	// Test GetSpellCategories
-	categories, err := spell1.GetSpellCategories()
+	spell := &Spell{}
+	categories, err := spell.GetSpellCategories()
 
 	assert.NoError(t, err)
 	assert.Contains(t, categories, "TestSpellCat1")

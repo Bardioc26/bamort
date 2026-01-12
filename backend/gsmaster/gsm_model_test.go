@@ -330,33 +330,22 @@ func TestSkill_Delete(t *testing.T) {
 
 func TestSkill_GetSkillCategories(t *testing.T) {
 	database.SetupTestDB()
-	// Create test skills with different categories
-	testSkills := []*models.Skill{
+	// Create test skill categories in the lookup table
+	// Note: GetSkillCategories() reads from gsm_skill_categories table, not from skills
+	testCategories := []*models.SkillCategory{
 		{
-			Name:       "Skill1",
+			Name:       "Category1",
 			GameSystem: "midgard",
-			Category:   "Category1",
 		},
 		{
-			Name:       "Skill2",
+			Name:       "Category2",
 			GameSystem: "midgard",
-			Category:   "Category2",
-		},
-		{
-			Name:       "Skill3",
-			GameSystem: "midgard",
-			Category:   "Category1", // Duplicate category
-		},
-		{
-			Name:       "Skill4",
-			GameSystem: "midgard",
-			Category:   "", // Empty category
 		},
 	}
 
-	// Create test data
-	for _, skill := range testSkills {
-		err := skill.Create()
+	// Create test categories in the lookup table
+	for _, cat := range testCategories {
+		err := cat.Create()
 		assert.NoError(t, err)
 	}
 
@@ -368,8 +357,8 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 	}{
 		{
 			name:                "get categories",
-			expectedMinCount:    3,
-			expectedMustContain: []string{"Category1", "Category2", ""},
+			expectedMinCount:    2,
+			expectedMustContain: []string{"Category1", "Category2"},
 			wantErr:             false,
 		},
 	}

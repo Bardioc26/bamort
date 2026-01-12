@@ -2979,16 +2979,6 @@ func GetCharacterClasses(c *gin.Context) {
 		classNames = append(classNames, class.Name)
 	}
 
-	// If no classes found in database, fall back to hardcoded list
-	if len(classNames) == 0 {
-		classNames = []string{
-			"Assassine", "Barbar", "Barde",
-			"Heiler", "Händler", "Kämpfer", "Krieger",
-			"Magier", "Ordenskrieger", "Priester Beschützer", "Schamane", "Skalde",
-			"Magister", "Thaumaturg", "Waldläufer", "Zauberer",
-		}
-	}
-
 	c.JSON(http.StatusOK, gin.H{"classes": classNames})
 }
 
@@ -3028,18 +3018,6 @@ func SearchBeliefs(c *gin.Context) {
 	var allBeliefs []string
 	for _, belief := range believes {
 		allBeliefs = append(allBeliefs, belief.Name)
-	}
-
-	// If no beliefs found in database, fall back to hardcoded list
-	if len(allBeliefs) == 0 {
-		allBeliefs = []string{
-			"Apshai", "Arthusos", "Beschützer", "Dwyllas", "Elfen",
-			"Fruchtbarkeitsgöttin", "Gaia", "Grafschafter", "Heiler",
-			"Jäger", "Kämpfer", "Lichbringer", "Meeresherr", "Natur",
-			"Ostküste", "Priester", "Rechtschaffener", "Schutzpatron",
-			"Stammesgeist", "Totengott", "Unterwelt", "Vater", "Weisheit",
-			"Xan", "Ylhoon", "Zauberer",
-		}
 	}
 
 	var results []string

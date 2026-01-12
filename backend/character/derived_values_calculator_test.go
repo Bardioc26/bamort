@@ -23,10 +23,10 @@ func TestCalculateStaticFields_Success(t *testing.T) {
 		expected StaticFieldsResponse
 	}{
 		{
-			name: "Menschen Krieger",
+			name: "Mensch Krieger",
 			request: CalculateStaticFieldsRequest{
 				St: 70, Gs: 60, Gw: 65, Ko: 75, In: 50, Zt: 30, Au: 55,
-				Rasse: "Menschen", Typ: "Krieger",
+				Rasse: "Mensch", Typ: "Krieger",
 			},
 			expected: StaticFieldsResponse{
 				AusdauerBonus:         10, // (75/10) + (70/20) = 7 + 3 = 10
@@ -34,8 +34,8 @@ func TestCalculateStaticFields_Success(t *testing.T) {
 				AngriffsBonus:         0,  // GS 60 -> 0
 				AbwehrBonus:           0,  // GW 65 -> 0
 				ZauberBonus:           0,  // ZT 30 -> 0 (21-80 range)
-				ResistenzBonusKoerper: 1,  // Menschen: Ko-Bonus (0) + Kämpfer (+1) = 1
-				ResistenzBonusGeist:   0,  // Menschen: In-Bonus (0) + kein Zauberer = 0
+				ResistenzBonusKoerper: 1,  // Mensch: Ko-Bonus (0) + Kämpfer (+1) = 1
+				ResistenzBonusGeist:   0,  // Mensch: In-Bonus (0) + kein Zauberer = 0
 				ResistenzKoerper:      12, // 11 + 1
 				ResistenzGeist:        11, // 11 + 0
 				Abwehr:                11, // 11 + 0
@@ -44,10 +44,10 @@ func TestCalculateStaticFields_Success(t *testing.T) {
 			},
 		},
 		{
-			name: "Elfen Magier",
+			name: "Elf Magier",
 			request: CalculateStaticFieldsRequest{
 				St: 45, Gs: 70, Gw: 80, Ko: 60, In: 90, Zt: 85, Au: 85,
-				Rasse: "Elfen", Typ: "Magier",
+				Rasse: "Elf", Typ: "Magier",
 			},
 			expected: StaticFieldsResponse{
 				AusdauerBonus:         8,  // (60/10) + (45/20) = 6 + 2 = 8
@@ -55,8 +55,8 @@ func TestCalculateStaticFields_Success(t *testing.T) {
 				AngriffsBonus:         0,  // GS 70 -> 0
 				AbwehrBonus:           0,  // GW 80 -> 0
 				ZauberBonus:           1,  // ZT 85 -> +1
-				ResistenzBonusKoerper: 4,  // Elfen: +2, Zauberer: +2 = 4
-				ResistenzBonusGeist:   4,  // Elfen: +2, Zauberer: +2 = 4
+				ResistenzBonusKoerper: 4,  // Elf: +2, Zauberer: +2 = 4
+				ResistenzBonusGeist:   4,  // Elf: +2, Zauberer: +2 = 4
 				ResistenzKoerper:      15, // 11 + 4
 				ResistenzGeist:        15, // 11 + 4
 				Abwehr:                11, // 11 + 0
@@ -65,10 +65,10 @@ func TestCalculateStaticFields_Success(t *testing.T) {
 			},
 		},
 		{
-			name: "Zwerge Barbar",
+			name: "Zwerg Barbar",
 			request: CalculateStaticFieldsRequest{
 				St: 85, Gs: 45, Gw: 50, Ko: 90, In: 40, Zt: 20, Au: 35,
-				Rasse: "Zwerge", Typ: "Barbar",
+				Rasse: "Zwerg", Typ: "Barbar",
 			},
 			expected: StaticFieldsResponse{
 				AusdauerBonus:         13, // (90/10) + (85/20) = 9 + 4 = 13
@@ -76,13 +76,13 @@ func TestCalculateStaticFields_Success(t *testing.T) {
 				AngriffsBonus:         0,  // GS 45 -> 0 (21-80 range)
 				AbwehrBonus:           0,  // GW 50 -> 0 (21-80 range)
 				ZauberBonus:           -1, // ZT 20 -> -1 (6-20 range)
-				ResistenzBonusKoerper: 4,  // Zwerge: +3, Kämpfer: +1 = 4
-				ResistenzBonusGeist:   3,  // Zwerge: +3, kein Zauberer = 3
+				ResistenzBonusKoerper: 4,  // Zwerg: +3, Kämpfer: +1 = 4
+				ResistenzBonusGeist:   3,  // Zwerg: +3, kein Zauberer = 3
 				ResistenzKoerper:      15, // 11 + 4
 				ResistenzGeist:        14, // 11 + 3
 				Abwehr:                11, // 11 + 0
 				Zaubern:               10, // 11 + (-1)
-				Raufen:                7,  // (85+50)/20 + 0 + 1(Zwerge) = 6 + 0 + 1 = 7
+				Raufen:                7,  // (85+50)/20 + 0 + 1(Zwerg) = 6 + 0 + 1 = 7
 			},
 		},
 	}
@@ -103,7 +103,7 @@ func TestCalculateStaticFields_Success(t *testing.T) {
 			require.NoError(t, err)
 
 			// Korrigiere die erwarteten Werte falls nötig
-			if tt.name == "Elfen Magier" {
+			if tt.name == "Elf Magier" {
 				tt.expected.SchadensBonus = 1 // Korrektur: (45/20) + (70/30) - 3 = 2 + 2 - 3 = 1
 			}
 
@@ -142,7 +142,7 @@ func TestCalculateStaticFields_InvalidRequest(t *testing.T) {
 				"in":    50,
 				"zt":    30,
 				"au":    55,
-				"rasse": "Menschen",
+				"rasse": "Mensch",
 				"typ":   "Krieger",
 			},
 		},
@@ -150,14 +150,14 @@ func TestCalculateStaticFields_InvalidRequest(t *testing.T) {
 			name: "Attribut zu hoch",
 			request: CalculateStaticFieldsRequest{
 				St: 150, Gs: 60, Gw: 65, Ko: 75, In: 50, Zt: 30, Au: 55,
-				Rasse: "Menschen", Typ: "Krieger",
+				Rasse: "Mensch", Typ: "Krieger",
 			},
 		},
 		{
 			name: "Attribut zu niedrig",
 			request: CalculateStaticFieldsRequest{
 				St: 0, Gs: 60, Gw: 65, Ko: 75, In: 50, Zt: 30, Au: 55,
-				Rasse: "Menschen", Typ: "Krieger",
+				Rasse: "Mensch", Typ: "Krieger",
 			},
 		},
 	}
@@ -183,7 +183,7 @@ func TestCalculateRolledField_PA(t *testing.T) {
 
 	request := CalculateRolledFieldRequest{
 		St: 70, Gs: 60, Gw: 65, Ko: 75, In: 50, Zt: 30, Au: 55,
-		Rasse: "Menschen", Typ: "Krieger",
+		Rasse: "Mensch", Typ: "Krieger",
 		Field: "pa",
 		Roll:  float64(55),
 	}
@@ -220,7 +220,7 @@ func TestCalculateRolledField_WK(t *testing.T) {
 
 	request := CalculateRolledFieldRequest{
 		St: 70, Gs: 60, Gw: 65, Ko: 75, In: 50, Zt: 30, Au: 55,
-		Rasse: "Menschen", Typ: "Krieger",
+		Rasse: "Mensch", Typ: "Krieger",
 		Field: "wk",
 		Roll:  float64(45),
 	}
@@ -256,9 +256,9 @@ func TestCalculateRolledField_LPMax(t *testing.T) {
 		ko       int
 		expected int
 	}{
-		{"Menschen", "Menschen", 2, 75, 16}, // 2 + 7 + 7 + 0 = 16
-		{"Gnome", "Gnome", 3, 60, 4},        // 3 + 7 + 6 + (-3) = 13
-		{"Zwerge", "Zwerge", 1, 80, 16},     // 1 + 7 + 8 + 1 = 17
+		{"Mensch", "Mensch", 2, 75, 16}, // 2 + 7 + 7 + 0 = 16
+		{"Gnom", "Gnom", 3, 60, 4},      // 3 + 7 + 6 + (-3) = 13
+		{"Zwerg", "Zwerg", 1, 80, 16},   // 1 + 7 + 8 + 1 = 17
 	}
 
 	for _, tt := range tests {
@@ -286,11 +286,11 @@ func TestCalculateRolledField_LPMax(t *testing.T) {
 			// Korrigiere erwartete Werte
 			expectedValue := int(tt.roll) + 7 + (tt.ko / 10)
 			switch tt.rasse {
-			case "Gnome":
+			case "Gnom":
 				expectedValue -= 3
-			case "Halblinge":
+			case "Halbling":
 				expectedValue -= 2
-			case "Zwerge":
+			case "Zwerg":
 				expectedValue += 1
 			}
 
@@ -323,7 +323,7 @@ func TestCalculateRolledField_APMax(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			request := CalculateRolledFieldRequest{
 				St: 70, Gs: 60, Gw: 65, Ko: 75, In: 50, Zt: 30, Au: 55,
-				Rasse: "Menschen", Typ: tt.typ,
+				Rasse: "Mensch", Typ: tt.typ,
 				Field: "ap_max",
 				Roll:  float64(2),
 			}
@@ -360,11 +360,11 @@ func TestCalculateRolledField_BMax(t *testing.T) {
 		baseVal int
 		formula string
 	}{
-		{"Menschen", "Menschen", []interface{}{2.0, 1.0, 3.0, 2.0}, 16, "4d3 + 16"},
-		{"Elfen", "Elfen", []interface{}{2.0, 1.0, 3.0, 2.0}, 16, "4d3 + 16"},
-		{"Gnome", "Gnome", []interface{}{3.0, 1.0}, 8, "2d3 + 8"},
-		{"Halblinge", "Halblinge", []interface{}{2.0, 3.0}, 8, "2d3 + 8"},
-		{"Zwerge", "Zwerge", []interface{}{1.0, 2.0, 3.0}, 12, "3d3 + 12"},
+		{"Mensch", "Mensch", []interface{}{2.0, 1.0, 3.0, 2.0}, 16, "4d3 + 16"},
+		{"Elf", "Elf", []interface{}{2.0, 1.0, 3.0, 2.0}, 16, "4d3 + 16"},
+		{"Gnom", "Gnom", []interface{}{3.0, 1.0}, 8, "2d3 + 8"},
+		{"Halbling", "Halbling", []interface{}{2.0, 3.0}, 8, "2d3 + 8"},
+		{"Zwerg", "Zwerg", []interface{}{1.0, 2.0, 3.0}, 12, "3d3 + 12"},
 	}
 
 	for _, tt := range tests {
@@ -409,7 +409,7 @@ func TestCalculateRolledField_InvalidField(t *testing.T) {
 
 	request := CalculateRolledFieldRequest{
 		St: 70, Gs: 60, Gw: 65, Ko: 75, In: 50, Zt: 30, Au: 55,
-		Rasse: "Menschen", Typ: "Krieger",
+		Rasse: "Mensch", Typ: "Krieger",
 		Field: "invalid_field",
 		Roll:  float64(50),
 	}
@@ -431,7 +431,7 @@ func TestCalculateRolledField_InvalidRoll(t *testing.T) {
 
 	request := CalculateRolledFieldRequest{
 		St: 70, Gs: 60, Gw: 65, Ko: 75, In: 50, Zt: 30, Au: 55,
-		Rasse: "Menschen", Typ: "Krieger",
+		Rasse: "Mensch", Typ: "Krieger",
 		Field: "pa",
 		Roll:  "invalid_roll", // String statt Zahl
 	}

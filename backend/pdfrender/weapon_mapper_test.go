@@ -98,12 +98,18 @@ func TestMapWeapons_WithEWCalculation(t *testing.T) {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	if len(vm.Weapons) != 2 {
-		t.Fatalf("Expected 2 weapons, got %d", len(vm.Weapons))
+	// Expect 3 weapons: Raufen + Langschwert + Langbogen
+	if len(vm.Weapons) != 3 {
+		t.Fatalf("Expected 3 weapons (Raufen + 2 equipped), got %d", len(vm.Weapons))
 	}
 
-	// Test Langschwert
-	sword := vm.Weapons[0]
+	// Check first weapon is Raufen
+	if vm.Weapons[0].Name != "Raufen" {
+		t.Errorf("Expected first weapon to be 'Raufen', got '%s'", vm.Weapons[0].Name)
+	}
+
+	// Test Langschwert (index 1)
+	sword := vm.Weapons[1]
 	if sword.Name != "Langschwert" {
 		t.Errorf("Expected weapon name 'Langschwert', got '%s'", sword.Name)
 	}
@@ -115,8 +121,8 @@ func TestMapWeapons_WithEWCalculation(t *testing.T) {
 		t.Errorf("Expected sword EW >= 14 (skill 12 + weapon bonus 2), got %d", sword.Value)
 	}
 
-	// Test Langbogen
-	bow := vm.Weapons[1]
+	// Test Langbogen (index 2)
+	bow := vm.Weapons[2]
 	if bow.Name != "Langbogen" {
 		t.Errorf("Expected weapon name 'Langbogen', got '%s'", bow.Name)
 	}
@@ -188,11 +194,13 @@ func TestMapWeapons_WithDamageCalculation(t *testing.T) {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	if len(vm.Weapons) != 1 {
-		t.Fatalf("Expected 1 weapon, got %d", len(vm.Weapons))
+	// Expect 2 weapons: Raufen + Langschwert
+	if len(vm.Weapons) != 2 {
+		t.Fatalf("Expected 2 weapons (Raufen + Langschwert), got %d", len(vm.Weapons))
 	}
 
-	sword := vm.Weapons[0]
+	// Check Langschwert (index 1, after Raufen)
+	sword := vm.Weapons[1]
 
 	// Damage should be in format like "1W6+3" where the bonus combines
 	// Character's SchadenBonus (from St=95 -> +1) + Weapon's Schb (2) = +3
@@ -319,11 +327,17 @@ func TestMapWeapons_WithRangedWeaponRanges(t *testing.T) {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	if len(vm.Weapons) != 2 {
-		t.Fatalf("Expected 2 weapons, got %d", len(vm.Weapons))
+	// Expect 3 weapons: Raufen + Langbogen + Kurzschwert
+	if len(vm.Weapons) != 3 {
+		t.Fatalf("Expected 3 weapons (Raufen + 2 equipped), got %d", len(vm.Weapons))
 	}
 
-	// Find the bow
+	// Check first weapon is Raufen
+	if vm.Weapons[0].Name != "Raufen" {
+		t.Errorf("Expected first weapon to be 'Raufen', got '%s'", vm.Weapons[0].Name)
+	}
+
+	// Find the bow and sword
 	var bow *WeaponViewModel
 	var sword *WeaponViewModel
 	for i := range vm.Weapons {

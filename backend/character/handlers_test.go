@@ -126,7 +126,7 @@ func TestImproveSkillHandler(t *testing.T) {
 		// Note: Athletik is now in "Körper" category (lowest ID from learning_skill_category_difficulties)
 		// which has different costs than the previous "Kampf" category
 		expectedResponse := map[string]interface{}{
-			"ep_cost":        float64(0),  // JSON numbers are float64
+			"ep_cost":        float64(0), // JSON numbers are float64
 			"from_level":     float64(9),
 			"gold_cost":      float64(0),
 			"message":        "Fertigkeit erfolgreich verbessert",

@@ -1961,31 +1961,39 @@ func getSkillCreationCost(category string, difficulty string) int {
 
 // GetWeaponSkillsWithLE returns all weapon skills with their learning costs
 func GetWeaponSkillsWithLE() ([]gin.H, error) {
-	// Query weapon skills from gsm_weaponskills table
-	var weaponSkills []struct {
-		ID   uint   `gorm:"column:id"`
-		Name string `gorm:"column:name"`
-	}
+	// Query weapon skills with their difficulty from the WeaponSkillCategoryDifficulty table
+	var weaponSkillDifficulties []models.WeaponSkillCategoryDifficulty
 
-	err := database.DB.Table("gsm_weaponskills").
-		Select("id, name").
-		Where("name IS NOT NULL AND name != ''").
-		Find(&weaponSkills).Error
+	err := database.DB.Preload("WeaponSkill").
+		Preload("SkillDifficulty").
+		Preload("SkillCategory").
+		Find(&weaponSkillDifficulties).Error
 
 	if err != nil {
 		return nil, err
 	}
 
 	var result []gin.H
-	for _, weapon := range weaponSkills {
-		// Get learning cost for this weapon skill
-		// For now, use default costs, but this could be enhanced to query from a learning costs table
-		leCost := getDefaultWeaponSkillCost(weapon.Name)
+	seenWeapons := make(map[string]bool) // Track weapons we've already added
+
+	for _, wscd := range weaponSkillDifficulties {
+		weaponName := wscd.WeaponSkill.Name
+
+		// Skip if we've already added this weapon (avoid duplicates)
+		if seenWeapons[weaponName] {
+			continue
+		}
+		seenWeapons[weaponName] = true
+
+		// Use the category-based creation cost logic for weapons
+		// Weapons are always in the "Waffen" category
+		difficulty := wscd.SkillDifficulty.Name
+		leCost := getSkillCreationCost("Waffen", difficulty)
 
 		skillInfo := gin.H{
-			"name":       weapon.Name,
+			"name":       weaponName,
 			"leCost":     leCost,
-			"difficulty": "Normal", // Default difficulty for weapon skills
+			"difficulty": difficulty,
 			"type":       "weapon", // Mark as weapon skill
 		}
 
@@ -1993,23 +2001,6 @@ func GetWeaponSkillsWithLE() ([]gin.H, error) {
 	}
 
 	return result, nil
-}
-
-// getDefaultWeaponSkillCost returns default learning costs for weapon skills
-func getDefaultWeaponSkillCost(weaponName string) int {
-	// Basic weapon skill costs - these could be made configurable or stored in database
-	switch weaponName {
-	case "Schilde":
-		return 1 // Shields are easier to learn
-	case "Einhandschwerter", "Zweihandschwerter", "Fechtwaffen":
-		return 4 // Sword skills are more expensive
-	case "Bögen", "Armbrüste":
-		return 3 // Ranged weapons
-	case "Spießwaffen", "Stielwurfwaffen":
-		return 2 // Polearms and throwing weapons
-	default:
-		return 2 // Default cost for other weapon skills
-	}
 }
 
 // GetAllSkillsWithLearningCosts returns all skills with their basic learning costs for all possible categories

@@ -1,6 +1,6 @@
 <template>
   <div v-if="isVisible" class="modal-overlay" @click.self="closeDialog">
-    <div class="modal-content modal-wide">
+    <div class="modal-content modal-fullscreen">
       <h3>{{ skill?.name }} verbessern</h3>
       
         <!-- Aktuelle Ressourcen -->

@@ -22,6 +22,18 @@
             {{ $t('landing.github') }}
           </a>
         </div>
+
+        <div class="quick-links">
+          <router-link to="/help" class="quick-link">
+            {{ $t('landing.help') }}
+          </router-link>
+          <router-link to="/sponsors" class="quick-link">
+            {{ $t('landing.sponsors') }}
+          </router-link>
+          <router-link to="/system-info" class="quick-link">
+            {{ $t('landing.systemInfo') }}
+          </router-link>
+        </div>
       </div>
     </div>
   </div>

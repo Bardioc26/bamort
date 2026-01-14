@@ -16,6 +16,8 @@ func TestMiscLookup_TableName(t *testing.T) {
 
 func TestMiscLookup_CreateAndRetrieve(t *testing.T) {
 	database.SetupTestDB()
+	err := models.MigrateStructure()
+	require.NoError(t, err)
 
 	// Create test data
 	testData := []models.MiscLookup{
@@ -45,6 +47,8 @@ func TestMiscLookup_CreateAndRetrieve(t *testing.T) {
 
 func TestGetMiscLookupByKey_NotFound(t *testing.T) {
 	database.SetupTestDB()
+	err := models.MigrateStructure()
+	require.NoError(t, err)
 
 	items, err := GetMiscLookupByKey("nonexistent")
 	require.NoError(t, err)
@@ -53,6 +57,8 @@ func TestGetMiscLookupByKey_NotFound(t *testing.T) {
 
 func TestMiscLookup_WithSourceInfo(t *testing.T) {
 	database.SetupTestDB()
+	err := models.MigrateStructure()
+	require.NoError(t, err)
 
 	misc := models.MiscLookup{
 		Key:        "test_key",
@@ -61,7 +67,7 @@ func TestMiscLookup_WithSourceInfo(t *testing.T) {
 		PageNumber: 42,
 	}
 
-	err := database.DB.Create(&misc).Error
+	err = database.DB.Create(&misc).Error
 	require.NoError(t, err)
 	assert.NotZero(t, misc.ID)
 
@@ -75,20 +81,25 @@ func TestMiscLookup_WithSourceInfo(t *testing.T) {
 	assert.Equal(t, 42, retrieved.PageNumber)
 }
 
-/*
 func TestPopulateMiscLookupData(t *testing.T) {
 	database.SetupTestDB()
 
-	// First population should succeed
-	err := PopulateMiscLookupData()
+	// Migrate the structure first
+	err := models.MigrateStructure()
 	require.NoError(t, err)
+
+	/*
+		// First population should succeed
+		err = PopulateMiscLookupData()
+		require.NoError(t, err)
+	*/
 
 	// Verify all keys have data
 	expectedCounts := map[string]int{
 		"gender":         3,
 		"races":          5,
 		"origins":        15,
-		"social_classes": 3,
+		"social_classes": 4,
 		"faiths":         5,
 		"handedness":     3,
 	}
@@ -111,13 +122,51 @@ func TestPopulateMiscLookupData(t *testing.T) {
 	assert.Contains(t, raceValues, "Mensch")
 	assert.Contains(t, raceValues, "Elf")
 
-	// Second population should not duplicate data
-	err = PopulateMiscLookupData()
-	require.NoError(t, err)
+	/*
+		// Second population should not duplicate data
+		err = PopulateMiscLookupData()
+		require.NoError(t, err)
+	*/
 
 	var totalCount int64
-	err = database.DB.Model(&MiscLookup{}).Count(&totalCount).Error
+	err = database.DB.Model(&models.MiscLookup{}).Count(&totalCount).Error
 	require.NoError(t, err)
-	assert.Equal(t, int64(34), totalCount, "Should not duplicate data on second population")
+	assert.Equal(t, int64(39), totalCount, "Should not duplicate data on second population")
 }
-*/
+
+func TestGetSocialClassBonusPoints(t *testing.T) {
+	database.SetupTestDB()
+	err := models.MigrateStructure()
+	require.NoError(t, err)
+
+	/*
+		// Populate data
+		err = PopulateMiscLookupData()
+		require.NoError(t, err)
+	*/
+
+	// Test Volk bonus
+	bonuses, err := GetSocialClassBonusPoints("Volk")
+	require.NoError(t, err)
+	assert.Equal(t, 2, bonuses["Alltag"])
+
+	// Test Adel bonus
+	bonuses, err = GetSocialClassBonusPoints("Adel")
+	require.NoError(t, err)
+	assert.Equal(t, 2, bonuses["Sozial"])
+
+	// Test Mittelschicht bonus
+	bonuses, err = GetSocialClassBonusPoints("Mittelschicht")
+	require.NoError(t, err)
+	assert.Equal(t, 2, bonuses["Wissen"])
+
+	// Test Unfrei bonus
+	bonuses, err = GetSocialClassBonusPoints("Unfrei")
+	require.NoError(t, err)
+	assert.Equal(t, 2, bonuses["Halbwelt"])
+
+	// Test non-existent social class
+	bonuses, err = GetSocialClassBonusPoints("NonExistent")
+	require.NoError(t, err)
+	assert.Empty(t, bonuses)
+}

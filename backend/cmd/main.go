@@ -62,7 +62,7 @@ func main() {
 	/*
 		// Populate initial misc lookup data
 		logger.Debug("Initialisiere Misc-Lookup-Daten...")
-		if err := models.PopulateMiscLookupData(); err != nil {
+		if err := gsmaster.PopulateMiscLookupData(); err != nil {
 			logger.Warn("Fehler beim Initialisieren der Misc-Lookup-Daten: %s", err.Error())
 		} else {
 			logger.Info("Misc-Lookup-Daten erfolgreich initialisiert")

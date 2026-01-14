@@ -3293,19 +3293,13 @@ func getLearningPointsForClass(className string, stand string) (*LearningPointsD
 }
 
 // getStandBonusPoints gibt die Bonus-Lernpunkte basierend auf dem Stand zurück
-func getStandBonusPoints(stand string) map[string]int {
-	switch stand {
-	case "Unfreie":
-		return map[string]int{"Halbwelt": 2}
-	case "Volk":
-		return map[string]int{"Alltag": 2}
-	case "Mittelschicht":
-		return map[string]int{"Wissen": 2}
-	case "Adel":
-		return map[string]int{"Sozial": 2}
-	default:
+func getStandBonusPoints(social_class string) map[string]int {
+	bonusPoints, err := gsmaster.GetSocialClassBonusPoints(social_class)
+	if err != nil {
+		logger.Warn("Fehler beim Laden der Stand-Bonuspunkte: %s", err.Error())
 		return make(map[string]int)
 	}
+	return bonusPoints
 }
 
 // GetDatasheetOptions returns all available options for datasheet select boxes

@@ -211,6 +211,7 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 		&models.SkillCategory{},
 		&models.SkillDifficulty{},
 		&models.SpellSchool{},
+		&models.MiscLookup{},
 
 		// Learning Costs System - Abhängige Tabellen
 		&models.ClassCategoryEPCost{},

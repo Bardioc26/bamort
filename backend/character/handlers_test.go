@@ -998,7 +998,7 @@ func TestGetDatasheetOptions(t *testing.T) {
 
 	/*
 		// Populate misc lookup data
-		err = models.PopulateMiscLookupData()
+		err = gsmaster.PopulateMiscLookupData()
 		assert.NoError(t, err)
 	*/
 

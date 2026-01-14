@@ -3,6 +3,8 @@ package gsmaster
 import (
 	"bamort/database"
 	"bamort/models"
+	"fmt"
+	"strings"
 )
 
 // GetMiscLookupByKey retrieves all values for a given key
@@ -47,7 +49,7 @@ func PopulateMiscLookupData() error {
 		},
 		{
 			key:    "social_classes",
-			values: []string{"Volk", "Mittelschicht", "Adel"},
+			values: []string{"Unfrei", "Volk", "Mittelschicht", "Adel"},
 		},
 		{
 			key:    "faiths",
@@ -57,14 +59,19 @@ func PopulateMiscLookupData() error {
 			key:    "handedness",
 			values: []string{"rechts", "links", "beidhändig"},
 		},
+		{
+			key:    "social_class_bonus",
+			values: []string{"Unfrei|Halbwelt|2", "Volk|Alltag|2", "Mittelschicht|Wissen|2", "Adel|Sozial|2"},
+		},
 	}
 
 	// Insert data
 	for _, item := range initialData {
 		for _, value := range item.values {
 			misc := models.MiscLookup{
-				Key:   item.key,
-				Value: value,
+				Key:      item.key,
+				Value:    value,
+				SourceID: 1,
 			}
 			if err := database.DB.Create(&misc).Error; err != nil {
 				return err
@@ -75,3 +82,25 @@ func PopulateMiscLookupData() error {
 	return nil
 }
 */
+
+// GetSocialClassBonusPoints retrieves bonus learning points for a social class from database
+func GetSocialClassBonusPoints(socialClass string) (map[string]int, error) {
+	bonuses, err := GetMiscLookupByKey("social_class_bonus")
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]int)
+	for _, bonus := range bonuses {
+		// Parse format: "SocialClass|Category|Points"
+		parts := strings.Split(bonus.Value, "|")
+		if len(parts) == 3 && parts[0] == socialClass {
+			category := parts[1]
+			points := 0
+			fmt.Sscanf(parts[2], "%d", &points)
+			result[category] = points
+		}
+	}
+
+	return result, nil
+}

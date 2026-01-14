@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import API from '../utils/api'
+import { i18n } from './languageStore'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -21,6 +22,12 @@ export const useUserStore = defineStore('user', {
       try {
         const response = await API.get('/api/user/profile')
         this.currentUser = response.data
+        
+        // Set user's preferred language
+        if (response.data.preferred_language) {
+          i18n.global.locale.value = response.data.preferred_language
+          localStorage.setItem('language', response.data.preferred_language)
+        }
       } catch (error) {
         console.error('Failed to fetch user profile:', error)
         this.currentUser = null

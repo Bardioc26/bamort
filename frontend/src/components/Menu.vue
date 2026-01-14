@@ -41,32 +41,36 @@
     </ul>
     
     <div class="menu-right">
-      <LanguageSwitcher />
-      <router-link v-if="isLoggedIn" to="/profile" active-class="active" class="profile-link">
-        {{ $t('menu.Profile') }}
-      </router-link>
-      <button v-if="isLoggedIn" @click="logout" class="logout-btn">{{ $t('menu.Logout') }}</button>
+      <!-- User Dropdown (only when logged in) -->
+      <div v-if="isLoggedIn" class="dropdown user-dropdown" @mouseenter="openMenu('user')" @mouseleave="closeMenu('user')">
+        <span class="dropdown-trigger user-icon" title="User Menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </span>
+        <ul v-show="showUserMenu" class="dropdown-menu user-menu" @mouseenter="openMenu('user')" @mouseleave="closeMenu('user')">
+          <li><router-link to="/profile" @click="closeAllMenus">{{ $t('menu.Profile') }}</router-link></li>
+          <li><a href="#" @click.prevent="logout">{{ $t('menu.Logout') }}</a></li>
+        </ul>
+      </div>
     </div>
   </nav>
 </template>
 
 <script>
 import { isLoggedIn, logout } from "../utils/auth";
-import LanguageSwitcher from "./LanguageSwitcher.vue";
 import { useUserStore } from "../stores/userStore";
 
 
 export default {
   name: "Menu",
-  components: {
-    LanguageSwitcher,
-  },
   data() {
     return {
       userStore: null,
       showInfoMenu: false,
       showCharMenu: false,
       showAdminMenu: false,
+      showUserMenu: false,
       closeTimeout: null
     }
   },
@@ -104,6 +108,7 @@ export default {
       if (menu === 'info') this.showInfoMenu = true
       if (menu === 'char') this.showCharMenu = true
       if (menu === 'admin') this.showAdminMenu = true
+      if (menu === 'user') this.showUserMenu = true
     },
     closeMenu(menu) {
       // Delay closing to allow mouse to move to submenu
@@ -111,12 +116,14 @@ export default {
         if (menu === 'info') this.showInfoMenu = false
         if (menu === 'char') this.showCharMenu = false
         if (menu === 'admin') this.showAdminMenu = false
+        if (menu === 'user') this.showUserMenu = false
       }, 200)
     },
     closeAllMenus() {
       this.showInfoMenu = false
       this.showCharMenu = false
       this.showAdminMenu = false
+      this.showUserMenu = false
     },
     logout() {
       logout();

@@ -602,7 +602,7 @@ func TestGetUserProfileWithLanguage(t *testing.T) {
 
 	t.Run("Success - Profile includes preferred language", func(t *testing.T) {
 		testUser := createTestUser(t, "langprofileuser", "password123", "langprofile@test.com")
-		
+
 		// Set language to en
 		testUser.PreferredLanguage = "en"
 		err := testUser.Save()
@@ -640,7 +640,7 @@ func TestGetUserProfileWithLanguage(t *testing.T) {
 		var response map[string]interface{}
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		assert.NoError(t, err)
-		
+
 		// Check that preferred_language is present and defaults to "de"
 		lang, ok := response["preferred_language"]
 		assert.True(t, ok, "preferred_language should be present in response")
@@ -652,4 +652,3 @@ func TestGetUserProfileWithLanguage(t *testing.T) {
 		}
 	})
 }
-

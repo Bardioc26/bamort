@@ -3307,3 +3307,128 @@ func getStandBonusPoints(stand string) map[string]int {
 		return make(map[string]int)
 	}
 }
+
+// GetDatasheetOptions returns all available options for datasheet select boxes
+func GetDatasheetOptions(c *gin.Context) {
+	logger.Debug("GetDatasheetOptions aufgerufen")
+
+	characterID := c.Param("id")
+
+	// Load character to get their weapon skills
+	var character models.Char
+	err := character.FirstID(characterID)
+	if err != nil {
+		logger.Error("GetDatasheetOptions: Charakter nicht gefunden - ID: %s, Error: %s", characterID, err.Error())
+		respondWithError(c, http.StatusNotFound, "Character not found")
+		return
+	}
+
+	// Get all available weapons from database
+	var allWeapons []models.Weapon
+	if err := database.DB.Find(&allWeapons).Error; err != nil {
+		logger.Error("GetDatasheetOptions: Fehler beim Laden der Waffen: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to load weapons")
+		return
+	}
+
+	// Filter weapons based on character's weapon skills
+	characterWeaponSkills := make(map[string]bool)
+	for _, skill := range character.Waffenfertigkeiten {
+		characterWeaponSkills[skill.Name] = true
+	}
+
+	availableWeapons := []string{}
+	for _, weapon := range allWeapons {
+		if characterWeaponSkills[weapon.SkillRequired] {
+			availableWeapons = append(availableWeapons, weapon.Name)
+		}
+	}
+
+	// Load misc lookup data from database
+	genders, err := gsmaster.GetMiscLookupByKey("gender")
+	if err != nil {
+		logger.Error("GetDatasheetOptions: Fehler beim Laden der Geschlechter: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to load genders")
+		return
+	}
+
+	races, err := gsmaster.GetMiscLookupByKey("races")
+	if err != nil {
+		logger.Error("GetDatasheetOptions: Fehler beim Laden der Rassen: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to load races")
+		return
+	}
+
+	origins, err := gsmaster.GetMiscLookupByKey("origins")
+	if err != nil {
+		logger.Error("GetDatasheetOptions: Fehler beim Laden der Herkünfte: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to load origins")
+		return
+	}
+
+	socialClasses, err := gsmaster.GetMiscLookupByKey("social_classes")
+	if err != nil {
+		logger.Error("GetDatasheetOptions: Fehler beim Laden der Stände: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to load social classes")
+		return
+	}
+
+	faiths, err := gsmaster.GetMiscLookupByKey("faiths")
+	if err != nil {
+		logger.Error("GetDatasheetOptions: Fehler beim Laden der Glaubensrichtungen: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to load faiths")
+		return
+	}
+
+	handedness, err := gsmaster.GetMiscLookupByKey("handedness")
+	if err != nil {
+		logger.Error("GetDatasheetOptions: Fehler beim Laden der Händigkeiten: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to load handedness")
+		return
+	}
+
+	// Convert to string arrays
+	genderValues := make([]string, len(genders))
+	for i, g := range genders {
+		genderValues[i] = g.Value
+	}
+
+	raceValues := make([]string, len(races))
+	for i, r := range races {
+		raceValues[i] = r.Value
+	}
+
+	originValues := make([]string, len(origins))
+	for i, o := range origins {
+		originValues[i] = o.Value
+	}
+
+	socialClassValues := make([]string, len(socialClasses))
+	for i, sc := range socialClasses {
+		socialClassValues[i] = sc.Value
+	}
+
+	faithValues := make([]string, len(faiths))
+	for i, f := range faiths {
+		faithValues[i] = f.Value
+	}
+
+	handednessValues := make([]string, len(handedness))
+	for i, h := range handedness {
+		handednessValues[i] = h.Value
+	}
+
+	// Return all options
+	options := gin.H{
+		"gender":          genderValues,
+		"races":           raceValues,
+		"origins":         originValues,
+		"social_classes":  socialClassValues,
+		"faiths":          faithValues,
+		"handedness":      handednessValues,
+		"specializations": availableWeapons,
+	}
+
+	logger.Debug("GetDatasheetOptions: Erfolgreich geladen - %d verfügbare Waffen", len(availableWeapons))
+	c.JSON(http.StatusOK, options)
+}

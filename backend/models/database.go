@@ -61,6 +61,7 @@ func gsMasterMigrateStructure(db ...*gorm.DB) error {
 		&Container{},
 		&Transportation{},
 		&Believe{},
+		&MiscLookup{},
 	)
 	if err != nil {
 		return err

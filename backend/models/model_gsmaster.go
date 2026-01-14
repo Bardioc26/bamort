@@ -128,6 +128,15 @@ type Believe struct {
 	PageNumber   int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
 }
 
+// MiscLookup represents miscellaneous lookup values like gender, race, origin, etc.
+type MiscLookup struct {
+	ID         uint   `gorm:"primaryKey" json:"id"`
+	Key        string `gorm:"column:key;type:varchar(50);index;not null" json:"key"`
+	Value      string `gorm:"type:varchar(255);not null" json:"value"`
+	SourceID   uint   `json:"source_id,omitempty"`
+	PageNumber int    `json:"page_number,omitempty"`
+}
+
 func (object *Skill) TableName() string {
 	dbPrefix := "gsm"
 	return dbPrefix + "_" + "skills"
@@ -668,4 +677,9 @@ func GetBelievesByActiveSources(gameSystem string) ([]Believe, error) {
 		Order("gsm_believes.name ASC").
 		Find(&believes).Error
 	return believes, err
+}
+
+// TableName specifies the table name for MiscLookup
+func (MiscLookup) TableName() string {
+	return "gsm_misc"
 }

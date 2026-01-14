@@ -49,7 +49,9 @@
               @dblclick="startEditProp('gender', character.gender)"
               class="editable-prop"
             >{{ character.gender || 'x' }}</span>
-            <input v-else v-model="editPropValue" @blur="saveProp('gender')" @keyup.enter="saveProp('gender')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input" />
+            <select v-else v-model="editPropValue" @blur="saveProp('gender')" @keyup.enter="saveProp('gender')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input">
+              <option v-for="option in getSelectOptions('gender')" :key="option" :value="option">{{ option }}</option>
+            </select>
             ),
             Grad:  
             <span 
@@ -64,21 +66,27 @@
               @dblclick="startEditProp('rasse', character.rasse)"
               class="editable-prop"
             >{{ character.rasse || 'x' }}</span>
-            <input v-else v-model="editPropValue" @blur="saveProp('rasse')" @keyup.enter="saveProp('rasse')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input" />,
+            <select v-else v-model="editPropValue" @blur="saveProp('rasse')" @keyup.enter="saveProp('rasse')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input">
+              <option v-for="option in getSelectOptions('rasse')" :key="option" :value="option">{{ option }}</option>
+            </select>,
             Heimat: 
             <span 
               v-if="editingProp !== 'origin'" 
               @dblclick="startEditProp('origin', character.origin)"
               class="editable-prop"
             >{{ character.origin || '-' }}</span>
-            <input v-else v-model="editPropValue" @blur="saveProp('origin')" @keyup.enter="saveProp('origin')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input" />,
+            <select v-else v-model="editPropValue" @blur="saveProp('origin')" @keyup.enter="saveProp('origin')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input">
+              <option v-for="option in getSelectOptions('origin')" :key="option" :value="option">{{ option }}</option>
+            </select>,
             Stand:  
             <span 
               v-if="editingProp !== 'social_class'" 
               @dblclick="startEditProp('social_class', character.social_class)"
               class="editable-prop"
             >{{ character.social_class || '-' }}</span>
-            <input v-else v-model="editPropValue" @blur="saveProp('social_class')" @keyup.enter="saveProp('social_class')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input" />.
+            <select v-else v-model="editPropValue" @blur="saveProp('social_class')" @keyup.enter="saveProp('social_class')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input">
+              <option v-for="option in getSelectOptions('social_class')" :key="option" :value="option">{{ option }}</option>
+            </select>.
           </p>
           <p v-if="character.rasse==='Zwerg'">
             Hort für Grad {{ character.grad || 'x' }}: 125 GS, für nächsten Grad: 250 GS.
@@ -90,7 +98,10 @@
               @dblclick="startEditProp('spezialisierung', character.spezialisierung)"
               class="editable-prop"
             >{{ character.spezialisierung || '-' }}</span>
-            <input v-else v-model="editPropValue" @blur="saveProp('spezialisierung')" @keyup.enter="saveProp('spezialisierung')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input" />.
+            <select v-else v-model="editPropValue" @blur="saveProp('spezialisierung')" @keyup.enter="saveProp('spezialisierung')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input" style="width: 300px;">
+              <option value="">-</option>
+              <option v-for="option in getSelectOptions('spezialisierung')" :key="option" :value="option">{{ option }}</option>
+            </select>.
           </p>
           <p>
             Alter: 
@@ -105,7 +116,9 @@
               <span v-else-if="character.hand=='links'">Linkshänder</span>
               <span v-else>Beidhändig</span>
             </strong>
-            <input v-else v-model="editPropValue" @blur="saveProp('hand')" @keyup.enter="saveProp('hand')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input" />,
+            <select v-else v-model="editPropValue" @blur="saveProp('hand')" @keyup.enter="saveProp('hand')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input">
+              <option v-for="option in getSelectOptions('hand')" :key="option" :value="option">{{ option }}</option>
+            </select>,
             Größe: 
             <span 
               v-if="editingProp !== 'groesse'" 
@@ -154,7 +167,9 @@
               @dblclick="startEditProp('glaube', character.glaube)"
               class="editable-prop"
             >{{ character.glaube || '-' }}</span>
-            <input v-else v-model="editPropValue" @blur="saveProp('glaube')" @keyup.enter="saveProp('glaube')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input" />
+            <select v-else v-model="editPropValue" @blur="saveProp('glaube')" @keyup.enter="saveProp('glaube')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input">
+              <option v-for="option in getSelectOptions('glaube')" :key="option" :value="option">{{ option }}</option>
+            </select>
           </p>
           <p>
             <strong>Merkmale:</strong> 
@@ -208,6 +223,7 @@ export default {
       editingProp: null,
       editPropValue: '',
       editPropType: 'text',
+      datasheetOptions: null,
       characterStats: [
         { label: 'stats.strength', path: 'eigenschaften.6.value' },
         { label: 'stats.dexterity', path: 'eigenschaften.1.value' },
@@ -228,6 +244,17 @@ export default {
     }
   },
   methods: {
+    async loadDatasheetOptions() {
+      if (this.datasheetOptions) return
+      
+      try {
+        const response = await API.get(`/api/characters/${this.character.id}/datasheet-options`)
+        this.datasheetOptions = response.data
+      } catch (error) {
+        console.error('Failed to load datasheet options:', error)
+        alert('Fehler beim Laden der Auswahloptionen')
+      }
+    },
     handleImageUpdate(newImage) {
       this.$emit('character-updated')
     },
@@ -283,6 +310,13 @@ export default {
       this.editValue = ''
     },
     startEditProp(prop, value, type = 'text') {
+      // Load options if this is a select field
+      const selectFields = ['gender', 'rasse', 'origin', 'social_class', 'glaube', 'hand', 'spezialisierung']
+      if (selectFields.includes(prop)) {
+        this.loadDatasheetOptions()
+        type = 'select'
+      }
+      
       this.editingProp = prop
       this.editPropValue = value || ''
       this.editPropType = type
@@ -291,7 +325,9 @@ export default {
           const input = Array.isArray(this.$refs.propInput) ? this.$refs.propInput[0] : this.$refs.propInput
           if (input) {
             input.focus()
-            input.select()
+            if (type !== 'select') {
+              input.select()
+            }
           }
         }
       })
@@ -330,6 +366,21 @@ export default {
         alert('Fehler beim Speichern: ' + (error.response?.data?.error || error.message))
         this.cancelEditProp()
       }
+    },
+    getSelectOptions(prop) {
+      if (!this.datasheetOptions) return []
+      
+      const optionMap = {
+        'gender': 'gender',
+        'rasse': 'races',
+        'origin': 'origins',
+        'social_class': 'social_classes',
+        'glaube': 'faiths',
+        'hand': 'handedness',
+        'spezialisierung': 'specializations'
+      }
+      
+      return this.datasheetOptions[optionMap[prop]] || []
     },
     cancelEditProp() {
       this.editingProp = null

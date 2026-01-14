@@ -566,6 +566,7 @@ func SetupCheckDev(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Setup Check OK"})
 }
 
+/*
 // PopulateClassLearningPoints populates the class learning points tables from hardcoded data
 func PopulateClassLearningPoints(c *gin.Context) {
 	logger.Info("Starte Population der Class Learning Points Daten...")
@@ -580,6 +581,7 @@ func PopulateClassLearningPoints(c *gin.Context) {
 	logger.Info("Class Learning Points erfolgreich populiert")
 	c.JSON(http.StatusOK, gin.H{"message": "Class learning points data populated successfully"})
 }
+*/
 
 func ReconnectDataBase(c *gin.Context) {
 	logger.Info("Führe Datenbank-Reconnect durch...")

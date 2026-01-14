@@ -8,9 +8,29 @@ import (
 )
 
 // GetMiscLookupByKey retrieves all values for a given key
-func GetMiscLookupByKey(key string) ([]models.MiscLookup, error) {
+// Optional order parameter can be: "id", "value", "source", "source_value"
+// Default is "value" if not specified or invalid
+func GetMiscLookupByKey(key string, order ...string) ([]models.MiscLookup, error) {
 	var items []models.MiscLookup
-	err := database.DB.Where("`key` = ?", key).Order("value ASC").Find(&items).Error
+
+	// Determine ordering
+	orderBy := "value ASC"
+	if len(order) > 0 && order[0] != "" {
+		switch order[0] {
+		case "id":
+			orderBy = "id ASC"
+		case "value":
+			orderBy = "value ASC"
+		case "source":
+			orderBy = "source_id ASC, value ASC"
+		case "source_value":
+			orderBy = "source_id ASC, value ASC"
+		default:
+			orderBy = "value ASC"
+		}
+	}
+
+	err := database.DB.Where("`key` = ?", key).Order(orderBy).Find(&items).Error
 	return items, err
 }
 

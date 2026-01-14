@@ -1,10 +1,6 @@
 package models
 
-import (
-	"bamort/database"
-	"fmt"
-)
-
+/*
 // PopulateClassLearningPointsData inserts all hardcoded learning points data into the database
 func PopulateClassLearningPointsData() error {
 	// Define all character class learning data
@@ -408,3 +404,4 @@ func PopulateClassLearningPointsData() error {
 
 	return nil
 }
+*/

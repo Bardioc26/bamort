@@ -21,11 +21,13 @@ func TestGetCharacterClassLearningPoints(t *testing.T) {
 		t.Fatalf("Failed to migrate structures: %v", err)
 	}
 
-	// Populate test data (character classes and learning points)
-	if err := models.PopulateClassLearningPointsData(); err != nil {
-		t.Logf("Warning: Failed to populate learning points data: %v", err)
-		// Continue anyway - some tests may still work
-	}
+	/*
+		// Populate test data (character classes and learning points)
+		if err := models.PopulateClassLearningPointsData(); err != nil {
+			t.Logf("Warning: Failed to populate learning points data: %v", err)
+			// Continue anyway - some tests may still work
+		}
+	*/
 
 	// Setup Gin in test mode
 	gin.SetMode(gin.TestMode)
@@ -227,10 +229,12 @@ func TestGetLearningPointsForClass(t *testing.T) {
 		t.Fatalf("Failed to migrate structures: %v", err)
 	}
 
-	// Populate test data
-	if err := models.PopulateClassLearningPointsData(); err != nil {
-		t.Logf("Warning: Failed to populate learning points data: %v", err)
-	}
+	/*
+		// Populate test data
+		if err := models.PopulateClassLearningPointsData(); err != nil {
+			t.Logf("Warning: Failed to populate learning points data: %v", err)
+		}
+	*/
 
 	tests := []struct {
 		name          string
@@ -403,10 +407,12 @@ func TestAllCharacterClassesAreDefined(t *testing.T) {
 		t.Fatalf("Failed to migrate structures: %v", err)
 	}
 
-	// Populate test data
-	if err := models.PopulateClassLearningPointsData(); err != nil {
-		t.Logf("Warning: Failed to populate learning points data: %v", err)
-	}
+	/*
+		// Populate test data
+		if err := models.PopulateClassLearningPointsData(); err != nil {
+			t.Logf("Warning: Failed to populate learning points data: %v", err)
+		}
+	*/
 
 	expectedClasses := []string{
 		"Assassine", "Barbar", "Glücksritter", "Händler", "Krieger", "Spitzbube", "Waldläufer",

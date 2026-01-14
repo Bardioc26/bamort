@@ -32,7 +32,7 @@ const routes = [
   { path: "/users", name: "UserManagement", component: UserManagementView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: "/ausruestung/:characterId", name: "Ausruestung", component: AusruestungView, meta: { requiresAuth: true } },
   { path: "/maintenance", name: "Maintenance", component: MaintenanceView, meta: { requiresAuth: true } },
-  { path: "/upload", name: "FileUpload", component: FileUploadPage },
+  { path: "/upload", name: "FileUpload", component: FileUploadPage, meta: { requiresAuth: true } },
   { path: "/sponsors", name: "Sponsors", component: SponsorsView },
   { path: "/help", name: "Help", component: HelpView },
   { path: "/system-info", name: "SystemInfo", component: SystemInfoView },

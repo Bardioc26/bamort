@@ -706,15 +706,17 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 /* All common styles moved to main.css */
 
 .fullwidth-page {
+  /*
   padding: 0 !important;
   margin: 0 !important;
   width: 100vw !important;
   max-width: 100vw !important;
   box-sizing: border-box !important;
+  */
 }
 
 .page-header {

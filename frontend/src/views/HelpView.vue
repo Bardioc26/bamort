@@ -1,10 +1,10 @@
 <template>
   <div class="fullwidth-page">
-    <div class="page-header">
+    <div class="page-header" style="flex-direction: row;">
       <button @click="$router.back()" class="btn btn-secondary back-button">
         ← {{ $t('common.back') }}
       </button>
-      <h2>{{ $t('help.title') }}</h2>
+      <h2 style="padding-top: 8px; padding-left: 10px;">{{ $t('help.title') }}</h2>
     </div>
 
     <div class="card">

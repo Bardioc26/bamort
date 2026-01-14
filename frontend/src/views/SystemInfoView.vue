@@ -66,8 +66,8 @@
         <ul>
           <li>Docker</li>
           <li>Docker Compose</li>
-          <li>Air (Hot Reload)</li>
-          <li>phpMyAdmin</li>
+          <li>Air (Hot Reload) in Entwicklungsumgebung</li>
+          <!-- <li>phpMyAdmin</li> -->
         </ul>
       </div>
     </div>
@@ -99,6 +99,9 @@
         <a :href="githubUrl" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
           {{ $t('systemInfo.github') }}
         </a>
+        <a :href="koFiUrl" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+          {{ $t('sponsors.koFi') }}
+        </a>
       </div>
     </div>
   </div>
@@ -116,7 +119,8 @@ export default {
       frontendCommit: getGitCommit(),
       backendVersion: "Loading...",
       backendCommit: "Loading...",
-      githubUrl: "https://github.com/Bardioc26/bamort"
+      githubUrl: "https://github.com/Bardioc26/bamort",
+      koFiUrl: "https://ko-fi.com/bardioc26",
     }
   },
   computed: {

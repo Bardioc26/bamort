@@ -81,6 +81,9 @@
         <a :href="githubUrl" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
           {{ $t('help.github') }}
         </a>
+        <a :href="koFiUrl" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+          {{ $t('sponsors.koFi') }}
+        </a>
       </div>
     </div>
   </div>
@@ -92,6 +95,7 @@ export default {
   data() {
     return {
       githubUrl: "https://github.com/Bardioc26/bamort",
+      koFiUrl: "https://ko-fi.com/bardioc26",
       faqs: []
     }
   },

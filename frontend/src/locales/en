@@ -6,6 +6,21 @@ export default {
     next: 'Weiter',
     back: 'Back'
   },
+  auth: {
+    login: 'Login',
+    register: 'Register',
+    username: 'Username',
+    email: 'Email',
+    password: 'Password',
+    confirmPassword: 'Confirm Password',
+    passwordsDontMatch: 'Passwords do not match.',
+    registrationSuccess: 'Registration successful!',
+    registrationFailed: 'Registration failed.',
+    alreadyHaveAccount: 'Already have an account?',
+    loginHere: 'Login here',
+    dontHaveAccount: "Don't have an account?",
+    registerHere: 'Register here'
+  },
   DatasheetView:'Datasheet',
   SkillView: 'Skills',
   WeaponView: 'Weapons',

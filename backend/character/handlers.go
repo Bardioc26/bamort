@@ -2861,12 +2861,15 @@ func FinalizeCharacterCreation(c *gin.Context) {
 		BamortBase: models.BamortBase{
 			Name: session.Name,
 		},
-		UserID: userID,
-		Rasse:  session.Rasse,
-		Typ:    session.Typ,
-		Glaube: session.Glaube,
-		Public: false, // Default to private
-		Grad:   1,     // Default starting grade
+		UserID:      userID,
+		Rasse:       session.Rasse,
+		Typ:         session.Typ,
+		Gender:      session.Geschlecht,
+		SocialClass: session.Stand,
+		Herkunft:    session.Herkunft,
+		Glaube:      session.Glaube,
+		Public:      false, // Default to private
+		Grad:        1,     // Default starting grade
 
 		// Static derived values (can increase with grade)
 		ResistenzKoerper: session.DerivedValues.ResistenzKoerper,

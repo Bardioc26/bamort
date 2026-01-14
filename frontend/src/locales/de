@@ -21,6 +21,18 @@ export default {
     dontHaveAccount: 'Noch kein Konto?',
     registerHere: 'Hier registrieren'
   },
+  import: {
+    title: 'Daten importieren',
+    description: 'Laden Sie Charakterdaten aus VTT- oder CSV-Dateien hoch.',
+    charVTT: 'Charakter VTT',
+    charCSV: 'Charakter CSV (optional)',
+    vttHelp: 'JSON- oder CSV-Datei mit Charakterdaten',
+    csvHelp: 'Optionale CSV-Datei mit zusätzlichen Daten',
+    upload: 'Hochladen',
+    invalidFileType: 'Ungültiger Dateityp. Nur .csv und .json Dateien sind erlaubt.',
+    uploadSuccess: 'Dateien erfolgreich hochgeladen!',
+    uploadFailed: 'Fehler beim Hochladen der Dateien.'
+  },
   DatasheetView:'Datenblatt',
   SkillView: 'Fertigkeiten',
   WeaponView: 'Waffen',

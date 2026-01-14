@@ -95,26 +95,23 @@ export default {
   data() {
     return {
       githubUrl: "https://github.com/Bardioc26/bamort",
-      koFiUrl: "https://ko-fi.com/bardioc26",
-      faqs: []
+      koFiUrl: "https://ko-fi.com/bardioc26"
     }
   },
-  created() {
-    // Populate FAQs with translations
-    this.faqs = [
-      {
-        question: this.$t('help.faq1Question'),
-        answer: this.$t('help.faq1Answer')
-      },
-      {
-        question: this.$t('help.faq2Question'),
-        answer: this.$t('help.faq2Answer')
-      },
-      {
-        question: this.$t('help.faq3Question'),
-        answer: this.$t('help.faq3Answer')
+  computed: {
+    faqs() {
+      const faqs = []
+      let i = 1
+      // Dynamically load FAQs until we can't find any more
+      while (this.$te(`help.faq${i}.question`)) {
+        faqs.push({
+          question: this.$t(`help.faq${i}.question`),
+          answer: this.$t(`help.faq${i}.answer`)
+        })
+        i++
       }
-    ]
+      return faqs
+    }
   }
 }
 </script>

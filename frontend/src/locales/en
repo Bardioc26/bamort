@@ -636,12 +636,27 @@ export default {
     featureImport: 'Data Import',
     featureImportText: 'Import characters from other formats or export your data.',
     faq: 'Frequently Asked Questions',
-    faq1Question: 'How do I create a new character?',
-    faq1Answer: 'Go to the dashboard and click "Create New Character". Follow the steps for character creation.',
-    faq2Question: 'Can I share my characters with others?',
-    faq2Answer: 'Currently, character sharing is not implemented. This feature is planned for a future version.',
-    faq3Question: 'How can I report bugs?',
-    faq3Answer: 'You can report bugs on the GitHub project page as an issue. We appreciate detailed bug reports!',
+    faqCount: 5,
+    faq1: {
+      question: 'How do I create a new character?',
+      answer: 'Go to the dashboard and click "Create New Character". Follow the steps for character creation. You can return to the dashboard at any time, your progress is automatically saved and can be continued later.'
+    },
+    faq2: {
+      question: 'Can I share my characters with others?',
+      answer: 'Currently, character sharing and cloning is not implemented. These features are planned for a future version.'
+    },
+    faq3: {
+      question: 'How can I report bugs?',
+      answer: 'You can report bugs on the GitHub project page as an issue. We appreciate detailed bug reports!'
+    },
+    faq4: {
+      question: 'How does character creation work?',
+      answer: 'Character creation is based on the Midgard rule system. Choose race, gender, and class, then distribute your attribute values. The system automatically calculates all derived values.'
+    },
+    faq5: {
+      question: 'Is my data saved?',
+      answer: 'Yes, all character data is automatically saved in the database. You can return to your characters at any time and continue editing them.'
+    },
     support: 'Support',
     supportText: 'Need more help? Visit the GitHub repository for documentation, to report issues, or ask questions.',
     github: 'Project on GitHub'

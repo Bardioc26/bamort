@@ -274,6 +274,14 @@ type ExportableClassTypicalSpell struct {
 	Notes       string `json:"notes,omitempty"`
 }
 
+// ExportableMiscLookup represents miscellaneous lookup values for export
+type ExportableMiscLookup struct {
+	Key        string `json:"key"`
+	Value      string `json:"value"`
+	SourceCode string `json:"source_code"`
+	PageNumber int    `json:"page_number"`
+}
+
 // ExportSkills exports all skills to a JSON file
 func ExportSkills(outputDir string) error {
 	var skills []models.Skill
@@ -2101,6 +2109,69 @@ func ImportClassTypicalSpells(inputDir string) error {
 	return nil
 }
 
+// ExportMiscLookups exports miscellaneous lookup values to a JSON file
+func ExportMiscLookups(outputDir string) error {
+	var lookups []models.MiscLookup
+	if err := database.DB.Find(&lookups).Error; err != nil {
+		return fmt.Errorf("failed to fetch misc lookups: %w", err)
+	}
+
+	sourceMap := buildSourceMap()
+
+	exportable := make([]ExportableMiscLookup, len(lookups))
+	for i, lookup := range lookups {
+		exportable[i] = ExportableMiscLookup{
+			Key:        lookup.Key,
+			Value:      lookup.Value,
+			SourceCode: sourceMap[lookup.SourceID],
+			PageNumber: lookup.PageNumber,
+		}
+	}
+
+	return writeJSON(filepath.Join(outputDir, "misc_lookups.json"), exportable)
+}
+
+// ImportMiscLookups imports miscellaneous lookup values from a JSON file
+func ImportMiscLookups(inputDir string) error {
+	var exportable []ExportableMiscLookup
+	if err := readJSON(filepath.Join(inputDir, "misc_lookups.json"), &exportable); err != nil {
+		return err
+	}
+
+	sourceMap := buildSourceMapReverse()
+
+	for _, exp := range exportable {
+		var lookup models.MiscLookup
+		result := database.DB.Where("key = ?", exp.Key).First(&lookup)
+
+		sourceID := sourceMap[exp.SourceCode]
+
+		if result.Error == gorm.ErrRecordNotFound {
+			lookup = models.MiscLookup{
+				Key:        exp.Key,
+				Value:      exp.Value,
+				SourceID:   sourceID,
+				PageNumber: exp.PageNumber,
+			}
+			if err := database.DB.Create(&lookup).Error; err != nil {
+				return fmt.Errorf("failed to create misc lookup %s: %w", exp.Key, err)
+			}
+		} else if result.Error != nil {
+			return fmt.Errorf("failed to query misc lookup %s: %w", exp.Key, result.Error)
+		} else {
+			lookup.Value = exp.Value
+			lookup.SourceID = sourceID
+			lookup.PageNumber = exp.PageNumber
+
+			if err := database.DB.Save(&lookup).Error; err != nil {
+				return fmt.Errorf("failed to update misc lookup %s: %w", exp.Key, err)
+			}
+		}
+	}
+
+	return nil
+}
+
 // Note: SkillImprovementCost, WeaponSkill, Equipment, Weapon, Container, Transportation, Believe
 // export/import functions follow similar patterns - implement as needed
 
@@ -2174,6 +2245,9 @@ func ExportAll(outputDir string) error {
 		return err
 	}
 	if err := ExportClassTypicalSpells(outputDir); err != nil {
+		return err
+	}
+	if err := ExportMiscLookups(outputDir); err != nil {
 		return err
 	}
 
@@ -2250,6 +2324,9 @@ func ImportAll(inputDir string) error {
 		return err
 	}
 	if err := ImportClassTypicalSpells(inputDir); err != nil {
+		return err
+	}
+	if err := ImportMiscLookups(inputDir); err != nil {
 		return err
 	}
 

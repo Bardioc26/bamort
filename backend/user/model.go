@@ -21,6 +21,7 @@ type User struct {
 	PasswordHash       string     `json:"password"`
 	Email              string     `gorm:"unique" json:"email"`
 	Role               string     `gorm:"default:standard" json:"role"`
+	PreferredLanguage  string     `gorm:"default:de" json:"preferred_language"`
 	ResetPwHash        *string    `gorm:"index" json:"-"` // Hash für Password-Reset (wird nicht serialisiert)
 	ResetPwHashExpires *time.Time `json:"-"`              // Ablaufzeit für Password-Reset-Hash
 	CreatedAt          time.Time  `json:"created_at"`

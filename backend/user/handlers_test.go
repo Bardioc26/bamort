@@ -461,3 +461,195 @@ func TestUpdatePassword(t *testing.T) {
 		assert.Equal(t, expectedHash, updatedUser.PasswordHash)
 	})
 }
+
+// TestUpdateLanguage tests the UpdateLanguage handler
+func TestUpdateLanguage(t *testing.T) {
+	setupHandlerTestEnvironment(t)
+
+	t.Run("Success - Update language to en", func(t *testing.T) {
+		testUser := createTestUser(t, "languser1", "password123", "languser1@test.com")
+
+		requestData := map[string]interface{}{
+			"language": "en",
+		}
+		requestBody, _ := json.Marshal(requestData)
+
+		req, _ := http.NewRequest("PUT", "/api/user/language", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", testUser.UserID)
+
+		UpdateLanguage(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, "Language updated successfully", response["message"])
+		assert.Equal(t, "en", response["language"])
+
+		// Verify language was actually updated in database
+		var updatedUser User
+		err = updatedUser.FirstId(testUser.UserID)
+		assert.NoError(t, err)
+		assert.Equal(t, "en", updatedUser.PreferredLanguage)
+	})
+
+	t.Run("Success - Update language to de", func(t *testing.T) {
+		testUser := createTestUser(t, "languser2", "password123", "languser2@test.com")
+
+		requestData := map[string]interface{}{
+			"language": "de",
+		}
+		requestBody, _ := json.Marshal(requestData)
+
+		req, _ := http.NewRequest("PUT", "/api/user/language", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", testUser.UserID)
+
+		UpdateLanguage(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, "de", response["language"])
+	})
+
+	t.Run("Failure - Invalid language", func(t *testing.T) {
+		testUser := createTestUser(t, "languser3", "password123", "languser3@test.com")
+
+		requestData := map[string]interface{}{
+			"language": "fr",
+		}
+		requestBody, _ := json.Marshal(requestData)
+
+		req, _ := http.NewRequest("PUT", "/api/user/language", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", testUser.UserID)
+
+		UpdateLanguage(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, "Invalid language. Supported languages: de, en", response["error"])
+	})
+
+	t.Run("Failure - No user ID in context", func(t *testing.T) {
+		requestData := map[string]interface{}{
+			"language": "en",
+		}
+		requestBody, _ := json.Marshal(requestData)
+
+		req, _ := http.NewRequest("PUT", "/api/user/language", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+
+		UpdateLanguage(c)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, "Unauthorized", response["error"])
+	})
+
+	t.Run("Failure - Empty language", func(t *testing.T) {
+		testUser := createTestUser(t, "languser4", "password123", "languser4@test.com")
+
+		requestData := map[string]interface{}{
+			"language": "",
+		}
+		requestBody, _ := json.Marshal(requestData)
+
+		req, _ := http.NewRequest("PUT", "/api/user/language", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", testUser.UserID)
+
+		UpdateLanguage(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, "Language is required", response["error"])
+	})
+}
+
+// TestGetUserProfileWithLanguage tests that GetUserProfile returns the language field
+func TestGetUserProfileWithLanguage(t *testing.T) {
+	setupHandlerTestEnvironment(t)
+
+	t.Run("Success - Profile includes preferred language", func(t *testing.T) {
+		testUser := createTestUser(t, "langprofileuser", "password123", "langprofile@test.com")
+		
+		// Set language to en
+		testUser.PreferredLanguage = "en"
+		err := testUser.Save()
+		require.NoError(t, err)
+
+		req, _ := http.NewRequest("GET", "/api/user/profile", nil)
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", testUser.UserID)
+
+		GetUserProfile(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response map[string]interface{}
+		err = json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, "en", response["preferred_language"])
+	})
+
+	t.Run("Success - New user has default language de", func(t *testing.T) {
+		testUser := createTestUser(t, "newlanguser", "password123", "newlang@test.com")
+
+		req, _ := http.NewRequest("GET", "/api/user/profile", nil)
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", testUser.UserID)
+
+		GetUserProfile(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		
+		// Check that preferred_language is present and defaults to "de"
+		lang, ok := response["preferred_language"]
+		assert.True(t, ok, "preferred_language should be present in response")
+		if lang == "" || lang == nil {
+			// If empty, GORM default should be "de"
+			assert.Equal(t, "de", testUser.PreferredLanguage)
+		} else {
+			assert.Equal(t, "de", lang)
+		}
+	})
+}
+

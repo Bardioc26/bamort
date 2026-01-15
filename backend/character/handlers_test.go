@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -123,13 +124,15 @@ func TestImproveSkillHandler(t *testing.T) {
 		assert.NoError(t, err, "Response should be valid JSON")
 
 		// Validate expected response values
+		// Note: Athletik is now in "Körper" category (lowest ID from learning_skill_category_difficulties)
+		// which has different costs than the previous "Kampf" category
 		expectedResponse := map[string]interface{}{
-			"ep_cost":        float64(10), // JSON numbers are float64
+			"ep_cost":        float64(0), // JSON numbers are float64
 			"from_level":     float64(9),
-			"gold_cost":      float64(20),
+			"gold_cost":      float64(0),
 			"message":        "Fertigkeit erfolgreich verbessert",
-			"remaining_ep":   float64(250),
-			"remaining_gold": float64(290),
+			"remaining_ep":   float64(260),
+			"remaining_gold": float64(310),
 			"skill_name":     "Athletik",
 			"to_level":       float64(10),
 		}
@@ -151,10 +154,11 @@ func TestImproveSkillHandler(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Check that EP was deducted correctly
-		assert.Equal(t, 250, updatedChar.Erfahrungsschatz.EP, "Character should have 316 EP remaining")
+		// Athletik is now in "Körper" category which has different costs
+		assert.Equal(t, 260, updatedChar.Erfahrungsschatz.EP, "Character should have 260 EP remaining")
 
 		// Check that Gold was deducted correctly
-		assert.Equal(t, 290, updatedChar.Vermoegen.Goldstuecke, "Character should have 370 Gold remaining")
+		assert.Equal(t, 310, updatedChar.Vermoegen.Goldstuecke, "Character should have 310 Gold remaining")
 
 		t.Logf("Test completed successfully!")
 		t.Logf("EP: %d -> %d (cost: %.0f)", 326, updatedChar.Erfahrungsschatz.EP, response["ep_cost"])
@@ -971,4 +975,143 @@ func TestListCharacters(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(response.SelfOwned), "Should return empty list for userID 0")
 	})
+}
+
+func TestGetDatasheetOptions(t *testing.T) {
+	// Setup test environment
+	original := os.Getenv("ENVIRONMENT")
+	os.Setenv("ENVIRONMENT", "test")
+	t.Cleanup(func() {
+		if original != "" {
+			os.Setenv("ENVIRONMENT", original)
+		} else {
+			os.Unsetenv("ENVIRONMENT")
+		}
+	})
+
+	// Setup test database
+	database.SetupTestDB(true, true)
+	defer database.ResetTestDB()
+
+	err := models.MigrateStructure()
+	assert.NoError(t, err)
+
+	/*
+		// Populate misc lookup data
+		err = gsmaster.PopulateMiscLookupData()
+		assert.NoError(t, err)
+	*/
+
+	// Create test character with weapon skill
+	testChar := &models.Char{
+		BamortBase: models.BamortBase{
+			Name: "Test Character",
+		},
+		Typ:   "Krieger",
+		Rasse: "Mensch",
+		Waffenfertigkeiten: []models.SkWaffenfertigkeit{
+			{
+				SkFertigkeit: models.SkFertigkeit{
+					BamortCharTrait: models.BamortCharTrait{
+						BamortBase: models.BamortBase{
+							Name: "Langschwert",
+						},
+					},
+				},
+			},
+		},
+	}
+	err = testChar.Create()
+	assert.NoError(t, err)
+	assert.NotZero(t, testChar.ID, "Character ID should be set after Create")
+
+	// Setup Gin context
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	// Use string conversion of actual character ID
+	c.Params = gin.Params{{Key: "id", Value: fmt.Sprintf("%d", testChar.ID)}}
+
+	// Call the handler
+	GetDatasheetOptions(c)
+
+	// Assert response
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response map[string]interface{}
+	err = json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+
+	// Verify all expected keys exist
+	assert.Contains(t, response, "gender")
+	assert.Contains(t, response, "races")
+	assert.Contains(t, response, "origins")
+	assert.Contains(t, response, "social_classes")
+	assert.Contains(t, response, "faiths")
+	assert.Contains(t, response, "handedness")
+	assert.Contains(t, response, "specializations")
+
+	// Verify data from database
+	genders := response["gender"].([]interface{})
+	assert.Equal(t, 3, len(genders))
+	assert.Contains(t, genders, "divers")
+	assert.Contains(t, genders, "männlich")
+	assert.Contains(t, genders, "weiblich")
+
+	races := response["races"].([]interface{})
+	assert.Equal(t, 5, len(races))
+	assert.Contains(t, races, "Elf")
+	assert.Contains(t, races, "Mensch")
+
+	origins := response["origins"].([]interface{})
+	assert.Equal(t, 15, len(origins))
+	assert.Contains(t, origins, "Albai")
+
+	socialClasses := response["social_classes"].([]interface{})
+	assert.Equal(t, 3, len(socialClasses))
+	assert.Contains(t, socialClasses, "Adel")
+	assert.Contains(t, socialClasses, "Mittelschicht")
+
+	faiths := response["faiths"].([]interface{})
+	assert.Equal(t, 5, len(faiths))
+	assert.Contains(t, faiths, "Druide")
+	assert.Contains(t, faiths, "Keine")
+
+	handedness := response["handedness"].([]interface{})
+	assert.Equal(t, 3, len(handedness))
+	assert.Contains(t, handedness, "beidhändig")
+	assert.Contains(t, handedness, "links")
+	assert.Contains(t, handedness, "rechts")
+}
+
+func TestGetDatasheetOptions_CharacterNotFound(t *testing.T) {
+	// Setup test environment
+	original := os.Getenv("ENVIRONMENT")
+	os.Setenv("ENVIRONMENT", "test")
+	t.Cleanup(func() {
+		if original != "" {
+			os.Setenv("ENVIRONMENT", original)
+		} else {
+			os.Unsetenv("ENVIRONMENT")
+		}
+	})
+
+	// Setup test database
+	database.SetupTestDB(true, true)
+	defer database.ResetTestDB()
+
+	err := models.MigrateStructure()
+	assert.NoError(t, err)
+
+	// Setup Gin context with non-existent character ID
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Params = gin.Params{{Key: "id", Value: "99999"}}
+
+	// Call the handler
+	GetDatasheetOptions(c)
+
+	// Assert error response
+	assert.Equal(t, http.StatusNotFound, w.Code)
 }

@@ -36,7 +36,7 @@ func createTestSkill(name string) *Skill {
 
 func TestSkFertigkeit_TableName(t *testing.T) {
 	skill := SkFertigkeit{}
-	expected := "skill_skills"
+	expected := "char_skills"
 	actual := skill.TableName()
 	assert.Equal(t, expected, actual)
 }
@@ -88,12 +88,22 @@ func TestSkFertigkeit_GetSkillByName_NotFound(t *testing.T) {
 }
 
 func TestSkFertigkeit_GetCategory_AlreadySet(t *testing.T) {
+	setupTestDB(t)
+
+	// Category should now ALWAYS be fetched from gsmaster, not from the skill's category field
+	// Since "AlreadySetCategory" is not a real skill in gsmaster, it should return "Unkategorisiert"
 	skFertigkeit := SkFertigkeit{
-		Category: "AlreadySetCategory",
+		BamortCharTrait: BamortCharTrait{
+			BamortBase: BamortBase{
+				Name: "NonExistentSkill",
+			},
+		},
+		Category: "AlreadySetCategory", // This field should be ignored now
 	}
 
 	result := skFertigkeit.GetCategory()
-	assert.Equal(t, "AlreadySetCategory", result)
+	// Since the skill doesn't exist in gsmaster, should return "Unkategorisiert"
+	assert.Equal(t, "Unkategorisiert", result)
 }
 
 func TODOT_estSkFertigkeit_GetCategory_FromDatabase(t *testing.T) {
@@ -166,7 +176,7 @@ func TestSkFertigkeit_StructTags(t *testing.T) {
 
 func TestSkWaffenfertigkeit_TableName(t *testing.T) {
 	weaponSkill := SkWaffenfertigkeit{}
-	expected := "skill_weaponskills"
+	expected := "char_weaponskills"
 	actual := weaponSkill.TableName()
 	assert.Equal(t, expected, actual)
 }
@@ -224,9 +234,9 @@ func TestSkWaffenfertigkeit_InheritedMethods(t *testing.T) {
 	assert.NotNil(t, result)
 	assert.Equal(t, "Stichwaffen", result.Name)
 
-	// Test GetCategory (inherited from SkFertigkeit)
+	// Test GetCategory - should return "Waffenfertigkeiten" for weapon skills
 	category := weaponSkill.GetCategory()
-	assert.Equal(t, "", category)
+	assert.Equal(t, "Waffenfertigkeiten", category)
 }
 
 // =============================================================================
@@ -273,7 +283,7 @@ func TestSkAngeboreneFertigkeit_Inheritance(t *testing.T) {
 
 func TestSkZauber_TableName(t *testing.T) {
 	spell := SkZauber{}
-	expected := "skill_spells"
+	expected := "char_spells"
 	actual := spell.TableName()
 	assert.Equal(t, expected, actual)
 }
@@ -364,12 +374,12 @@ func TestSkillStructures_WithDatabase(t *testing.T) {
 		gsSkill := skill.GetSkillByName()
 		assert.NotNil(t, gsSkill)
 		assert.Equal(t, "Klettern", gsSkill.Name)
-		assert.Equal(t, "Alltag", gsSkill.Category)
+		// Note: gsSkill.Category is empty because category is stored in learning_skill_category_difficulties table
 
-		// Test GetCategory
+		// Test GetCategory - should fetch from learning_skill_category_difficulties
 		category := skill.GetCategory()
 		assert.Equal(t, "Alltag", category)
-		assert.Equal(t, "Alltag", skill.Category) // Should be set on object
+		// Note: skill.Category field is NOT set anymore, GetCategory always queries the database
 	})
 
 	// Test SkWaffenfertigkeit with database interaction
@@ -407,14 +417,14 @@ func TestTableNames_Consistency(t *testing.T) {
 	weaponSkill := SkWaffenfertigkeit{}
 	spell := SkZauber{}
 
-	assert.Equal(t, "skill_skills", skill.TableName())
-	assert.Equal(t, "skill_weaponskills", weaponSkill.TableName())
-	assert.Equal(t, "skill_spells", spell.TableName())
+	assert.Equal(t, "char_skills", skill.TableName())
+	assert.Equal(t, "char_weaponskills", weaponSkill.TableName())
+	assert.Equal(t, "char_spells", spell.TableName())
 
-	// All table names should start with "skill_"
-	assert.Contains(t, skill.TableName(), "skill_")
-	assert.Contains(t, weaponSkill.TableName(), "skill_")
-	assert.Contains(t, spell.TableName(), "skill_")
+	// All table names should start with "char_"
+	assert.Contains(t, skill.TableName(), "char_")
+	assert.Contains(t, weaponSkill.TableName(), "char_")
+	assert.Contains(t, spell.TableName(), "char_")
 }
 
 func TestSkFertigkeit_EdgeCases(t *testing.T) {
@@ -449,14 +459,19 @@ func TestSkFertigkeit_EdgeCases(t *testing.T) {
 	})
 
 	t.Run("GetCategory with already set category", func(t *testing.T) {
+		// Category field is now ignored - GetCategory always queries database
 		skill := SkFertigkeit{
-			Category: "PresetCategory",
+			BamortCharTrait: BamortCharTrait{
+				BamortBase: BamortBase{
+					Name: "NonExistentSkill",
+				},
+			},
+			Category: "PresetCategory", // This is ignored
 		}
 
 		result := skill.GetCategory()
-		assert.Equal(t, "PresetCategory", result)
-		// The object's Category field should remain unchanged
-		assert.Equal(t, "PresetCategory", skill.Category)
+		// Since skill doesn't exist in gsmaster, returns "Unkategorisiert"
+		assert.Equal(t, "Unkategorisiert", result)
 	})
 }
 

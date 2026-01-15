@@ -16,17 +16,10 @@
       <!-- Filter Row -->
       <div class="filter-row">
         <div class="filter-item">
-          <label>{{ $t('weaponskill.category') }}:</label>
-          <select v-model="filterCategory">
+          <label>{{ $t('weaponskill.difficulty') }}:</label>
+          <select v-model="filterDifficulty">
             <option value="">{{ $t('all') || 'All' }}</option>
-            <option v-for="cat in availableCategories" :key="cat" :value="cat">{{ cat }}</option>
-          </select>
-        </div>
-        <div class="filter-item">
-          <label>{{ $t('weaponskill.bonusskill') }}:</label>
-          <select v-model="filterBonuseigenschaft">
-            <option value="">{{ $t('all') || 'All' }}</option>
-            <option v-for="bonus in availableBonuseigenschaften" :key="bonus" :value="bonus">{{ bonus }}</option>
+            <option v-for="diff in availableDifficulties" :key="diff" :value="diff">{{ diff }}</option>
           </select>
         </div>
         <div class="filter-item">
@@ -44,11 +37,10 @@
             <thead>
               <tr>
                 <th class="cd-table-header">{{ $t('weaponskill.id') }}</th>
-                <th class="cd-table-header">{{ $t('weaponskill.category') }}<button @click="sortBy('category')">-{{ sortField === 'category' ? (sortAsc ? '↑' : '↓') : '' }}</button></th>
                 <th class="cd-table-header">{{ $t('weaponskill.name') }} <button @click="sortBy('name')">-{{ sortField === 'name' ? (sortAsc ? '↑' : '↓') : '' }}</button></th>
+                <th class="cd-table-header">{{ $t('weaponskill.difficulty') }}<button @click="sortBy('difficulty')">-{{ sortField === 'difficulty' ? (sortAsc ? '↑' : '↓') : '' }}</button></th>
                 <th class="cd-table-header">{{ $t('weaponskill.initialwert') }}</th>
                 <th class="cd-table-header">{{ $t('weaponskill.description') }}</th>
-                <th class="cd-table-header">{{ $t('weaponskill.bonusskill') }}</th>
                 <th class="cd-table-header">{{ $t('weaponskill.quelle') }}</th>
                 <th class="cd-table-header">{{ $t('weaponskill.system') }}</th>
                 <th class="cd-table-header"> </th>
@@ -58,11 +50,10 @@
               <template v-for="(dtaItem, index) in filteredAndSortedWaeponSkills" :key="dtaItem.id">
                 <tr v-if="editingIndex !== index">
                   <td>{{ dtaItem.id || '' }}</td>
-                  <td>{{ dtaItem.category|| '-' }}</td>
                   <td>{{ dtaItem.name || '-' }}</td>
+                  <td>{{ dtaItem.difficulty || '-' }}</td>
                   <td>{{ dtaItem.initialwert || '0' }}</td>
                   <td>{{ dtaItem.beschreibung || '-' }}</td>
-                  <td>{{ dtaItem.bonuseigenschaft || '-' }}</td>
                   <td>{{ formatQuelle(dtaItem) }}</td>
                   <td>{{ dtaItem.system || 'midgard' }}</td>
                   <td>
@@ -72,7 +63,7 @@
                 <!-- Edit Mode -->
                 <tr v-else>
                   <td><input v-model="editedItem.id" style="width:20px;" disabled /></td>
-                  <td colspan="7">
+                  <td colspan="6">
                     <!-- Expanded edit form -->
                     <div class="edit-form">
                       <div class="edit-row">
@@ -81,32 +72,17 @@
                           <input v-model="editedItem.name" />
                         </div>
                         <div class="edit-field">
-                          <label>{{ $t('weaponskill.category') }}:</label>
-                          <select v-model="editedItem.category" style="width:120px;">
-                            <option v-for="category in mdata['skillcategories']" :key="category" :value="category">
-                              {{ category }}
-                            </option>
+                          <label>{{ $t('weaponskill.difficulty') }}:</label>
+                          <select v-model="editedItem.difficulty" style="width:120px;">
+                            <option value="leicht">leicht</option>
+                            <option value="normal">normal</option>
+                            <option value="schwer">schwer</option>
+                            <option value="sehr schwer">sehr schwer</option>
                           </select>
                         </div>
                         <div class="edit-field">
                           <label>{{ $t('weaponskill.initialwert') }}:</label>
                           <input v-model.number="editedItem.initialwert" type="number" style="width:60px;" />
-                        </div>
-                        <div class="edit-field">
-                          <label>{{ $t('weaponskill.bonusskill') }}:</label>
-                          <select v-model="editedItem.bonuseigenschaft" style="width:80px;">
-                            <option value="">-</option>
-                            <option value="St">St</option>
-                            <option value="Gs">Gs</option>
-                            <option value="Gw">Gw</option>
-                            <option value="Ko">Ko</option>
-                            <option value="In">In</option>
-                            <option value="Zt">Zt</option>
-                            <option value="Au">Au</option>
-                            <option value="pA">pA</option>
-                            <option value="Wk">Wk</option>
-                            <option value="B">B</option>
-                          </select>
                         </div>
                       </div>
 
@@ -217,30 +193,23 @@ export default {
       sortAsc: true,
       editingIndex: -1,
       editedItem: null,
-      filterCategory: '',
-      filterBonuseigenschaft: '',
+      filterDifficulty: '',
       filterQuelle: '',
       enhancedWeaponSkills: [],
-      availableSources: []
+      availableSources: [],
+      availableDifficultiesData: []
     }
   },
   async created() {
     await this.loadEnhancedWeaponSkills()
   },
   computed: {
-    availableCategories() {
-      const categories = new Set()
+    availableDifficulties() {
+      const difficulties = new Set()
       this.enhancedWeaponSkills.forEach(ws => {
-        if (ws.category) categories.add(ws.category)
+        if (ws.difficulty) difficulties.add(ws.difficulty)
       })
-      return Array.from(categories).sort()
-    },
-    availableBonuseigenschaften() {
-      const bonuses = new Set()
-      this.enhancedWeaponSkills.forEach(ws => {
-        if (ws.bonuseigenschaft) bonuses.add(ws.bonuseigenschaft)
-      })
-      return Array.from(bonuses).sort()
+      return Array.from(difficulties).sort()
     },
     availableQuellen() {
       const quellen = new Set()
@@ -262,18 +231,13 @@ export default {
         const searchLower = this.searchTerm.toLowerCase()
         filtered = filtered.filter(ws =>
           ws.name?.toLowerCase().includes(searchLower) ||
-          ws.category?.toLowerCase().includes(searchLower)
+          ws.difficulty?.toLowerCase().includes(searchLower)
         )
       }
 
-      // Apply category filter
-      if (this.filterCategory) {
-        filtered = filtered.filter(ws => ws.category === this.filterCategory)
-      }
-
-      // Apply bonuseigenschaft filter
-      if (this.filterBonuseigenschaft) {
-        filtered = filtered.filter(ws => ws.bonuseigenschaft === this.filterBonuseigenschaft)
+      // Apply difficulty filter
+      if (this.filterDifficulty) {
+        filtered = filtered.filter(ws => ws.difficulty === this.filterDifficulty)
       }
 
       // Apply Quelle filter (only by source code, ignoring page number)
@@ -303,6 +267,7 @@ export default {
         const response = await API.get('/api/maintenance/weaponskills-enhanced')
         this.enhancedWeaponSkills = response.data.weaponskills || []
         this.availableSources = response.data.sources || []
+        this.availableDifficultiesData = response.data.difficulties || []
       } catch (error) {
         console.error('Failed to load enhanced weapon skills:', error)
       }
@@ -323,7 +288,9 @@ export default {
         const updateData = {
           ...this.editedItem,
           source_id: source ? source.id : null,
-          page_number: this.editedItem.page_number || 0
+          page_number: this.editedItem.page_number || 0,
+          difficulty: this.editedItem.difficulty,
+          category: 'Waffen' // Weapon skills always use 'Waffen' category
         }
         
         const response = await API.put(
@@ -331,11 +298,8 @@ export default {
           updateData
         )
 
-        // Update the weapon skill in the list using splice for proper reactivity
-        const wsIndex = this.enhancedWeaponSkills.findIndex(ws => ws.id === this.editedItem.id)
-        if (wsIndex !== -1) {
-          this.enhancedWeaponSkills.splice(wsIndex, 1, response.data)
-        }
+        // Reload the list to get updated difficulty from backend
+        await this.loadEnhancedWeaponSkills()
 
         this.editingIndex = -1
         this.editedItem = null
@@ -378,8 +342,7 @@ export default {
     },
     clearFilters() {
       this.searchTerm = ''
-      this.filterCategory = ''
-      this.filterBonuseigenschaft = ''
+      this.filterDifficulty = ''
       this.filterQuelle = ''
     }
   }

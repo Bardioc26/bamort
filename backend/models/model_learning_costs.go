@@ -111,6 +111,21 @@ type SkillCategoryDifficulty struct {
 	SCategory         string          `gorm:"column:skill_category;size:25;not null;index;default:Alltag" json:"skillCategory"`     // SkillCategory
 }
 
+// WeaponSkillCategoryDifficulty definiert die Schwierigkeit einer Waffenfertigkeit in einer bestimmten Kategorie
+// Separate Tabelle für Waffenfertigkeiten, da diese in gsm_weaponskills gespeichert sind
+type WeaponSkillCategoryDifficulty struct {
+	ID                uint            `gorm:"primaryKey" json:"id"`
+	WeaponSkillID     uint            `gorm:"not null;index" json:"weapon_skill_id"`
+	SkillCategoryID   uint            `gorm:"not null;index" json:"skill_category_id"`
+	SkillDifficultyID uint            `gorm:"not null;index" json:"skill_difficulty_id"`
+	LearnCost         int             `gorm:"not null" json:"learn_cost"` // LE-Kosten für das Erlernen
+	WeaponSkill       WeaponSkill     `gorm:"foreignKey:WeaponSkillID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"weapon_skill"`
+	SkillCategory     SkillCategory   `gorm:"foreignKey:SkillCategoryID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"skill_category"`
+	SkillDifficulty   SkillDifficulty `gorm:"foreignKey:SkillDifficultyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"skill_difficulty"`
+	SDifficulty       string          `gorm:"column:skill_difficulty;size:15;not null;index;default:normal" json:"skillDifficulty"`
+	SCategory         string          `gorm:"column:skill_category;size:25;not null;index;default:Waffen" json:"skillCategory"`
+}
+
 // SkillImprovementCost definiert TE-Kosten für Verbesserungen basierend auf Kategorie, Schwierigkeit und aktuellem Wert
 type SkillImprovementCost struct {
 	ID                        uint                    `gorm:"primaryKey" json:"id"`
@@ -167,11 +182,13 @@ type AuditLogEntry struct {
 
 // TableName-Methoden für GORM
 func (Source) TableName() string {
-	return "learning_sources"
+	//learning_sources
+	return "gsm_lit_sources"
 }
 
 func (CharacterClass) TableName() string {
-	return "learning_character_classes"
+	//learning_character_classes
+	return "gsm_character_classes"
 }
 
 func (SkillCategory) TableName() string {
@@ -200,6 +217,10 @@ func (SpellLevelLECost) TableName() string {
 
 func (SkillCategoryDifficulty) TableName() string {
 	return "learning_skill_category_difficulties"
+}
+
+func (WeaponSkillCategoryDifficulty) TableName() string {
+	return "learning_weaponskill_category_difficulties"
 }
 
 func (SkillImprovementCost) TableName() string {
@@ -272,6 +293,10 @@ func (sllc *SpellLevelLECost) Create() error {
 
 func (scd *SkillCategoryDifficulty) Create() error {
 	return database.DB.Create(scd).Error
+}
+
+func (wscd *WeaponSkillCategoryDifficulty) Create() error {
+	return database.DB.Create(wscd).Error
 }
 
 func (sic *SkillImprovementCost) Create() error {
@@ -456,8 +481,8 @@ func GetSourcesByGameSystem(gameSystem string) ([]Source, error) {
 func GetSkillsByActiveSources(gameSystem string) ([]Skill, error) {
 	var skills []Skill
 	err := database.DB.
-		Joins("LEFT JOIN learning_sources ON gsm_skills.source_id = learning_sources.id").
-		Where("gsm_skills.game_system = ? AND (learning_sources.is_active = ? OR gsm_skills.source_id IS NULL)", gameSystem, true).
+		Joins("LEFT JOIN gsm_lit_sources ON gsm_skills.source_id = gsm_lit_sources.id").
+		Where("gsm_skills.game_system = ? AND (gsm_lit_sourcesis_active = ? OR gsm_skills.source_id IS NULL)", gameSystem, true).
 		Find(&skills).Error
 	return skills, err
 }
@@ -466,8 +491,8 @@ func GetSkillsByActiveSources(gameSystem string) ([]Skill, error) {
 func GetSpellsByActiveSources(gameSystem string) ([]Spell, error) {
 	var spells []Spell
 	err := database.DB.
-		Joins("LEFT JOIN learning_sources ON gsm_spells.source_id = learning_sources.id").
-		Where("gsm_spells.game_system = ? AND (learning_sources.is_active = ? OR gsm_spells.source_id IS NULL)", gameSystem, true).
+		Joins("LEFT JOIN gsm_lit_sources ON gsm_spells.source_id = gsm_lit_sources.id").
+		Where("gsm_spells.game_system = ? AND (gsm_lit_sources.is_active = ? OR gsm_spells.source_id IS NULL)", gameSystem, true).
 		Find(&spells).Error
 	return spells, err
 }
@@ -476,8 +501,8 @@ func GetSpellsByActiveSources(gameSystem string) ([]Spell, error) {
 func GetCharacterClassesByActiveSources(gameSystem string) ([]CharacterClass, error) {
 	var classes []CharacterClass
 	err := database.DB.
-		Joins("LEFT JOIN learning_sources ON learning_character_classes.source_id = learning_sources.id").
-		Where("learning_character_classes.game_system = ? AND (learning_sources.is_active = ? OR learning_character_classes.source_id IS NULL)", gameSystem, true).
+		Joins("LEFT JOIN gsm_lit_sources ON gsm_character_classes.source_id = gsm_lit_sources.id").
+		Where("gsm_character_classes.game_system = ? AND (gsm_lit_sources.is_active = ? OR gsm_character_classes.source_id IS NULL)", gameSystem, true).
 		Find(&classes).Error
 	return classes, err
 }

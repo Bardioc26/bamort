@@ -116,7 +116,7 @@ func TestCalculateBonuses(t *testing.T) {
 
 	t.Run("Calculate bonuses for Zwerg Kämpfer", func(t *testing.T) {
 		char := models.Char{
-			Rasse: "Zwerge",
+			Rasse: "Zwerg",
 			Typ:   "Krieger",
 			Eigenschaften: []models.Eigenschaft{
 				{Name: "Ko", Value: 85},
@@ -126,16 +126,16 @@ func TestCalculateBonuses(t *testing.T) {
 
 		bonuses := char.CalculateBonuses()
 
-		// Zwerge get +3 base, Kämpfer +1 = 4
-		assert.Equal(t, 4, bonuses.ResistenzBonusKoerper, "Zwerge Kämpfer ResistenzBonusKoerper should be 4")
+		// Zwerg get +3 base, Kämpfer +1 = 4
+		assert.Equal(t, 4, bonuses.ResistenzBonusKoerper, "Zwerg Kämpfer ResistenzBonusKoerper should be 4")
 
-		// Zwerge get +3 base
-		assert.Equal(t, 3, bonuses.ResistenzBonusGeist, "Zwerge ResistenzBonusGeist should be 3")
+		// Zwerg get +3 base
+		assert.Equal(t, 3, bonuses.ResistenzBonusGeist, "Zwerg ResistenzBonusGeist should be 3")
 	})
 
 	t.Run("Calculate bonuses for Elf Magier", func(t *testing.T) {
 		char := models.Char{
-			Rasse: "Elfen",
+			Rasse: "Elf",
 			Typ:   "Magier",
 			Eigenschaften: []models.Eigenschaft{
 				{Name: "Ko", Value: 50},
@@ -145,10 +145,10 @@ func TestCalculateBonuses(t *testing.T) {
 
 		bonuses := char.CalculateBonuses()
 
-		// Elfen get +2 base, Magier (Zauberer) +2 = 4
-		assert.Equal(t, 4, bonuses.ResistenzBonusKoerper, "Elfen Magier ResistenzBonusKoerper should be 4")
+		// Elf get +2 base, Magier (Zauberer) +2 = 4
+		assert.Equal(t, 4, bonuses.ResistenzBonusKoerper, "Elf Magier ResistenzBonusKoerper should be 4")
 
-		// Elfen get +2 base, Magier (Zauberer) +2 = 4
-		assert.Equal(t, 4, bonuses.ResistenzBonusGeist, "Elfen Magier ResistenzBonusGeist should be 4")
+		// Elf get +2 base, Magier (Zauberer) +2 = 4
+		assert.Equal(t, 4, bonuses.ResistenzBonusGeist, "Elf Magier ResistenzBonusGeist should be 4")
 	})
 }

@@ -41,7 +41,7 @@ func ValidateLearningCostsData() error {
 		query    string
 		expected int
 	}{
-		{"Character Classes", "SELECT COUNT(*) FROM learning_character_classes", 15},
+		{"Character Classes", "SELECT COUNT(*) FROM gsm_character_classes", 15},
 		{"Skill Categories", "SELECT COUNT(*) FROM learning_skill_categories", 10},
 		{"Skill Difficulties", "SELECT COUNT(*) FROM learning_skill_difficulties", 4},
 		{"Spell Schools", "SELECT COUNT(*) FROM learning_spell_schools", 10},
@@ -70,7 +70,7 @@ func GetLearningCostsSummary() (map[string]interface{}, error) {
 
 	// Zähle Einträge in verschiedenen Tabellen
 	tables := []string{
-		"learning_character_classes",
+		"gsm_character_classes",
 		"learning_skill_categories",
 		"learning_skill_difficulties",
 		"learning_spell_schools",

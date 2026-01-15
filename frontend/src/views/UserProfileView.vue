@@ -25,6 +25,32 @@
               {{ $t(`userManagement.roles.${userProfile.role}`) }}
             </span>
           </div>
+          <div class="info-row">
+            <label>{{ $t('profile.language') }}:</label>
+            <span>{{ userProfile.preferred_language === 'de' ? 'Deutsch' : 'English' }}</span>
+          </div>
+        </div>
+
+        <!-- Change Language Section -->
+        <div class="profile-section">
+          <h2>{{ $t('profile.changeLanguage') }}</h2>
+          <form @submit.prevent="updateLanguage" class="profile-form">
+            <div class="form-group">
+              <label for="language">{{ $t('profile.selectLanguage') }}:</label>
+              <select 
+                id="language" 
+                v-model="languageForm.selectedLanguage"
+                required
+              >
+                <option value="de">Deutsch</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            <button type="submit" :disabled="isUpdating" class="btn-primary">
+              <span v-if="!isUpdating">{{ $t('profile.updateLanguage') }}</span>
+              <span v-else>{{ $t('profile.updating') }}</span>
+            </button>
+          </form>
         </div>
 
         <!-- Change Email Section -->
@@ -206,7 +232,11 @@ export default {
       userProfile: {
         username: '',
         email: '',
-        role: 'standard'
+        role: 'standard',
+        preferred_language: 'de'
+      },
+      languageForm: {
+        selectedLanguage: 'de'
       },
       emailForm: {
         newEmail: ''
@@ -228,6 +258,7 @@ export default {
         const response = await API.get('/api/user/profile')
         this.userProfile = response.data
         this.emailForm.newEmail = this.userProfile.email
+        this.languageForm.selectedLanguage = this.userProfile.preferred_language || 'de'
       } catch (error) {
         console.error('Failed to load profile:', error)
         alert(this.$t('profile.loadError') + ': ' + (error.response?.data?.error || error.message))
@@ -310,6 +341,36 @@ export default {
           } else {
             errorMsg += ': ' + error.response.data.error
           }
+        }
+        alert(errorMsg)
+      } finally {
+        this.isUpdating = false
+      }
+    },
+    async updateLanguage() {
+      if (!this.languageForm.selectedLanguage) {
+        alert(this.$t('profile.selectLanguage'))
+        return
+      }
+
+      this.isUpdating = true
+      try {
+        const response = await API.put('/api/user/language', {
+          language: this.languageForm.selectedLanguage
+        })
+        
+        this.userProfile.preferred_language = response.data.language
+        
+        // Update i18n language
+        this.$i18n.locale = response.data.language
+        localStorage.setItem('language', response.data.language)
+        
+        alert(this.$t('profile.languageUpdateSuccess'))
+      } catch (error) {
+        console.error('Failed to update language:', error)
+        let errorMsg = this.$t('profile.languageUpdateError')
+        if (error.response?.data?.error) {
+          errorMsg += ': ' + error.response.data.error
         }
         alert(errorMsg)
       } finally {

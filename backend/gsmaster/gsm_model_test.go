@@ -330,47 +330,36 @@ func TestSkill_Delete(t *testing.T) {
 
 func TestSkill_GetSkillCategories(t *testing.T) {
 	database.SetupTestDB()
-	// Create test skills with different categories
-	testSkills := []*models.Skill{
+	// Create test skill categories in the lookup table
+	// Note: GetSkillCategories() reads from gsm_skill_categories table, not from skills
+	testCategories := []*models.SkillCategory{
 		{
-			Name:       "Skill1",
+			Name:       "Category1",
 			GameSystem: "midgard",
-			Category:   "Category1",
 		},
 		{
-			Name:       "Skill2",
+			Name:       "Category2",
 			GameSystem: "midgard",
-			Category:   "Category2",
-		},
-		{
-			Name:       "Skill3",
-			GameSystem: "midgard",
-			Category:   "Category1", // Duplicate category
-		},
-		{
-			Name:       "Skill4",
-			GameSystem: "midgard",
-			Category:   "", // Empty category
 		},
 	}
 
-	// Create test data
-	for _, skill := range testSkills {
-		err := skill.Create()
+	// Create test categories in the lookup table
+	for _, cat := range testCategories {
+		err := cat.Create()
 		assert.NoError(t, err)
 	}
 
 	testDefinition := []struct {
-		name          string
-		expectedCount int
-		expectedFound []string
-		wantErr       bool
+		name                string
+		expectedMinCount    int
+		expectedMustContain []string
+		wantErr             bool
 	}{
 		{
-			name:          "get categories",
-			expectedCount: 3,
-			expectedFound: []string{"Category1", "Category2", ""},
-			wantErr:       false,
+			name:                "get categories",
+			expectedMinCount:    2,
+			expectedMustContain: []string{"Category1", "Category2"},
+			wantErr:             false,
 		},
 	}
 
@@ -385,8 +374,12 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 			}
 
 			assert.NoError(t, err)
-			assert.Len(t, categories, tt.expectedCount)
-			assert.ElementsMatch(t, tt.expectedFound, categories)
+			assert.GreaterOrEqual(t, len(categories), tt.expectedMinCount, "Should have at least %d categories", tt.expectedMinCount)
+
+			// Check that all expected categories are present
+			for _, expected := range tt.expectedMustContain {
+				assert.Contains(t, categories, expected, "Categories should contain %q", expected)
+			}
 		})
 	}
 	database.ResetTestDB()

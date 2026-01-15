@@ -59,6 +59,16 @@ func main() {
 	database.ConnectDatabase()
 	logger.Info("Datenbankverbindung erfolgreich")
 
+	/*
+		// Populate initial misc lookup data
+		logger.Debug("Initialisiere Misc-Lookup-Daten...")
+		if err := gsmaster.PopulateMiscLookupData(); err != nil {
+			logger.Warn("Fehler beim Initialisieren der Misc-Lookup-Daten: %s", err.Error())
+		} else {
+			logger.Info("Misc-Lookup-Daten erfolgreich initialisiert")
+		}
+	*/
+
 	// Initialize PDF templates
 	logger.Debug("Initialisiere PDF-Templates...")
 	if err := pdfrender.InitializeTemplates("/app/default_templates", cfg.TemplatesDir); err != nil {

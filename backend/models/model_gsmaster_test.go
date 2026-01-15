@@ -286,19 +286,24 @@ func TestSkill_Select(t *testing.T) {
 func TestSkill_GetSkillCategories(t *testing.T) {
 	setupGSMasterTestDB(t)
 
-	// Create test skills with different categories
-	skill1 := createTestGSMSkill("TestCategorySkill1")
-	skill1.Category = "TestCategory1"
-	err := skill1.Create()
+	// Create test skill categories in the lookup table
+	cat1 := &SkillCategory{
+		GameSystem: "midgard",
+		Name:       "TestCategory1",
+	}
+	err := cat1.Create()
 	require.NoError(t, err)
 
-	skill2 := createTestGSMSkill("TestCategorySkill2")
-	skill2.Category = "TestCategory2"
-	err = skill2.Create()
+	cat2 := &SkillCategory{
+		GameSystem: "midgard",
+		Name:       "TestCategory2",
+	}
+	err = cat2.Create()
 	require.NoError(t, err)
 
 	// Test GetSkillCategories
-	categories, err := skill1.GetSkillCategories()
+	skill := &Skill{}
+	categories, err := skill.GetSkillCategories()
 
 	assert.NoError(t, err)
 	assert.Contains(t, categories, "TestCategory1")
@@ -523,19 +528,24 @@ func TestSpell_Save(t *testing.T) {
 func TestSpell_GetSpellCategories(t *testing.T) {
 	setupGSMasterTestDB(t)
 
-	// Create test spells with different categories
-	spell1 := createTestSpell("TestSpellCategory1")
-	spell1.Category = "TestSpellCat1"
-	err := spell1.Create()
+	// Create test spell categories in the lookup table (SpellSchool)
+	school1 := &SpellSchool{
+		GameSystem: "midgard",
+		Name:       "TestSpellCat1",
+	}
+	err := school1.Create()
 	require.NoError(t, err)
 
-	spell2 := createTestSpell("TestSpellCategory2")
-	spell2.Category = "TestSpellCat2"
-	err = spell2.Create()
+	school2 := &SpellSchool{
+		GameSystem: "midgard",
+		Name:       "TestSpellCat2",
+	}
+	err = school2.Create()
 	require.NoError(t, err)
 
 	// Test GetSpellCategories
-	categories, err := spell1.GetSpellCategories()
+	spell := &Spell{}
+	categories, err := spell.GetSpellCategories()
 
 	assert.NoError(t, err)
 	assert.Contains(t, categories, "TestSpellCat1")
@@ -1695,6 +1705,90 @@ func TestLearnCost_StructFields(t *testing.T) {
 	assert.Equal(t, 100, learnCost.Ep)
 	assert.Equal(t, 50, learnCost.Money)
 	assert.Equal(t, 2, learnCost.PP)
+}
+
+// TestSkill_Create_DefaultImprovable verifies that new skills get Improvable=true by default
+func TestSkill_Create_DefaultImprovable(t *testing.T) {
+	database.SetupTestDB(true)
+
+	// Test 1: Create skill without setting Improvable or InnateSkill
+	skill1 := Skill{
+		Name:        "Test Skill Default",
+		GameSystem:  "midgard",
+		Category:    "test",
+		Initialwert: 5,
+	}
+	err := skill1.Create()
+	require.NoError(t, err)
+
+	// Verify it was saved with Improvable=true (default for normal skills)
+	var savedSkill Skill
+	err = database.DB.Where("name = ?", "Test Skill Default").First(&savedSkill).Error
+	require.NoError(t, err)
+	assert.True(t, savedSkill.Improvable, "Default skill should have Improvable=true")
+	assert.False(t, savedSkill.InnateSkill, "Default skill should have InnateSkill=false")
+
+	// Test 2: Create skill with explicit Improvable=false and InnateSkill=true
+	skill2 := Skill{
+		Name:        "Test Innate Skill",
+		GameSystem:  "midgard",
+		Category:    "test",
+		Initialwert: 5,
+		Improvable:  false,
+		InnateSkill: true,
+	}
+	err = skill2.Create()
+	require.NoError(t, err)
+
+	// Verify explicit values were preserved
+	var savedSkill2 Skill
+	err = database.DB.Where("name = ?", "Test Innate Skill").First(&savedSkill2).Error
+	require.NoError(t, err)
+	assert.False(t, savedSkill2.Improvable, "Innate skill should have Improvable=false")
+	assert.True(t, savedSkill2.InnateSkill, "Innate skill should have InnateSkill=true")
+
+	// Test 3: Create skill with explicit Improvable=true
+	skill3 := Skill{
+		Name:        "Test Explicit Improvable",
+		GameSystem:  "midgard",
+		Category:    "test",
+		Initialwert: 5,
+		Improvable:  true,
+		InnateSkill: false,
+	}
+	err = skill3.Create()
+	require.NoError(t, err)
+
+	// Verify explicit values were preserved
+	var savedSkill3 Skill
+	err = database.DB.Where("name = ?", "Test Explicit Improvable").First(&savedSkill3).Error
+	require.NoError(t, err)
+	assert.True(t, savedSkill3.Improvable, "Explicit improvable skill should have Improvable=true")
+	assert.False(t, savedSkill3.InnateSkill, "Explicit improvable skill should have InnateSkill=false")
+}
+
+// TestWeaponSkill_Create_DefaultImprovable verifies that new weapon skills get Improvable=true by default
+func TestWeaponSkill_Create_DefaultImprovable(t *testing.T) {
+	database.SetupTestDB(true)
+
+	// Test 1: Create weapon skill without setting Improvable or InnateSkill
+	weaponSkill := WeaponSkill{
+		Skill: Skill{
+			Name:        "Test Weapon Skill",
+			GameSystem:  "midgard",
+			Category:    "weapon",
+			Initialwert: 5,
+		},
+	}
+	err := weaponSkill.Create()
+	require.NoError(t, err)
+
+	// Verify it was saved with Improvable=true
+	var savedSkill WeaponSkill
+	err = database.DB.Where("name = ?", "Test Weapon Skill").First(&savedSkill).Error
+	require.NoError(t, err)
+	assert.True(t, savedSkill.Improvable, "Default weapon skill should have Improvable=true")
+	assert.False(t, savedSkill.InnateSkill, "Default weapon skill should have InnateSkill=false")
 }
 
 // =============================================================================

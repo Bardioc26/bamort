@@ -441,10 +441,11 @@ func GetUserProfile(c *gin.Context) {
 
 	logger.Debug("Benutzerprofil geladen für: %s (ID: %d)", user.Username, user.UserID)
 	c.JSON(http.StatusOK, gin.H{
-		"id":       user.UserID,
-		"username": user.Username,
-		"email":    user.Email,
-		"role":     user.Role,
+		"id":                 user.UserID,
+		"username":           user.Username,
+		"email":              user.Email,
+		"role":               user.Role,
+		"preferred_language": user.PreferredLanguage,
 	})
 }
 
@@ -552,5 +553,55 @@ func UpdatePassword(c *gin.Context) {
 	logger.Info("Passwort erfolgreich aktualisiert für Benutzer: %s (ID: %d)", user.Username, user.UserID)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Password updated successfully",
+	})
+}
+
+// UpdateLanguage Handler to update user's preferred language
+func UpdateLanguage(c *gin.Context) {
+	logger.Debug("Starte Sprach-Aktualisierung...")
+
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		logger.Error("Benutzer-ID nicht im Context gefunden")
+		respondWithError(c, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	var input struct {
+		Language string `json:"language" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		logger.Error("Fehler beim Parsen der Sprach-Daten: %s", err.Error())
+		respondWithError(c, http.StatusBadRequest, "Language is required")
+		return
+	}
+
+	// Validate language (only de and en supported)
+	if input.Language != "de" && input.Language != "en" {
+		logger.Warn("Ungültige Sprache angefordert: %s", input.Language)
+		respondWithError(c, http.StatusBadRequest, "Invalid language. Supported languages: de, en")
+		return
+	}
+
+	var user User
+	if err := user.FirstId(userID.(uint)); err != nil {
+		logger.Error("Benutzer mit ID %v nicht gefunden: %s", userID, err.Error())
+		respondWithError(c, http.StatusNotFound, "User not found")
+		return
+	}
+
+	user.PreferredLanguage = input.Language
+	if err := user.Save(); err != nil {
+		logger.Error("Fehler beim Speichern der Sprache für Benutzer %s: %s", user.Username, err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to update language")
+		return
+	}
+
+	logger.Info("Sprache erfolgreich aktualisiert für Benutzer: %s (ID: %d) - Neue Sprache: %s", user.Username, user.UserID, input.Language)
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "Language updated successfully",
+		"language": user.PreferredLanguage,
 	})
 }

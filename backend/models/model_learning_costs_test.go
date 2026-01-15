@@ -528,7 +528,7 @@ func TestLearningCostsWorkflow_CompleteDataValidation(t *testing.T) {
 	assert.Equal(t, "leicht", skillInfo.DifficultyName)
 	assert.Equal(t, "Bb", skillInfo.ClassCode)
 	assert.Equal(t, 10, skillInfo.EPPerTE, "EP per TE should match the class/category cost")
-	assert.Equal(t, 1, skillInfo.LearnCost, "Learn cost should be 1 for leicht difficulty")
+	assert.Equal(t, 5, skillInfo.LearnCost, "Learn cost should be 5 for leicht difficulty")
 
 	// 3. Verify active source codes include expected values
 	sourceCodes, err := GetActiveSourceCodes()

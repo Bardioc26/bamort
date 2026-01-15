@@ -1,20 +1,56 @@
 <template>
-  <div class="upload-page">
-    <h2>Import Data</h2>
-    <br/>
-    <form @submit.prevent="handleUpload">
-      <div>
-        <label for="file_vtt">Char VTT:</label>
-        <input type="file" id="file_vtt" @change="onFileChange($event, 1)" />
+  <div class="fullwidth-page">
+    <div class="card" style="max-width: 600px; margin: 40px auto;">
+      <div class="page-header">
+        <h2>{{ $t('import.title') }}</h2>
       </div>
-      <div>
-        <label for="file_csv">Char CSV (optional):</label>
-        <input type="file" id="file_csv" @change="onFileChange($event, 2)" />
+      
+      <p class="text-muted">{{ $t('import.description') }}</p>
+      
+      <form @submit.prevent="handleUpload">
+        <div class="form-group">
+          <label for="file_vtt">{{ $t('import.charVTT') }}</label>
+          <input 
+            type="file" 
+            id="file_vtt" 
+            class="form-control" 
+            @change="onFileChange($event, 1)"
+            accept=".json,.csv"
+            required
+          />
+          <small class="form-text">{{ $t('import.vttHelp') }}</small>
+        </div>
+        
+        <div class="form-group">
+          <label for="file_csv">{{ $t('import.charCSV') }}</label>
+          <input 
+            type="file" 
+            id="file_csv" 
+            class="form-control" 
+            @change="onFileChange($event, 2)"
+            accept=".json,.csv"
+          />
+          <small class="form-text">{{ $t('import.csvHelp') }}</small>
+        </div>
+        
+        <button 
+          type="submit" 
+          class="btn btn-primary" 
+          style="width: 100%; margin-top: 10px;"
+          :disabled="!file_vtt"
+        >
+          {{ $t('import.upload') }}
+        </button>
+      </form>
+      
+      <div v-if="error" class="badge badge-danger" style="width: 100%; margin-top: 15px; text-align: center; display: block;">
+        {{ error }}
       </div>
-      <button type="submit" :disabled="!file_vtt">Upload</button>
-    </form>
-    <p v-if="error" class="error">{{ error }}</p>
-    <p v-if="success" class="success">{{ success }}</p>
+      
+      <div v-if="success" class="badge badge-success" style="width: 100%; margin-top: 15px; text-align: center; display: block;">
+        {{ success }}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -43,7 +79,7 @@ export default {
 
       // Validate file type
       if (!this.isValidFileType(file)) {
-        this.error = "Invalid file type. Only .csv and .json files are allowed.";
+        this.error = this.$t('import.invalidFileType');
         return;
       }
       this.error = ""; // Clear any previous error
@@ -67,10 +103,10 @@ export default {
           },
         });
 
-        this.success = "Files uploaded successfully!";
+        this.success = this.$t('import.uploadSuccess');
         this.error = "";
       } catch (err) {
-        this.error = err.response?.data?.error || "Failed to upload files.";
+        this.error = err.response?.data?.error || this.$t('import.uploadFailed');
         this.success = "";
       }
     },
@@ -78,17 +114,16 @@ export default {
 };
 </script>
 
-<style>
-.upload-page {
-  padding: var(--padding-lg);
-  margin-top: 2%;
+<style scoped>
+.text-muted {
+  color: #6c757d;
+  margin-bottom: 20px;
 }
 
-.error {
-  color: red;
-}
-
-.success {
-  color: green;
+.form-text {
+  display: block;
+  margin-top: 0.25rem;
+  color: #6c757d;
+  font-size: 0.875rem;
 }
 </style>

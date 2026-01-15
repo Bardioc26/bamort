@@ -1,3 +1,4 @@
+<!-- not used anymore -->
 <template>
   <select v-model="selectedLanguage">
     <option value="de">Deutsch</option>

@@ -509,6 +509,7 @@ export default {
       
       // Try to find by learning category mapping first (most likely scenario)
       const learningCategory = this.learningCategories?.find(cat => cat.name === selectedCategoryName)
+      
       if (learningCategory && this.availableSkillsByCategory[learningCategory.displayName]) {
         return learningCategory.displayName
       }
@@ -705,15 +706,17 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 /* All common styles moved to main.css */
 
 .fullwidth-page {
+  /*
   padding: 0 !important;
   margin: 0 !important;
   width: 100vw !important;
   max-width: 100vw !important;
   box-sizing: border-box !important;
+  */
 }
 
 .page-header {

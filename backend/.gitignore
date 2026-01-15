@@ -40,7 +40,7 @@ bamort
 *.exe
 
 maintenance/testdata/*
-testdata/*_data.db
+testdata/*_data.db*
 tmp/main
 uploads/*
 xporttemp/*

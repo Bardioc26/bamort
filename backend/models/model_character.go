@@ -379,15 +379,15 @@ func calculateAttributeBonus(value int) int {
 func calculateResistenzBonusKoerper(ko int, rasse string, typ string) int {
 	bonus := 0
 
-	if rasse == "Mensch" || rasse == "Menschen" {
+	if rasse == "Mensch" {
 		bonus = calculateAttributeBonus(ko)
 	} else {
 		switch rasse {
-		case "Elfen":
+		case "Elf":
 			bonus = 2
-		case "Gnome", "Halblinge":
+		case "Gnom", "Halbling":
 			bonus = 4
-		case "Zwerge":
+		case "Zwerg":
 			bonus = 3
 		}
 	}
@@ -409,11 +409,11 @@ func calculateResistenzBonusGeist(in int, rasse string, typ string) int {
 		bonus = calculateAttributeBonus(in)
 	} else {
 		switch rasse {
-		case "Elfen":
+		case "Elf":
 			bonus = 2
-		case "Gnome", "Halblinge":
+		case "Gnom", "Halbling":
 			bonus = 4
-		case "Zwerge":
+		case "Zwerg":
 			bonus = 3
 		}
 	}

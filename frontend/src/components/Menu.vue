@@ -1,49 +1,77 @@
 <template>
-  <nav class="top-nav"><!---<nav class="menu"> --->
-    <ul>
+  <nav class="top-nav">
+    <ul class="menu-left">
+      <!-- Home -->
       <li>
         <router-link to="/" active-class="active">{{ $t('menu.Home') }}</router-link>
       </li>
-      <li>
-        <router-link to="/dashboard" active-class="active">{{ $t('menu.Dashboard') }}</router-link>
+      
+      <!-- Info Dropdown -->
+      <li class="dropdown" @mouseenter="openMenu('info')" @mouseleave="closeMenu('info')">
+        <span class="dropdown-trigger">{{ $t('menu.Info') }} ▾</span>
+        <ul v-show="showInfoMenu" class="dropdown-menu" @mouseenter="openMenu('info')" @mouseleave="closeMenu('info')">
+          <li><router-link to="/help" @click="closeAllMenus">{{ $t('menu.Help') }}</router-link></li>
+          <li><router-link to="/sponsors" @click="closeAllMenus">{{ $t('menu.Sponsors') }}</router-link></li>
+          <li><router-link to="/system-info" @click="closeAllMenus">{{ $t('menu.SystemInfo') }}</router-link></li>
+        </ul>
       </li>
-      <li>
-        <router-link to="/upload" active-class="active">{{ $t('menu.ImportData') }}</router-link>
+      
+      <!-- Characters Dropdown (only when logged in) -->
+      <li v-if="isLoggedIn" class="dropdown" @mouseenter="openMenu('char')" @mouseleave="closeMenu('char')">
+        <span class="dropdown-trigger">{{ $t('menu.Characters') }} ▾</span>
+        <ul v-show="showCharMenu" class="dropdown-menu" @mouseenter="openMenu('char')" @mouseleave="closeMenu('char')">
+          <li><router-link to="/dashboard" @click="closeAllMenus">{{ $t('menu.Dashboard') }}</router-link></li>
+          <li><router-link to="/upload" @click="closeAllMenus">{{ $t('menu.ImportData') }}</router-link></li>
+        </ul>
       </li>
-      <li v-if="isLoggedIn">
-        <button @click="logout">{{ $t('menu.Logout') }}</button>
+      
+      <!-- Admin Dropdown (only for maintainers/admins) -->
+      <li v-if="isLoggedIn && (isMaintainer || isAdmin)" class="dropdown" @mouseenter="openMenu('admin')" @mouseleave="closeMenu('admin')">
+        <span class="dropdown-trigger">{{ $t('menu.Admin') }} ▾</span>
+        <ul v-show="showAdminMenu" class="dropdown-menu" @mouseenter="openMenu('admin')" @mouseleave="closeMenu('admin')">
+          <li v-if="isMaintainer"><router-link to="/maintenance" @click="closeAllMenus">{{ $t('menu.Maintenance') }}</router-link></li>
+          <li v-if="isAdmin"><router-link to="/users" @click="closeAllMenus">{{ $t('menu.UserManagement') }}</router-link></li>
+        </ul>
       </li>
+      
+      <!-- Register (only when not logged in) -->
       <li v-if="!isLoggedIn">
         <router-link to="/register" active-class="active">{{ $t('menu.Register') }}</router-link>
       </li>
-      <li v-if="isLoggedIn && isMaintainer">
-        <router-link to="/maintenance" active-class="active">{{ $t('menu.Maintenance') }}</router-link>
-      </li>
-      <li v-if="isLoggedIn && isAdmin">
-        <router-link to="/users" active-class="active">{{ $t('menu.UserManagement') }}</router-link>
-      </li>
     </ul>
+    
     <div class="menu-right">
-      <LanguageSwitcher />
-      <router-link v-if="isLoggedIn" to="/profile" active-class="active" class="profile-link">{{ $t('menu.Profile') }}</router-link>
+      <!-- User Dropdown (only when logged in) -->
+      <div v-if="isLoggedIn" class="dropdown user-dropdown" @mouseenter="openMenu('user')" @mouseleave="closeMenu('user')">
+        <span class="dropdown-trigger user-icon" title="User Menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </span>
+        <ul v-show="showUserMenu" class="dropdown-menu user-menu" @mouseenter="openMenu('user')" @mouseleave="closeMenu('user')">
+          <li><router-link to="/profile" @click="closeAllMenus">{{ $t('menu.Profile') }}</router-link></li>
+          <li><a href="#" @click.prevent="logout">{{ $t('menu.Logout') }}</a></li>
+        </ul>
+      </div>
     </div>
   </nav>
 </template>
 
 <script>
 import { isLoggedIn, logout } from "../utils/auth";
-import LanguageSwitcher from "./LanguageSwitcher.vue";
 import { useUserStore } from "../stores/userStore";
 
 
 export default {
   name: "Menu",
-  components: {
-    LanguageSwitcher,
-  },
   data() {
     return {
-      userStore: null
+      userStore: null,
+      showInfoMenu: false,
+      showCharMenu: false,
+      showAdminMenu: false,
+      showUserMenu: false,
+      closeTimeout: null
     }
   },
   async created() {
@@ -69,6 +97,34 @@ export default {
     }
   },
   methods: {
+    openMenu(menu) {
+      // Clear any pending close timeout
+      if (this.closeTimeout) {
+        clearTimeout(this.closeTimeout)
+        this.closeTimeout = null
+      }
+      
+      // Open the requested menu
+      if (menu === 'info') this.showInfoMenu = true
+      if (menu === 'char') this.showCharMenu = true
+      if (menu === 'admin') this.showAdminMenu = true
+      if (menu === 'user') this.showUserMenu = true
+    },
+    closeMenu(menu) {
+      // Delay closing to allow mouse to move to submenu
+      this.closeTimeout = setTimeout(() => {
+        if (menu === 'info') this.showInfoMenu = false
+        if (menu === 'char') this.showCharMenu = false
+        if (menu === 'admin') this.showAdminMenu = false
+        if (menu === 'user') this.showUserMenu = false
+      }, 200)
+    },
+    closeAllMenus() {
+      this.showInfoMenu = false
+      this.showCharMenu = false
+      this.showAdminMenu = false
+      this.showUserMenu = false
+    },
     logout() {
       logout();
       this.userStore.clearUser()
@@ -86,62 +142,3 @@ export default {
   },
 };
 </script>
-
-<style>
-.menu {
-  background-color: #333;
-  color: white;
-  padding: 1rem;
-}
-
-.menu ul {
-  list-style: none;
-  display: flex;
-  gap: 1rem;
-}
-
-.menu a {
-  color: white;
-  text-decoration: none;
-}
-
-.menu a:hover {
-  text-decoration: underline;
-}
-
-.menu .active {
-  font-weight: bold;
-  text-decoration: underline;
-}
-
-.menu button {
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-}
-
-.menu-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.profile-link {
-  color: white;
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  border-radius: var(--border-radius);
-  transition: background-color 0.2s;
-}
-
-.profile-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  text-decoration: none;
-}
-
-.profile-link.active {
-  background-color: rgba(255, 255, 255, 0.2);
-  font-weight: bold;
-}
-</style>

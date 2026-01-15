@@ -211,13 +211,19 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 		&models.SkillCategory{},
 		&models.SkillDifficulty{},
 		&models.SpellSchool{},
+		&models.MiscLookup{},
 
 		// Learning Costs System - Abhängige Tabellen
 		&models.ClassCategoryEPCost{},
 		&models.ClassSpellSchoolEPCost{},
 		&models.SpellLevelLECost{},
 		&models.SkillCategoryDifficulty{},
+		&models.WeaponSkillCategoryDifficulty{},
 		&models.SkillImprovementCost{},
+		&models.ClassCategoryLearningPoints{},
+		&models.ClassSpellPoints{},
+		&models.ClassTypicalSkill{},
+		&models.ClassTypicalSpell{},
 
 		// GSMaster Basis-Daten
 		//&models.LookupList{}, // Basis für Skills, Spells, Equipment
@@ -253,6 +259,12 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 		&models.EqAusruestung{},
 		&models.EqWaffe{},
 		&models.EqContainer{},
+
+		// Character Creation Sessions (abhängig von Char)
+		&models.CharacterCreationSession{},
+
+		// Audit Logging (abhängig von Char)
+		&models.AuditLogEntry{},
 
 		// View-Strukturen ohne eigene Tabellen werden nicht kopiert:
 		// SkillLearningInfo, SpellLearningInfo, CharList, FeChar, etc.
@@ -319,25 +331,24 @@ func copyTableData(sourceDB, targetDB *gorm.DB, model interface{}) error {
 			return err
 		}
 
-		// Get the actual records from reflection
-		records := recordsPtr.Elem().Interface()
-		recordsLen := recordsPtr.Elem().Len()
-
-		if recordsLen == 0 {
+		// Get the records for iteration
+		recordsVal := recordsPtr.Elem()
+		if recordsVal.Len() == 0 {
 			logger.Debug("Keine weiteren Datensätze für %s", tableName)
 			break
 		}
 
-		// Batch in SQLite einfügen mit Konflikt-Behandlung
-		// Verwende Clauses.OnConflict um bestehende Datensätze zu ersetzen
-		if err := targetDB.Model(model).Clauses(clause.OnConflict{
-			UpdateAll: true,
-		}).Create(records).Error; err != nil {
-			logger.Error("Fehler beim Einfügen von Batch %d für %s: %s", batchNum, tableName, err.Error())
-			return err
+		// Batch in SQLite einfügen
+		// Use Save() instead of Create() to avoid GORM applying default values to zero values (e.g., false for booleans)
+		for i := 0; i < recordsVal.Len(); i++ {
+			record := recordsVal.Index(i).Addr().Interface()
+			if err := targetDB.Save(record).Error; err != nil {
+				logger.Error("Fehler beim Speichern von Datensatz in Batch %d für %s: %s", batchNum, tableName, err.Error())
+				return err
+			}
 		}
 
-		logger.Debug("Batch %d/%d für %s erfolgreich kopiert (%d Datensätze)", batchNum, totalBatches, tableName, recordsLen)
+		logger.Debug("Batch %d/%d für %s erfolgreich kopiert (%d Datensätze)", batchNum, totalBatches, tableName, recordsVal.Len())
 	}
 
 	logger.Info("Tabelle %s erfolgreich kopiert (%d Datensätze total)", tableName, count)
@@ -554,6 +565,24 @@ func SetupCheckDev(c *gin.Context) {
 	logger.Info("Setup-Check erfolgreich abgeschlossen")
 	c.JSON(http.StatusOK, gin.H{"message": "Setup Check OK"})
 }
+
+/*
+// PopulateClassLearningPoints populates the class learning points tables from hardcoded data
+func PopulateClassLearningPoints(c *gin.Context) {
+	logger.Info("Starte Population der Class Learning Points Daten...")
+
+	err := models.PopulateClassLearningPointsData()
+	if err != nil {
+		logger.Error("Fehler beim Populieren der Class Learning Points: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to populate class learning points: "+err.Error())
+		return
+	}
+
+	logger.Info("Class Learning Points erfolgreich populiert")
+	c.JSON(http.StatusOK, gin.H{"message": "Class learning points data populated successfully"})
+}
+*/
+
 func ReconnectDataBase(c *gin.Context) {
 	logger.Info("Führe Datenbank-Reconnect durch...")
 
@@ -726,7 +755,12 @@ func copySQLiteToMariaDB(sqliteDB, mariaDB *gorm.DB) error {
 		&models.ClassSpellSchoolEPCost{},
 		&models.SpellLevelLECost{},
 		&models.SkillCategoryDifficulty{}, // Jetzt nach Skills
+		&models.WeaponSkillCategoryDifficulty{},
 		&models.SkillImprovementCost{},
+		&models.ClassCategoryLearningPoints{},
+		&models.ClassSpellPoints{},
+		&models.ClassTypicalSkill{},
+		&models.ClassTypicalSpell{},
 
 		// Charaktere (Basis)
 		&models.Char{},
@@ -751,6 +785,12 @@ func copySQLiteToMariaDB(sqliteDB, mariaDB *gorm.DB) error {
 		&models.EqAusruestung{},
 		&models.EqWaffe{},
 		&models.EqContainer{},
+
+		// Character Creation Sessions (abhängig von Char)
+		&models.CharacterCreationSession{},
+
+		// Audit Logging (abhängig von Char)
+		&models.AuditLogEntry{},
 	}
 
 	logger.Info("Kopiere Daten für %d Tabellen von SQLite zu MariaDB...", len(tables))
@@ -863,8 +903,38 @@ func copyTableDataReverse(sourceDB, targetDB *gorm.DB, model interface{}) error 
 				return fmt.Errorf("failed to read batch from source: %w", err)
 			}
 			records = batch
+		case *models.WeaponSkillCategoryDifficulty:
+			var batch []models.WeaponSkillCategoryDifficulty
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
 		case *models.SkillImprovementCost:
 			var batch []models.SkillImprovementCost
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.ClassCategoryLearningPoints:
+			var batch []models.ClassCategoryLearningPoints
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.ClassSpellPoints:
+			var batch []models.ClassSpellPoints
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.ClassTypicalSkill:
+			var batch []models.ClassTypicalSkill
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.ClassTypicalSpell:
+			var batch []models.ClassTypicalSpell
 			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
 				return fmt.Errorf("failed to read batch from source: %w", err)
 			}
@@ -1013,6 +1083,18 @@ func copyTableDataReverse(sourceDB, targetDB *gorm.DB, model interface{}) error 
 				return fmt.Errorf("failed to read batch from source: %w", err)
 			}
 			records = batch
+		case *models.CharacterCreationSession:
+			var batch []models.CharacterCreationSession
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
+		case *models.AuditLogEntry:
+			var batch []models.AuditLogEntry
+			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
+				return fmt.Errorf("failed to read batch from source: %w", err)
+			}
+			records = batch
 		default:
 			return fmt.Errorf("unsupported model type: %T", model)
 		}
@@ -1037,7 +1119,11 @@ func clearMariaDBData(db *gorm.DB) error {
 	// Clear tables in reverse order due to foreign key constraints
 	// (reverse of the insertion order in copySQLiteToMariaDB)
 	tables := []interface{}{
-		// Charakter-Equipment (abhängig von Char und Equipment) - zuerst löschen
+		// Audit Logging und Character Creation Sessions (abhängig von Char) - zuerst löschen
+		&models.AuditLogEntry{},
+		&models.CharacterCreationSession{},
+
+		// Charakter-Equipment (abhängig von Char und Equipment)
 		&models.EqContainer{},
 		&models.EqWaffe{},
 		&models.EqAusruestung{},
@@ -1063,10 +1149,15 @@ func clearMariaDBData(db *gorm.DB) error {
 
 		// Learning Costs System - Abhängige Tabellen (vor Skills/Spells löschen)
 		&models.SkillImprovementCost{},
+		&models.WeaponSkillCategoryDifficulty{},
 		&models.SkillCategoryDifficulty{},
 		&models.SpellLevelLECost{},
 		&models.ClassSpellSchoolEPCost{},
 		&models.ClassCategoryEPCost{},
+		&models.ClassTypicalSpell{},
+		&models.ClassTypicalSkill{},
+		&models.ClassSpellPoints{},
+		&models.ClassCategoryLearningPoints{},
 
 		// GSMaster Basis-Daten
 		&models.Believe{},

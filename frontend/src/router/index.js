@@ -11,6 +11,9 @@ import MaintenanceView from "../views/MaintenanceView.vue";
 import FileUploadPage from "../views/FileUploadPage.vue";
 import UserProfileView from "../views/UserProfileView.vue";
 import UserManagementView from "../views/UserManagementView.vue";
+import SponsorsView from "../views/SponsorsView.vue";
+import HelpView from "../views/HelpView.vue";
+import SystemInfoView from "../views/SystemInfoView.vue";
 
 import CharacterDetails from "@/components/CharacterDetails.vue";
 import CharacterCreation from "@/components/CharacterCreation.vue";
@@ -29,7 +32,10 @@ const routes = [
   { path: "/users", name: "UserManagement", component: UserManagementView, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: "/ausruestung/:characterId", name: "Ausruestung", component: AusruestungView, meta: { requiresAuth: true } },
   { path: "/maintenance", name: "Maintenance", component: MaintenanceView, meta: { requiresAuth: true } },
-  { path: "/upload", name: "FileUpload", component: FileUploadPage },
+  { path: "/upload", name: "FileUpload", component: FileUploadPage, meta: { requiresAuth: true } },
+  { path: "/sponsors", name: "Sponsors", component: SponsorsView },
+  { path: "/help", name: "Help", component: HelpView },
+  { path: "/system-info", name: "SystemInfo", component: SystemInfoView },
   // Route for character details  // Pass route params as props to the component
   {    path: "/character/:id",     name: "CharacterDetails",    component: CharacterDetails,    props: true, meta: { requiresAuth: true }   },
   // Route for character creation

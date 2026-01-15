@@ -16,6 +16,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 		charGrp.GET("/reconndb", ReconnectDataBase) // Datenbank neu verbinden
 		charGrp.GET("/reloadenv", ReloadENV)
 		charGrp.POST("/transfer-sqlite-to-mariadb", TransferSQLiteToMariaDB) // Transfer data from SQLite to MariaDB
+		//charGrp.POST("/populate-class-learning-points", PopulateClassLearningPoints) // Populate class learning points from hardcoded data
 		/*
 			//nur zur einmaligen Ausführung, um das Lernkosten-System zu initialisieren
 			charGrp.POST("/initialize-learning-costs", InitializeLearningCosts)

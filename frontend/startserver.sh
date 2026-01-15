@@ -2,7 +2,7 @@
 
 # API Configuration
 # API_URL=http://localhost:8180
-ENVIRONMENT=development
+
 # Database Configuration (for development)
 DATABASE_TYPE=mysql
 DATABASE_URL="bamort:bG4)efozrc@tcp(192.168.0.36:3306)/bamort?charset=utf8mb4&parseTime=True&loc=Local"
@@ -27,5 +27,6 @@ CHROME_BIN="/usr/bin/chromium"
 
 #./server
 #/usr/local/go/bin/go run ./cmd/main.go
-echo $DATABASE_URL
-/home/de31a2/.local/bin/go/bin/go run ./cmd/main.go
+
+npm install
+npm run dev -- --host 0.0.0.0

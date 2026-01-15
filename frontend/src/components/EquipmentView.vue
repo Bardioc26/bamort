@@ -49,7 +49,7 @@
 
     <!-- Dialog für Ausrüstung hinzufügen -->
     <div v-if="showAddDialog" class="modal-overlay" @click.self="closeDialog">
-      <div class="modal-content">
+      <div class="modal-content modal-fullscreen">
         <div class="modal-header">
           <h3>{{ $t('equipment.addEquipment') }}</h3>
           <button @click="closeDialog" class="close-button">&times;</button>
@@ -119,7 +119,7 @@
 
 </template>
 
-<style>
+<style scoped>
 /* All styles moved to main.css */
 
 /* Equipment-specific table header color override */

@@ -53,10 +53,10 @@ type DatabaseExport struct {
 	GsmContainers      []models.Container      `json:"gsm_containers"`
 	GsmTransportations []models.Transportation `json:"gsm_transportations"`
 	GsmBelieves        []models.Believe        `json:"gsm_believes"`
+	Sources            []models.Source         `json:"gsm_lit_sources"`
+	CharacterClasses   []models.CharacterClass `json:"gsm_character_classes"`
 
 	// Learning data
-	Sources                   []models.Source                  `json:"learning_sources"`
-	CharacterClasses          []models.CharacterClass          `json:"learning_character_classes"`
 	SkillCategories           []models.SkillCategory           `json:"learning_skill_categories"`
 	SkillDifficulties         []models.SkillDifficulty         `json:"learning_skill_difficulties"`
 	SpellSchools              []models.SpellSchool             `json:"learning_spell_schools"`

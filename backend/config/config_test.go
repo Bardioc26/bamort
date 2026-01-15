@@ -55,6 +55,9 @@ QUOTED_VALUE='single quotes'
 	os.Unsetenv("DATABASE_URL")
 	os.Unsetenv("QUOTED_VALUE")
 
+	// Load the test env file
+	loadEnvFileContent(".env.test")
+
 	// Tests
 	tests := []struct {
 		key      string
@@ -146,7 +149,7 @@ func TestLoadConfigWithEnvFile(t *testing.T) {
 	envContent := `ENVIRONMENT=development
 DEBUG=true
 LOG_LEVEL=DEBUG
-PORT=7777
+SERVER_PORT=7777
 DATABASE_URL=test://localhost/testdb`
 
 	// Temporäre .env-Datei erstellen
@@ -161,7 +164,7 @@ DATABASE_URL=test://localhost/testdb`
 		"ENVIRONMENT":  os.Getenv("ENVIRONMENT"),
 		"DEBUG":        os.Getenv("DEBUG"),
 		"LOG_LEVEL":    os.Getenv("LOG_LEVEL"),
-		"PORT":         os.Getenv("PORT"),
+		"SERVER_PORT":  os.Getenv("SERVER_PORT"),
 		"DATABASE_URL": os.Getenv("DATABASE_URL"),
 	}
 

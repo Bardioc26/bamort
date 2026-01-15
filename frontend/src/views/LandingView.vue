@@ -2,7 +2,7 @@
   <div class="landing-page">
     <div class="landing-content">
       <div class="dragon-container">
-        <img src="/Drache.png" alt="Bamort Dragon" class="dragon-image" />
+        <img src="/bamorty.png" alt="Bamort Dragon" class="dragon-image" />
       </div>
       
       <div class="info-container">
@@ -21,6 +21,18 @@
           <a :href="githubUrl" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
             {{ $t('landing.github') }}
           </a>
+        </div>
+
+        <div class="quick-links">
+          <router-link to="/help" class="quick-link">
+            {{ $t('landing.help') }}
+          </router-link>
+          <router-link to="/sponsors" class="quick-link">
+            {{ $t('landing.sponsors') }}
+          </router-link>
+          <router-link to="/system-info" class="quick-link">
+            {{ $t('landing.systemInfo') }}
+          </router-link>
         </div>
       </div>
     </div>

@@ -1,6 +1,8 @@
 package character
 
 import (
+	"bamort/database"
+	"bamort/models"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -11,6 +13,22 @@ import (
 )
 
 func TestGetCharacterClassLearningPoints(t *testing.T) {
+	// Setup test database
+	database.SetupTestDB()
+
+	// Migrate the new structures
+	if err := models.MigrateStructure(database.DB); err != nil {
+		t.Fatalf("Failed to migrate structures: %v", err)
+	}
+
+	/*
+		// Populate test data (character classes and learning points)
+		if err := models.PopulateClassLearningPointsData(); err != nil {
+			t.Logf("Warning: Failed to populate learning points data: %v", err)
+			// Continue anyway - some tests may still work
+		}
+	*/
+
 	// Setup Gin in test mode
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
@@ -28,6 +46,18 @@ func TestGetCharacterClassLearningPoints(t *testing.T) {
 		checkSpells     bool
 		expectedSpells  int
 	}{
+		{
+			name:            "Valid Spitzbube class Mittelschicht stand",
+			classParam:      "Spitzbube",
+			standParam:      "Mittelschicht",
+			expectedStatus:  http.StatusOK,
+			expectError:     false,
+			expectedClass:   "Spitzbube",
+			checkWeapons:    true,
+			expectedWeapons: 20,
+			checkSpells:     true,
+			expectedSpells:  0,
+		},
 		{
 			name:            "Valid Hexer class without stand",
 			classParam:      "Hexer",
@@ -169,9 +199,9 @@ func TestGetCharacterClassLearningPoints(t *testing.T) {
 				assert.NotNil(t, response.LearningPoints)
 				assert.NotNil(t, response.TypicalSkills)
 
-				// Check weapon points if specified
+				// Check weapon points if specified (now in LearningPoints["Waffen"])
 				if tt.checkWeapons {
-					assert.Equal(t, tt.expectedWeapons, response.WeaponPoints)
+					assert.Equal(t, tt.expectedWeapons, response.LearningPoints["Waffen"], "Weapon learning points should match")
 				}
 
 				// Check spell points if specified
@@ -191,6 +221,21 @@ func TestGetCharacterClassLearningPoints(t *testing.T) {
 }
 
 func TestGetLearningPointsForClass(t *testing.T) {
+	// Setup test database
+	database.SetupTestDB()
+
+	// Migrate the new structures
+	if err := models.MigrateStructure(database.DB); err != nil {
+		t.Fatalf("Failed to migrate structures: %v", err)
+	}
+
+	/*
+		// Populate test data
+		if err := models.PopulateClassLearningPointsData(); err != nil {
+			t.Logf("Warning: Failed to populate learning points data: %v", err)
+		}
+	*/
+
 	tests := []struct {
 		name          string
 		className     string
@@ -354,6 +399,21 @@ func TestGetStandBonusPoints(t *testing.T) {
 
 // Test all character classes to ensure they're properly defined
 func TestAllCharacterClassesAreDefined(t *testing.T) {
+	// Setup test database
+	database.SetupTestDB()
+
+	// Migrate the new structures
+	if err := models.MigrateStructure(database.DB); err != nil {
+		t.Fatalf("Failed to migrate structures: %v", err)
+	}
+
+	/*
+		// Populate test data
+		if err := models.PopulateClassLearningPointsData(); err != nil {
+			t.Logf("Warning: Failed to populate learning points data: %v", err)
+		}
+	*/
+
 	expectedClasses := []string{
 		"Assassine", "Barbar", "Glücksritter", "Händler", "Krieger", "Spitzbube", "Waldläufer",
 		"Barde", "Ordenskrieger", "Druide", "Hexer", "Magier", "Priester Beschützer", "Priester Streiter", "Schamane",

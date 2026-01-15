@@ -193,11 +193,24 @@ func TestWeaponsWithEW(t *testing.T) {
 	}
 
 	// Weapons should contain equipped weapons with EW from skill
-	if len(viewModel.Weapons) == 0 {
-		t.Fatal("Expected weapons from equipped Waffen, got none")
+	// Note: Raufen is always added as first weapon
+	if len(viewModel.Weapons) < 2 {
+		t.Fatalf("Expected at least 2 weapons (Raufen + Schwert), got %d", len(viewModel.Weapons))
 	}
 
-	weapon := viewModel.Weapons[0]
+	// Find the Schwert weapon (not Raufen)
+	var weapon *WeaponViewModel
+	for i := range viewModel.Weapons {
+		if viewModel.Weapons[i].Name == "Schwert" {
+			weapon = &viewModel.Weapons[i]
+			break
+		}
+	}
+
+	if weapon == nil {
+		t.Fatal("Schwert not found in weapons list")
+	}
+
 	if weapon.Name != "Schwert" {
 		t.Errorf("Expected weapon name 'Schwert', got '%s'", weapon.Name)
 	}

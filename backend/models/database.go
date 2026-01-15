@@ -61,6 +61,7 @@ func gsMasterMigrateStructure(db ...*gorm.DB) error {
 		&Container{},
 		&Transportation{},
 		&Believe{},
+		&MiscLookup{},
 	)
 	if err != nil {
 		return err
@@ -155,7 +156,12 @@ func learningMigrateStructure(db ...*gorm.DB) error {
 		&ClassSpellSchoolEPCost{},
 		&SpellLevelLECost{},
 		&SkillCategoryDifficulty{},
+		&WeaponSkillCategoryDifficulty{},
 		&SkillImprovementCost{},
+		&ClassCategoryLearningPoints{},
+		&ClassSpellPoints{},
+		&ClassTypicalSkill{},
+		&ClassTypicalSpell{},
 		&AuditLogEntry{},
 	)
 	if err != nil {

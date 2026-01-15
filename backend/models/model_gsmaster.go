@@ -54,8 +54,8 @@ type Skill struct {
 	Initialwert      int    `gorm:"default:5" json:"initialwert"`
 	BasisWert        int    `gorm:"default:0" json:"basiswert"`
 	Bonuseigenschaft string `json:"bonuseigenschaft,omitempty"`
-	Improvable       bool   `gorm:"default:true" json:"improvable"`
-	InnateSkill      bool   `gorm:"default:false" json:"innateskill"`
+	Improvable       bool   `json:"improvable"`
+	InnateSkill      bool   `json:"innateskill"`
 	Category         string `json:"category"`
 	Difficulty       string `json:"difficulty"`
 }
@@ -128,6 +128,15 @@ type Believe struct {
 	PageNumber   int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
 }
 
+// MiscLookup represents miscellaneous lookup values like gender, race, origin, etc.
+type MiscLookup struct {
+	ID         uint   `gorm:"primaryKey" json:"id"`
+	Key        string `gorm:"column:key;type:varchar(50);index;not null" json:"key"`
+	Value      string `gorm:"type:varchar(255);not null" json:"value"`
+	SourceID   uint   `json:"source_id,omitempty"`
+	PageNumber int    `json:"page_number,omitempty"`
+}
+
 func (object *Skill) TableName() string {
 	dbPrefix := "gsm"
 	return dbPrefix + "_" + "skills"
@@ -136,6 +145,14 @@ func (object *Skill) TableName() string {
 func (stamm *Skill) Create() error {
 	gameSystem := "midgard"
 	stamm.GameSystem = gameSystem
+
+	// Set default values for boolean fields if not explicitly set
+	// Note: We cannot rely on GORM defaults anymore since they interfere with copying operations
+	if !stamm.Improvable && !stamm.InnateSkill {
+		// If both are false, set Improvable to true as default (most skills are improvable)
+		stamm.Improvable = true
+	}
+
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
@@ -152,7 +169,8 @@ func (stamm *Skill) First(name string) error {
 		return fmt.Errorf("name cannot be empty")
 	}
 	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
+	// Order by ID to get the record with the lowest ID when multiple categories exist
+	err := database.DB.Where("game_system=? AND name = ?", gameSystem, name).Order("id ASC").First(&stamm).Error
 	if err != nil {
 		// Fertigkeit found
 		return err
@@ -173,7 +191,7 @@ func (object *Skill) FirstId(value uint) error {
 func (object *Skill) Select(fieldName string, value string) ([]Skill, error) {
 	gameSystem := "midgard"
 	var skills []Skill
-	err := database.DB.Find(&skills, "game_system=? AND name != 'Placeholder' AND "+fieldName+" = ?", gameSystem, value).Error
+	err := database.DB.Find(&skills, "game_system=? AND "+fieldName+" = ?", gameSystem, value).Error
 	if err != nil {
 		return nil, err
 	}
@@ -193,12 +211,12 @@ func SelectSkills(opts ...string) ([]Skill, error) {
 
 	var skills []Skill
 	if fieldName == "" {
-		err := database.DB.Find(&skills, "game_system=? AND name != 'Placeholder'", gameSystem).Error
+		err := database.DB.Find(&skills, "game_system=?", gameSystem).Error
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		err := database.DB.Find(&skills, "game_system=? AND name != 'Placeholder' AND "+fieldName+" = ?", gameSystem, value).Error
+		err := database.DB.Find(&skills, "game_system=? AND "+fieldName+" = ?", gameSystem, value).Error
 		if err != nil {
 			return nil, err
 		}
@@ -230,10 +248,9 @@ func (object *Skill) GetSkillCategories() ([]string, error) {
 	var categories []string
 	gameSystem := "midgard"
 
-	result := database.DB.Model(&Skill{}).
-		Where("game_system = ? and category is not null", gameSystem).
-		Distinct().
-		Pluck("category", &categories)
+	result := database.DB.Model(&SkillCategory{}).
+		Where("game_system = ?", gameSystem).
+		Pluck("name", &categories)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -250,6 +267,12 @@ func (object *WeaponSkill) TableName() string {
 func (stamm *WeaponSkill) Create() error {
 	gameSystem := "midgard"
 	stamm.GameSystem = gameSystem
+
+	// Set default values for boolean fields if not explicitly set
+	if !stamm.Improvable && !stamm.InnateSkill {
+		stamm.Improvable = true
+	}
+
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
@@ -266,7 +289,8 @@ func (stamm *WeaponSkill) First(name string) error {
 		return fmt.Errorf("name cannot be empty")
 	}
 	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
+	// Order by ID to get the record with the lowest ID when multiple categories exist
+	err := database.DB.Where("game_system=? AND name = ?", gameSystem, name).Order("id ASC").First(&stamm).Error
 	if err != nil {
 		// Fertigkeit found
 		return err
@@ -357,12 +381,12 @@ func SelectSpells(opts ...string) ([]Spell, error) {
 
 	var spells []Spell
 	if fieldName == "" {
-		err := database.DB.Find(&spells, "game_system=? AND name != 'Placeholder'", gameSystem).Error
+		err := database.DB.Find(&spells, "game_system=?", gameSystem).Error
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		err := database.DB.Find(&spells, "game_system=? AND name != 'Placeholder' AND "+fieldName+" = ?", gameSystem, value).Error
+		err := database.DB.Find(&spells, "game_system=? AND "+fieldName+" = ?", gameSystem, value).Error
 		if err != nil {
 			return nil, err
 		}
@@ -374,10 +398,9 @@ func (object *Spell) GetSpellCategories() ([]string, error) {
 	var categories []string
 	gameSystem := "midgard"
 
-	result := database.DB.Model(&Spell{}).
-		Where("game_system=? and category is not null", gameSystem).
-		Distinct().
-		Pluck("category", &categories)
+	result := database.DB.Model(&SpellSchool{}).
+		Where("game_system = ?", gameSystem).
+		Pluck("name", &categories)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -649,9 +672,14 @@ func (object *Believe) Save() error {
 func GetBelievesByActiveSources(gameSystem string) ([]Believe, error) {
 	var believes []Believe
 	err := database.DB.
-		Joins("LEFT JOIN learning_sources ON gsm_believes.source_id = learning_sources.id").
-		Where("gsm_believes.game_system = ? AND (learning_sources.is_active = ? OR gsm_believes.source_id IS NULL)", gameSystem, true).
+		Joins("LEFT JOIN gsm_lit_sources ON gsm_believes.source_id = gsm_lit_sources.id").
+		Where("gsm_believes.game_system = ? AND (gsm_lit_sources.is_active = ? OR gsm_believes.source_id IS NULL)", gameSystem, true).
 		Order("gsm_believes.name ASC").
 		Find(&believes).Error
 	return believes, err
+}
+
+// TableName specifies the table name for MiscLookup
+func (MiscLookup) TableName() string {
+	return "gsm_misc"
 }

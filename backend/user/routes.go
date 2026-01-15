@@ -12,6 +12,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 		userGroup.GET("/profile", GetUserProfile)
 		userGroup.PUT("/email", UpdateEmail)
 		userGroup.PUT("/password", UpdatePassword)
+		userGroup.PUT("/language", UpdateLanguage)
 	}
 
 	// Admin routes - require admin role

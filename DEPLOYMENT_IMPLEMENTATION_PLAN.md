@@ -1566,7 +1566,7 @@ masterdata/                             # Production master data exports
   "pending_migrations": [],
   "compatible": true,
   "migration_needed": false,
-  "compatibility_reason": "Database version matches required version
+  "compatibility_reason": "Database version matches required version"
   "compatibility_reason": "Versions compatible",
   "last_migration": {
     "number": 5,

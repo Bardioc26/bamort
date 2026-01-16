@@ -4,6 +4,7 @@
 **Date:** 16. Januar 2026  
 **Status:** Ready for Implementation  
 **Approach:** Hybrid Migration System with CLI Deployment
+**Rules:** Always work in the TestDriven Development Approach. Always Keep It Small and Simple
 
 ---
 

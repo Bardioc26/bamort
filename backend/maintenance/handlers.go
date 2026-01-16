@@ -3,6 +3,7 @@ package maintenance
 import (
 	"bamort/config"
 	"bamort/database"
+	"bamort/deployment/migrations"
 	"bamort/logger"
 	"bamort/models"
 	"bamort/user"
@@ -50,6 +51,12 @@ func migrateAllStructures(db *gorm.DB) error {
 	if err := models.MigrateStructure(db); err != nil {
 		logger.Error("Fehler beim Migrieren der GSMaster-Strukturen: %s", err.Error())
 		return fmt.Errorf("failed to migrate gsmaster structures: %w", err)
+	}
+
+	logger.Debug("Migriere Deployment-Strukturen...")
+	if err := migrations.MigrateStructure(db); err != nil {
+		logger.Error("Fehler beim Migrieren der Deployment-Strukturen: %s", err.Error())
+		return fmt.Errorf("failed to migrate deployment structures: %w", err)
 	}
 
 	/*if err := importer.MigrateStructure(db); err != nil {

@@ -26,13 +26,13 @@ type NewInstallation struct {
 
 // InstallationResult contains the result of the installation
 type InstallationResult struct {
-	Success        bool
-	Version        string
-	TablesCreated  int
-	AdminCreated   bool
-	MasterDataOK   bool
-	ExecutionTime  time.Duration
-	Errors         []string
+	Success       bool
+	Version       string
+	TablesCreated int
+	AdminCreated  bool
+	MasterDataOK  bool
+	ExecutionTime time.Duration
+	Errors        []string
 }
 
 // NewInstaller creates a new installation instance

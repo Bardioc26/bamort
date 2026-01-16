@@ -96,7 +96,7 @@ if [ "$AUTO_COMMIT" = true ]; then
         git tag backend-v$BACKEND_VERSION 
         git tag frontend-v$FRONTEND_VERSION
         git tag v$BACKEND_VERSION -m "Backend version $BACKEND_VERSION, Frontend version $FRONTEND_VERSION"
-        echo "✓ Committed and tagged as backend-v$BACKEND_VERSION, frontend-v$FRONTEND_VERSION, v$BACKEND_VERSION"
+        echo "✓ Committed and tagged as backend-v$BACKEND_VERSION,  frontend-v$FRONTEND_VERSION, v$BACKEND_VERSION"
     fi
     echo ""
     echo "Next step:"

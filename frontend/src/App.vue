@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <!-- System Alert Banner -->
+    <SystemAlert />
+    
     <!-- Menu nur anzeigen wenn eingeloggt -->
     <Menu v-if="isLoggedIn" />
      <!-- Main Content Area -->
@@ -11,10 +14,12 @@
 
 <script>
 import Menu from "./components/Menu.vue";
+import SystemAlert from "./components/SystemAlert.vue";
 
 export default {
   components: {
     Menu,
+    SystemAlert,
   },
   data() {
     return {

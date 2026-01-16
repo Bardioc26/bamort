@@ -692,5 +692,11 @@ export default {
     license: 'Lizenz',
     licenseText: 'BaMoRT ist Open-Source-Software, lizenziert unter einer dualen Lizenz. Details finden Sie im GitHub-Repository.',
     github: 'Projekt auf GitHub'
+  },
+  system: {
+    migrationRequired: 'Datenbank-Migration erforderlich. Bitte kontaktieren Sie den Administrator.',
+    incompatibleVersions: 'Inkompatible Versionen. Backend-Update erforderlich.',
+    backendVersion: 'Backend',
+    databaseVersion: 'Datenbank'
   }
 }

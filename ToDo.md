@@ -24,6 +24,7 @@
         * Regeln
         * Charakterdaten
         * Userdaten
+    * Verionieren und Import für ältere Datenversionen bereitstellen
 * API Dokumentation
 * ./testdata  neu erstellen und aktuell halten
 * in jedem Package eine README.md erstellen in der kurz erklärt wird wozu das package dient, welche Abhängigkeiten bestehen, wie es zu benutzen ist und wie die tests funktionieren.

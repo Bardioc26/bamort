@@ -275,6 +275,8 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 
 		// View-Strukturen ohne eigene Tabellen werden nicht kopiert:
 		// SkillLearningInfo, SpellLearningInfo, CharList, FeChar, etc.
+		&migrations.SchemaVersion{},
+		&migrations.MigrationHistory{},
 	}
 
 	logger.Info("Kopiere Daten für %d Tabellen...", len(tables))

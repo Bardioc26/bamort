@@ -11,6 +11,7 @@ import (
 	"bamort/maintenance"
 	"bamort/pdfrender"
 	"bamort/router"
+	"bamort/system"
 	"bamort/transfer"
 	"bamort/user"
 
@@ -97,6 +98,7 @@ func main() {
 	// Register public routes (no authentication)
 	pdfrender.RegisterPublicRoutes(r)
 	config.RegisterPublicRoutes(r)
+	system.RegisterPublicRoutes(r, database.DB)
 
 	logger.Info("API-Routen erfolgreich registriert")
 

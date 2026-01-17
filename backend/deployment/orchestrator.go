@@ -5,8 +5,8 @@ import (
 	"bamort/deployment/backup"
 	"bamort/deployment/migrations"
 	"bamort/deployment/version"
+	"bamort/gsmaster"
 	"bamort/logger"
-	"bamort/transfer"
 	"fmt"
 	"time"
 
@@ -37,72 +37,6 @@ func NewOrchestrator(db *gorm.DB) *DeploymentOrchestrator {
 	return &DeploymentOrchestrator{
 		DB: db,
 	}
-}
-
-// Deploy executes the full deployment workflow
-func (o *DeploymentOrchestrator) Deploy() (*DeploymentReport, error) {
-	report := &DeploymentReport{
-		StartTime: time.Now(),
-	}
-
-	logger.Info("═══════════════════════════════════════════════════")
-	logger.Info("Starting Deployment Process")
-	logger.Info("═══════════════════════════════════════════════════")
-
-	// Step 1: Create backup
-	logger.Info("Step 1/4: Creating pre-deployment backup...")
-	backupPath, err := o.createBackup()
-	if err != nil {
-		report.Errors = append(report.Errors, fmt.Sprintf("Backup failed: %v", err))
-		return report, fmt.Errorf("backup failed: %w", err)
-	}
-	report.BackupCreated = true
-	report.BackupPath = backupPath
-	logger.Info("✓ Backup created: %s", backupPath)
-
-	// Step 2: Check version compatibility
-	logger.Info("Step 2/4: Checking version compatibility...")
-	if err := o.checkCompatibility(); err != nil {
-		report.Errors = append(report.Errors, fmt.Sprintf("Compatibility check failed: %v", err))
-		return report, fmt.Errorf("compatibility check failed: %w", err)
-	}
-	logger.Info("✓ Version compatibility verified")
-
-	// Step 3: Apply migrations
-	logger.Info("Step 3/4: Applying database migrations...")
-	migrationsRun, err := o.applyMigrations()
-	if err != nil {
-		report.Errors = append(report.Errors, fmt.Sprintf("Migration failed: %v", err))
-		logger.Error("Migration failed, attempting rollback...")
-		// Rollback would happen here in production
-		return report, fmt.Errorf("migration failed: %w", err)
-	}
-	report.MigrationsRun = migrationsRun
-	if migrationsRun > 0 {
-		logger.Info("✓ Applied %d migration(s)", migrationsRun)
-	} else {
-		logger.Info("✓ No migrations to apply")
-	}
-
-	// Step 4: Validate deployment
-	logger.Info("Step 4/4: Validating deployment...")
-	if err := o.validateDeployment(); err != nil {
-		report.Errors = append(report.Errors, fmt.Sprintf("Validation failed: %v", err))
-		return report, fmt.Errorf("validation failed: %w", err)
-	}
-	report.ValidationPassed = true
-	logger.Info("✓ Deployment validated successfully")
-
-	report.Success = true
-	report.EndTime = time.Now()
-	report.Duration = report.EndTime.Sub(report.StartTime)
-
-	logger.Info("═══════════════════════════════════════════════════")
-	logger.Info("Deployment Completed Successfully")
-	logger.Info("Duration: %v", report.Duration)
-	logger.Info("═══════════════════════════════════════════════════")
-
-	return report, nil
 }
 
 // createBackup creates a pre-deployment backup
@@ -210,21 +144,19 @@ func (o *DeploymentOrchestrator) PrepareDeploymentPackage(exportDir string) (*De
 		Timestamp: time.Now(),
 	}
 
-	// Export full database (all data, all tables)
-	logger.Info("Exporting complete database...")
-	result, err := transfer.ExportDatabase(exportDir)
+	// Export all master data (system data, rules, equipment, etc.)
+	logger.Info("Exporting master data...")
+	err := gsmaster.ExportAll(exportDir)
 	if err != nil {
-		return nil, fmt.Errorf("database export failed: %w", err)
+		return nil, fmt.Errorf("master data export failed: %w", err)
 	}
 
-	pkg.ExportPath = result.FilePath
-	pkg.RecordCount = result.RecordCount
-	logger.Info("✓ Exported %d records to %s", result.RecordCount, result.Filename)
+	pkg.ExportPath = exportDir
+	logger.Info("✓ Master data exported to %s", exportDir)
 
 	logger.Info("═══════════════════════════════════════════════════")
 	logger.Info("Deployment Package Ready")
-	logger.Info("File: %s", result.FilePath)
-	logger.Info("Records: %d", result.RecordCount)
+	logger.Info("Directory: %s", exportDir)
 	logger.Info("═══════════════════════════════════════════════════")
 
 	return pkg, nil
@@ -232,10 +164,9 @@ func (o *DeploymentOrchestrator) PrepareDeploymentPackage(exportDir string) (*De
 
 // DeploymentPackage contains information about a deployment package
 type DeploymentPackage struct {
-	Version     string
-	Timestamp   time.Time
-	ExportPath  string
-	RecordCount int
+	Version    string
+	Timestamp  time.Time
+	ExportPath string
 }
 
 // FullDeploymentWithImport performs a complete deployment including data import
@@ -260,14 +191,14 @@ func (o *DeploymentOrchestrator) FullDeploymentWithImport(importFilePath string)
 	logger.Info("✓ Backup created: %s", backupPath)
 
 	// Step 2: Export current state (before migration)
-	logger.Info("Step 2/5: Exporting current database state...")
+	logger.Info("Step 2/5: Exporting current master data state...")
 	exportDir := "./export_temp"
-	exportResult, err := transfer.ExportDatabase(exportDir)
+	err = gsmaster.ExportAll(exportDir)
 	if err != nil {
 		report.Warnings = append(report.Warnings, fmt.Sprintf("Current state export failed: %v", err))
 		logger.Warn("Could not export current state: %v", err)
 	} else {
-		logger.Info("✓ Current state exported: %s", exportResult.Filename)
+		logger.Info("✓ Current state exported to: %s", exportDir)
 	}
 
 	// Step 3: Check version compatibility
@@ -295,13 +226,13 @@ func (o *DeploymentOrchestrator) FullDeploymentWithImport(importFilePath string)
 
 	// Step 5: Import data if provided
 	if importFilePath != "" {
-		logger.Info("Step 5/5: Importing data from %s...", importFilePath)
-		importResult, err := transfer.ImportDatabase(importFilePath)
+		logger.Info("Step 5/5: Importing master data from %s...", importFilePath)
+		err := gsmaster.ImportAll(importFilePath)
 		if err != nil {
-			report.Errors = append(report.Errors, fmt.Sprintf("Data import failed: %v", err))
-			return report, fmt.Errorf("data import failed: %w", err)
+			report.Errors = append(report.Errors, fmt.Sprintf("Master data import failed: %v", err))
+			return report, fmt.Errorf("master data import failed: %w", err)
 		}
-		logger.Info("✓ Imported %d records", importResult.RecordCount)
+		logger.Info("✓ Master data imported successfully")
 	} else {
 		logger.Info("Step 5/5: No data import requested")
 	}

@@ -35,8 +35,8 @@ The deployment tool (`backend/cmd/deploy/main.go`) provides several commands to 
 Build the deployment tool first:
 
 ```bash
-export BASEDIR=PWD
-cd ./backend
+export BASEDIR=$(pwd)
+cd $BASEDIR/backend
 go build -o deploy cmd/deploy/main.go
 ```
 

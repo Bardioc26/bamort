@@ -120,6 +120,7 @@ func ExportDatabase(exportDir string) (*ExportResult, error) {
 	database.DB.Find(&export.EqAusruestungen)
 	database.DB.Find(&export.EqWaffen)
 	database.DB.Find(&export.EqContainers)
+	database.DB.Find(&export.AuditLogEntries)
 
 	database.DB.Find(&export.GsmSkills)
 	database.DB.Find(&export.GsmWeaponSkills)
@@ -140,7 +141,6 @@ func ExportDatabase(exportDir string) (*ExportResult, error) {
 	database.DB.Find(&export.SpellLevelLECosts)
 	database.DB.Find(&export.SkillCategoryDifficulties)
 	database.DB.Find(&export.SkillImprovementCosts)
-	database.DB.Find(&export.AuditLogEntries)
 
 	// Count total records
 	recordCount := len(export.Users) + len(export.Characters) +

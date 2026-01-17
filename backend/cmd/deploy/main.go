@@ -54,16 +54,23 @@ func printHelp() {
 	fmt.Printf("Version: %s\n\n", config.GetVersion())
 	fmt.Println("Usage: deploy <command> [options]")
 	fmt.Println("\nCommands:")
-	fmt.Printf("  %sprepare%s           Create deployment package (export all data)\n", ColorGreen, ColorReset)
-	fmt.Printf("  %sdeploy%s            Run full deployment (backup → migrate → validate)\n", ColorGreen, ColorReset)
+	fmt.Printf("  %sprepare%s [dir]     Create deployment package (export all master data)\n", ColorGreen, ColorReset)
+	fmt.Printf("  %sdeploy%s [dir]      Run full deployment (backup → migrate → import → validate)\n", ColorGreen, ColorReset)
 	fmt.Printf("  %svalidate%s          Validate database schema and data integrity\n", ColorGreen, ColorReset)
 	fmt.Printf("  %sstatus%s            Show current database version and pending migrations\n", ColorGreen, ColorReset)
 	fmt.Printf("  %sversion%s           Show version information\n", ColorGreen, ColorReset)
 	fmt.Printf("  %shelp%s              Show this help message\n", ColorGreen, ColorReset)
+	fmt.Println("\nArguments:")
+	fmt.Printf("  %s[dir]%s             Directory for export/import (default: ./export_temp)\n", ColorCyan, ColorReset)
 	fmt.Println("\nExamples:")
 	fmt.Println("  deploy prepare              # Create deployment package in ./export_temp")
-	fmt.Println("  deploy deploy               # Run full deployment workflow")
+	fmt.Println("  deploy prepare /path/pkg    # Create deployment package in /path/pkg")
+	fmt.Println("  deploy deploy               # Run deployment without importing data")
+	fmt.Println("  deploy deploy ./export_temp # Run deployment and import master data")
 	fmt.Println("  deploy validate             # Validate database schema")
+	fmt.Println("\nDeployment Workflow:")
+	fmt.Println("  Source System:  deploy prepare /shared/pkg     # Export master data")
+	fmt.Println("  Target System:  deploy deploy /shared/pkg      # Migrate DB + Import data")
 	fmt.Println()
 }
 
@@ -178,7 +185,6 @@ func cmdPrepare() {
 	fmt.Printf("\n%sPackage Details:%s\n", ColorBold, ColorReset)
 	fmt.Printf("  Version:      %s\n", pkg.Version)
 	fmt.Printf("  Export File:  %s\n", pkg.ExportPath)
-	fmt.Printf("  Records:      %d\n", pkg.RecordCount)
 	fmt.Printf("  Timestamp:    %s\n", pkg.Timestamp.Format("2006-01-02 15:04:05"))
 	fmt.Println()
 	fmt.Println("This export can be imported on the target system after migration.")
@@ -198,11 +204,29 @@ func cmdDeploy() {
 
 	orchestrator := deployment.NewOrchestrator(database.DB)
 
-	fmt.Println("\nThis will:")
-	fmt.Println("  1. Create a backup of the current database")
-	fmt.Println("  2. Check version compatibility")
-	fmt.Println("  3. Apply pending migrations")
-	fmt.Println("  4. Validate the deployment")
+	// Check if import directory is provided
+	importDir := ""
+	if len(os.Args) > 2 {
+		importDir = os.Args[2]
+	}
+
+	if importDir != "" {
+		fmt.Println("\nThis will:")
+		fmt.Println("  1. Create a backup of the current database")
+		fmt.Println("  2. Export current master data state")
+		fmt.Println("  3. Check version compatibility")
+		fmt.Println("  4. Apply pending migrations")
+		fmt.Printf("  5. Import master data from: %s%s%s\n", ColorCyan, importDir, ColorReset)
+		fmt.Println("  6. Validate the deployment")
+	} else {
+		fmt.Println("\nThis will:")
+		fmt.Println("  1. Create a backup of the current database")
+		fmt.Println("  2. Check version compatibility")
+		fmt.Println("  3. Apply pending migrations")
+		fmt.Println("  4. Validate the deployment")
+		fmt.Println()
+		fmt.Printf("%sNOTE:%s No import directory specified. Master data will not be imported.\n", ColorYellow, ColorReset)
+	}
 	fmt.Println()
 
 	fmt.Printf("%sWARNING:%s This operation will modify the database!\n", ColorYellow, ColorReset)
@@ -216,7 +240,9 @@ func cmdDeploy() {
 	}
 
 	fmt.Println()
-	report, err := orchestrator.Deploy()
+
+	// Run deployment (with or without import based on importDir)
+	report, err := orchestrator.FullDeploymentWithImport(importDir)
 
 	if err != nil {
 		printError("Deployment failed: %v", err)
@@ -238,8 +264,19 @@ func cmdDeploy() {
 	fmt.Printf("\n%sDeployment Summary:%s\n", ColorBold, ColorReset)
 	fmt.Printf("  Backup:       %s\n", report.BackupPath)
 	fmt.Printf("  Migrations:   %d applied\n", report.MigrationsRun)
+	if importDir != "" {
+		fmt.Printf("  Data Import:  %s✓ Master data imported%s\n", ColorGreen, ColorReset)
+	} else {
+		fmt.Printf("  Data Import:  %s- Not performed%s\n", ColorYellow, ColorReset)
+	}
 	fmt.Printf("  Duration:     %v\n", report.Duration)
 	fmt.Printf("  Validated:    %s✓%s\n", ColorGreen, ColorReset)
+	if len(report.Warnings) > 0 {
+		fmt.Printf("\n%sWarnings:%s\n", ColorYellow, ColorReset)
+		for _, w := range report.Warnings {
+			fmt.Printf("  ⚠ %s\n", w)
+		}
+	}
 	fmt.Println()
 }
 

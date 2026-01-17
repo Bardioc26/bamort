@@ -10,6 +10,10 @@ import (
 
 func setupTestDB(t *testing.T) {
 	database.SetupTestDB()
+
+	// Clear schema_version table to start with clean state for migration tests
+	database.DB.Exec("DELETE FROM schema_version")
+
 	t.Cleanup(func() {
 		database.ResetTestDB()
 	})

@@ -8,6 +8,7 @@ Vue 3 + Vite frontend for the BaMoRT monorepo.
 npm install
 npm run dev
 ```
+or even better run ../docker/start-dev.sh to start the docker environment.
 
 ## License
 

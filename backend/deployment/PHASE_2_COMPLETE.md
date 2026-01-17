@@ -6,7 +6,7 @@
 
 ## Overview
 
-Phase 2 implements master data versioning and fresh installation capabilities for Bamort deployment system.
+Phase 2 implements master data versioning and fresh installation capabilities for BaMoRT deployment system.
 
 ## Implemented Components
 

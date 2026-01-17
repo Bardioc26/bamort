@@ -1,6 +1,6 @@
-# Bamort Deployment CLI Tool
+# BaMoRT Deployment CLI Tool
 
-Command-line interface for Bamort database deployment and maintenance operations.
+Command-line interface for BaMoRT database deployment and maintenance operations.
 
 ## Building
 

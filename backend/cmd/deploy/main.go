@@ -50,7 +50,7 @@ func main() {
 }
 
 func printHelp() {
-	fmt.Printf("\n%s%sBamort Deployment Tool%s\n", ColorBold, ColorCyan, ColorReset)
+	fmt.Printf("\n%s%sBaMoRT Deployment Tool%s\n", ColorBold, ColorCyan, ColorReset)
 	fmt.Printf("Version: %s\n\n", config.GetVersion())
 	fmt.Println("Usage: deploy <command> [options]")
 	fmt.Println("\nCommands:")
@@ -68,7 +68,7 @@ func printHelp() {
 }
 
 func cmdVersion() {
-	fmt.Printf("\n%s%sBamort Deployment Tool%s\n", ColorBold, ColorCyan, ColorReset)
+	fmt.Printf("\n%s%sBaMoRT Deployment Tool%s\n", ColorBold, ColorCyan, ColorReset)
 	fmt.Printf("Backend Version: %s%s%s\n", ColorGreen, config.GetVersion(), ColorReset)
 	fmt.Printf("Required DB Version: %s%s%s\n", ColorGreen, version.GetRequiredDBVersion(), ColorReset)
 	fmt.Println()

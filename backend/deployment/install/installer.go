@@ -52,7 +52,7 @@ func (n *NewInstallation) Initialize() (*InstallationResult, error) {
 		Version: config.GetVersion(),
 	}
 
-	logger.Info("Initializing new Bamort installation...")
+	logger.Info("Initializing new BaMoRT installation...")
 	logger.Info("Backend version: %s", result.Version)
 
 	// Step 1: Create database schema using GORM

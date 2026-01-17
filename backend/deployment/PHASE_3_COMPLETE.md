@@ -226,7 +226,7 @@ Admin user: admin
 ```
 
 ```
-Bamort Deployment Tool
+BaMoRT Deployment Tool
 Version: 0.1.37
 
 Usage: deploy <command> [options]

@@ -19,13 +19,11 @@
       <div class="card">
         <h4>{{ $t('systemInfo.frontend') }}</h4>
         <p><strong>{{ $t('systemInfo.version') }}:</strong> {{ frontendVersion }}</p>
-        <p><strong>{{ $t('systemInfo.commit') }}:</strong> <code>{{ frontendCommit }}</code></p>
       </div>
 
       <div class="card">
         <h4>{{ $t('systemInfo.backend') }}</h4>
         <p><strong>{{ $t('systemInfo.version') }}:</strong> {{ backendVersion }}</p>
-        <p><strong>{{ $t('systemInfo.commit') }}:</strong> <code>{{ backendCommit }}</code></p>
         <p><strong>{{ $t('systemInfo.status') }}:</strong> 
           <span :class="statusClass">{{ statusText }}</span>
         </p>
@@ -109,16 +107,14 @@
 
 <script>
 import axios from 'axios'
-import { getVersion, getGitCommit } from '../version'
+import { getVersion } from '../version'
 
 export default {
   name: "SystemInfoView",
   data() {
     return {
       frontendVersion: getVersion(),
-      frontendCommit: getGitCommit(),
       backendVersion: "Loading...",
-      backendCommit: "Loading...",
       githubUrl: "https://github.com/Bardioc26/bamort",
       koFiUrl: "https://ko-fi.com/bardioc26",
     }
@@ -152,12 +148,10 @@ export default {
         
         if (response.data) {
           this.backendVersion = response.data.version || "Unknown"
-          this.backendCommit = response.data.gitCommit || "Unknown"
         }
       } catch (error) {
         console.warn("Could not fetch backend version:", error)
         this.backendVersion = "Unavailable"
-        this.backendCommit = "N/A"
       }
     }
   }

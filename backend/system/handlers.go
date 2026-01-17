@@ -32,7 +32,6 @@ type VersionResponse struct {
 // BackendInfo contains backend version information
 type BackendInfo struct {
 	Version string `json:"version"`
-	Commit  string `json:"commit"`
 }
 
 // DatabaseInfo contains database version information
@@ -86,7 +85,6 @@ func VersionHandler(db *gorm.DB) gin.HandlerFunc {
 		// Get backend version info
 		backendInfo := BackendInfo{
 			Version: config.GetVersion(),
-			Commit:  config.GitCommit,
 		}
 
 		// Get database version info

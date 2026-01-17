@@ -35,30 +35,16 @@ And `/frontend/package.json`:
 }
 ```
 
-## Git Commit Information
-
-The git commit is injected via environment variable:
-- Set `VITE_GIT_COMMIT` in `.env` or at build time
-- Falls back to "unknown" if not set
-
-Example `.env`:
-```bash
-VITE_GIT_COMMIT=d0c177b
-```
-
 ## Usage in Components
 
 ```javascript
-import { getVersion, getGitCommit, getVersionInfo } from '@/version'
+import { getVersion, getVersionInfo } from '@/version'
 
 // Get version string
 const version = getVersion()  // "0.1.30"
 
-// Get git commit
-const commit = getGitCommit()  // "d0c177b" or "unknown"
-
 // Get full info object
-const info = getVersionInfo()  // { version: "0.1.30", gitCommit: "d0c177b" }
+const info = getVersionInfo()  // { version: "0.1.30" }
 ```
 
 ## Landing Page Display
@@ -68,20 +54,3 @@ The landing page shows both:
 - **Backend Version**: Fetched from `/api/public/version`
 
 This allows users to see if frontend and backend are in sync.
-
-## Build-time Version Injection
-
-To inject git commit at build time, update `vite.config.js`:
-
-```javascript
-import { defineConfig } from 'vite'
-import { execSync } from 'child_process'
-
-const gitCommit = execSync('git rev-parse --short HEAD').toString().trim()
-
-export default defineConfig({
-  define: {
-    'import.meta.env.VITE_GIT_COMMIT': JSON.stringify(gitCommit)
-  }
-})
-```

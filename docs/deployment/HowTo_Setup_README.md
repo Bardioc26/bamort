@@ -88,7 +88,7 @@ Setting up is quite easy. I both cases I would suggest docker
 
 * run ./docker/start-prd.sh
 * test https://backend.domain.de/api/public/version
-  should responde like this: {"version":"0.1.30","gitCommit":"unknown"}
+  should responde like this: {"version":"0.1.30"}
 
 
 ## Development Environment

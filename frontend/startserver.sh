@@ -20,7 +20,6 @@ API_PORT=8180
 BASE_URL="http://localhost:5173"
 TEMPLATES_DIR=./templates
 EXPORT_TEMP_DIR=./export_temp
-GIT_COMMIT=d0c177b
 LOG_LEVEL=debug
 COMPOSE_PROJECT_NAME=bamort
 CHROME_BIN="/usr/bin/chromium"

@@ -193,7 +193,6 @@ func TestVersionHandler_Success(t *testing.T) {
 	backend, ok := result["backend"].(map[string]interface{})
 	assert.True(t, ok)
 	assert.Equal(t, config.GetVersion(), backend["version"])
-	assert.NotNil(t, backend["commit"])
 
 	// Check database section
 	database, ok := result["database"].(map[string]interface{})

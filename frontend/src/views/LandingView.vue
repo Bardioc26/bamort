@@ -45,16 +45,14 @@
 
 <script>
 import axios from 'axios'
-import { getVersion, getGitCommit } from '../version'
+import { getVersion } from '../version'
 
 export default {
   name: "LandingView",
   data() {
     return {
       frontendVersion: getVersion(),
-      frontendCommit: getGitCommit(),
       backendVersion: "Loading...",
-      backendCommit: "Loading...",
       githubUrl: "https://github.com/Bardioc26/bamort",
       retryCount: 0,
       maxRetries: 24,
@@ -85,7 +83,6 @@ export default {
         
         if (response.data) {
           this.backendVersion = response.data.version || "Unknown"
-          this.backendCommit = response.data.gitCommit || "Unknown"
           if (this.retryInterval) {
             clearInterval(this.retryInterval)
             this.retryInterval = null

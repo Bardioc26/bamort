@@ -4,7 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Versionsinfo returns version and git commit information
+// Versionsinfo returns version information
 func Versionsinfo(c *gin.Context) {
-	c.JSON(200, GetInfo())
+	c.JSON(200, gin.H{
+		"version": GetVersion(),
+	})
 }

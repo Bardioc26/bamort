@@ -19,6 +19,7 @@ services:
     working_dir: /app
     volumes:
       - ./templates:/app/templates
+      - ./tmp:/app/tmp
     restart: unless-stopped
 
   frontend:

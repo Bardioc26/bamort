@@ -79,18 +79,23 @@ for i in {1..30}; do
     sleep 2
 done
 
-# Check for pending migrations
+# Run deployment (migrations)
 echo ""
-echo "→ Checking migration status..."
-HEALTH_CHECK=$(curl -s http://localhost:8182/api/system/health 2>/dev/null || echo "{}")
-MIGRATIONS_PENDING=$(echo "$HEALTH_CHECK" | grep -o '"migrations_pending":[^,}]*' | cut -d':' -f2 || echo "unknown")
+echo "→ Running database deployment..."
+docker exec bamort-backend /app/deploy deploy || {
+    echo "❌ Deployment failed"
+    echo "Please check logs: docker logs bamort-backend"
+    exit 1
+}
+echo "✓ Deployment completed"
 
-if [ "$MIGRATIONS_PENDING" = "true" ]; then
-    echo "⚠️  Migrations pending - please run migrations manually"
-    echo "  docker exec bamort-backend /app/deploy migrations apply --all"
-elif [ "$MIGRATIONS_PENDING" = "false" ]; then
-    echo "✓ No pending migrations"
-fi
+# Validate deployment
+echo ""
+echo "→ Validating deployment..."
+docker exec bamort-backend /app/deploy validate || {
+    echo "⚠️  Validation warnings detected (check logs)"
+}
+echo "✓ Validation complete"
 
 # Restart frontend
 echo ""

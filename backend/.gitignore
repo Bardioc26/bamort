@@ -41,7 +41,8 @@ bamort
 
 maintenance/testdata/*
 testdata/*_data.db*
-tmp/main
+tmp/*
+!tmp/.gitkeep
 uploads/*
 xporttemp/*
 export_temp/*

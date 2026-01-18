@@ -61,12 +61,12 @@ func printHelp() {
 	fmt.Printf("  %sversion%s           Show version information\n", ColorGreen, ColorReset)
 	fmt.Printf("  %shelp%s              Show this help message\n", ColorGreen, ColorReset)
 	fmt.Println("\nArguments:")
-	fmt.Printf("  %s[dir]%s             Directory for export/import (default: ./export_temp)\n", ColorCyan, ColorReset)
+	fmt.Printf("  %s[dir]%s             Directory for export/import (default: ./tmp)\n", ColorCyan, ColorReset)
 	fmt.Println("\nExamples:")
-	fmt.Println("  deploy prepare              # Create deployment package in ./export_temp")
+	fmt.Println("  deploy prepare              # Create deployment package in ./tmp")
 	fmt.Println("  deploy prepare /path/pkg    # Create deployment package in /path/pkg")
 	fmt.Println("  deploy deploy               # Run deployment without importing data")
-	fmt.Println("  deploy deploy ./export_temp # Run deployment and import master data")
+	fmt.Println("  deploy deploy ./tmp         # Run deployment and import master data")
 	fmt.Println("  deploy validate             # Validate database schema")
 	fmt.Println("\nDeployment Workflow:")
 	fmt.Println("  Source System:  deploy prepare /shared/pkg     # Export master data")
@@ -165,7 +165,7 @@ func cmdPrepare() {
 
 	orchestrator := deployment.NewOrchestrator(database.DB)
 
-	exportDir := "./export_temp"
+	exportDir := "./tmp"
 	if len(os.Args) > 2 {
 		exportDir = os.Args[2]
 	}
@@ -183,11 +183,12 @@ func cmdPrepare() {
 	fmt.Println()
 	printSuccess("Deployment package created successfully!")
 	fmt.Printf("\n%sPackage Details:%s\n", ColorBold, ColorReset)
-	fmt.Printf("  Version:      %s\n", pkg.Version)
-	fmt.Printf("  Export File:  %s\n", pkg.ExportPath)
-	fmt.Printf("  Timestamp:    %s\n", pkg.Timestamp.Format("2006-01-02 15:04:05"))
+	fmt.Printf("  Version:       %s\n", pkg.Version)
+	fmt.Printf("  Export Dir:    %s\n", pkg.ExportPath)
+	fmt.Printf("  Archive:       %s\n", pkg.TarballPath)
+	fmt.Printf("  Timestamp:     %s\n", pkg.Timestamp.Format("2006-01-02 15:04:05"))
 	fmt.Println()
-	fmt.Println("This export can be imported on the target system after migration.")
+	fmt.Println("Transfer the archive file to the target system for deployment.")
 	fmt.Println()
 }
 

@@ -46,8 +46,8 @@ Available commands:
 |---------|-------------|-------|
 | `version` | Show version information | `./deploy version` |
 | `status` | Show current DB version and pending migrations | `./deploy status` |
-| `prepare` | Create deployment package with master data | `./deploy prepare [export_dir]` |
-| `deploy` | Run full deployment (backup → migrate → validate) | `./deploy deploy` |
+| `prepare [dir]` | Create deployment package with master data | `./deploy prepare [export_dir]` |
+| `deploy [dir]` | Run full deployment (backup → migrate → import → validate) | `./deploy deploy [import_dir]` |
 | `validate` | Validate database schema and data integrity | `./deploy validate` |
 | `help` | Show help message | `./deploy help` |
 
@@ -143,7 +143,7 @@ go build -o deploy cmd/deploy/main.go
 # Check current database status
 ./deploy status
 
-# Create deployment package (exports to ./export_temp by default)
+# Create deployment package (exports to ./tmp by default)
 ./deploy prepare
 
 # Or specify custom export directory
@@ -158,7 +158,11 @@ The deployment package includes:
 
 **Important**: The deployment package does NOT include user data (characters, user accounts). User data remains on the target system and is migrated during deployment.
 
-Package location: `backend/export_temp/`
+Package files:
+- Export directory: `backend/tmp/`
+- Archive: `backend/deployment_package_<version>_<timestamp>.tar.gz`
+
+**Transfer the archive file** to the target system for deployment.
 
 ### 4. Git: Commit and Tag
 
@@ -242,11 +246,13 @@ Run the deployment script on the target system:
 ```bash
 cd $BASEDIR
 
-# Option 1: Deploy without deployment package (code + migrations only)
-./scripts/deploy-production.sh v0.1.38
+# Option 1: Deploy with migrations and master data import
+# (Recommended for version upgrades with new game content)
+./scripts/deploy-production.sh v0.1.38 deployment_package_0.1.38_20260118-120000.tar.gz
 
-# Option 2: Deploy with deployment package (code + migrations + master data)
-./scripts/deploy-production.sh v0.1.38 deployment_package_0.1.38.tar.gz
+# Option 2: Deploy with migrations only (no master data changes)
+# (Use for bug fixes or feature updates without game content changes)
+./scripts/deploy-production.sh v0.1.38
 ```
 
 **Deployment will prompt for confirmation**:
@@ -279,15 +285,20 @@ Type 'DEPLOY' to continue:
    - Stops frontend container to prevent user access during migration
    - Backend remains running
 
-6. **Run database migrations**
-   - Executes pending database migrations
-   - Automatically rolls back on migration failure
-   - Restores backup if rollback occurs
-
-7. **Import master data** (if deployment package provided)
-   - Extracts deployment package
+6. **Extract deployment package** (if provided)
+   - Extracts deployment package to temporary directory
    - Copies master data to backend container
-   - Imports system data (skills, spells, equipment, etc.)
+   - Prepares import directory path
+
+7. **Run deployment command**
+   - Executes `deploy deploy [importDir]` in backend container
+   - Creates backup of current database state
+   - Exports current master data
+   - Checks version compatibility
+   - Applies pending database migrations
+   - Imports master data (if package provided)
+   - Validates database schema
+   - Automatically rolls back on failure
 
 8. **Restart backend**
    - Restarts backend container with new code
@@ -306,6 +317,7 @@ Type 'DEPLOY' to continue:
 11. **Final validation**
     - Verifies all services are running
     - Reports deployment status
+    - Cleans up temporary files
 
 **Deployment log**: Saved to `logs/deploy-YYYYMMDD-HHMMSS.log`
 
@@ -457,9 +469,14 @@ docker exec bamort-backend /app/deploy status
 # Check specific migration file
 # Migrations located in: backend/deployment/migrations/
 
-# Test migration locally first
+# Test migration locally first (without import)
 cd $BASEDIR/backend
-DATABASE_TYPE=sqlite ./deploy deploy
+go build -o deploy cmd/deploy/main.go
+./deploy deploy
+
+# Or test with import
+./deploy prepare ./test_export
+./deploy deploy ./test_export
 
 # Fix migration code if needed
 # Rollback production deployment
@@ -478,12 +495,16 @@ tar -tzf deployment_package_0.1.38.tar.gz
 
 # Verify package was created correctly
 cd $BASEDIR/backend
-./deploy prepare
-ls -lh export_temp/
+go build -o deploy cmd/deploy/main.go
+./deploy prepare ./test_export
+ls -lh ./test_export/
 
 # Import manually if needed
-docker cp export_temp/masterdata bamort-backend:/app/masterdata
-docker exec bamort-backend /app/deploy import-masterdata --path /app/masterdata --verbose
+docker cp ./test_export bamort-backend:/tmp/import_data
+docker exec bamort-backend /app/deploy deploy /tmp/import_data
+
+# Or just run migrations without import
+docker exec bamort-backend /app/deploy deploy
 ```
 
 ### Problem: Insufficient disk space
@@ -532,9 +553,10 @@ sudo systemctl status docker
 # Update version
 ./scripts/update-version.sh 0.1.38 auto
 
-# Create deployment package
+# Create deployment package (includes tar.gz archive)
 cd backend && go build -o deploy cmd/deploy/main.go
 ./deploy prepare
+# Transfer the generated .tar.gz file to target system
 ```
 
 ### Git Commands
@@ -546,8 +568,15 @@ git push origin v0.1.38
 
 ### Target System Commands
 ```bash
-# Deploy
+# Deploy without master data import (migrations only)
 ./scripts/deploy-production.sh v0.1.38
+
+# Deploy with master data import
+./scripts/deploy-production.sh v0.1.38 deployment_package_0.1.38.tar.gz
+
+# Or run deployment tool directly
+docker exec bamort-backend /app/deploy deploy              # Migrations only
+docker exec bamort-backend /app/deploy deploy /import/dir  # With import
 
 # Rollback
 ./scripts/rollback.sh backups/pre-deploy-v0.1.38-TIMESTAMP.sql

@@ -113,52 +113,72 @@ log "→ Stopping frontend to prevent user access..."
 docker-compose -f "$DOCKER_COMPOSE_FILE" stop frontend
 log "✓ Frontend stopped"
 
-# Run database migrations
-log ""
-log "→ Running database migrations..."
-docker exec bamort-backend /app/deploy migrate --verbose || {
-    log "❌ Database migration failed"
-    log "Rolling back..."
-    docker-compose -f "$DOCKER_COMPOSE_FILE" down
-    git checkout main
-    docker-compose -f "$DOCKER_COMPOSE_FILE" up -d
-    log ""
-    log "To restore database backup:"
-    log "  ./scripts/rollback.sh $BACKUP_FILE"
-    exit 1
-}
-log "✓ Migrations completed successfully"
-
-# Import master data if deployment package provided
+# Prepare import directory if deployment package provided
+IMPORT_DIR=""
 if [ -n "$DEPLOYMENT_PACKAGE" ] && [ -f "$DEPLOYMENT_PACKAGE" ]; then
     log ""
     log "→ Extracting deployment package..."
-    TEMP_DIR=$(mktemp -d)
-    tar -xzf "$DEPLOYMENT_PACKAGE" -C "$TEMP_DIR" || {
+    IMPORT_DIR="/tmp/bamort-deploy-$(date +%s)"
+    mkdir -p "$IMPORT_DIR"
+    tar -xzf "$DEPLOYMENT_PACKAGE" -C "$IMPORT_DIR" || {
         log "❌ Failed to extract deployment package"
-        rm -rf "$TEMP_DIR"
+        rm -rf "$IMPORT_DIR"
         exit 1
     }
-    log "✓ Package extracted"
+    log "✓ Package extracted to $IMPORT_DIR"
     
-    log ""
-    log "→ Importing master data..."
-    docker cp "$TEMP_DIR/masterdata" bamort-backend:/app/masterdata || {
-        log "❌ Failed to copy master data"
-        rm -rf "$TEMP_DIR"
+    # Copy to backend container
+    log "→ Copying master data to backend container..."
+    docker cp "$IMPORT_DIR" bamort-backend:/tmp/deploy_import || {
+        log "❌ Failed to copy master data to container"
+        rm -rf "$IMPORT_DIR"
         exit 1
     }
-    
-    docker exec bamort-backend /app/deploy import-masterdata --path /app/masterdata --verbose || {
-        log "⚠️  Master data import had issues (check logs)"
-    }
-    log "✓ Master data import completed"
-    
-    rm -rf "$TEMP_DIR"
+    log "✓ Master data copied to container"
+    CONTAINER_IMPORT_DIR="/tmp/deploy_import"
 elif [ -n "$DEPLOYMENT_PACKAGE" ]; then
     log "⚠️  Deployment package not found: $DEPLOYMENT_PACKAGE"
 else
-    log "ℹ️  No deployment package provided, skipping master data import"
+    log "ℹ️  No deployment package provided, migrations only"
+fi
+
+# Run deployment (migrations + optional import)
+log ""
+if [ -n "$CONTAINER_IMPORT_DIR" ]; then
+    log "→ Running deployment with master data import..."
+    docker exec bamort-backend /app/deploy deploy "$CONTAINER_IMPORT_DIR" || {
+        log "❌ Deployment failed"
+        log "Rolling back..."
+        docker-compose -f "$DOCKER_COMPOSE_FILE" down
+        git checkout main
+        docker-compose -f "$DOCKER_COMPOSE_FILE" up -d
+        log ""
+        log "To restore database backup:"
+        log "  ./scripts/rollback.sh $BACKUP_FILE"
+        [ -n "$IMPORT_DIR" ] && rm -rf "$IMPORT_DIR"
+        exit 1
+    }
+    log "✓ Deployment completed (migrations + master data import)"
+else
+    log "→ Running deployment (migrations only)..."
+    docker exec bamort-backend /app/deploy deploy || {
+        log "❌ Deployment failed"
+        log "Rolling back..."
+        docker-compose -f "$DOCKER_COMPOSE_FILE" down
+        git checkout main
+        docker-compose -f "$DOCKER_COMPOSE_FILE" up -d
+        log ""
+        log "To restore database backup:"
+        log "  ./scripts/rollback.sh $BACKUP_FILE"
+        exit 1
+    }
+    log "✓ Deployment completed (migrations only)"
+fi
+
+# Cleanup temp directory
+if [ -n "$IMPORT_DIR" ] && [ -d "$IMPORT_DIR" ]; then
+    rm -rf "$IMPORT_DIR"
+    log "✓ Cleaned up temporary files"
 fi
 
 # Update backend (restart to ensure clean state)

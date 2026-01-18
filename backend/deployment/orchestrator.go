@@ -1,13 +1,18 @@
 package deployment
 
 import (
+	"archive/tar"
 	"bamort/config"
 	"bamort/deployment/backup"
 	"bamort/deployment/migrations"
 	"bamort/deployment/version"
 	"bamort/gsmaster"
 	"bamort/logger"
+	"compress/gzip"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 	"time"
 
 	"gorm.io/gorm"
@@ -154,9 +159,25 @@ func (o *DeploymentOrchestrator) PrepareDeploymentPackage(exportDir string) (*De
 	pkg.ExportPath = exportDir
 	logger.Info("✓ Master data exported to %s", exportDir)
 
+	// Create tar.gz archive
+	logger.Info("Creating deployment package archive...")
+	tarballName := fmt.Sprintf("deployment_package_%s_%s.tar.gz",
+		config.GetVersion(),
+		time.Now().Format("20060102-150405"))
+	tarballPath := filepath.Join(filepath.Dir(exportDir), tarballName)
+
+	err = createTarGz(exportDir, tarballPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create tar.gz archive: %w", err)
+	}
+
+	pkg.TarballPath = tarballPath
+	logger.Info("✓ Package archive created: %s", tarballPath)
+
 	logger.Info("═══════════════════════════════════════════════════")
 	logger.Info("Deployment Package Ready")
-	logger.Info("Directory: %s", exportDir)
+	logger.Info("Export Directory: %s", exportDir)
+	logger.Info("Archive:          %s", tarballPath)
 	logger.Info("═══════════════════════════════════════════════════")
 
 	return pkg, nil
@@ -164,9 +185,10 @@ func (o *DeploymentOrchestrator) PrepareDeploymentPackage(exportDir string) (*De
 
 // DeploymentPackage contains information about a deployment package
 type DeploymentPackage struct {
-	Version    string
-	Timestamp  time.Time
-	ExportPath string
+	Version     string
+	Timestamp   time.Time
+	ExportPath  string
+	TarballPath string
 }
 
 // FullDeploymentWithImport performs a complete deployment including data import
@@ -192,7 +214,7 @@ func (o *DeploymentOrchestrator) FullDeploymentWithImport(importFilePath string)
 
 	// Step 2: Export current state (before migration)
 	logger.Info("Step 2/5: Exporting current master data state...")
-	exportDir := "./export_temp"
+	exportDir := "./tmp"
 	err = gsmaster.ExportAll(exportDir)
 	if err != nil {
 		report.Warnings = append(report.Warnings, fmt.Sprintf("Current state export failed: %v", err))
@@ -256,4 +278,71 @@ func (o *DeploymentOrchestrator) FullDeploymentWithImport(importFilePath string)
 	logger.Info("═══════════════════════════════════════════════════")
 
 	return report, nil
+}
+
+// createTarGz creates a tar.gz archive from a directory
+func createTarGz(sourceDir, targetPath string) error {
+	// Create the tar.gz file
+	outFile, err := os.Create(targetPath)
+	if err != nil {
+		return fmt.Errorf("failed to create tar.gz file: %w", err)
+	}
+	defer outFile.Close()
+
+	// Create gzip writer
+	gzWriter := gzip.NewWriter(outFile)
+	defer gzWriter.Close()
+
+	// Create tar writer
+	tarWriter := tar.NewWriter(gzWriter)
+	defer tarWriter.Close()
+
+	// Get the base name for the archive
+	baseName := filepath.Base(sourceDir)
+
+	// Walk the directory tree
+	err = filepath.Walk(sourceDir, func(file string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Create tar header
+		header, err := tar.FileInfoHeader(fi, fi.Name())
+		if err != nil {
+			return fmt.Errorf("failed to create tar header: %w", err)
+		}
+
+		// Update the name to be relative to the source dir
+		relPath, err := filepath.Rel(sourceDir, file)
+		if err != nil {
+			return fmt.Errorf("failed to get relative path: %w", err)
+		}
+		header.Name = filepath.Join(baseName, relPath)
+
+		// Write header
+		if err := tarWriter.WriteHeader(header); err != nil {
+			return fmt.Errorf("failed to write tar header: %w", err)
+		}
+
+		// If it's a file, write its content
+		if !fi.IsDir() {
+			f, err := os.Open(file)
+			if err != nil {
+				return fmt.Errorf("failed to open file: %w", err)
+			}
+			defer f.Close()
+
+			if _, err := io.Copy(tarWriter, f); err != nil {
+				return fmt.Errorf("failed to write file content: %w", err)
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to walk directory: %w", err)
+	}
+
+	return nil
 }

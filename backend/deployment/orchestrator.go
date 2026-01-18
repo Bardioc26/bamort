@@ -13,7 +13,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -48,6 +47,11 @@ func NewOrchestrator(db *gorm.DB) *DeploymentOrchestrator {
 // createBackup creates a pre-deployment backup
 // Returns (backupPath, isFreshInstall, error)
 func (o *DeploymentOrchestrator) createBackup() (string, bool, error) {
+	// Check if this is a fresh installation first
+	if o.isFreshInstallation() {
+		return "", true, nil // Fresh install, no backup needed
+	}
+
 	// Get current version for backup metadata
 	runner := migrations.NewMigrationRunner(o.DB)
 	currentVer, migNum, err := runner.GetCurrentVersion()
@@ -60,10 +64,6 @@ func (o *DeploymentOrchestrator) createBackup() (string, bool, error) {
 	backupService := backup.NewBackupService()
 	metadata, err := backupService.CreateJSONBackup(currentVer, migNum)
 	if err != nil {
-		// Check if this is a fresh installation (no tables exist)
-		if strings.Contains(err.Error(), "doesn't exist") || strings.Contains(err.Error(), "no such table") {
-			return "", true, nil // Fresh install, no backup needed
-		}
 		return "", false, fmt.Errorf("failed to create backup: %w", err)
 	}
 
@@ -142,6 +142,20 @@ func (o *DeploymentOrchestrator) validateDeployment() error {
 	}
 
 	return nil
+}
+
+// isFreshInstallation checks if this is a fresh database installation
+func (o *DeploymentOrchestrator) isFreshInstallation() bool {
+	// Check for core tables - if they don't exist, it's a fresh install
+	var count int64
+
+	// Check if characters table exists
+	err := o.DB.Raw("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'characters'").Scan(&count).Error
+	if err != nil || count == 0 {
+		return true
+	}
+
+	return false
 }
 
 // PrepareDeploymentPackage creates an export of all system and master data

@@ -118,11 +118,12 @@ func (r *MigrationRunner) ApplyMigration(m Migration) (*MigrationResult, error) 
 
 		// Record migration in history
 		if !r.DryRun {
+			now := time.Now().Unix()
 			history := map[string]interface{}{
 				"migration_number":   m.Number,
 				"version":            m.Version,
 				"description":        m.Description,
-				"applied_at":         time.Now(),
+				"applied_at":         now,
 				"applied_by":         "migration-runner",
 				"execution_time_ms":  time.Since(startTime).Milliseconds(),
 				"success":            true,
@@ -137,7 +138,7 @@ func (r *MigrationRunner) ApplyMigration(m Migration) (*MigrationResult, error) 
 			version := map[string]interface{}{
 				"version":          m.Version,
 				"migration_number": m.Number,
-				"applied_at":       time.Now(),
+				"applied_at":       now,
 				"backend_version":  config.GetVersion(),
 				"description":      m.Description,
 			}

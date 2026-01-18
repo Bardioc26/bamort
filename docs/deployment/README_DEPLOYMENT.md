@@ -271,7 +271,8 @@ Type 'DEPLOY' to continue:
 2. **Backup current database**
    - Creates timestamped backup in `backups/` directory
    - Format: `pre-deploy-v0.1.38-20260117-143022.sql`
-   - Aborts deployment if backup fails
+   - Skips backup on fresh installation (when tables don't exist)
+   - Aborts deployment if backup fails on existing installation
 
 3. **Checkout version**
    - Fetches from git origin
@@ -292,8 +293,8 @@ Type 'DEPLOY' to continue:
 
 7. **Run deployment command**
    - Executes `deploy deploy [importDir]` in backend container
-   - Creates backup of current database state
-   - Exports current master data
+   - Creates backup of current database state (skipped on fresh install)
+   - Exports current master data (skipped on fresh install)
    - Checks version compatibility
    - Applies pending database migrations
    - Imports master data (if package provided)
@@ -318,6 +319,8 @@ Type 'DEPLOY' to continue:
     - Verifies all services are running
     - Reports deployment status
     - Cleans up temporary files
+
+**Fresh Installation**: On first deployment to an empty database, backup and export steps are automatically skipped. This is expected behavior and not an error.
 
 **Deployment log**: Saved to `logs/deploy-YYYYMMDD-HHMMSS.log`
 

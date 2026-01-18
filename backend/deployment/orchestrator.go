@@ -13,6 +13,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -45,7 +46,8 @@ func NewOrchestrator(db *gorm.DB) *DeploymentOrchestrator {
 }
 
 // createBackup creates a pre-deployment backup
-func (o *DeploymentOrchestrator) createBackup() (string, error) {
+// Returns (backupPath, isFreshInstall, error)
+func (o *DeploymentOrchestrator) createBackup() (string, bool, error) {
 	// Get current version for backup metadata
 	runner := migrations.NewMigrationRunner(o.DB)
 	currentVer, migNum, err := runner.GetCurrentVersion()
@@ -58,10 +60,14 @@ func (o *DeploymentOrchestrator) createBackup() (string, error) {
 	backupService := backup.NewBackupService()
 	metadata, err := backupService.CreateJSONBackup(currentVer, migNum)
 	if err != nil {
-		return "", fmt.Errorf("failed to create backup: %w", err)
+		// Check if this is a fresh installation (no tables exist)
+		if strings.Contains(err.Error(), "doesn't exist") || strings.Contains(err.Error(), "no such table") {
+			return "", true, nil // Fresh install, no backup needed
+		}
+		return "", false, fmt.Errorf("failed to create backup: %w", err)
 	}
 
-	return metadata.FilePath, nil
+	return metadata.FilePath, false, nil
 }
 
 // checkCompatibility verifies version compatibility
@@ -203,24 +209,33 @@ func (o *DeploymentOrchestrator) FullDeploymentWithImport(importFilePath string)
 
 	// Step 1: Create backup of current state
 	logger.Info("Step 1/5: Creating pre-deployment backup...")
-	backupPath, err := o.createBackup()
+	backupPath, isFreshInstall, err := o.createBackup()
 	if err != nil {
 		report.Errors = append(report.Errors, fmt.Sprintf("Backup failed: %v", err))
 		return report, fmt.Errorf("backup failed: %w", err)
 	}
-	report.BackupCreated = true
-	report.BackupPath = backupPath
-	logger.Info("✓ Backup created: %s", backupPath)
+	if isFreshInstall {
+		logger.Info("ℹ Fresh installation detected - skipping backup")
+		report.Warnings = append(report.Warnings, "Fresh installation - no backup created")
+	} else {
+		report.BackupCreated = true
+		report.BackupPath = backupPath
+		logger.Info("✓ Backup created: %s", backupPath)
+	}
 
 	// Step 2: Export current state (before migration)
 	logger.Info("Step 2/5: Exporting current master data state...")
-	exportDir := "./tmp"
-	err = gsmaster.ExportAll(exportDir)
-	if err != nil {
-		report.Warnings = append(report.Warnings, fmt.Sprintf("Current state export failed: %v", err))
-		logger.Warn("Could not export current state: %v", err)
+	if isFreshInstall {
+		logger.Info("ℹ Fresh installation - skipping export")
 	} else {
-		logger.Info("✓ Current state exported to: %s", exportDir)
+		exportDir := "./tmp"
+		err = gsmaster.ExportAll(exportDir)
+		if err != nil {
+			report.Warnings = append(report.Warnings, fmt.Sprintf("Current state export failed: %v", err))
+			logger.Warn("Could not export current state: %v", err)
+		} else {
+			logger.Info("✓ Current state exported to: %s", exportDir)
+		}
 	}
 
 	// Step 3: Check version compatibility

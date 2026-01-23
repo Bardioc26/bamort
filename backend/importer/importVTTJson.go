@@ -17,7 +17,7 @@ func readImportChar(fileName string) (*CharacterImport, error) {
 	return &character, err
 }
 
-func ImportVTTJSON(fileName string) (*models.Char, error) {
+func ImportVTTJSON(fileName string, userID uint) (*models.Char, error) {
 	//fileName = fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
 	imp, err := readImportChar(fileName)
 	if err != nil {
@@ -57,6 +57,7 @@ func ImportVTTJSON(fileName string) (*models.Char, error) {
 	}
 
 	char := models.Char{}
+	char.UserID = userID
 	char.Name = imp.Name
 	char.Rasse = imp.Rasse
 	char.Typ = imp.Typ

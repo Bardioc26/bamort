@@ -17,7 +17,7 @@ func TestExportChar2VTT(t *testing.T) {
 
 	// Import a test character first
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
-	char, err := ImportVTTJSON(fileName)
+	char, err := ImportVTTJSON(fileName, 1)
 	assert.NoError(t, err, "Expected no error when importing char")
 
 	// Export the character back to VTT format
@@ -68,7 +68,7 @@ func TestExportChar2VTTRoundTrip(t *testing.T) {
 
 	// Import original
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
-	char1, err := ImportVTTJSON(fileName)
+	char1, err := ImportVTTJSON(fileName, 1)
 	assert.NoError(t, err, "Expected no error when importing char")
 
 	// Export to VTT
@@ -87,7 +87,7 @@ func TestExportChar2VTTRoundTrip(t *testing.T) {
 	tempFile.Close()
 
 	// Re-import the exported file
-	char2, err := ImportVTTJSON(tempFile.Name())
+	char2, err := ImportVTTJSON(tempFile.Name(), 1)
 	assert.NoError(t, err, "Expected no error when re-importing char")
 
 	// Compare key fields
@@ -148,7 +148,7 @@ func TestExportCharToCSV(t *testing.T) {
 
 	// Import a test character first
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
-	char, err := ImportVTTJSON(fileName)
+	char, err := ImportVTTJSON(fileName, 1)
 	assert.NoError(t, err, "Expected no error when importing char")
 
 	// Export to CSV
@@ -180,7 +180,7 @@ func TestExportImportWithoutMasterData(t *testing.T) {
 
 	// Import a test character first
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
-	char1, err := ImportVTTJSON(fileName)
+	char1, err := ImportVTTJSON(fileName, 1)
 	assert.NoError(t, err, "Expected no error when importing char")
 
 	// Export to VTT
@@ -210,7 +210,7 @@ func TestExportImportWithoutMasterData(t *testing.T) {
 	database.DB.Exec("DELETE FROM sqlite_sequence WHERE name LIKE 'gsm_%'")
 
 	// Re-import without master data
-	char2, err := ImportVTTJSON(tempFile.Name())
+	char2, err := ImportVTTJSON(tempFile.Name(), 1)
 	assert.NoError(t, err, "Expected no error when re-importing without master data")
 	assert.NotNil(t, char2, "Character should be imported")
 
@@ -248,7 +248,7 @@ func TestExportImportPreservesCharacterData(t *testing.T) {
 
 	// Import a test character
 	fileName := fmt.Sprintf("../testdata/%s", "VTT_Import1.json")
-	char1, err := ImportVTTJSON(fileName)
+	char1, err := ImportVTTJSON(fileName, 1)
 	assert.NoError(t, err, "Expected no error when importing char")
 
 	// Store original counts and values
@@ -306,7 +306,7 @@ func TestExportImportPreservesCharacterData(t *testing.T) {
 	database.DB.Exec("DELETE FROM gsm_transportations")
 
 	// Re-import
-	char2, err := ImportVTTJSON(tempFile.Name())
+	char2, err := ImportVTTJSON(tempFile.Name(), 1)
 	assert.NoError(t, err, "Expected no error when re-importing")
 
 	// Verify all data was preserved

@@ -15,7 +15,7 @@ WORKDIR /usr/src/app
 
 # Copy package files
 COPY package*.json ./
-#COPY /nginx.conf ./nginx.conf
+
 
 # Install dependencies
 RUN npm install

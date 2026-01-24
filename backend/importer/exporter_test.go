@@ -25,6 +25,7 @@ func TestExportChar2VTT(t *testing.T) {
 	assert.NoError(t, err, "Expected no error when exporting char")
 
 	// Basic validations
+	assert.Equal(t, char.UserID, 1)
 	assert.Equal(t, char.Name, exportedChar.Name)
 	assert.Equal(t, char.Rasse, exportedChar.Rasse)
 	assert.Equal(t, char.Typ, exportedChar.Typ)
@@ -87,10 +88,12 @@ func TestExportChar2VTTRoundTrip(t *testing.T) {
 	tempFile.Close()
 
 	// Re-import the exported file
-	char2, err := ImportVTTJSON(tempFile.Name(), 1)
+	char2, err := ImportVTTJSON(tempFile.Name(), 6)
 	assert.NoError(t, err, "Expected no error when re-importing char")
 
 	// Compare key fields
+	assert.Equal(t, char1.UserID, uint(1), "UserID should match 1 as set in first import")
+	assert.Equal(t, char2.UserID, uint(6), "UserID should match 6 as set in re-import")
 	assert.Equal(t, char1.Name, char2.Name)
 	assert.Equal(t, char1.Rasse, char2.Rasse)
 	assert.Equal(t, char1.Typ, char2.Typ)

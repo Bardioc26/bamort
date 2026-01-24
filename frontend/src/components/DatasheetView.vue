@@ -260,6 +260,7 @@ export default {
     },
     getStat(path) {
       if (path === 'git') {
+        // Todo: calculate poison tolerance based on character data
         return '64!'
       }
       return path.split('.').reduce((obj, key) => obj?.[key], this.character) ?? '-'

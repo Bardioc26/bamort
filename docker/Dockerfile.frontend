@@ -32,7 +32,8 @@ FROM nginx:alpine
 # Adjust /usr/src/app/build -> /usr/src/app/dist if you’re using Angular/Vue
 #COPY --from=build /usr/src/app/build /usr/share/nginx/html
 COPY --from=build /usr/src/app/dist /usr/share/nginx/html
-
+# Copy custom nginx configuration for SPA routing
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 # Expose HTTP port
 EXPOSE 80
 

@@ -88,7 +88,7 @@ export default {
   },
   landing:{
     title:'BaMoRT - Charakterverwaltung für mein Lieblingsrollenspielsystem',
-    description:'Bamort ist ein Werkzeug zur Charakterverwaltung für Rollenspiele. Es bietet Funktionen zur Charaktererstellung, -entwicklung und -verwaltung mit Unterstützung für Fertigkeiten, Zauber, Ausrüstung und mehr. Viele Ausrüstungsteile, Fertikeiten und Zauber fehlen noch, da das Projekt noch in der Entwicklung ist.',
+    description:'BaMoRT ist ein Werkzeug zur Charakterverwaltung für Rollenspiele. Es bietet Funktionen zur Charaktererstellung, -entwicklung und -verwaltung mit Unterstützung für Fertigkeiten, Zauber, Ausrüstung und mehr. Viele Ausrüstungsteile, Fertikeiten und Zauber fehlen noch, da das Projekt noch in der Entwicklung ist.',
     frontendVersion:'Frontend Version',
     backendVersion:'Backend Version',
     version:'Version',
@@ -656,7 +656,7 @@ export default {
     },
     faq4: {
       question: 'Wie funktioniert die Charaktererstellung?',
-      answer: 'Die Charaktererstellung basiert auf dem Midgard-Regelsystem. Wählen Sie Volk, Geschlecht und Klasse und verteilen Sie dann Ihre Attributswerte. Das System berechnet automatisch alle abgeleiteten Werte.'
+      answer: 'Die Charaktererstellung basiert auf einem populären deutschen Rollenspiel-Regelsystem. Wählen Sie Volk, Geschlecht und Klasse und verteilen Sie dann Ihre Attributswerte. Das System berechnet automatisch alle abgeleiteten Werte.'
     },
     faq5: {
       question: 'Werden meine Daten gespeichert?',

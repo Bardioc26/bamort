@@ -87,7 +87,7 @@ export default {
   },
   landing:{
     title:'BaMoRT - Character Management for Role-Playing Games',
-    description:'Bamort is a modern character management tool for role-playing games. It provides comprehensive features for character creation, development, and management with support for skills, spells, equipment, and more.',
+    description:'BaMoRT is a modern character management tool for role-playing games. It provides comprehensive features for character creation, development, and management with support for skills, spells, equipment, and more.',
     frontendVersion:'Frontend Version',
     backendVersion:'Backend Version',
     version:'Version',
@@ -651,7 +651,7 @@ export default {
     },
     faq4: {
       question: 'How does character creation work?',
-      answer: 'Character creation is based on the Midgard rule system. Choose race, gender, and class, then distribute your attribute values. The system automatically calculates all derived values.'
+      answer: 'Character creation is based on a popular German RPG rule system. Choose race, gender, and class, then distribute your attribute values. The system automatically calculates all derived values.'
     },
     faq5: {
       question: 'Is my data saved?',

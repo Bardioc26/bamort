@@ -16,7 +16,7 @@
             <option value="">{{ $t('export.pleaseSelectFormat') }}</option>
             <option value="pdf">{{ $t('export.formatPDF') }}</option>
             <option value="vtt">{{ $t('export.formatVTT') }}</option>
-            <option value="bamort">{{ $t('export.formatBamort') }}</option>
+            <option value="bamort">{{ $t('export.formatBaMoRT') }}</option>
           </select>
         </div>
         <div v-if="selectedFormat === 'pdf'" class="form-group">
@@ -111,7 +111,7 @@ export default {
       } else if (this.selectedFormat === 'vtt') {
         await this.exportToVTT()
       } else if (this.selectedFormat === 'bamort') {
-        await this.exportToBamort()
+        await this.exportToBaMoRT()
       }
     },
     
@@ -187,11 +187,11 @@ export default {
       }
     },
 
-    async exportToBamort() {
+    async exportToBaMoRT() {
       this.isExporting = true
       
       try {
-        // Get Bamort JSON data and trigger download
+        // Get BaMoRT JSON data and trigger download
         const response = await API.get(`/api/transfer/download/${this.characterId}`, {
           responseType: 'blob'
         })
@@ -210,7 +210,7 @@ export default {
         this.$emit('export-success')
         this.closeDialog()
       } catch (error) {
-        console.error('Failed to export Bamort format:', error)
+        console.error('Failed to export BaMoRT format:', error)
         alert(this.$t('export.exportFailed') + ': ' + (error.response?.data?.error || error.message))
       } finally {
         this.isExporting = false

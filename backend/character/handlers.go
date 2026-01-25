@@ -224,7 +224,7 @@ func GetCharacterExperienceAndWealth(c *gin.Context) {
 	}
 
 	// Berechne Gesamtvermögen in Silbergroschen
-	// Annahme: 1 GS = 10 SS, 1 SS = 10 KS (typische Midgard Währung)
+	// Annahme: 1 GS = 10 SS, 1 SS = 10 KS (typische PRG Währung)
 	gs := character.Vermoegen.Goldstuecke
 	ss := character.Vermoegen.Silberstuecke
 	ks := character.Vermoegen.Kupferstuecke
@@ -1750,7 +1750,7 @@ func getSpellLECost(level int) int {
 	// Query the database for the LE cost for this level
 	err := database.DB.Where("level = ? AND game_system = ?", level, "midgard").First(&spellLECost).Error
 	if err != nil {
-		// If not found in database, fall back to standard Midgard costs
+		// If not found in database, fall back to standard RPG costs
 		spellLECosts := map[int]int{
 			1:  1,
 			2:  2,

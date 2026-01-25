@@ -17,9 +17,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @title Bamort API
+// @title BaMoRT API
 // @version 1
-// @description This is the API for Bamort
+// @description This is the API for BaMoRT
 // @host localhost:8180
 // @BasePath /
 // @schemes http
@@ -39,7 +39,7 @@ func main() {
 		logger.SetMinLogLevel(logger.INFO)
 	}
 
-	logger.Info("Bamort Server wird gestartet...")
+	logger.Info("BaMoRT Server wird gestartet...")
 	logger.Debug("Debug-Modus ist aktiviert")
 	logger.Info("Environment: %s", cfg.Environment)
 	logger.Info("testingDB Set: %s", cfg.DevTesting)

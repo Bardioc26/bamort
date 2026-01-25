@@ -2,7 +2,7 @@
   <div class="landing-page">
     <div class="landing-content">
       <div class="dragon-container">
-        <img src="/bamorty.png" alt="Bamort Dragon" class="dragon-image" />
+        <img src="/bamorty.png" alt="BaMoRT Dragon" class="dragon-image" />
       </div>
       
       <div class="info-container">

@@ -63,9 +63,15 @@ func migrateAllStructures(db *gorm.DB) error {
 func migrateDataIfNeeded(db *gorm.DB) error {
 	logger.Debug("Starte Datenmigration falls erforderlich...")
 
+	err := database.MigrateDataIfNeeded(db)
+	if err != nil {
+		logger.Error("Fehler beim Migrieren der Datenbankdaten: %s", err.Error())
+		return fmt.Errorf("failed to migrate database data: %w", err)
+	}
+
 	// Kopiere categorie nach learning_category für Spells, wenn learning_category leer ist
 	logger.Debug("Migriere Spell Learning Categories...")
-	err := migrateSpellLearningCategories(db)
+	err = migrateSpellLearningCategories(db)
 	if err != nil {
 		logger.Error("Fehler beim Migrieren der Spell Learning Categories: %s", err.Error())
 		return fmt.Errorf("failed to migrate spell learning categories: %w", err)

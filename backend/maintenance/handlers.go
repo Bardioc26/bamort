@@ -76,6 +76,11 @@ func migrateDataIfNeeded(db *gorm.DB) error {
 		logger.Error("Fehler beim Migrieren der Datenbankdaten: %s", err.Error())
 		return fmt.Errorf("failed to migrate database data: %w", err)
 	}
+	err = gamesystem.MigrateDataIfNeeded(db)
+	if err != nil {
+		logger.Error("Fehler beim Migrieren der GameSystem-Daten: %s", err.Error())
+		return fmt.Errorf("failed to migrate game system data: %w", err)
+	}
 
 	// Kopiere categorie nach learning_category für Spells, wenn learning_category leer ist
 	logger.Debug("Migriere Spell Learning Categories...")
@@ -217,7 +222,12 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 	// (Basis-Tabellen zuerst wegen Foreign Key-Abhängigkeiten)
 	tables := []interface{}{
 		// Basis-Strukturen (keine Abhängigkeiten)
+		&database.MigrationHistory{},
+		&database.SchemaVersion{},
 		&user.User{},
+
+		// Game System - Basis
+		&models.GameSystem{},
 
 		// Learning Costs System - Basis
 		&models.Source{},

@@ -565,7 +565,7 @@ export default {
     languageUpdateError: 'Fehler beim Aktualisieren der Sprache',
     changeEmail: 'E-Mail ändern',
     newEmail: 'Neue E-Mail',
-    emailPlaceholder: 'ihre.email@example.com',
+    emailPlaceholder: 'ihre.email{\'@\'}example.com',
     updateEmail: 'E-Mail aktualisieren',
     changePassword: 'Passwort ändern',
     currentPassword: 'Aktuelles Passwort',

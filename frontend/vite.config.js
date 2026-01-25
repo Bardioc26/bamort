@@ -19,4 +19,8 @@ export default defineConfig({
     //port: 8080,
     host: ['bamort.trokan.de','192.168.0.48', 'localhost','terra.local'],
   },
+  //build: {
+  //  minify: false,
+  //  sourcemap: true,
+  //},
 })

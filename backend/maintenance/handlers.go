@@ -501,18 +501,7 @@ func getTestDataStatistics(db *gorm.DB) (map[string]int64, error) {
 
 	return stats, nil
 }
-
-func SetupCheck(c *gin.Context) {
-	logger.Info("Starte Setup-Check...")
-
-	db := database.ConnectDatabase()
-	if db == nil {
-		logger.Error("Fehler beim Verbinden mit der Datenbank für Setup-Check")
-		respondWithError(c, http.StatusInternalServerError, "Failed to connect to DataBase")
-		return
-	}
-	logger.Debug("Erfolgreich mit Datenbank für Setup-Check verbunden")
-
+func setupCheck(c *gin.Context, db *gorm.DB) {
 	logger.Debug("Führe Strukturmigration durch...")
 	err := migrateAllStructures(db)
 	if err != nil {
@@ -531,6 +520,20 @@ func SetupCheck(c *gin.Context) {
 
 	logger.Info("Setup-Check erfolgreich abgeschlossen")
 	c.JSON(http.StatusOK, gin.H{"message": "Setup Check OK"})
+
+}
+
+func SetupCheck(c *gin.Context) {
+	logger.Info("Starte Setup-Check...")
+
+	db := database.ConnectDatabase()
+	if db == nil {
+		logger.Error("Fehler beim Verbinden mit der Datenbank für Setup-Check")
+		respondWithError(c, http.StatusInternalServerError, "Failed to connect to DataBase")
+		return
+	}
+	logger.Debug("Erfolgreich mit Datenbank für Setup-Check verbunden")
+	setupCheck(c, db)
 }
 
 func SetupCheckDev(c *gin.Context) {
@@ -545,25 +548,7 @@ func SetupCheckDev(c *gin.Context) {
 	database.DB = db
 
 	logger.Debug("Erfolgreich mit Datenbank für Setup-Check verbunden")
-
-	logger.Debug("Führe Strukturmigration durch...")
-	err := migrateAllStructures(db)
-	if err != nil {
-		logger.Error("Fehler bei der Strukturmigration: %s", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	logger.Debug("Führe Datenmigration durch...")
-	err = migrateDataIfNeeded(db)
-	if err != nil {
-		logger.Error("Fehler bei der Datenmigration: %s", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to migrate data: " + err.Error()})
-		return
-	}
-
-	logger.Info("Setup-Check erfolgreich abgeschlossen")
-	c.JSON(http.StatusOK, gin.H{"message": "Setup Check OK"})
+	setupCheck(c, db)
 }
 
 /*

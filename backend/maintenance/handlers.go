@@ -3,6 +3,7 @@ package maintenance
 import (
 	"bamort/config"
 	"bamort/database"
+	"bamort/gamesystem"
 	"bamort/logger"
 	"bamort/models"
 	"bamort/user"
@@ -38,6 +39,13 @@ func migrateAllStructures(db *gorm.DB) error {
 	if err := database.MigrateStructure(db); err != nil {
 		logger.Error("Fehler beim Migrieren der Datenbankstrukturen: %s", err.Error())
 		return fmt.Errorf("failed to migrate database structures: %w", err)
+	}
+
+	// Migrate all structures in the correct order
+	logger.Debug("Migriere GameSystemstrukturen...")
+	if err := gamesystem.MigrateStructure(db); err != nil {
+		logger.Error("Fehler beim Migrieren der GameSystemstrukturen: %s", err.Error())
+		return fmt.Errorf("failed to migrate game system structures: %w", err)
 	}
 
 	logger.Debug("Migriere Benutzerstrukturen...")

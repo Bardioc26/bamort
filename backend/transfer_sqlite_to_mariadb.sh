@@ -6,7 +6,7 @@
 BACKEND_URL="http://localhost:8180"
 ENDPOINT="/api/maintenance/transfer-sqlite-to-mariadb"
 
-echo "=== Bamort Data Transfer: SQLite to MariaDB ==="
+echo "=== BaMoRT Data Transfer: SQLite to MariaDB ==="
 echo ""
 
 # Check if clear parameter is provided

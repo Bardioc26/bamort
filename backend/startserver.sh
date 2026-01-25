@@ -1,4 +1,4 @@
-# Environment variables for Bamort development environment
+# Environment variables for BaMoRT development environment
 
 # API Configuration
 # API_URL=http://localhost:8180

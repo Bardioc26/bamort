@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// ExportCharToVTT converts a Bamort character to VTT JSON format
+// ExportCharToVTT converts a BaMoRT character to VTT JSON format
 func ExportCharToVTT(char *models.Char) (*CharacterImport, error) {
 	vtt := &CharacterImport{}
 

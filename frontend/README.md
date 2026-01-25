@@ -1,6 +1,6 @@
 # Bamort Frontend
 
-Vue 3 + Vite frontend for the Bamort monorepo.
+Vue 3 + Vite frontend for the BaMoRT monorepo.
 
 ## Development
 

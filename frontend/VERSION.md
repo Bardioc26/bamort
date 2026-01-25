@@ -1,6 +1,6 @@
 # Frontend Version Management
 
-## Current Version: 0.1.29
+## Current Version: 0.1.30
 
 The frontend version is managed independently from the backend.
 

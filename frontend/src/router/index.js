@@ -1,22 +1,26 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { isLoggedIn } from "../utils/auth"; // Import the helper function
+import { isLoggedIn } from "../utils/auth";
+import { useUserStore } from '../stores/userStore';
+
+// Static imports for landing/auth pages (needed immediately)
 import LandingView from "../views/LandingView.vue";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import ForgotPasswordView from "../views/ForgotPasswordView.vue";
 import ResetPasswordView from "../views/ResetPasswordView.vue";
-import DashboardView from "../views/DashboardView.vue";
-import AusruestungView from "../views/AusruestungView.vue";
-import MaintenanceView from "../views/MaintenanceView.vue";
-import FileUploadPage from "../views/FileUploadPage.vue";
-import UserProfileView from "../views/UserProfileView.vue";
-import UserManagementView from "../views/UserManagementView.vue";
-import SponsorsView from "../views/SponsorsView.vue";
-import HelpView from "../views/HelpView.vue";
-import SystemInfoView from "../views/SystemInfoView.vue";
 
-import CharacterDetails from "@/components/CharacterDetails.vue";
-import CharacterCreation from "@/components/CharacterCreation.vue";
+// Lazy-loaded views (code-split into separate chunks)
+const DashboardView = () => import("../views/DashboardView.vue");
+const AusruestungView = () => import("../views/AusruestungView.vue");
+const MaintenanceView = () => import("../views/MaintenanceView.vue");
+const FileUploadPage = () => import("../views/FileUploadPage.vue");
+const UserProfileView = () => import("../views/UserProfileView.vue");
+const UserManagementView = () => import("../views/UserManagementView.vue");
+const SponsorsView = () => import("../views/SponsorsView.vue");
+const HelpView = () => import("../views/HelpView.vue");
+const SystemInfoView = () => import("../views/SystemInfoView.vue");
+const CharacterDetails = () => import("@/components/CharacterDetails.vue");
+const CharacterCreation = () => import("@/components/CharacterCreation.vue");
 
 
 
@@ -55,7 +59,6 @@ router.beforeEach(async (to, from, next) => {
     next({ name: "Login" });
   } else if (to.meta.requiresAdmin) {
     // Check if route requires admin role
-    const { useUserStore } = await import('../stores/userStore')
     const userStore = useUserStore()
     
     // Fetch user if not already loaded

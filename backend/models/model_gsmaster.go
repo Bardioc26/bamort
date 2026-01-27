@@ -126,6 +126,7 @@ type Believe struct {
 	Quelle       string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
 	SourceID     uint   `gorm:"index" json:"source_id,omitempty"` // Verweis auf strukturierte Quelle
 	PageNumber   int    `json:"page_number,omitempty"`            // Seitenzahl im Quellenbuch
+	GameSystemId uint   `json:"game_system_id,omitempty"`
 }
 
 // MiscLookup represents miscellaneous lookup values like gender, race, origin, etc.
@@ -622,12 +623,16 @@ func (object *Believe) TableName() string {
 	return dbPrefix + "_" + "believes"
 }
 
-func (stamm *Believe) Create() error {
-	gameSystem := "midgard"
-	stamm.GameSystem = gameSystem
+func (object *Believe) Create() error {
+	if object.GameSystemId == 0 {
+		gs := GameSystem{}
+		gs.FirstByName(object.GameSystem)
+		object.GameSystemId = gs.ID
+		object.GameSystem = gs.Name
+	}
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
-		if err := tx.Create(&stamm).Error; err != nil {
+		if err := tx.Create(&object).Error; err != nil {
 			return fmt.Errorf("failed to save Lookup: %w", err)
 		}
 		return nil
@@ -637,8 +642,13 @@ func (stamm *Believe) Create() error {
 }
 
 func (object *Believe) FirstId(value uint) error {
-	gameSystem := "midgard"
-	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
+	if object.GameSystemId == 0 {
+		gs := GameSystem{}
+		gs.FirstByName(object.GameSystem)
+		object.GameSystemId = gs.ID
+		object.GameSystem = gs.Name
+	}
+	err := database.DB.First(&object, "(game_system=? OR game_system_id=?) AND id = ?", object.GameSystem, object.GameSystemId, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -646,12 +656,17 @@ func (object *Believe) FirstId(value uint) error {
 	return nil
 }
 
-func (stamm *Believe) First(name string) error {
+func (object *Believe) First(name string) error {
 	if name == "" {
 		return fmt.Errorf("name cannot be empty")
 	}
-	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
+	if object.GameSystemId == 0 {
+		gs := GameSystem{}
+		gs.FirstByName(object.GameSystem)
+		object.GameSystemId = gs.ID
+		object.GameSystem = gs.Name
+	}
+	err := database.DB.First(&object, "(game_system=? OR game_system_id=?) AND name = ?", object.GameSystem, object.GameSystemId, name).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -660,6 +675,12 @@ func (stamm *Believe) First(name string) error {
 }
 
 func (object *Believe) Save() error {
+	if object.GameSystemId == 0 {
+		gs := GameSystem{}
+		gs.FirstByName(object.GameSystem)
+		object.GameSystemId = gs.ID
+		object.GameSystem = gs.Name
+	}
 	err := database.DB.Save(&object).Error
 	if err != nil {
 		// zauber found
@@ -671,9 +692,19 @@ func (object *Believe) Save() error {
 // GetBelievesByActiveSources gibt Glaubensrichtungen nach aktiven Quellen zurück
 func GetBelievesByActiveSources(gameSystem string) ([]Believe, error) {
 	var believes []Believe
+	gs := GameSystem{}
+	//if gameSystem="midgard" it should return recordset id 1
+	gs.FirstByName(gameSystem)
+	if gs.ID == 0 {
+		gs.FirstByCode(gameSystem)
+		if gs.ID == 0 {
+			// return empty slice if no valid game system found
+			return believes, fmt.Errorf("No GameSystem ID or Name found for %s", gameSystem)
+		}
+	}
 	err := database.DB.
 		Joins("LEFT JOIN gsm_lit_sources ON gsm_believes.source_id = gsm_lit_sources.id").
-		Where("gsm_believes.game_system = ? AND (gsm_lit_sources.is_active = ? OR gsm_believes.source_id IS NULL)", gameSystem, true).
+		Where("(gsm_believes.game_system = ? or gsm_believes.game_system_id=?) AND (gsm_lit_sources.is_active = ? OR gsm_believes.source_id IS NULL)", gs.Name, gs.ID, true).
 		Order("gsm_believes.name ASC").
 		Find(&believes).Error
 	return believes, err

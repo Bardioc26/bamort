@@ -17,14 +17,20 @@ func (GameSystem) TableName() string {
 	return "game_systems"
 }
 
+func (gs *GameSystem) GetDefault() error {
+	return database.DB.First(gs, "code = ?", "M5").Error
+}
+
 func (gs *GameSystem) FirstByCode(code string) error {
+	if code == "" {
+		return gs.GetDefault()
+	}
 	return database.DB.First(gs, "code = ?", code).Error
 }
 
-func (gs *GameSystem) GetDefault() error {
-	return database.DB.First(gs, "is_active = ?", true).Error
-}
-
 func (gs *GameSystem) FirstByName(name string) error {
+	if name == "" {
+		return gs.GetDefault()
+	}
 	return database.DB.First(gs, "name = ?", name).Error
 }

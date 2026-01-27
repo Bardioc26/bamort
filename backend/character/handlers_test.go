@@ -1115,3 +1115,85 @@ func TestGetDatasheetOptions_CharacterNotFound(t *testing.T) {
 	// Assert error response
 	assert.Equal(t, http.StatusNotFound, w.Code)
 }
+
+func TestSearchBeliefs(t *testing.T) {
+	// Setup test environment
+	original := os.Getenv("ENVIRONMENT")
+	os.Setenv("ENVIRONMENT", "test")
+	t.Cleanup(func() {
+		if original != "" {
+			os.Setenv("ENVIRONMENT", original)
+		} else {
+			os.Unsetenv("ENVIRONMENT")
+		}
+	})
+
+	// Setup test database
+	database.SetupTestDB(true)
+	defer database.ResetTestDB()
+
+	err := models.MigrateStructure()
+	assert.NoError(t, err)
+
+	// Ensure game systems exist in the test DB
+	// Ensure game system rows exist (use INSERT OR IGNORE to avoid unique constraint errors)
+	database.DB.Exec("INSERT OR IGNORE INTO game_systems(code,name,description,is_active,created_at,modified_at) VALUES (?,?,?,?,strftime('%s','now'),strftime('%s','now'))", "M5", "M5", "", true)
+	//database.DB.Exec("INSERT OR IGNORE INTO game_systems(code,name,description,is_active,created_at,modified_at) VALUES (?,?,?,?,strftime('%s','now'),strftime('%s','now'))", "midgard", "midgard", "", true)
+
+	// Create some test believes for midgard
+	b1 := &models.Believe{GameSystem: "midgard", Name: "TestFaithOne", SourceID: 1}
+	b2 := &models.Believe{GameSystem: "midgard", Name: "OtherFaith", SourceID: 1}
+	err = b1.Create()
+	assert.NoError(t, err)
+	err = b2.Create()
+	assert.NoError(t, err)
+
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name        string
+		q           string
+		gameSystem  string
+		expectHits  int
+		expectError bool
+	}{
+		//{name: "GameSystem midgard", q: "Test", gameSystem: "midgard", expectHits: 1, expectError: false},
+		//{name: "GameSystem M5", q: "Test", gameSystem: "M5", expectHits: 2, expectError: false},
+		{name: "GameSystem XYZ", q: "Test", gameSystem: "XYZ", expectHits: 0, expectError: true},
+		//{name: "GameSystem not set (default)", q: "Test", gameSystem: "", expectHits: 0, expectError: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Build request URL with query params
+			url := "/api/characters/beliefs?q=" + tt.q
+			if tt.gameSystem != "" {
+				url = url + "&game_system=" + tt.gameSystem
+			}
+
+			req, _ := http.NewRequest("GET", url, nil)
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = req
+
+			SearchBeliefs(c)
+
+			if tt.expectError {
+				assert.NotEqual(t, http.StatusOK, w.Code)
+				return
+			} else {
+				assert.Equal(t, http.StatusOK, w.Code)
+			}
+
+			var resp map[string][]string
+			err := json.Unmarshal(w.Body.Bytes(), &resp)
+			assert.NoError(t, err)
+			beliefs, ok := resp["beliefs"]
+			assert.True(t, ok, "response should contain beliefs")
+			assert.IsType(t, []string{}, beliefs)
+			if tt.expectHits > 0 {
+				assert.Greater(t, len(beliefs), 0)
+			}
+		})
+	}
+}

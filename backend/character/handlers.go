@@ -3130,7 +3130,7 @@ func SearchBeliefs(c *gin.Context) {
 	}
 
 	// Get game system from query parameter, default to "midgard"
-	gameSystem := c.DefaultQuery("game_system", "midgard")
+	gameSystem := c.DefaultQuery("game_system", "")
 
 	// Load beliefs from database
 	believes, err := models.GetBelievesByActiveSources(gameSystem)

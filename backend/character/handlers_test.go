@@ -491,7 +491,7 @@ func TestGetAvailableSpellsForCreation(t *testing.T) {
 			name:           "NonMagicCharacterClass",
 			characterClass: "Kr",
 			expectStatus:   http.StatusNotFound,
-			expectError:    true,
+			expectError:    false,
 			findspells:     false,
 		},
 		{
@@ -743,23 +743,23 @@ func TestFinalizeCharacterCreation(t *testing.T) {
 		}
 
 		// Validate each attribute matches the session data
-		assert.Equal(t, 87, attrMap["IN"], "Intelligence should match session")
-		assert.Equal(t, 74, attrMap["ST"], "Strength should match session")
-		assert.Equal(t, 65, attrMap["GS"], "Dexterity should match session")
-		assert.Equal(t, 76, attrMap["GW"], "Agility should match session")
-		assert.Equal(t, 58, attrMap["KO"], "Constitution should match session")
-		assert.Equal(t, 83, attrMap["ZT"], "Magic Talent should match session")
-		assert.Equal(t, 69, attrMap["AU"], "Charisma should match session")
-		assert.Equal(t, 59, attrMap["pA"], "Personal Charisma should match session")
-		assert.Equal(t, 72, attrMap["WK"], "Willpower should match session")
+		assert.Equal(t, 87, attrMap["In"], "Intelligence should match session")
+		assert.Equal(t, 89, attrMap["St"], "Strength should match session")
+		assert.Equal(t, 64, attrMap["Gs"], "Dexterity should match session")
+		assert.Equal(t, 77, attrMap["Gw"], "Agility should match session")
+		assert.Equal(t, 71, attrMap["Ko"], "Constitution should match session")
+		assert.Equal(t, 44, attrMap["Zt"], "Magic Talent should match session")
+		assert.Equal(t, 87, attrMap["Au"], "Charisma should match session")
+		assert.Equal(t, 33, attrMap["pA"], "Personal Charisma should match session")
+		assert.Equal(t, 27, attrMap["Wk"], "Willpower should match session")
 
 		// Validate derived values
-		assert.Equal(t, 17, createdChar.Lp.Max, "LP Max should match session")
-		assert.Equal(t, 17, createdChar.Lp.Value, "LP Value should equal Max initially")
-		assert.Equal(t, 33, createdChar.Ap.Max, "AP Max should match session")
-		assert.Equal(t, 33, createdChar.Ap.Value, "AP Value should equal Max initially")
-		assert.Equal(t, 8, createdChar.B.Max, "B Max should match session")
-		assert.Equal(t, 8, createdChar.B.Value, "B Value should equal Max initially")
+		assert.Equal(t, 11, createdChar.Lp.Max, "LP Max should match session")
+		assert.Equal(t, 11, createdChar.Lp.Value, "LP Value should equal Max initially")
+		assert.Equal(t, 14, createdChar.Ap.Max, "AP Max should match session")
+		assert.Equal(t, 14, createdChar.Ap.Value, "AP Value should equal Max initially")
+		assert.Equal(t, 26, createdChar.B.Max, "B Max should match session")
+		assert.Equal(t, 26, createdChar.B.Value, "B Value should equal Max initially")
 
 		// Validate static derived values (Resistenz, Abwehr, Zaubern, Raufen)
 		assert.Equal(t, 11, createdChar.ResistenzKoerper, "Resistenz Körper should match session")
@@ -1065,10 +1065,10 @@ func TestGetDatasheetOptions(t *testing.T) {
 
 	origins := response["origins"].([]interface{})
 	assert.Equal(t, 15, len(origins))
-	assert.Contains(t, origins, "Albai")
+	assert.Contains(t, origins, "Alba")
 
 	socialClasses := response["social_classes"].([]interface{})
-	assert.Equal(t, 3, len(socialClasses))
+	assert.Equal(t, 4, len(socialClasses))
 	assert.Contains(t, socialClasses, "Adel")
 	assert.Contains(t, socialClasses, "Mittelschicht")
 

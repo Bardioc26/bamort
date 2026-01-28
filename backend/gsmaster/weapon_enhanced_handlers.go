@@ -11,6 +11,11 @@ import (
 
 // GetEnhancedMDWeapons returns weapons with their source information
 func GetEnhancedMDWeapons(c *gin.Context) {
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
 	type EnhancedWeapon struct {
 		models.Weapon
 		SourceCode string `json:"source_code,omitempty"`
@@ -22,7 +27,7 @@ func GetEnhancedMDWeapons(c *gin.Context) {
 	}
 
 	var weapons []models.Weapon
-	if err := database.DB.Find(&weapons).Error; err != nil {
+	if err := database.DB.Where("game_system=? OR game_system_id=?", gs.Name, gs.ID).Find(&weapons).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve weapons"})
 		return
 	}
@@ -56,6 +61,11 @@ func GetEnhancedMDWeapons(c *gin.Context) {
 
 // GetEnhancedMDWeapon returns a single weapon with source information
 func GetEnhancedMDWeapon(c *gin.Context) {
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
 	type EnhancedWeapon struct {
 		models.Weapon
 		SourceCode string `json:"source_code,omitempty"`
@@ -68,7 +78,7 @@ func GetEnhancedMDWeapon(c *gin.Context) {
 	}
 
 	var weapon models.Weapon
-	if err := database.DB.First(&weapon, uint(id)).Error; err != nil {
+	if err := database.DB.Where("game_system=? OR game_system_id=?", gs.Name, gs.ID).First(&weapon, uint(id)).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Weapon not found"})
 		return
 	}
@@ -91,6 +101,11 @@ func GetEnhancedMDWeapon(c *gin.Context) {
 
 // UpdateEnhancedMDWeapon updates a weapon
 func UpdateEnhancedMDWeapon(c *gin.Context) {
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -98,7 +113,7 @@ func UpdateEnhancedMDWeapon(c *gin.Context) {
 	}
 
 	var weapon models.Weapon
-	if err := database.DB.First(&weapon, uint(id)).Error; err != nil {
+	if err := database.DB.Where("game_system=? OR game_system_id=?", gs.Name, gs.ID).First(&weapon, uint(id)).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Weapon not found"})
 		return
 	}
@@ -111,9 +126,11 @@ func UpdateEnhancedMDWeapon(c *gin.Context) {
 
 	// Ensure ID stays the same
 	weapon.ID = uint(id)
+	weapon.GameSystem = gs.Name
+	weapon.GameSystemId = gs.ID
 
 	// Update the weapon
-	if err := database.DB.Save(&weapon).Error; err != nil {
+	if err := weapon.Save(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update weapon"})
 		return
 	}

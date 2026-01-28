@@ -81,6 +81,11 @@ func migrateDataIfNeeded(db *gorm.DB) error {
 		logger.Error("Fehler beim Migrieren der GameSystem-Daten: %s", err.Error())
 		return fmt.Errorf("failed to migrate game system data: %w", err)
 	}
+	err = models.MigrateDataIfNeeded(db)
+	if err != nil {
+		logger.Error("Fehler beim Migrieren der Models-Daten: %s", err.Error())
+		return fmt.Errorf("failed to migrate models data: %w", err)
+	}
 
 	// Kopiere categorie nach learning_category für Spells, wenn learning_category leer ist
 	logger.Debug("Migriere Spell Learning Categories...")

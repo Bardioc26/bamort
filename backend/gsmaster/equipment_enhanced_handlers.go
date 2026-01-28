@@ -16,9 +16,14 @@ type EquipmentWithCategories struct {
 }
 
 // GetEquipmentWithCategories retrieves equipment with all its information
-func GetEquipmentWithCategories(equipmentID uint) (*EquipmentWithCategories, error) {
+func GetEquipmentWithCategories(equipmentID uint, gs *models.GameSystem) (*EquipmentWithCategories, error) {
 	var equipment models.Equipment
-	if err := database.DB.First(&equipment, equipmentID).Error; err != nil {
+	query := database.DB
+	if gs != nil {
+		query = query.Where("game_system=? OR game_system_id=?", gs.Name, gs.ID)
+	}
+
+	if err := query.First(&equipment, equipmentID).Error; err != nil {
 		return nil, err
 	}
 
@@ -30,15 +35,20 @@ func GetEquipmentWithCategories(equipmentID uint) (*EquipmentWithCategories, err
 }
 
 // GetAllEquipmentWithCategories retrieves all equipment
-func GetAllEquipmentWithCategories() ([]EquipmentWithCategories, error) {
+func GetAllEquipmentWithCategories(gs *models.GameSystem) ([]EquipmentWithCategories, error) {
 	var equipments []models.Equipment
-	if err := database.DB.Find(&equipments).Error; err != nil {
+	query := database.DB
+	if gs != nil {
+		query = query.Where("game_system=? OR game_system_id=?", gs.Name, gs.ID)
+	}
+
+	if err := query.Find(&equipments).Error; err != nil {
 		return nil, err
 	}
 
 	result := make([]EquipmentWithCategories, len(equipments))
 	for i, equipment := range equipments {
-		equipmentWithCats, err := GetEquipmentWithCategories(equipment.ID)
+		equipmentWithCats, err := GetEquipmentWithCategories(equipment.ID, gs)
 		if err != nil {
 			return nil, err
 		}
@@ -54,11 +64,18 @@ type EquipmentUpdateRequest struct {
 }
 
 // UpdateEquipmentWithCategories updates equipment
-func UpdateEquipmentWithCategories(equipmentID uint, req EquipmentUpdateRequest) error {
+func UpdateEquipmentWithCategories(equipmentID uint, req EquipmentUpdateRequest, gs *models.GameSystem) error {
 	// Start transaction
 	return database.DB.Transaction(func(tx *gorm.DB) error {
 		// Update equipment info
-		if err := tx.Model(&models.Equipment{}).Where("id = ?", equipmentID).Updates(req.Equipment).Error; err != nil {
+		query := tx.Model(&models.Equipment{}).Where("id = ?", equipmentID)
+		if gs != nil {
+			req.Equipment.GameSystem = gs.Name
+			req.Equipment.GameSystemId = gs.ID
+			query = query.Where("game_system=? OR game_system_id=?", gs.Name, gs.ID)
+		}
+
+		if err := query.Updates(req.Equipment).Error; err != nil {
 			return err
 		}
 
@@ -70,7 +87,12 @@ func UpdateEquipmentWithCategories(equipmentID uint, req EquipmentUpdateRequest)
 
 // GetEnhancedMDEquipment returns equipment with enhanced information
 func GetEnhancedMDEquipment(c *gin.Context) {
-	equipments, err := GetAllEquipmentWithCategories()
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
+	equipments, err := GetAllEquipmentWithCategories(gs)
 	if err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve equipment: "+err.Error())
 		return
@@ -88,6 +110,11 @@ func GetEnhancedMDEquipment(c *gin.Context) {
 
 // GetEnhancedMDEquipmentItem returns a single equipment with enhanced information
 func GetEnhancedMDEquipmentItem(c *gin.Context) {
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
@@ -95,7 +122,7 @@ func GetEnhancedMDEquipmentItem(c *gin.Context) {
 		return
 	}
 
-	equipment, err := GetEquipmentWithCategories(uint(id))
+	equipment, err := GetEquipmentWithCategories(uint(id), gs)
 	if err != nil {
 		respondWithError(c, http.StatusNotFound, "Equipment not found")
 		return
@@ -106,6 +133,11 @@ func GetEnhancedMDEquipmentItem(c *gin.Context) {
 
 // UpdateEnhancedMDEquipmentItem updates equipment
 func UpdateEnhancedMDEquipmentItem(c *gin.Context) {
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
@@ -119,16 +151,19 @@ func UpdateEnhancedMDEquipmentItem(c *gin.Context) {
 		return
 	}
 
+	req.Equipment.GameSystem = gs.Name
+	req.Equipment.GameSystemId = gs.ID
+
 	// Ensure the ID matches
 	req.Equipment.ID = uint(id)
 
-	if err := UpdateEquipmentWithCategories(uint(id), req); err != nil {
+	if err := UpdateEquipmentWithCategories(uint(id), req, gs); err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to update equipment: "+err.Error())
 		return
 	}
 
 	// Return updated equipment
-	equipment, err := GetEquipmentWithCategories(uint(id))
+	equipment, err := GetEquipmentWithCategories(uint(id), gs)
 	if err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve updated equipment")
 		return

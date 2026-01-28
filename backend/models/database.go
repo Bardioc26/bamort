@@ -2,6 +2,9 @@ package models
 
 import (
 	"bamort/database"
+	"bamort/logger"
+	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -186,6 +189,28 @@ func learningMigrateStructure(db ...*gorm.DB) error {
 	)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func MigrateDataIfNeeded(db ...*gorm.DB) error {
+	// Use provided DB or default to database.DB
+	var targetDB *gorm.DB
+	if len(db) > 0 && db[0] != nil {
+		targetDB = db[0]
+	} else {
+		targetDB = database.DB
+	}
+	sql := `
+		UPDATE gsm_believes 
+		SET game_system_id = 1
+		WHERE game_system_id IS NULL or game_system_id = 0;	
+	`
+	logger.Debug("Führe SQL-Update aus: %s", strings.ReplaceAll(sql, "\n", " "))
+	result := targetDB.Exec(sql)
+	if result.Error != nil {
+		logger.Error("Fehler beim SQL-Update der Spell Learning Categories: %s", result.Error.Error())
+		return fmt.Errorf("failed to update spell learning categories: %w", result.Error)
 	}
 	return nil
 }

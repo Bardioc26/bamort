@@ -682,6 +682,50 @@ func TestEquipment_Save(t *testing.T) {
 	assert.Equal(t, "Updated equipment description", foundEquipment.Beschreibung)
 }
 
+func TestEquipment_Create_SetsDefaultGameSystem(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	equipment := &Equipment{
+		Name:         "TestDefaultEquipment",
+		Beschreibung: "Defaults to midgard",
+		Gewicht:      1.0,
+		Wert:         2.0,
+		PersonalItem: false,
+	}
+
+	err := equipment.Create()
+	require.NoError(t, err)
+	assert.Equal(t, "midgard", equipment.GameSystem)
+	assert.NotZero(t, equipment.GameSystemId)
+}
+
+func TestEquipment_First_UsesGameSystemId(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	otherGS := &GameSystem{Code: "TST-EQ", Name: "TestSystemEquipment"}
+	require.NoError(t, database.DB.Create(otherGS).Error)
+
+	defaultEquipment := createTestEquipment("SharedEquipmentName")
+	require.NoError(t, defaultEquipment.Create())
+
+	altEquipment := &Equipment{
+		GameSystem:   otherGS.Name,
+		GameSystemId: otherGS.ID,
+		Name:         "SharedEquipmentName",
+		Beschreibung: "Alternate system",
+		Gewicht:      1.5,
+		Wert:         5.0,
+		PersonalItem: false,
+	}
+	require.NoError(t, altEquipment.Create())
+
+	found := &Equipment{GameSystemId: otherGS.ID}
+	err := found.First("SharedEquipmentName")
+	require.NoError(t, err)
+	assert.Equal(t, otherGS.ID, found.GameSystemId)
+	assert.Equal(t, otherGS.Name, found.GameSystem)
+}
+
 // =============================================================================
 // Tests for Weapon struct
 // =============================================================================
@@ -702,6 +746,27 @@ func TestWeapon_Create(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotZero(t, weapon.ID)
 	assert.Equal(t, "midgard", weapon.GameSystem)
+}
+
+func TestWeapon_Create_SetsDefaultGameSystem(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	weapon := &Weapon{
+		Equipment: Equipment{
+			Name:         "TestWeaponDefaultGS",
+			Beschreibung: "Defaults to midgard",
+			Gewicht:      2.5,
+			Wert:         15.0,
+			PersonalItem: false,
+		},
+		SkillRequired: "Einhandschwerter",
+		Damage:        "1W6",
+	}
+
+	err := weapon.Create()
+	require.NoError(t, err)
+	assert.Equal(t, "midgard", weapon.GameSystem)
+	assert.NotZero(t, weapon.GameSystemId)
 }
 
 func TestWeapon_First_Success(t *testing.T) {
@@ -921,6 +986,27 @@ func TestContainer_Save(t *testing.T) {
 	assert.Equal(t, 25.0, foundContainer.Tragkraft)
 }
 
+func TestContainer_Create_SetsDefaultGameSystem(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	container := &Container{
+		Equipment: Equipment{
+			Name:         "TestContainerDefaultGS",
+			Beschreibung: "Defaults to midgard",
+			Gewicht:      0.3,
+			Wert:         3.0,
+			PersonalItem: false,
+		},
+		Tragkraft: 5.0,
+		Volumen:   8.0,
+	}
+
+	err := container.Create()
+	require.NoError(t, err)
+	assert.Equal(t, "midgard", container.GameSystem)
+	assert.NotZero(t, container.GameSystemId)
+}
+
 // =============================================================================
 // Tests for Transportation struct
 // =============================================================================
@@ -1047,6 +1133,29 @@ func TestTransportation_Save(t *testing.T) {
 	err = foundTransportation.FirstId(transportation.ID)
 	require.NoError(t, err)
 	assert.Equal(t, 300.0, foundTransportation.Tragkraft)
+}
+
+func TestTransportation_Create_SetsDefaultGameSystem(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	transportation := &Transportation{
+		Container: Container{
+			Equipment: Equipment{
+				Name:         "TestTransportDefaultGS",
+				Beschreibung: "Defaults to midgard",
+				Gewicht:      20.0,
+				Wert:         200.0,
+				PersonalItem: false,
+			},
+			Tragkraft: 100.0,
+			Volumen:   250.0,
+		},
+	}
+
+	err := transportation.Create()
+	require.NoError(t, err)
+	assert.Equal(t, "midgard", transportation.GameSystem)
+	assert.NotZero(t, transportation.GameSystemId)
 }
 
 // =============================================================================

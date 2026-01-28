@@ -45,6 +45,7 @@ func TestSkill_Create(t *testing.T) {
 			}
 			assert.NoError(t, err)
 			assert.Equal(t, "midgard", tt.skill.GameSystem)
+			assert.NotZero(t, tt.skill.GameSystemId)
 			assert.NotZero(t, tt.skill.ID)
 		})
 	}
@@ -90,6 +91,7 @@ func TestWeaponSkill_Create(t *testing.T) {
 			}
 			assert.NoError(t, err)
 			assert.Equal(t, "midgard", tt.weaponSkill.GameSystem)
+			assert.NotZero(t, tt.weaponSkill.GameSystemId)
 			assert.NotZero(t, tt.weaponSkill.ID)
 		})
 	}
@@ -154,6 +156,7 @@ func TestSkill_First(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tt.skill.Name, s.Name)
 			assert.Equal(t, "midgard", s.GameSystem)
+			assert.NotZero(t, s.GameSystemId)
 		})
 	}
 	database.ResetTestDB()
@@ -210,6 +213,7 @@ func TestSkill_FirstId(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tt.skill.Name, s.Name)
 			assert.Equal(t, "midgard", s.GameSystem)
+			assert.NotZero(t, s.GameSystemId)
 			assert.Equal(t, tt.findId, s.ID)
 		})
 	}
@@ -264,6 +268,7 @@ func TestSkill_Save(t *testing.T) {
 				err = saved.FirstId(tt.skill.ID)
 				assert.NoError(t, err)
 				assert.Equal(t, "Updated Description", saved.Beschreibung)
+				assert.NotZero(t, saved.GameSystemId)
 			}
 		})
 	}

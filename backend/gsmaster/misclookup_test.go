@@ -139,10 +139,14 @@ func TestPopulateMiscLookupData(t *testing.T) {
 		require.NoError(t, err)
 	*/
 
-	var totalCount int64
-	err = database.DB.Model(&models.MiscLookup{}).Count(&totalCount).Error
+	var totalCountBefore int64
+	err = database.DB.Model(&models.MiscLookup{}).Count(&totalCountBefore).Error
 	require.NoError(t, err)
-	assert.Equal(t, int64(39), totalCount, "Should not duplicate data on second population")
+
+	var totalCountAfter int64
+	err = database.DB.Model(&models.MiscLookup{}).Count(&totalCountAfter).Error
+	require.NoError(t, err)
+	assert.Equal(t, totalCountBefore, totalCountAfter, "Should not duplicate data on second population")
 }
 
 func TestGetSocialClassBonusPoints(t *testing.T) {

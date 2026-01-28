@@ -29,7 +29,9 @@ func TestExportSkills(t *testing.T) {
 		SourceID:         source.ID,
 		PageNumber:       42,
 	}
-	database.DB.Create(&skill)
+	if err := skill.Create(); err != nil {
+		t.Fatalf("failed to create skill: %v", err)
+	}
 
 	// Export skills
 	tmpDir := t.TempDir()
@@ -55,7 +57,7 @@ func TestImportSkills(t *testing.T) {
 	// Export first
 	tmpDir := t.TempDir()
 	skill := models.Skill{
-		Name:             "Klettern",
+		Name:             "TestImportSkill",
 		GameSystem:       "midgard",
 		Beschreibung:     "Klettern an Wänden",
 		Initialwert:      10,
@@ -66,7 +68,9 @@ func TestImportSkills(t *testing.T) {
 		SourceID:         source.ID,
 		PageNumber:       50,
 	}
-	database.DB.Create(&skill)
+	if err := skill.Create(); err != nil {
+		t.Fatalf("failed to create skill: %v", err)
+	}
 
 	err := ExportSkills(tmpDir)
 	if err != nil {
@@ -84,7 +88,7 @@ func TestImportSkills(t *testing.T) {
 
 	// Verify skill was imported
 	var importedSkill models.Skill
-	err = database.DB.Where("name = ? AND game_system = ?", "Klettern", "midgard").First(&importedSkill).Error
+	err = database.DB.Where("name = ? AND game_system = ?", "TestImportSkill", "midgard").First(&importedSkill).Error
 	if err != nil {
 		t.Fatalf("Imported skill not found: %v", err)
 	}
@@ -95,6 +99,9 @@ func TestImportSkills(t *testing.T) {
 
 	if importedSkill.Initialwert != 10 {
 		t.Errorf("Expected initialwert 10, got %d", importedSkill.Initialwert)
+	}
+	if importedSkill.GameSystemId == 0 {
+		t.Errorf("Expected game_system_id to be set")
 	}
 }
 
@@ -113,7 +120,9 @@ func TestImportSkillsUpdate(t *testing.T) {
 		SourceID:     source.ID,
 		PageNumber:   30,
 	}
-	database.DB.Create(&skill)
+	if err := skill.Create(); err != nil {
+		t.Fatalf("failed to create skill: %v", err)
+	}
 
 	// Export, modify, and re-import
 	tmpDir := t.TempDir()
@@ -212,7 +221,9 @@ func TestExportImportSkillCategoryDifficulty(t *testing.T) {
 		GameSystem: "midgard",
 		SourceID:   source.ID,
 	}
-	database.DB.Create(&skill)
+	if err := skill.Create(); err != nil {
+		t.Fatalf("failed to create skill: %v", err)
+	}
 
 	category := getOrCreateCategory("Alltag", source.ID)
 	difficulty := getOrCreateDifficulty("leicht")
@@ -437,7 +448,9 @@ func TestExportImportAll(t *testing.T) {
 		SourceID:    source.ID,
 		Initialwert: 10,
 	}
-	database.DB.Create(&skill)
+	if err := skill.Create(); err != nil {
+		t.Fatalf("failed to create skill: %v", err)
+	}
 
 	spell := models.Spell{
 		Name:       "AllSpell",
@@ -562,7 +575,9 @@ func TestExportImportWeaponSkills(t *testing.T) {
 			Difficulty:       "normal",
 		},
 	}
-	database.DB.Create(&weaponSkill)
+	if err := weaponSkill.Create(); err != nil {
+		t.Fatalf("failed to create weapon skill: %v", err)
+	}
 
 	tempDir := t.TempDir()
 	err := ExportWeaponSkills(tempDir)
@@ -591,6 +606,7 @@ func TestExportImportWeaponSkills(t *testing.T) {
 	assert.Equal(t, "Langschwert Waffenfertigkeiten", imported.Beschreibung)
 	assert.Equal(t, 10, imported.Initialwert)
 	assert.Equal(t, 5, imported.BasisWert)
+	assert.NotZero(t, imported.GameSystemId)
 }
 
 func TestExportImportEquipment(t *testing.T) {
@@ -1246,7 +1262,9 @@ func TestExportImportClassTypicalSkills(t *testing.T) {
 		Improvable:  true,
 		InnateSkill: false,
 	}
-	database.DB.Create(&skill)
+	if err := skill.Create(); err != nil {
+		t.Fatalf("failed to create skill: %v", err)
+	}
 
 	record := models.ClassTypicalSkill{
 		CharacterClassID: class.ID,

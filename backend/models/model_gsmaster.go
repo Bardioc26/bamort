@@ -46,6 +46,7 @@ type LearnCost struct {
 type Skill struct {
 	ID               uint   `gorm:"primaryKey" json:"id"`
 	GameSystem       string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
+	GameSystemId     uint   `json:"game_system_id,omitempty"`
 	Name             string `gorm:"type:varchar(255);index" json:"name"`
 	Beschreibung     string `json:"beschreibung"`
 	Quelle           string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
@@ -146,8 +147,10 @@ func (object *Skill) TableName() string {
 }
 
 func (stamm *Skill) Create() error {
-	gameSystem := "midgard"
-	stamm.GameSystem = gameSystem
+	if err := database.DB.AutoMigrate(&Skill{}); err != nil {
+		return fmt.Errorf("failed to migrate skills: %w", err)
+	}
+	stamm.ensureGameSystem()
 
 	// Set default values for boolean fields if not explicitly set
 	// Note: We cannot rely on GORM defaults anymore since they interfere with copying operations
@@ -171,9 +174,9 @@ func (stamm *Skill) First(name string) error {
 	if name == "" {
 		return fmt.Errorf("name cannot be empty")
 	}
-	gameSystem := "midgard"
+	gs := GetGameSystem(stamm.GameSystemId, stamm.GameSystem)
 	// Order by ID to get the record with the lowest ID when multiple categories exist
-	err := database.DB.Where("game_system=? AND name = ?", gameSystem, name).Order("id ASC").First(&stamm).Error
+	err := database.DB.Where("(game_system=? OR game_system_id=?) AND name = ?", gs.Name, gs.ID, name).Order("id ASC").First(&stamm).Error
 	if err != nil {
 		// Fertigkeit found
 		return err
@@ -182,8 +185,8 @@ func (stamm *Skill) First(name string) error {
 }
 
 func (object *Skill) FirstId(value uint) error {
-	gameSystem := "midgard"
-	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	err := database.DB.First(&object, "(game_system=? OR game_system_id=?) AND id = ?", gs.Name, gs.ID, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -192,9 +195,9 @@ func (object *Skill) FirstId(value uint) error {
 }
 
 func (object *Skill) Select(fieldName string, value string) ([]Skill, error) {
-	gameSystem := "midgard"
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
 	var skills []Skill
-	err := database.DB.Find(&skills, "game_system=? AND "+fieldName+" = ?", gameSystem, value).Error
+	err := database.DB.Find(&skills, "(game_system=? OR game_system_id=?) AND "+fieldName+" = ?", gs.Name, gs.ID, value).Error
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +208,7 @@ func SelectSkills(opts ...string) ([]Skill, error) {
 
 	fieldName := ""
 	value := ""
-	gameSystem := "midgard"
+	gs := GetGameSystem(0, "midgard")
 
 	if len(opts) > 1 {
 		fieldName = opts[0]
@@ -214,12 +217,12 @@ func SelectSkills(opts ...string) ([]Skill, error) {
 
 	var skills []Skill
 	if fieldName == "" {
-		err := database.DB.Find(&skills, "game_system=?", gameSystem).Error
+		err := database.DB.Find(&skills, "(game_system=? OR game_system_id=?)", gs.Name, gs.ID).Error
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		err := database.DB.Find(&skills, "game_system=? AND "+fieldName+" = ?", gameSystem, value).Error
+		err := database.DB.Find(&skills, "(game_system=? OR game_system_id=?) AND "+fieldName+" = ?", gs.Name, gs.ID, value).Error
 		if err != nil {
 			return nil, err
 		}
@@ -228,6 +231,7 @@ func SelectSkills(opts ...string) ([]Skill, error) {
 }
 
 func (object *Skill) Save() error {
+	object.ensureGameSystem()
 	err := database.DB.Save(&object).Error
 	if err != nil {
 		// zauber found
@@ -249,10 +253,10 @@ func (object *Skill) Delete() error {
 
 func (object *Skill) GetSkillCategories() ([]string, error) {
 	var categories []string
-	gameSystem := "midgard"
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
 
 	result := database.DB.Model(&SkillCategory{}).
-		Where("game_system = ?", gameSystem).
+		Where("game_system = ?", gs.Name).
 		Pluck("name", &categories)
 
 	if result.Error != nil {
@@ -268,8 +272,10 @@ func (object *WeaponSkill) TableName() string {
 }
 
 func (stamm *WeaponSkill) Create() error {
-	gameSystem := "midgard"
-	stamm.GameSystem = gameSystem
+	if err := database.DB.AutoMigrate(&Skill{}, &WeaponSkill{}); err != nil {
+		return fmt.Errorf("failed to migrate weapon skills: %w", err)
+	}
+	stamm.ensureGameSystem()
 
 	// Set default values for boolean fields if not explicitly set
 	if !stamm.Improvable && !stamm.InnateSkill {
@@ -291,9 +297,9 @@ func (stamm *WeaponSkill) First(name string) error {
 	if name == "" {
 		return fmt.Errorf("name cannot be empty")
 	}
-	gameSystem := "midgard"
+	gs := GetGameSystem(stamm.GameSystemId, stamm.GameSystem)
 	// Order by ID to get the record with the lowest ID when multiple categories exist
-	err := database.DB.Where("game_system=? AND name = ?", gameSystem, name).Order("id ASC").First(&stamm).Error
+	err := database.DB.Where("(game_system=? OR game_system_id=?) AND name = ?", gs.Name, gs.ID, name).Order("id ASC").First(&stamm).Error
 	if err != nil {
 		// Fertigkeit found
 		return err
@@ -302,8 +308,8 @@ func (stamm *WeaponSkill) First(name string) error {
 }
 
 func (object *WeaponSkill) FirstId(value uint) error {
-	gameSystem := "midgard"
-	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	err := database.DB.First(&object, "(game_system=? OR game_system_id=?) AND id = ?", gs.Name, gs.ID, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -312,6 +318,7 @@ func (object *WeaponSkill) FirstId(value uint) error {
 }
 
 func (object *WeaponSkill) Save() error {
+	object.ensureGameSystem()
 	err := database.DB.Save(&object).Error
 	if err != nil {
 		// zauber found
@@ -422,6 +429,28 @@ func (object *Spell) ensureGameSystem() {
 	if object.GameSystem == "" {
 		object.GameSystem = gs.Name
 	}
+}
+
+func (object *Skill) ensureGameSystem() {
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+
+	if object.GameSystemId == 0 {
+		object.GameSystemId = gs.ID
+	}
+
+	if object.GameSystem == "" {
+		object.GameSystem = gs.Name
+	}
+}
+
+func (object *Skill) BeforeCreate(tx *gorm.DB) error {
+	object.ensureGameSystem()
+	return nil
+}
+
+func (object *Skill) BeforeSave(tx *gorm.DB) error {
+	object.ensureGameSystem()
+	return nil
 }
 
 func (object *Spell) BeforeCreate(tx *gorm.DB) error {

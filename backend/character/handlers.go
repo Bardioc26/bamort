@@ -3306,6 +3306,19 @@ func getStandBonusPoints(social_class string) map[string]int {
 func GetDatasheetOptions(c *gin.Context) {
 	logger.Debug("GetDatasheetOptions aufgerufen")
 
+	gameSystemIDStr := c.DefaultQuery("game_system_id", "")
+	var gameSystemID uint
+	if gameSystemIDStr != "" {
+		parsed, err := strconv.ParseUint(gameSystemIDStr, 10, 64)
+		if err != nil {
+			respondWithError(c, http.StatusBadRequest, "Invalid game_system_id")
+			return
+		}
+		gameSystemID = uint(parsed)
+	}
+
+	gs := models.GetGameSystem(gameSystemID, "")
+
 	characterID := c.Param("id")
 
 	// Load character to get their weapon skills
@@ -3339,42 +3352,42 @@ func GetDatasheetOptions(c *gin.Context) {
 	}
 
 	// Load misc lookup data from database
-	genders, err := gsmaster.GetMiscLookupByKey("gender")
+	genders, err := gsmaster.GetMiscLookupByKeyForSystem("gender", gs.ID)
 	if err != nil {
 		logger.Error("GetDatasheetOptions: Fehler beim Laden der Geschlechter: %s", err.Error())
 		respondWithError(c, http.StatusInternalServerError, "Failed to load genders")
 		return
 	}
 
-	races, err := gsmaster.GetMiscLookupByKey("races")
+	races, err := gsmaster.GetMiscLookupByKeyForSystem("races", gs.ID)
 	if err != nil {
 		logger.Error("GetDatasheetOptions: Fehler beim Laden der Rassen: %s", err.Error())
 		respondWithError(c, http.StatusInternalServerError, "Failed to load races")
 		return
 	}
 
-	origins, err := gsmaster.GetMiscLookupByKey("origins")
+	origins, err := gsmaster.GetMiscLookupByKeyForSystem("origins", gs.ID)
 	if err != nil {
 		logger.Error("GetDatasheetOptions: Fehler beim Laden der Herkünfte: %s", err.Error())
 		respondWithError(c, http.StatusInternalServerError, "Failed to load origins")
 		return
 	}
 
-	socialClasses, err := gsmaster.GetMiscLookupByKey("social_classes")
+	socialClasses, err := gsmaster.GetMiscLookupByKeyForSystem("social_classes", gs.ID)
 	if err != nil {
 		logger.Error("GetDatasheetOptions: Fehler beim Laden der Stände: %s", err.Error())
 		respondWithError(c, http.StatusInternalServerError, "Failed to load social classes")
 		return
 	}
 
-	faiths, err := gsmaster.GetMiscLookupByKey("faiths")
+	faiths, err := gsmaster.GetMiscLookupByKeyForSystem("faiths", gs.ID)
 	if err != nil {
 		logger.Error("GetDatasheetOptions: Fehler beim Laden der Glaubensrichtungen: %s", err.Error())
 		respondWithError(c, http.StatusInternalServerError, "Failed to load faiths")
 		return
 	}
 
-	handedness, err := gsmaster.GetMiscLookupByKey("handedness")
+	handedness, err := gsmaster.GetMiscLookupByKeyForSystem("handedness", gs.ID)
 	if err != nil {
 		logger.Error("GetDatasheetOptions: Fehler beim Laden der Händigkeiten: %s", err.Error())
 		respondWithError(c, http.StatusInternalServerError, "Failed to load handedness")

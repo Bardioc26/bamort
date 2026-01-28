@@ -276,10 +276,11 @@ type ExportableClassTypicalSpell struct {
 
 // ExportableMiscLookup represents miscellaneous lookup values for export
 type ExportableMiscLookup struct {
-	Key        string `json:"key"`
-	Value      string `json:"value"`
-	SourceCode string `json:"source_code"`
-	PageNumber int    `json:"page_number"`
+	Key          string `json:"key"`
+	Value        string `json:"value"`
+	SourceCode   string `json:"source_code"`
+	PageNumber   int    `json:"page_number"`
+	GameSystemId uint   `json:"game_system_id"`
 }
 
 // ExportSkills exports all skills to a JSON file
@@ -2121,10 +2122,11 @@ func ExportMiscLookups(outputDir string) error {
 	exportable := make([]ExportableMiscLookup, len(lookups))
 	for i, lookup := range lookups {
 		exportable[i] = ExportableMiscLookup{
-			Key:        lookup.Key,
-			Value:      lookup.Value,
-			SourceCode: sourceMap[lookup.SourceID],
-			PageNumber: lookup.PageNumber,
+			Key:          lookup.Key,
+			Value:        lookup.Value,
+			SourceCode:   sourceMap[lookup.SourceID],
+			PageNumber:   lookup.PageNumber,
+			GameSystemId: lookup.GameSystemId,
 		}
 	}
 
@@ -2140,18 +2142,25 @@ func ImportMiscLookups(inputDir string) error {
 
 	sourceMap := buildSourceMapReverse()
 
+	// ensure new columns exist when importing older exports
+	if err := database.DB.AutoMigrate(&models.MiscLookup{}); err != nil {
+		return fmt.Errorf("failed to migrate misc lookup table: %w", err)
+	}
+
+	gs := models.GetGameSystem(exportable[0].GameSystemId, "")
 	for _, exp := range exportable {
 		var lookup models.MiscLookup
-		result := database.DB.Where("key = ?", exp.Key).First(&lookup)
+		result := database.DB.Where("key = ? AND (game_system_id = ? OR game_system_id = 0)", exp.Key, gs.ID).First(&lookup)
 
 		sourceID := sourceMap[exp.SourceCode]
 
 		if result.Error == gorm.ErrRecordNotFound {
 			lookup = models.MiscLookup{
-				Key:        exp.Key,
-				Value:      exp.Value,
-				SourceID:   sourceID,
-				PageNumber: exp.PageNumber,
+				Key:          exp.Key,
+				Value:        exp.Value,
+				SourceID:     sourceID,
+				PageNumber:   exp.PageNumber,
+				GameSystemId: gs.ID,
 			}
 			if err := database.DB.Create(&lookup).Error; err != nil {
 				return fmt.Errorf("failed to create misc lookup %s: %w", exp.Key, err)
@@ -2162,6 +2171,7 @@ func ImportMiscLookups(inputDir string) error {
 			lookup.Value = exp.Value
 			lookup.SourceID = sourceID
 			lookup.PageNumber = exp.PageNumber
+			lookup.GameSystemId = gs.ID
 
 			if err := database.DB.Save(&lookup).Error; err != nil {
 				return fmt.Errorf("failed to update misc lookup %s: %w", exp.Key, err)

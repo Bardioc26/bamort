@@ -89,6 +89,7 @@ func TestMiscLookup_WithSourceInfo(t *testing.T) {
 	assert.Equal(t, "test_value", retrieved.Value)
 	assert.Equal(t, uint(1), retrieved.SourceID)
 	assert.Equal(t, 42, retrieved.PageNumber)
+	assert.NotZero(t, retrieved.GameSystemId)
 }
 
 func TestPopulateMiscLookupData(t *testing.T) {
@@ -251,4 +252,36 @@ func TestGetMiscLookupByKey_OrderParameter(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, items, 3)
 	assert.Equal(t, "Alpha", items[0].Value)
+}
+
+func TestGetMiscLookupByKey_GameSystemFiltering(t *testing.T) {
+	database.SetupTestDB()
+	err := models.MigrateStructure()
+	require.NoError(t, err)
+
+	altGS := models.GameSystem{Code: "ALT", Name: "Alt"}
+	err = database.DB.Create(&altGS).Error
+	require.NoError(t, err)
+
+	defaults := []models.MiscLookup{
+		{Key: "gs_filter", Value: "Default"},
+	}
+	for i := range defaults {
+		err = database.DB.Create(&defaults[i]).Error
+		require.NoError(t, err)
+	}
+
+	alt := models.MiscLookup{Key: "gs_filter", Value: "Alt", GameSystemId: altGS.ID}
+	err = database.DB.Create(&alt).Error
+	require.NoError(t, err)
+
+	defaultItems, err := GetMiscLookupByKey("gs_filter")
+	require.NoError(t, err)
+	assert.Len(t, defaultItems, 1)
+	assert.Equal(t, "Default", defaultItems[0].Value)
+
+	altItems, err := GetMiscLookupByKeyForSystem("gs_filter", altGS.ID)
+	require.NoError(t, err)
+	assert.Len(t, altItems, 1)
+	assert.Equal(t, "Alt", altItems[0].Value)
 }

@@ -131,11 +131,12 @@ type Believe struct {
 
 // MiscLookup represents miscellaneous lookup values like gender, race, origin, etc.
 type MiscLookup struct {
-	ID         uint   `gorm:"primaryKey" json:"id"`
-	Key        string `gorm:"column:key;type:varchar(50);index;not null" json:"key"`
-	Value      string `gorm:"type:varchar(255);not null" json:"value"`
-	SourceID   uint   `json:"source_id,omitempty"`
-	PageNumber int    `json:"page_number,omitempty"`
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
+	Key          string `gorm:"column:key;type:varchar(50);index;not null" json:"key"`
+	Value        string `gorm:"type:varchar(255);not null" json:"value"`
+	SourceID     uint   `json:"source_id,omitempty"`
+	PageNumber   int    `json:"page_number,omitempty"`
 }
 
 func (object *Skill) TableName() string {
@@ -623,13 +624,23 @@ func (object *Believe) TableName() string {
 	return dbPrefix + "_" + "believes"
 }
 
+func (object *Believe) ensureGameSystem() {
+	gs := GetGameSystem(object.GameSystemId, "")
+	object.GameSystemId = gs.ID
+	object.GameSystem = gs.Name
+}
+
+func (object *Believe) BeforeCreate(tx *gorm.DB) error {
+	object.ensureGameSystem()
+	return nil
+}
+
+func (object *Believe) BeforeSave(tx *gorm.DB) error {
+	object.ensureGameSystem()
+	return nil
+}
+
 func (object *Believe) Create() error {
-	if object.GameSystemId == 0 {
-		gs := GameSystem{}
-		gs.FirstByName(object.GameSystem)
-		object.GameSystemId = gs.ID
-		object.GameSystem = gs.Name
-	}
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&object).Error; err != nil {
@@ -639,6 +650,16 @@ func (object *Believe) Create() error {
 	})
 
 	return err
+}
+
+func (object *Believe) Save() error {
+
+	err := database.DB.Save(&object).Error
+	if err != nil {
+		// zauber found
+		return err
+	}
+	return nil
 }
 
 func (object *Believe) FirstId(value uint) error {
@@ -670,19 +691,6 @@ func (object *Believe) First(name string) error {
 	return nil
 }
 
-func (object *Believe) Save() error {
-	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
-	object.GameSystemId = gs.ID
-	object.GameSystem = gs.Name
-
-	err := database.DB.Save(&object).Error
-	if err != nil {
-		// zauber found
-		return err
-	}
-	return nil
-}
-
 // GetBelievesByActiveSources gibt Glaubensrichtungen nach aktiven Quellen zurück
 func GetBelievesByActiveSources(gameSystem string) ([]Believe, error) {
 	var believes []Believe
@@ -697,6 +705,21 @@ func GetBelievesByActiveSources(gameSystem string) ([]Believe, error) {
 		Order("gsm_believes.name ASC").
 		Find(&believes).Error
 	return believes, err
+}
+
+func (object *MiscLookup) ensureGameSystem() {
+	gs := GetGameSystem(object.GameSystemId, "")
+	object.GameSystemId = gs.ID
+}
+
+func (object *MiscLookup) BeforeCreate(tx *gorm.DB) error {
+	object.ensureGameSystem()
+	return nil
+}
+
+func (object *MiscLookup) BeforeSave(tx *gorm.DB) error {
+	object.ensureGameSystem()
+	return nil
 }
 
 // TableName specifies the table name for MiscLookup

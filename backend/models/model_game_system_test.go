@@ -65,4 +65,11 @@ func TestGameSystem_Methods(t *testing.T) {
 		err = notFound.FirstByName("NoSuchSystem")
 		assert.Error(t, err)
 	})
+
+	t.Run("Get By Id", func(t *testing.T) {
+		var found GameSystem
+		err := found.FirstByID(1)
+		assert.NoError(t, err)
+		assert.Equal(t, "M5", found.Code)
+	})
 }

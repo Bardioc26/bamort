@@ -642,12 +642,10 @@ func (object *Believe) Create() error {
 }
 
 func (object *Believe) FirstId(value uint) error {
-	if object.GameSystemId == 0 {
-		gs := GameSystem{}
-		gs.FirstByName(object.GameSystem)
-		object.GameSystemId = gs.ID
-		object.GameSystem = gs.Name
-	}
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	object.GameSystemId = gs.ID
+	object.GameSystem = gs.Name
+
 	err := database.DB.First(&object, "(game_system=? OR game_system_id=?) AND id = ?", object.GameSystem, object.GameSystemId, value).Error
 	if err != nil {
 		// zauber found
@@ -660,12 +658,10 @@ func (object *Believe) First(name string) error {
 	if name == "" {
 		return fmt.Errorf("name cannot be empty")
 	}
-	if object.GameSystemId == 0 {
-		gs := GameSystem{}
-		gs.FirstByName(object.GameSystem)
-		object.GameSystemId = gs.ID
-		object.GameSystem = gs.Name
-	}
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	object.GameSystemId = gs.ID
+	object.GameSystem = gs.Name
+
 	err := database.DB.First(&object, "(game_system=? OR game_system_id=?) AND name = ?", object.GameSystem, object.GameSystemId, name).Error
 	if err != nil {
 		// zauber found
@@ -675,12 +671,10 @@ func (object *Believe) First(name string) error {
 }
 
 func (object *Believe) Save() error {
-	if object.GameSystemId == 0 {
-		gs := GameSystem{}
-		gs.FirstByName(object.GameSystem)
-		object.GameSystemId = gs.ID
-		object.GameSystem = gs.Name
-	}
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	object.GameSystemId = gs.ID
+	object.GameSystem = gs.Name
+
 	err := database.DB.Save(&object).Error
 	if err != nil {
 		// zauber found
@@ -692,15 +686,10 @@ func (object *Believe) Save() error {
 // GetBelievesByActiveSources gibt Glaubensrichtungen nach aktiven Quellen zurück
 func GetBelievesByActiveSources(gameSystem string) ([]Believe, error) {
 	var believes []Believe
-	gs := GameSystem{}
-	//if gameSystem="midgard" it should return recordset id 1
-	gs.FirstByName(gameSystem)
+	gs := GetGameSystem(0, gameSystem)
 	if gs.ID == 0 {
-		gs.FirstByCode(gameSystem)
-		if gs.ID == 0 {
-			// return empty slice if no valid game system found
-			return believes, fmt.Errorf("No GameSystem ID or Name found for %s", gameSystem)
-		}
+		// return empty slice if no valid game system found
+		return believes, fmt.Errorf("No GameSystem ID or Name found for %s", gameSystem)
 	}
 	err := database.DB.
 		Joins("LEFT JOIN gsm_lit_sources ON gsm_believes.source_id = gsm_lit_sources.id").
@@ -713,4 +702,21 @@ func GetBelievesByActiveSources(gameSystem string) ([]Believe, error) {
 // TableName specifies the table name for MiscLookup
 func (MiscLookup) TableName() string {
 	return "gsm_misc"
+}
+
+func GetGameSystem(id uint, name string) *GameSystem {
+	gs := &GameSystem{}
+	if id == 0 && name == "" {
+		gs.GetDefault()
+		return gs
+	}
+	if id == 0 && name != "" {
+		gs.FirstByCode(name)
+		if gs.ID == 0 {
+			gs.FirstByName(name)
+		}
+		return gs
+	}
+	gs.FirstByID(uint(id))
+	return gs
 }

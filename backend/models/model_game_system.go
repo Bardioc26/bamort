@@ -34,3 +34,10 @@ func (gs *GameSystem) FirstByName(name string) error {
 	}
 	return database.DB.First(gs, "name = ?", name).Error
 }
+
+func (gs *GameSystem) FirstByID(id uint) error {
+	if id == 0 {
+		return gs.GetDefault()
+	}
+	return database.DB.First(gs, "id = ?", id).Error
+}

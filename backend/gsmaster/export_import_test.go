@@ -347,6 +347,7 @@ func TestExportImportSkillDifficulties(t *testing.T) {
 func TestExportImportSpells(t *testing.T) {
 	setupTestEnvironment(t)
 	database.SetupTestDB()
+	models.MigrateStructure(database.DB)
 
 	// Create test data
 	source := getOrCreateSource("TEST_SP", "Test Spell Source")
@@ -369,7 +370,8 @@ func TestExportImportSpells(t *testing.T) {
 		Category:         "normal",
 		LearningCategory: "default",
 	}
-	database.DB.Create(&spell)
+	//database.DB.Create(&spell)
+	spell.Create()
 
 	// Export
 	tempDir := t.TempDir()
@@ -410,6 +412,9 @@ func TestExportImportSpells(t *testing.T) {
 	}
 	if imported.Stufe != 3 {
 		t.Errorf("Expected level 3, got %d", imported.Stufe)
+	}
+	if imported.GameSystemId == 0 {
+		t.Errorf("Expected game_system_id to be set")
 	}
 }
 

@@ -67,6 +67,7 @@ type WeaponSkill struct {
 type Spell struct {
 	ID               uint   `gorm:"primaryKey" json:"id"`
 	GameSystem       string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
+	GameSystemId     uint   `json:"game_system_id,omitempty"`
 	Name             string `gorm:"type:varchar(255);index" json:"name"`
 	Beschreibung     string `json:"beschreibung"`
 	Quelle           string `json:"quelle"`                           // Deprecated: Für Rückwärtskompatibilität
@@ -325,8 +326,7 @@ func (object *Spell) TableName() string {
 }
 
 func (stamm *Spell) Create() error {
-	gameSystem := "midgard"
-	stamm.GameSystem = gameSystem
+	stamm.ensureGameSystem()
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&stamm).Error; err != nil {
@@ -342,8 +342,8 @@ func (stamm *Spell) First(name string) error {
 	if name == "" {
 		return fmt.Errorf("name cannot be empty")
 	}
-	gameSystem := "midgard"
-	err := database.DB.First(&stamm, "game_system=? AND name = ?", gameSystem, name).Error
+	gs := GetGameSystem(stamm.GameSystemId, stamm.GameSystem)
+	err := database.DB.First(&stamm, "(game_system=? OR game_system_id=?) AND name = ?", gs.Name, gs.ID, name).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -352,8 +352,8 @@ func (stamm *Spell) First(name string) error {
 }
 
 func (object *Spell) FirstId(value uint) error {
-	gameSystem := "midgard"
-	err := database.DB.First(&object, "game_system=? AND id = ?", gameSystem, value).Error
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	err := database.DB.First(&object, "(game_system=? OR game_system_id=?) AND id = ?", gs.Name, gs.ID, value).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -362,6 +362,7 @@ func (object *Spell) FirstId(value uint) error {
 }
 
 func (object *Spell) Save() error {
+	object.ensureGameSystem()
 	err := database.DB.Save(&object).Error
 	if err != nil {
 		// zauber found
@@ -398,10 +399,10 @@ func SelectSpells(opts ...string) ([]Spell, error) {
 
 func (object *Spell) GetSpellCategories() ([]string, error) {
 	var categories []string
-	gameSystem := "midgard"
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
 
 	result := database.DB.Model(&SpellSchool{}).
-		Where("game_system = ?", gameSystem).
+		Where("game_system = ? OR game_system_id = ?", gs.Name, gs.ID).
 		Pluck("name", &categories)
 
 	if result.Error != nil {
@@ -409,6 +410,28 @@ func (object *Spell) GetSpellCategories() ([]string, error) {
 	}
 
 	return categories, nil
+}
+
+func (object *Spell) ensureGameSystem() {
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+
+	if object.GameSystemId == 0 {
+		object.GameSystemId = gs.ID
+	}
+
+	if object.GameSystem == "" {
+		object.GameSystem = gs.Name
+	}
+}
+
+func (object *Spell) BeforeCreate(tx *gorm.DB) error {
+	object.ensureGameSystem()
+	return nil
+}
+
+func (object *Spell) BeforeSave(tx *gorm.DB) error {
+	object.ensureGameSystem()
+	return nil
 }
 
 func (object *Equipment) TableName() string {
@@ -738,8 +761,15 @@ func GetGameSystem(id uint, name string) *GameSystem {
 		if gs.ID == 0 {
 			gs.FirstByName(name)
 		}
+		if gs.ID == 0 {
+			gs.GetDefault()
+			gs.Name = name
+		}
 		return gs
 	}
 	gs.FirstByID(uint(id))
+	if gs.ID == 0 && name != "" {
+		gs.Name = name
+	}
 	return gs
 }

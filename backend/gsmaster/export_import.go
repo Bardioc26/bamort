@@ -88,6 +88,7 @@ type ExportableWeaponSkillCategoryDifficulty struct {
 type ExportableSpell struct {
 	Name             string `json:"name"`
 	GameSystem       string `json:"game_system"`
+	GameSystemId     uint   `json:"game_system_id"`
 	Beschreibung     string `json:"beschreibung"`
 	SourceCode       string `json:"source_code"`
 	PageNumber       int    `json:"page_number"`
@@ -786,6 +787,7 @@ func ExportSpells(outputDir string) error {
 		exportable[i] = ExportableSpell{
 			Name:             spell.Name,
 			GameSystem:       spell.GameSystem,
+			GameSystemId:     spell.GameSystemId,
 			Beschreibung:     spell.Beschreibung,
 			SourceCode:       sourceMap[spell.SourceID],
 			PageNumber:       spell.PageNumber,
@@ -816,16 +818,23 @@ func ImportSpells(inputDir string) error {
 
 	sourceMap := buildSourceMapReverse()
 
+	if err := database.DB.AutoMigrate(&models.Spell{}); err != nil {
+		return fmt.Errorf("failed to migrate spells table: %w", err)
+	}
+
+	gs := models.GetGameSystem(exportable[0].GameSystemId, exportable[0].GameSystem)
 	for _, exp := range exportable {
 		var spell models.Spell
-		result := database.DB.Where("name = ? AND game_system = ?", exp.Name, exp.GameSystem).First(&spell)
+
+		result := database.DB.Where("name = ? AND (game_system = ? OR game_system_id = ?)", exp.Name, gs.Name, gs.ID).First(&spell)
 
 		sourceID := sourceMap[exp.SourceCode]
 
 		if result.Error == gorm.ErrRecordNotFound {
 			spell = models.Spell{
 				Name:             exp.Name,
-				GameSystem:       exp.GameSystem,
+				GameSystem:       gs.Name,
+				GameSystemId:     gs.ID,
 				Beschreibung:     exp.Beschreibung,
 				SourceID:         sourceID,
 				PageNumber:       exp.PageNumber,
@@ -864,6 +873,8 @@ func ImportSpells(inputDir string) error {
 			spell.Ursprung = exp.Ursprung
 			spell.Category = exp.Category
 			spell.LearningCategory = exp.LearningCategory
+			spell.GameSystemId = gs.ID
+			spell.GameSystem = gs.Name
 
 			if err := database.DB.Save(&spell).Error; err != nil {
 				return fmt.Errorf("failed to update spell %s: %w", exp.Name, err)

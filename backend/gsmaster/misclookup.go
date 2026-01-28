@@ -36,8 +36,28 @@ func GetMiscLookupByKeyForSystem(key string, gameSystemId uint, order ...string)
 	}
 
 	gs := models.GetGameSystem(gameSystemId, "")
-	err := database.DB.Where("`key` = ? AND game_system_id = ?", key, gs.ID).Order(orderBy).Find(&items).Error
-	return items, err
+
+	query := database.DB.Where("`key` = ?", key)
+	if gs.ID != 0 {
+		query = query.Where("game_system_id = ? OR game_system_id = 0 OR game_system_id IS NULL", gs.ID)
+	} else {
+		query = query.Where("game_system_id = 0 OR game_system_id IS NULL")
+	}
+
+	if err := query.Order(orderBy).Find(&items).Error; err != nil {
+		return items, err
+	}
+
+	if gs.ID != 0 {
+		for i := range items {
+			if items[i].GameSystemId == 0 {
+				items[i].GameSystemId = gs.ID
+				database.DB.Model(&items[i]).Update("game_system_id", gs.ID)
+			}
+		}
+	}
+
+	return items, nil
 }
 
 /*

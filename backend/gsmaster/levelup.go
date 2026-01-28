@@ -106,5 +106,8 @@ func CalculateImprovementCost(skill string, class string, currentSkillLevel int)
 	lCost.Stufe = currentSkillLevel + 1
 	lCost.Ep = neededLE * epPerTE
 	lCost.Money = lCost.Ep
+	gs := models.GetGameSystem(lCost.GameSystemId, lCost.GameSystem)
+	lCost.GameSystemId = gs.ID
+	lCost.GameSystem = gs.Name
 	return &lCost, nil
 }

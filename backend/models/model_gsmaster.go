@@ -35,12 +35,14 @@ type LookupList struct {
 }
 
 type LearnCost struct {
-	Stufe int `json:"stufe"`
-	LE    int `json:"le"`
-	TE    int `json:"te"`
-	Ep    int `json:"ep"`
-	Money int `json:"money"`
-	PP    int `json:"pp"`
+	GameSystem   string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
+	Stufe        int    `json:"stufe"`
+	LE           int    `json:"le"`
+	TE           int    `json:"te"`
+	Ep           int    `json:"ep"`
+	Money        int    `json:"money"`
+	PP           int    `json:"pp"`
 }
 
 type Skill struct {
@@ -448,6 +450,22 @@ func (object *Spell) BeforeCreate(tx *gorm.DB) error {
 }
 
 func (object *Spell) BeforeSave(tx *gorm.DB) error {
+	object.ensureGameSystem()
+	return nil
+}
+
+func (object *LearnCost) ensureGameSystem() {
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	object.GameSystemId = gs.ID
+	object.GameSystem = gs.Name
+}
+
+func (object *LearnCost) BeforeCreate(tx *gorm.DB) error {
+	object.ensureGameSystem()
+	return nil
+}
+
+func (object *LearnCost) BeforeSave(tx *gorm.DB) error {
 	object.ensureGameSystem()
 	return nil
 }

@@ -1800,12 +1800,14 @@ func TestGSMaster_EdgeCases(t *testing.T) {
 
 func TestLearnCost_StructFields(t *testing.T) {
 	learnCost := LearnCost{
-		Stufe: 3,
-		LE:    10,
-		TE:    5,
-		Ep:    100,
-		Money: 50,
-		PP:    2,
+		GameSystem:   "midgard",
+		GameSystemId: 1,
+		Stufe:        3,
+		LE:           10,
+		TE:           5,
+		Ep:           100,
+		Money:        50,
+		PP:           2,
 	}
 
 	assert.Equal(t, 3, learnCost.Stufe)
@@ -1814,6 +1816,29 @@ func TestLearnCost_StructFields(t *testing.T) {
 	assert.Equal(t, 100, learnCost.Ep)
 	assert.Equal(t, 50, learnCost.Money)
 	assert.Equal(t, 2, learnCost.PP)
+}
+
+func TestLearnCost_EnsureGameSystem_DefaultsToMidgard(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	lc := LearnCost{}
+	lc.ensureGameSystem()
+
+	assert.Equal(t, "midgard", lc.GameSystem)
+	assert.NotZero(t, lc.GameSystemId)
+}
+
+func TestLearnCost_EnsureGameSystem_UsesProvidedGameSystem(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	gs := &GameSystem{Code: "TST-LC", Name: "Test LearnCost"}
+	require.NoError(t, database.DB.Create(gs).Error)
+
+	lc := LearnCost{GameSystemId: gs.ID}
+	lc.ensureGameSystem()
+
+	assert.Equal(t, gs.ID, lc.GameSystemId)
+	assert.Equal(t, gs.Name, lc.GameSystem)
 }
 
 // TestSkill_Create_DefaultImprovable verifies that new skills get Improvable=true by default

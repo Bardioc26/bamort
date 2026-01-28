@@ -95,10 +95,11 @@ type ClassSpellSchoolEPCost struct {
 
 // SpellLevelLECost definiert LE-Kosten pro Zauber-Stufe
 type SpellLevelLECost struct {
-	ID         uint   `gorm:"primaryKey" json:"id"`
-	Level      int    `gorm:"uniqueIndex;not null" json:"level"` // Zauber-Stufe (1-12)
-	LERequired int    `gorm:"not null" json:"le_required"`       // Benötigte Lerneinheiten
-	GameSystem string `gorm:"index;default:midgard" json:"game_system"`
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	Level        int    `gorm:"uniqueIndex;not null" json:"level"` // Zauber-Stufe (1-12)
+	LERequired   int    `gorm:"not null" json:"le_required"`       // Benötigte Lerneinheiten
+	GameSystem   string `gorm:"index;default:midgard" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
 }
 
 // SkillCategoryDifficulty definiert die Schwierigkeit einer Fertigkeit in einer bestimmten Kategorie
@@ -155,6 +156,8 @@ type SkillLearningInfo struct {
 	ClassCode        string `json:"class_code"`
 	ClassName        string `json:"class_name"`
 	EPPerTE          int    `json:"ep_per_te"`
+	GameSystem       string `json:"game_system"`
+	GameSystemId     uint   `json:"game_system_id,omitempty"`
 }
 
 // SpellLearningInfo kombiniert alle Informationen für einen Zauber
@@ -169,6 +172,8 @@ type SpellLearningInfo struct {
 	ClassName        string `json:"class_name"`
 	EPPerLE          int    `json:"ep_per_le"`
 	LERequired       int    `json:"le_required"`
+	GameSystem       string `json:"game_system"`
+	GameSystemId     uint   `json:"game_system_id,omitempty"`
 }
 
 // AuditLogEntry repräsentiert einen Eintrag im Audit-Log
@@ -230,6 +235,27 @@ func (WeaponSkillCategoryDifficulty) TableName() string {
 
 func (SkillImprovementCost) TableName() string {
 	return "learning_skill_improvement_costs"
+}
+
+func (sllc *SpellLevelLECost) ensureGameSystem() {
+	gs := GetGameSystem(sllc.GameSystemId, sllc.GameSystem)
+	sllc.GameSystemId = gs.ID
+	sllc.GameSystem = gs.Name
+}
+
+func (sllc *SpellLevelLECost) BeforeCreate(tx *gorm.DB) error {
+	sllc.ensureGameSystem()
+	return nil
+}
+
+func (sllc *SpellLevelLECost) BeforeSave(tx *gorm.DB) error {
+	sllc.ensureGameSystem()
+	return nil
+}
+
+func (sllc *SpellLevelLECost) Save() error {
+	sllc.ensureGameSystem()
+	return database.DB.Save(sllc).Error
 }
 
 func (s *Source) ensureGameSystem() {
@@ -411,6 +437,7 @@ func (cssec *ClassSpellSchoolEPCost) Create() error {
 }
 
 func (sllc *SpellLevelLECost) Create() error {
+	sllc.ensureGameSystem()
 	return database.DB.Create(sllc).Error
 }
 
@@ -457,11 +484,14 @@ func GetEPPerLEForClassAndSpellSchool(classCode string, schoolName string) (int,
 // GetSkillCategoryAndDifficultyNewSystem findet die beste Kategorie für eine Fertigkeit basierend auf niedrigsten EP-Kosten
 func GetSkillCategoryAndDifficultyNewSystem(skillName string, classCode string) (*SkillLearningInfo, error) {
 	var results []SkillLearningInfo
+	gs := GetGameSystem(0, "midgard")
 
 	err := database.DB.Raw(`
 		SELECT 
 			scd.skill_id,
 			s.name as skill_name,
+			s.game_system as game_system,
+			s.game_system_id as game_system_id,
 			scd.skill_category as category_name,
 			scd.skill_difficulty as difficulty_name,
 			scd.learn_cost,
@@ -472,12 +502,18 @@ func GetSkillCategoryAndDifficultyNewSystem(skillName string, classCode string) 
 		FROM learning_skill_category_difficulties scd
 		JOIN learning_class_category_ep_costs ccec ON scd.skill_category = ccec.skill_category
 		JOIN gsm_skills s ON scd.skill_id = s.id
-		WHERE s.name = ? AND ccec.character_class = ?
+		WHERE s.name = ? AND ccec.character_class = ? AND (s.game_system = ? OR s.game_system_id = ?)
 		ORDER BY total_cost ASC
-	`, skillName, classCode).Scan(&results).Error
+	`, skillName, classCode, gs.Name, gs.ID).Scan(&results).Error
 
 	if err != nil {
 		return nil, err
+	}
+
+	for i := range results {
+		gs := GetGameSystem(results[i].GameSystemId, results[i].GameSystem)
+		results[i].GameSystemId = gs.ID
+		results[i].GameSystem = gs.Name
 	}
 
 	if len(results) == 0 {
@@ -490,11 +526,14 @@ func GetSkillCategoryAndDifficultyNewSystem(skillName string, classCode string) 
 // GetSkillInfoCategoryAndDifficultyNewSystem holt die Informationen für eine spezifische Kategorie/Schwierigkeit
 func GetSkillInfoCategoryAndDifficultyNewSystem(skillName, category, difficulty, classCode string) (*SkillLearningInfo, error) {
 	var result SkillLearningInfo
+	gs := GetGameSystem(0, "midgard")
 
 	err := database.DB.Raw(`
 		SELECT 
 			scd.skill_id,
 			s.name as skill_name,
+			s.game_system as game_system,
+			s.game_system_id as game_system_id,
 			scd.skill_category as category_name,
 			scd.skill_difficulty as difficulty_name,
 			scd.learn_cost,
@@ -505,12 +544,16 @@ func GetSkillInfoCategoryAndDifficultyNewSystem(skillName, category, difficulty,
 		FROM learning_skill_category_difficulties scd
 		JOIN learning_class_category_ep_costs ccec ON scd.skill_category = ccec.skill_category
 		JOIN gsm_skills s ON scd.skill_id = s.id
-		WHERE s.name = ? AND scd.skill_category = ? AND scd.skill_difficulty = ? AND ccec.character_class = ?
-	`, skillName, category, difficulty, classCode).Scan(&result).Error
+		WHERE s.name = ? AND scd.skill_category = ? AND scd.skill_difficulty = ? AND ccec.character_class = ? AND (s.game_system = ? OR s.game_system_id = ?)
+	`, skillName, category, difficulty, classCode, gs.Name, gs.ID).Scan(&result).Error
 
 	if err != nil {
 		return nil, err
 	}
+
+	gs = GetGameSystem(result.GameSystemId, result.GameSystem)
+	result.GameSystemId = gs.ID
+	result.GameSystem = gs.Name
 
 	return &result, nil
 }
@@ -523,6 +566,8 @@ func GetSpellLearningInfoNewSystem(spellName string, classCode string) (*SpellLe
 		SELECT 
 			s.id as spell_id,
 			s.name as spell_name,
+			s.game_system as game_system,
+			s.game_system_id as game_system_id,
 			s.stufe as spell_level,
 			s.learning_category as school_name,
 			cssec.character_class as class_code,
@@ -531,7 +576,7 @@ func GetSpellLearningInfoNewSystem(spellName string, classCode string) (*SpellLe
 			COALESCE(sllc.le_required, 0) as le_required
 		FROM gsm_spells s
 		JOIN learning_class_spell_school_ep_costs cssec ON s.learning_category = cssec.spell_school
-		LEFT JOIN learning_spell_level_le_costs sllc ON s.stufe = sllc.level
+		LEFT JOIN learning_spell_level_le_costs sllc ON s.stufe = sllc.level AND (sllc.game_system = s.game_system OR sllc.game_system_id = s.game_system_id OR sllc.game_system_id IS NULL)
 		WHERE s.name = ? AND cssec.character_class = ?
 	`, spellName, classCode).Scan(&result).Error
 
@@ -539,15 +584,19 @@ func GetSpellLearningInfoNewSystem(spellName string, classCode string) (*SpellLe
 		return nil, err
 	}
 
+	// Validate that we found a spell (spell_id should be > 0)
+	if result.SpellID == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+
 	// Validate spell level - level 0 is not a valid spell level
 	if result.SpellLevel <= 0 {
 		return nil, fmt.Errorf("invalid spell level %d for spell '%s' - spell levels must be 1 or higher", result.SpellLevel, spellName)
 	}
 
-	// Validate that we found a spell (spell_id should be > 0)
-	if result.SpellID == 0 {
-		return nil, gorm.ErrRecordNotFound
-	}
+	gs := GetGameSystem(result.GameSystemId, result.GameSystem)
+	result.GameSystemId = gs.ID
+	result.GameSystem = gs.Name
 
 	return &result, nil
 }

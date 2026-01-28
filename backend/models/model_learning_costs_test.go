@@ -226,6 +226,28 @@ func TestSkillDifficulty_Create_SetsGameSystem(t *testing.T) {
 }
 
 // =============================================================================
+// Tests for SpellLevelLECost struct and methods
+// =============================================================================
+
+func TestSpellLevelLECost_Create_SetsGameSystem(t *testing.T) {
+	setupLearningCostsTestDB(t)
+
+	gs := GetGameSystem(0, "midgard")
+
+	cost := SpellLevelLECost{
+		Level:      99,
+		LERequired: 1,
+	}
+
+	err := cost.Create()
+
+	require.NoError(t, err)
+	assert.NotZero(t, cost.ID)
+	assert.Equal(t, gs.Name, cost.GameSystem)
+	assert.Equal(t, gs.ID, cost.GameSystemId)
+}
+
+// =============================================================================
 // Tests for SpellSchool struct and methods
 // =============================================================================
 
@@ -336,6 +358,19 @@ func TestGetSkillCategoryAndDifficultyNewSystem_Success(t *testing.T) {
 	}
 }
 
+func TestGetSkillCategoryAndDifficultyNewSystem_IncludesGameSystem(t *testing.T) {
+	setupLearningCostsTestDB(t)
+
+	gs := GetGameSystem(0, "midgard")
+
+	skillInfo, err := GetSkillCategoryAndDifficultyNewSystem("Schwimmen", "Bb")
+
+	require.NoError(t, err)
+	require.NotNil(t, skillInfo)
+	assert.Equal(t, gs.Name, skillInfo.GameSystem)
+	assert.Equal(t, gs.ID, skillInfo.GameSystemId)
+}
+
 func TestGetSkillCategoryAndDifficultyNewSystem_InvalidSkill(t *testing.T) {
 	setupLearningCostsTestDB(t)
 
@@ -371,6 +406,53 @@ func TestGetSpellLearningInfoNewSystem_Success(t *testing.T) {
 		assert.Greater(t, spellInfo.SpellLevel, 0)
 		assert.Greater(t, spellInfo.EPPerLE, 0)
 	}
+}
+
+func TestGetSpellLearningInfoNewSystem_IncludesGameSystem(t *testing.T) {
+	setupLearningCostsTestDB(t)
+
+	gs := GetGameSystem(0, "midgard")
+	require.NotNil(t, gs)
+
+	var class CharacterClass
+	require.NoError(t, class.FirstByCode("Ma"))
+
+	var school SpellSchool
+	require.NoError(t, school.FirstByName("Dweomer"))
+
+	cost := ClassSpellSchoolEPCost{
+		CharacterClassID: class.ID,
+		SpellSchoolID:    school.ID,
+		EPPerLE:          3,
+	}
+	require.NoError(t, cost.Create())
+
+	var spellLevelCost SpellLevelLECost
+	err := database.DB.Where("level = ?", 1).First(&spellLevelCost).Error
+	if err != nil {
+		spellLevelCost = SpellLevelLECost{Level: 1, LERequired: 1, GameSystem: gs.Name, GameSystemId: gs.ID}
+		require.NoError(t, spellLevelCost.Create())
+	} else {
+		spellLevelCost.GameSystem = gs.Name
+		spellLevelCost.GameSystemId = gs.ID
+		require.NoError(t, spellLevelCost.Save())
+	}
+
+	spell := Spell{
+		Name:             "TestSpellGS",
+		GameSystem:       gs.Name,
+		GameSystemId:     gs.ID,
+		Stufe:            spellLevelCost.Level,
+		LearningCategory: school.Name,
+	}
+	require.NoError(t, spell.Create())
+
+	spellInfo, err := GetSpellLearningInfoNewSystem(spell.Name, class.Code)
+
+	require.NoError(t, err)
+	require.NotNil(t, spellInfo)
+	assert.Equal(t, gs.Name, spellInfo.GameSystem)
+	assert.Equal(t, gs.ID, spellInfo.GameSystemId)
 }
 
 func TestGetSpellLearningInfoNewSystem_InvalidSpell(t *testing.T) {

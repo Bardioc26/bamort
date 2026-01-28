@@ -140,9 +140,10 @@ type ExportableClassSpellSchoolEPCost struct {
 
 // ExportableSpellLevelLECost represents spell level LE costs for export
 type ExportableSpellLevelLECost struct {
-	Level      int    `json:"level"`
-	LERequired int    `json:"le_required"`
-	GameSystem string `json:"game_system"`
+	Level        int    `json:"level"`
+	LERequired   int    `json:"le_required"`
+	GameSystem   string `json:"game_system"`
+	GameSystemId uint   `json:"game_system_id"`
 }
 
 // ExportableSkillImprovementCost represents skill improvement costs for export
@@ -1204,9 +1205,10 @@ func ExportSpellLevelLECosts(outputDir string) error {
 	exportable := make([]ExportableSpellLevelLECost, len(costs))
 	for i, cost := range costs {
 		exportable[i] = ExportableSpellLevelLECost{
-			Level:      cost.Level,
-			LERequired: cost.LERequired,
-			GameSystem: cost.GameSystem,
+			Level:        cost.Level,
+			LERequired:   cost.LERequired,
+			GameSystem:   cost.GameSystem,
+			GameSystemId: cost.GameSystemId,
 		}
 	}
 
@@ -1221,23 +1223,27 @@ func ImportSpellLevelLECosts(inputDir string) error {
 	}
 
 	for _, exp := range exportable {
+		gs := models.GetGameSystem(exp.GameSystemId, exp.GameSystem)
 		var cost models.SpellLevelLECost
-		result := database.DB.Where("level = ? AND game_system = ?", exp.Level, exp.GameSystem).First(&cost)
+		result := database.DB.Where("level = ? AND (game_system = ? OR game_system_id = ?)", exp.Level, gs.Name, gs.ID).First(&cost)
 
 		if result.Error == gorm.ErrRecordNotFound {
 			cost = models.SpellLevelLECost{
-				Level:      exp.Level,
-				LERequired: exp.LERequired,
-				GameSystem: exp.GameSystem,
+				Level:        exp.Level,
+				LERequired:   exp.LERequired,
+				GameSystem:   gs.Name,
+				GameSystemId: gs.ID,
 			}
-			if err := database.DB.Create(&cost).Error; err != nil {
+			if err := cost.Create(); err != nil {
 				return fmt.Errorf("failed to create spell level LE cost: %w", err)
 			}
 		} else if result.Error != nil {
 			return fmt.Errorf("failed to query spell level LE cost: %w", result.Error)
 		} else {
 			cost.LERequired = exp.LERequired
-			if err := database.DB.Save(&cost).Error; err != nil {
+			cost.GameSystem = gs.Name
+			cost.GameSystemId = gs.ID
+			if err := cost.Save(); err != nil {
 				return fmt.Errorf("failed to update spell level LE cost: %w", err)
 			}
 		}

@@ -17,7 +17,7 @@ import (
 
 func TestLearnSpell(t *testing.T) {
 	// Setup test database with real data
-	database.SetupTestDB(true, true)
+	database.SetupTestDB(true)
 	defer database.ResetTestDB()
 
 	// Setup Gin in test mode
@@ -29,6 +29,19 @@ func TestLearnSpell(t *testing.T) {
 		if err := database.DB.Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, 18).Error; err != nil {
 			t.Skipf("Character ID 18 not found, skipping test: %v", err)
 			return
+		}
+
+		// Ensure spell data is valid for learning (level must be >=1)
+		var spell models.Spell
+		if err := database.DB.Where("name = ?", "Befestigen").First(&spell).Error; err == nil {
+			if spell.Stufe < 1 {
+				spell.Stufe = 1
+				_ = database.DB.Save(&spell).Error
+			}
+		} else {
+			// Create minimal spell entry if missing
+			spell = models.Spell{GameSystem: "midgard", Name: "Befestigen", Stufe: 1, Category: "Zauber", LearningCategory: "Zauber"}
+			_ = spell.Create()
 		}
 
 		// Update character resources if needed - handle as direct struct values

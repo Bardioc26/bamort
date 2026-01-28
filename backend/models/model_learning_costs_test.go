@@ -65,6 +65,22 @@ func TestSource_FirstByName_NotFound(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestSource_Create_SetsGameSystem(t *testing.T) {
+	setupLearningCostsTestDB(t)
+
+	source := Source{
+		Code: "TGS1",
+		Name: "Test Game System Source",
+	}
+
+	err := source.Create()
+
+	require.NoError(t, err)
+	assert.NotZero(t, source.ID)
+	assert.Equal(t, "midgard", source.GameSystem)
+	assert.NotZero(t, source.GameSystemId)
+}
+
 // =============================================================================
 // Tests for CharacterClass struct and methods
 // =============================================================================
@@ -109,6 +125,26 @@ func TestCharacterClass_FirstByName_NotFound(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestCharacterClass_Create_SetsGameSystem(t *testing.T) {
+	setupLearningCostsTestDB(t)
+
+	var src Source
+	require.NoError(t, src.FirstByCode("KOD"))
+
+	class := CharacterClass{
+		Code:     "T1",
+		Name:     "TestClassGS",
+		SourceID: src.ID,
+	}
+
+	err := class.Create()
+
+	require.NoError(t, err)
+	assert.NotZero(t, class.ID)
+	assert.Equal(t, "midgard", class.GameSystem)
+	assert.NotZero(t, class.GameSystemId)
+}
+
 // =============================================================================
 // Tests for SkillCategory struct and methods
 // =============================================================================
@@ -130,6 +166,25 @@ func TestSkillCategory_FirstByName_NotFound(t *testing.T) {
 	err := category.FirstByName("Invalid Category")
 
 	assert.Error(t, err)
+}
+
+func TestSkillCategory_Create_SetsGameSystem(t *testing.T) {
+	setupLearningCostsTestDB(t)
+
+	var src Source
+	require.NoError(t, src.FirstByCode("KOD"))
+
+	category := SkillCategory{
+		Name:     "TestCategoryGS",
+		SourceID: src.ID,
+	}
+
+	err := category.Create()
+
+	require.NoError(t, err)
+	assert.NotZero(t, category.ID)
+	assert.Equal(t, "midgard", category.GameSystem)
+	assert.NotZero(t, category.GameSystemId)
 }
 
 // =============================================================================
@@ -155,6 +210,21 @@ func TestSkillDifficulty_FirstByName_NotFound(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestSkillDifficulty_Create_SetsGameSystem(t *testing.T) {
+	setupLearningCostsTestDB(t)
+
+	difficulty := SkillDifficulty{
+		Name: "gs-diff",
+	}
+
+	err := difficulty.Create()
+
+	require.NoError(t, err)
+	assert.NotZero(t, difficulty.ID)
+	assert.Equal(t, "midgard", difficulty.GameSystem)
+	assert.NotZero(t, difficulty.GameSystemId)
+}
+
 // =============================================================================
 // Tests for SpellSchool struct and methods
 // =============================================================================
@@ -176,6 +246,25 @@ func TestSpellSchool_FirstByName_NotFound(t *testing.T) {
 	err := school.FirstByName("Invalid School")
 
 	assert.Error(t, err)
+}
+
+func TestSpellSchool_Create_SetsGameSystem(t *testing.T) {
+	setupLearningCostsTestDB(t)
+
+	var src Source
+	require.NoError(t, src.FirstByCode("KOD"))
+
+	school := SpellSchool{
+		Name:     "TestSpellSchoolGS",
+		SourceID: src.ID,
+	}
+
+	err := school.Create()
+
+	require.NoError(t, err)
+	assert.NotZero(t, school.ID)
+	assert.Equal(t, "midgard", school.GameSystem)
+	assert.NotZero(t, school.GameSystemId)
 }
 
 // =============================================================================

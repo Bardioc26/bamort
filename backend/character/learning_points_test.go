@@ -352,6 +352,9 @@ func TestGetLearningPointsForClass(t *testing.T) {
 }
 
 func TestGetStandBonusPoints(t *testing.T) {
+	database.SetupTestDB()
+	defer database.ResetTestDB()
+
 	tests := []struct {
 		name     string
 		stand    string

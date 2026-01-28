@@ -747,6 +747,10 @@ func (object *Believe) First(name string) error {
 func GetBelievesByActiveSources(gameSystem string) ([]Believe, error) {
 	var believes []Believe
 	gs := GetGameSystem(0, gameSystem)
+	if gs == nil {
+		// return empty slice if no valid game system found
+		return believes, fmt.Errorf("No GameSystem ID or Name found for %s", gameSystem)
+	}
 	if gs.ID == 0 {
 		// return empty slice if no valid game system found
 		return believes, fmt.Errorf("No GameSystem ID or Name found for %s", gameSystem)
@@ -791,8 +795,8 @@ func GetGameSystem(id uint, name string) *GameSystem {
 			gs.FirstByName(name)
 		}
 		if gs.ID == 0 {
-			gs.GetDefault()
-			gs.Name = name
+			//gs.GetDefault()
+			return nil
 		}
 		return gs
 	}

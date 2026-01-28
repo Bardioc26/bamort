@@ -10,58 +10,63 @@ import (
 
 // Source repräsentiert ein Regelwerk/Quellenbuch
 type Source struct {
-	ID          uint   `gorm:"primaryKey" json:"id"`
-	Code        string `gorm:"uniqueIndex;size:10;not null" json:"code"` // z.B. "KOD", "ARK", "MYS"
-	Name        string `gorm:"unique;not null" json:"name"`              // z.B. "Kodex", "Arkanum", "Mysterium"
-	FullName    string `json:"full_name,omitempty"`                      // z.B. "Midgard Regelwerk - Kodex"
-	Edition     string `json:"edition,omitempty"`                        // z.B. "5. Edition"
-	Publisher   string `json:"publisher,omitempty"`                      // z.B. "Pegasus Spiele"
-	PublishYear int    `json:"publish_year,omitempty"`                   // Erscheinungsjahr
-	Description string `json:"description,omitempty"`                    // Beschreibung des Werks
-	IsCore      bool   `gorm:"default:false" json:"is_core"`             // Ist es ein Grundregelwerk?
-	IsActive    bool   `gorm:"default:true" json:"is_active"`            // Ist das Werk aktiv/verfügbar?
-	GameSystem  string `gorm:"index;default:midgard" json:"game_system"`
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	Code         string `gorm:"uniqueIndex;size:10;not null" json:"code"` // z.B. "KOD", "ARK", "MYS"
+	Name         string `gorm:"unique;not null" json:"name"`              // z.B. "Kodex", "Arkanum", "Mysterium"
+	FullName     string `json:"full_name,omitempty"`                      // z.B. "Midgard Regelwerk - Kodex"
+	Edition      string `json:"edition,omitempty"`                        // z.B. "5. Edition"
+	Publisher    string `json:"publisher,omitempty"`                      // z.B. "Pegasus Spiele"
+	PublishYear  int    `json:"publish_year,omitempty"`                   // Erscheinungsjahr
+	Description  string `json:"description,omitempty"`                    // Beschreibung des Werks
+	IsCore       bool   `gorm:"default:false" json:"is_core"`             // Ist es ein Grundregelwerk?
+	IsActive     bool   `gorm:"default:true" json:"is_active"`            // Ist das Werk aktiv/verfügbar?
+	GameSystem   string `gorm:"index;default:midgard" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
 }
 
 // CharacterClass repräsentiert eine Charakterklasse mit Code und vollständigem Namen
 type CharacterClass struct {
-	ID          uint   `gorm:"primaryKey" json:"id"`
-	Code        string `gorm:"uniqueIndex;size:3" json:"code"`  // z.B. "Hx", "Ma", "Kr"
-	Name        string `gorm:"unique;not null" json:"name"`     // z.B. "Hexer", "Magier", "Krieger"
-	Description string `json:"description,omitempty"`           // Optional: Beschreibung der Klasse
-	SourceID    uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
-	GameSystem  string `gorm:"index;default:midgard" json:"game_system"`
-	Source      Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
-	Quelle      string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	Code         string `gorm:"uniqueIndex;size:3" json:"code"`  // z.B. "Hx", "Ma", "Kr"
+	Name         string `gorm:"unique;not null" json:"name"`     // z.B. "Hexer", "Magier", "Krieger"
+	Description  string `json:"description,omitempty"`           // Optional: Beschreibung der Klasse
+	SourceID     uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
+	GameSystem   string `gorm:"index;default:midgard" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
+	Source       Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
+	Quelle       string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
 }
 
 // SkillCategory repräsentiert eine Fertigkeitskategorie
 type SkillCategory struct {
-	ID         uint   `gorm:"primaryKey" json:"id"`
-	Name       string `gorm:"unique;not null" json:"name"`     // z.B. "Alltag", "Kampf", "Waffen"
-	SourceID   uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
-	GameSystem string `gorm:"index;default:midgard" json:"game_system"`
-	Source     Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
-	Quelle     string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	Name         string `gorm:"unique;not null" json:"name"`     // z.B. "Alltag", "Kampf", "Waffen"
+	SourceID     uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
+	GameSystem   string `gorm:"index;default:midgard" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
+	Source       Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
+	Quelle       string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
 }
 
 // SkillDifficulty repräsentiert Schwierigkeitsgrade
 type SkillDifficulty struct {
-	ID          uint   `gorm:"primaryKey" json:"id"`
-	Name        string `gorm:"unique;not null" json:"name"` // z.B. "leicht", "normal", "schwer", "sehr schwer"
-	Description string `json:"description,omitempty"`       // Optional: Beschreibung
-	GameSystem  string `gorm:"index;default:midgard" json:"game_system"`
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	Name         string `gorm:"unique;not null" json:"name"` // z.B. "leicht", "normal", "schwer", "sehr schwer"
+	Description  string `json:"description,omitempty"`       // Optional: Beschreibung
+	GameSystem   string `gorm:"index;default:midgard" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
 }
 
 // SpellSchool repräsentiert Zauberschulen
 type SpellSchool struct {
-	ID          uint   `gorm:"primaryKey" json:"id"`
-	Name        string `gorm:"unique;not null" json:"name"`     // z.B. "Beherrschen", "Bewegen", "Erkennen"
-	Description string `json:"description,omitempty"`           // Optional: Beschreibung
-	SourceID    uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
-	GameSystem  string `gorm:"index;default:midgard" json:"game_system"`
-	Source      Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
-	Quelle      string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	Name         string `gorm:"unique;not null" json:"name"`     // z.B. "Beherrschen", "Bewegen", "Erkennen"
+	Description  string `json:"description,omitempty"`           // Optional: Beschreibung
+	SourceID     uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
+	GameSystem   string `gorm:"index;default:midgard" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
+	Source       Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
+	Quelle       string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
 }
 
 // ClassCategoryEPCost definiert EP-Kosten für 1 Trainingseinheit (TE) pro Charakterklasse und Fertigkeitskategorie
@@ -227,56 +232,174 @@ func (SkillImprovementCost) TableName() string {
 	return "learning_skill_improvement_costs"
 }
 
+func (s *Source) ensureGameSystem() {
+	gs := GetGameSystem(s.GameSystemId, s.GameSystem)
+	s.GameSystemId = gs.ID
+	s.GameSystem = gs.Name
+}
+
+func (s *Source) BeforeCreate(tx *gorm.DB) error {
+	s.ensureGameSystem()
+	return nil
+}
+
+func (s *Source) BeforeSave(tx *gorm.DB) error {
+	s.ensureGameSystem()
+	return nil
+}
+
+func (s *Source) Save() error {
+	s.ensureGameSystem()
+	return database.DB.Save(s).Error
+}
+
+func (cc *CharacterClass) ensureGameSystem() {
+	gs := GetGameSystem(cc.GameSystemId, cc.GameSystem)
+	cc.GameSystemId = gs.ID
+	cc.GameSystem = gs.Name
+}
+
+func (cc *CharacterClass) BeforeCreate(tx *gorm.DB) error {
+	cc.ensureGameSystem()
+	return nil
+}
+
+func (cc *CharacterClass) BeforeSave(tx *gorm.DB) error {
+	cc.ensureGameSystem()
+	return nil
+}
+
+func (cc *CharacterClass) Save() error {
+	cc.ensureGameSystem()
+	return database.DB.Save(cc).Error
+}
+
+func (sc *SkillCategory) ensureGameSystem() {
+	gs := GetGameSystem(sc.GameSystemId, sc.GameSystem)
+	sc.GameSystemId = gs.ID
+	sc.GameSystem = gs.Name
+}
+
+func (sc *SkillCategory) BeforeCreate(tx *gorm.DB) error {
+	sc.ensureGameSystem()
+	return nil
+}
+
+func (sc *SkillCategory) BeforeSave(tx *gorm.DB) error {
+	sc.ensureGameSystem()
+	return nil
+}
+
+func (sc *SkillCategory) Save() error {
+	sc.ensureGameSystem()
+	return database.DB.Save(sc).Error
+}
+
+func (sd *SkillDifficulty) ensureGameSystem() {
+	gs := GetGameSystem(sd.GameSystemId, sd.GameSystem)
+	sd.GameSystemId = gs.ID
+	sd.GameSystem = gs.Name
+}
+
+func (sd *SkillDifficulty) BeforeCreate(tx *gorm.DB) error {
+	sd.ensureGameSystem()
+	return nil
+}
+
+func (sd *SkillDifficulty) BeforeSave(tx *gorm.DB) error {
+	sd.ensureGameSystem()
+	return nil
+}
+
+func (sd *SkillDifficulty) Save() error {
+	sd.ensureGameSystem()
+	return database.DB.Save(sd).Error
+}
+
+func (ss *SpellSchool) ensureGameSystem() {
+	gs := GetGameSystem(ss.GameSystemId, ss.GameSystem)
+	ss.GameSystemId = gs.ID
+	ss.GameSystem = gs.Name
+}
+
+func (ss *SpellSchool) BeforeCreate(tx *gorm.DB) error {
+	ss.ensureGameSystem()
+	return nil
+}
+
+func (ss *SpellSchool) BeforeSave(tx *gorm.DB) error {
+	ss.ensureGameSystem()
+	return nil
+}
+
+func (ss *SpellSchool) Save() error {
+	ss.ensureGameSystem()
+	return database.DB.Save(ss).Error
+}
+
 // CRUD-Methoden
 
 func (s *Source) Create() error {
+	s.ensureGameSystem()
 	return database.DB.Create(s).Error
 }
 
 func (s *Source) FirstByCode(code string) error {
-	return database.DB.Where("code = ?", code).First(s).Error
+	gs := GetGameSystem(s.GameSystemId, s.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND code = ?", gs.Name, gs.ID, code).First(s).Error
 }
 
 func (s *Source) FirstByName(name string) error {
-	return database.DB.Where("name = ?", name).First(s).Error
+	gs := GetGameSystem(s.GameSystemId, s.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND name = ?", gs.Name, gs.ID, name).First(s).Error
 }
 
 func (cc *CharacterClass) Create() error {
+	cc.ensureGameSystem()
 	return database.DB.Create(cc).Error
 }
 
 func (cc *CharacterClass) FirstByCode(code string) error {
-	return database.DB.Where("code = ?", code).First(cc).Error
+	gs := GetGameSystem(cc.GameSystemId, cc.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND code = ?", gs.Name, gs.ID, code).First(cc).Error
 }
 func (cc *CharacterClass) FirstByName(code string) error {
-	return database.DB.Where("name = ?", code).First(cc).Error
+	gs := GetGameSystem(cc.GameSystemId, cc.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND name = ?", gs.Name, gs.ID, code).First(cc).Error
 }
 func (cc *CharacterClass) FirstByNameOrCode(value string) error {
-	return database.DB.Where("name = ? OR code = ?", value, value).First(cc).Error
+	gs := GetGameSystem(cc.GameSystemId, cc.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND (name = ? OR code = ?)", gs.Name, gs.ID, value, value).First(cc).Error
 }
 
 func (sc *SkillCategory) Create() error {
+	sc.ensureGameSystem()
 	return database.DB.Create(sc).Error
 }
 
 func (sc *SkillCategory) FirstByName(name string) error {
-	return database.DB.Where("name = ?", name).First(sc).Error
+	gs := GetGameSystem(sc.GameSystemId, sc.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND name = ?", gs.Name, gs.ID, name).First(sc).Error
 }
 
 func (sd *SkillDifficulty) Create() error {
+	sd.ensureGameSystem()
 	return database.DB.Create(sd).Error
 }
 
 func (sd *SkillDifficulty) FirstByName(name string) error {
-	return database.DB.Where("name = ?", name).First(sd).Error
+	gs := GetGameSystem(sd.GameSystemId, sd.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND name = ?", gs.Name, gs.ID, name).First(sd).Error
 }
 
 func (ss *SpellSchool) Create() error {
+	ss.ensureGameSystem()
 	return database.DB.Create(ss).Error
 }
 
 func (ss *SpellSchool) FirstByName(name string) error {
-	return database.DB.Where("name = ?", name).First(ss).Error
+	gs := GetGameSystem(ss.GameSystemId, ss.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND name = ?", gs.Name, gs.ID, name).First(ss).Error
 }
 
 func (ccec *ClassCategoryEPCost) Create() error {

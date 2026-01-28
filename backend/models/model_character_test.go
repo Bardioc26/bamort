@@ -120,6 +120,23 @@ func TestChar_Create_Success(t *testing.T) {
 	assert.Greater(t, testChar.ID, uint(0), "ID should be set after create")
 }
 
+func TestChar_Create_SetsGameSystem(t *testing.T) {
+	setupCharacterTestDB(t)
+
+	gs := GetGameSystem(0, "midgard")
+	require.NotNil(t, gs)
+
+	testChar := createTestChar("Test Character GS")
+	testChar.GameSystem = ""
+	testChar.GameSystemId = 0
+
+	err := testChar.Create()
+
+	require.NoError(t, err)
+	assert.Equal(t, gs.Name, testChar.GameSystem)
+	assert.Equal(t, gs.ID, testChar.GameSystemId)
+}
+
 func TestChar_Create_WithRelations(t *testing.T) {
 	setupCharacterTestDB(t)
 
@@ -155,6 +172,33 @@ func TestChar_First_Success(t *testing.T) {
 	assert.Equal(t, testChar.ID, foundChar.ID, "Found character should have same ID")
 	assert.Equal(t, testChar.Name, foundChar.Name, "Found character should have same name")
 	assert.Equal(t, testChar.Rasse, foundChar.Rasse, "Found character should have same race")
+}
+
+func TestChar_First_UsesGameSystem(t *testing.T) {
+	setupCharacterTestDB(t)
+
+	defaultGS := GetGameSystem(0, "midgard")
+	require.NotNil(t, defaultGS)
+
+	altGS := &GameSystem{Code: "ALT", Name: "AltSystem", Description: "Test", IsActive: true}
+	require.NoError(t, database.DB.Create(altGS).Error)
+
+	charDefault := createTestChar("GS Default Char")
+	require.NoError(t, charDefault.Create())
+
+	charAlt := createTestChar("GS Alt Char")
+	charAlt.GameSystem = altGS.Code
+	charAlt.GameSystemId = altGS.ID
+	require.NoError(t, charAlt.Create())
+
+	finder := &Char{GameSystem: defaultGS.Name, GameSystemId: defaultGS.ID}
+	err := finder.First("GS Default Char")
+	require.NoError(t, err)
+	assert.Equal(t, defaultGS.ID, finder.GameSystemId)
+
+	otherFinder := &Char{GameSystem: altGS.Code, GameSystemId: altGS.ID}
+	err = otherFinder.First("GS Default Char")
+	assert.Error(t, err)
 }
 
 func TestChar_First_NotFound(t *testing.T) {

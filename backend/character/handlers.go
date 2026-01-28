@@ -103,6 +103,8 @@ func UpdateCharacter(c *gin.Context) {
 
 	// Store the original ID to preserve it
 	originalID := character.ID
+	originalGameSystem := character.GameSystem
+	originalGameSystemId := character.GameSystemId
 
 	// Bind the updated data
 	if err := c.ShouldBindJSON(&character); err != nil {
@@ -112,6 +114,8 @@ func UpdateCharacter(c *gin.Context) {
 
 	// Restore the ID
 	character.ID = originalID
+	character.GameSystem = originalGameSystem
+	character.GameSystemId = originalGameSystemId
 
 	// Update all associations
 	if err := database.DB.Session(&gorm.Session{FullSaveAssociations: true}).Save(&character).Error; err != nil {

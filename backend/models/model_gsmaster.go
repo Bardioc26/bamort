@@ -137,6 +137,7 @@ type Believe struct {
 // MiscLookup represents miscellaneous lookup values like gender, race, origin, etc.
 type MiscLookup struct {
 	ID           uint   `gorm:"primaryKey" json:"id"`
+	GameSystem   string `gorm:"column:game_system;index;default:midgard" json:"game_system"`
 	GameSystemId uint   `json:"game_system_id,omitempty"`
 	Key          string `gorm:"column:key;type:varchar(50);index;not null" json:"key"`
 	Value        string `gorm:"type:varchar(255);not null" json:"value"`

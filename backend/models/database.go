@@ -201,16 +201,42 @@ func MigrateDataIfNeeded(db ...*gorm.DB) error {
 	} else {
 		targetDB = database.DB
 	}
+	tables := []string{
+		"gsm_lit_sources",
+		"gsm_believes",
+		"gsm_equipments",
+		"gsm_weapons",
+		"gsm_containers",
+		"gsm_transportations",
+		"gsm_skills",
+		"gsm_weaponskills",
+		"gsm_spells",
+		"char_chars",
+		"gsm_character_classes",
+		"gsm_misc",
+		"learning_skill_categories",
+		"learning_skill_difficulties",
+		"learning_spell_level_le_costs",
+		"learning_spell_schools",
+	}
 	sql := `
-		UPDATE gsm_believes 
+		UPDATE TABLE 
 		SET game_system_id = 1
 		WHERE game_system_id IS NULL or game_system_id = 0;	
 	`
 	logger.Debug("Führe SQL-Update aus: %s", strings.ReplaceAll(sql, "\n", " "))
-	result := targetDB.Exec(sql)
-	if result.Error != nil {
-		logger.Error("Fehler beim SQL-Update der Spell Learning Categories: %s", result.Error.Error())
-		return fmt.Errorf("failed to update spell learning categories: %w", result.Error)
+	errors := []error{}
+	for _, currentTable := range tables {
+		//currentTable := tables[tables]
+		execSQL := strings.ReplaceAll(sql, "TABLE", currentTable)
+		result := targetDB.Exec(execSQL)
+		if result.Error != nil {
+			logger.Error("Fehler beim SQL-Update der Tabelle %s: %s", currentTable, result.Error.Error())
+			errors = append(errors, fmt.Errorf("failed to update table %s: %w", currentTable, result.Error))
+		}
 	}
-	return nil
+	if len(errors) == 0 {
+		return nil
+	}
+	return fmt.Errorf("The following Errors occured when migrating data: %v", errors)
 }

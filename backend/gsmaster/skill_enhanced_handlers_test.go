@@ -24,10 +24,10 @@ func getOrCreateSource(code, name string) models.Source {
 	var source models.Source
 	if err := database.DB.Where("code = ?", code).First(&source).Error; err != nil {
 		source = models.Source{
-			Code:       code,
-			Name:       name,
-			GameSystem: "midgard",
-			IsActive:   true,
+			Code:         code,
+			Name:         name,
+			GameSystemId: 1,
+			IsActive:     true,
 		}
 		database.DB.Create(&source)
 	}
@@ -39,9 +39,9 @@ func getOrCreateCategory(name string, sourceID uint) models.SkillCategory {
 	var category models.SkillCategory
 	if err := database.DB.Where("name = ? AND game_system = ?", name, "midgard").First(&category).Error; err != nil {
 		category = models.SkillCategory{
-			Name:       name,
-			GameSystem: "midgard",
-			SourceID:   sourceID,
+			Name:         name,
+			GameSystemId: 1,
+			SourceID:     sourceID,
 		}
 		database.DB.Create(&category)
 	}
@@ -53,8 +53,8 @@ func getOrCreateDifficulty(name string) models.SkillDifficulty {
 	var difficulty models.SkillDifficulty
 	if err := database.DB.Where("name = ? AND game_system = ?", name, "midgard").First(&difficulty).Error; err != nil {
 		difficulty = models.SkillDifficulty{
-			Name:       name,
-			GameSystem: "midgard",
+			Name:         name,
+			GameSystemId: 1,
 		}
 		database.DB.Create(&difficulty)
 	}

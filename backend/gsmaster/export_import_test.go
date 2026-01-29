@@ -175,10 +175,10 @@ func TestExportImportSources(t *testing.T) {
 
 	// Create test source
 	source := models.Source{
-		Code:       "ARK",
-		Name:       "Arkanum",
-		GameSystem: "midgard",
-		IsActive:   true,
+		Code:         "ARK",
+		Name:         "Arkanum",
+		GameSystemId: 1,
+		IsActive:     true,
 	}
 	database.DB.Create(&source)
 
@@ -217,9 +217,9 @@ func TestExportImportSkillCategoryDifficulty(t *testing.T) {
 	// Create dependencies
 	source := getOrCreateSource("KOD", "Kodex")
 	skill := models.Skill{
-		Name:       "Tanzen",
-		GameSystem: "midgard",
-		SourceID:   source.ID,
+		Name:         "Tanzen",
+		GameSystemId: 1,
+		SourceID:     source.ID,
 	}
 	if err := skill.Create(); err != nil {
 		t.Fatalf("failed to create skill: %v", err)
@@ -274,9 +274,9 @@ func TestExportImportSkillCategories(t *testing.T) {
 	// Create test data
 	source := getOrCreateSource("TEST_SC", "Test Source")
 	category := models.SkillCategory{
-		Name:       "TestCategory",
-		GameSystem: "midgard",
-		SourceID:   source.ID,
+		Name:         "TestCategory",
+		GameSystemId: 1,
+		SourceID:     source.ID,
 	}
 	database.DB.Create(&category)
 
@@ -320,8 +320,8 @@ func TestExportImportSkillDifficulties(t *testing.T) {
 
 	// Create test data
 	difficulty := models.SkillDifficulty{
-		Name:       "TestDifficulty",
-		GameSystem: "midgard",
+		Name:         "TestDifficulty",
+		GameSystemId: 1,
 	}
 	database.DB.Create(&difficulty)
 
@@ -436,10 +436,10 @@ func TestExportImportAll(t *testing.T) {
 	// Create test data
 	source := getOrCreateSource("TEST_ALL", "Test All Source")
 
-	category := models.SkillCategory{Name: "AllCategory", GameSystem: "midgard", SourceID: source.ID}
+	category := models.SkillCategory{Name: "AllCategory", GameSystemId: 1, SourceID: source.ID}
 	database.DB.Create(&category)
 
-	difficulty := models.SkillDifficulty{Name: "AllDifficulty", GameSystem: "midgard"}
+	difficulty := models.SkillDifficulty{Name: "AllDifficulty", GameSystemId: 1}
 	database.DB.Create(&difficulty)
 
 	skill := models.Skill{
@@ -453,10 +453,10 @@ func TestExportImportAll(t *testing.T) {
 	}
 
 	spell := models.Spell{
-		Name:       "AllSpell",
-		GameSystem: "midgard",
-		SourceID:   source.ID,
-		Stufe:      2,
+		Name:         "AllSpell",
+		GameSystemId: 1,
+		SourceID:     source.ID,
+		Stufe:        2,
 	}
 	database.DB.Create(&spell)
 
@@ -1159,15 +1159,15 @@ func TestExportImportClassCategoryLearningPoints(t *testing.T) {
 
 	// Create test data with unique names
 	class := models.CharacterClass{
-		Code:       "TEST_KRI",
-		Name:       "Test-Krieger",
-		GameSystem: "midgard",
+		Code:         "TEST_KRI",
+		Name:         "Test-Krieger",
+		GameSystemId: 1,
 	}
 	database.DB.Create(&class)
 
 	category := models.SkillCategory{
-		Name:       "Test-Kampf",
-		GameSystem: "midgard",
+		Name:         "Test-Kampf",
+		GameSystemId: 1,
 	}
 	database.DB.Create(&category)
 
@@ -1208,9 +1208,9 @@ func TestExportImportClassSpellPoints(t *testing.T) {
 
 	// Create test data with unique name
 	class := models.CharacterClass{
-		Code:       "TEST_MAG",
-		Name:       "Test-Magier",
-		GameSystem: "midgard",
+		Code:         "TEST_MAG",
+		Name:         "Test-Magier",
+		GameSystemId: 1,
 	}
 	database.DB.Create(&class)
 
@@ -1250,9 +1250,9 @@ func TestExportImportClassTypicalSkills(t *testing.T) {
 
 	// Create test data with unique names
 	class := models.CharacterClass{
-		Code:       "TEST_WAL",
-		Name:       "Test-Waldläufer",
-		GameSystem: "midgard",
+		Code:         "TEST_WAL",
+		Name:         "Test-Waldläufer",
+		GameSystemId: 1,
 	}
 	database.DB.Create(&class)
 
@@ -1307,16 +1307,16 @@ func TestExportImportClassTypicalSpells(t *testing.T) {
 
 	// Create test data with unique names
 	class := models.CharacterClass{
-		Code:       "TEST_DRU",
-		Name:       "Test-Druide",
-		GameSystem: "midgard",
+		Code:         "TEST_DRU",
+		Name:         "Test-Druide",
+		GameSystemId: 1,
 	}
 	database.DB.Create(&class)
 
 	spell := models.Spell{
-		Name:       "Test-Heilen",
-		GameSystem: "midgard",
-		Stufe:      1,
+		Name:         "Test-Heilen",
+		GameSystemId: 1,
+		Stufe:        1,
 	}
 	database.DB.Create(&spell)
 

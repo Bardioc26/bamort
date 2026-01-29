@@ -117,8 +117,8 @@ func TestSkill_First(t *testing.T) {
 		{
 			name: "existing skill",
 			skill: &models.Skill{
-				Name:       "Test Skill",
-				GameSystem: "midgard",
+				Name:         "Test Skill",
+				GameSystemId: 1,
 			},
 			findName: "Test Skill",
 			wantErr:  false,
@@ -173,8 +173,8 @@ func TestSkill_FirstId(t *testing.T) {
 		{
 			name: "existing skill",
 			skill: &models.Skill{
-				Name:       "Test Skill",
-				GameSystem: "midgard",
+				Name:         "Test Skill",
+				GameSystemId: 1,
 			},
 			findId:  1,
 			wantErr: false,
@@ -285,8 +285,8 @@ func TestSkill_Delete(t *testing.T) {
 		{
 			name: "delete existing skill",
 			skill: &models.Skill{
-				Name:       "Test Skill",
-				GameSystem: "midgard",
+				Name:         "Test Skill",
+				GameSystemId: 1,
 			},
 			wantErr: false,
 		},
@@ -339,12 +339,12 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 	// Note: GetSkillCategories() reads from gsm_skill_categories table, not from skills
 	testCategories := []*models.SkillCategory{
 		{
-			Name:       "Category1",
-			GameSystem: "midgard",
+			Name:         "Category1",
+			GameSystemId: 1,
 		},
 		{
-			Name:       "Category2",
-			GameSystem: "midgard",
+			Name:         "Category2",
+			GameSystemId: 1,
 		},
 	}
 

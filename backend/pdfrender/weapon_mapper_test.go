@@ -15,8 +15,8 @@ func TestMapWeapons_WithEWCalculation(t *testing.T) {
 	// Create weapons in gsmaster with skill requirements
 	testSword := &models.Weapon{
 		Equipment: models.Equipment{
-			GameSystem: "midgard",
-			Name:       "Langschwert",
+			GameSystemId: 1,
+			Name:         "Langschwert",
 		},
 		SkillRequired: "Schwerter",
 		Damage:        "1W6",
@@ -25,8 +25,8 @@ func TestMapWeapons_WithEWCalculation(t *testing.T) {
 
 	testBow := &models.Weapon{
 		Equipment: models.Equipment{
-			GameSystem: "midgard",
-			Name:       "Langbogen",
+			GameSystemId: 1,
+			Name:         "Langbogen",
 		},
 		SkillRequired: "Bogen",
 		Damage:        "1W6",
@@ -141,8 +141,8 @@ func TestMapWeapons_WithDamageCalculation(t *testing.T) {
 	// Create test weapon in gsmaster if it doesn't exist
 	testWeapon := &models.Weapon{
 		Equipment: models.Equipment{
-			GameSystem: "midgard",
-			Name:       "Langschwert",
+			GameSystemId: 1,
+			Name:         "Langschwert",
 		},
 		SkillRequired: "Schwerter",
 		Damage:        "1W6",
@@ -230,8 +230,8 @@ func TestMapWeapons_WithRangedWeaponRanges(t *testing.T) {
 	// Create a ranged weapon in gsmaster with range values
 	testBow := &models.Weapon{
 		Equipment: models.Equipment{
-			GameSystem: "midgard",
-			Name:       "Langbogen",
+			GameSystemId: 1,
+			Name:         "Langbogen",
 		},
 		SkillRequired: "Bogen",
 		Damage:        "1W6",
@@ -258,7 +258,7 @@ func TestMapWeapons_WithRangedWeaponRanges(t *testing.T) {
 	// Create a melee weapon without ranges
 	testSword := &models.Weapon{
 		Equipment: models.Equipment{
-			GameSystem: "midgard",
+			GameSystemId: 1,
 			Name:       "Kurzschwert",
 		},
 		SkillRequired: "Schwerter",

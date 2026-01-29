@@ -1141,8 +1141,8 @@ func TestSearchBeliefs(t *testing.T) {
 	//database.DB.Exec("INSERT OR IGNORE INTO game_systems(code,name,description,is_active,created_at,modified_at) VALUES (?,?,?,?,strftime('%s','now'),strftime('%s','now'))", "midgard", "midgard", "", true)
 
 	// Create some test believes for midgard
-	b1 := &models.Believe{GameSystem: "midgard", Name: "TestFaithOne", SourceID: 1}
-	b2 := &models.Believe{GameSystem: "midgard", Name: "OtherFaith", SourceID: 1}
+	b1 := &models.Believe{GameSystemId: 1, Name: "TestFaithOne", SourceID: 1}
+	b2 := &models.Believe{GameSystemId: 1, Name: "OtherFaith", SourceID: 1}
 	err = b1.Create()
 	assert.NoError(t, err)
 	err = b2.Create()

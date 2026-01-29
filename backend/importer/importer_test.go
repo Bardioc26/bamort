@@ -27,9 +27,9 @@ func NoT_estImportCsv2Spell(t *testing.T) {
 	/*
 		// Create test source data
 		testSources := []models.Source{
-			{Code: "ARK", Name: "Arkanum", GameSystem: "midgard"},
-			{Code: "MYS", Name: "Mysterium", GameSystem: "midgard"},
-			{Code: "KOD", Name: "Kodex", GameSystem: "midgard"},
+			{Code: "ARK", Name: "Arkanum", GameSystemId: 1},
+			{Code: "MYS", Name: "Mysterium", GameSystemId: 1},
+			{Code: "KOD", Name: "Kodex", GameSystemId: 1},
 		}
 		for _, source := range testSources {
 			source.Create()
@@ -216,7 +216,7 @@ func NoT_estImportSpellCSVHandler(t *testing.T) {
 	models.MigrateStructure()
 
 	// Create test source
-	testSource := models.Source{Code: "ARK", Name: "Arkanum", GameSystem: "midgard"}
+	testSource := models.Source{Code: "ARK", Name: "Arkanum", GameSystemId: 1}
 	testSource.Create()
 
 	// Setup Gin in test mode

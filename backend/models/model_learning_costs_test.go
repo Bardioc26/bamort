@@ -1084,11 +1084,11 @@ func BenchmarkSimple_SourceStruct(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		source := Source{
-			Code:       "KOD",
-			Name:       "Kodex",
-			IsCore:     true,
-			IsActive:   true,
-			GameSystem: "midgard",
+			Code:         "KOD",
+			Name:         "Kodex",
+			IsCore:       true,
+			IsActive:     true,
+			GameSystemId: 1,
 		}
 		_ = source.Code
 		_ = source.Name

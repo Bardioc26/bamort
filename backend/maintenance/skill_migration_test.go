@@ -34,10 +34,10 @@ func TestMigrateSkillCategoriesToRelations(t *testing.T) {
 
 	// Create a test source - use unique code to avoid conflicts
 	source := models.Source{
-		Code:       "TSTMIG1",
-		Name:       "Test Migration Source",
-		GameSystem: "midgard",
-		IsActive:   true,
+		Code:         "TSTMIG1",
+		Name:         "Test Migration Source",
+		GameSystemId: 1,
+		IsActive:     true,
 	}
 	if err := testDB.Create(&source).Error; err != nil {
 		t.Fatalf("Failed to create test source: %v", err)
@@ -177,7 +177,7 @@ func TestMigrateSkillCategoryDifficulty_NoCategory(t *testing.T) {
 		source = models.Source{
 			Code:       "TSTMIG2",
 			Name:       "Test Migration Source 2",
-			GameSystem: "midgard",
+			GameSystemId: 1,
 			IsActive:   true,
 		}
 		if err := testDB.Create(&source).Error; err != nil {

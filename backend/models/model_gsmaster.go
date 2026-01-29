@@ -174,18 +174,25 @@ func (stamm *Skill) Create() error {
 	return err
 }
 
-func (stamm *Skill) First(name string) error {
+func (stamm *Skill) FirstwGS(name string, gameSystemId uint) error {
 	if name == "" {
 		return fmt.Errorf("name cannot be empty")
 	}
-	gs := GetGameSystem(stamm.GameSystemId, stamm.GameSystem)
-	// Order by ID to get the record with the lowest ID when multiple categories exist
+	gs := GetGameSystem(gameSystemId, stamm.GameSystem)
 	err := database.DB.Where("(game_system=? OR game_system_id=?) AND name = ?", gs.Name, gs.ID, name).Order("id ASC").First(&stamm).Error
 	if err != nil {
 		// Fertigkeit found
 		return err
 	}
 	return nil
+}
+
+func (stamm *Skill) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
+	gs := GetGameSystem(stamm.GameSystemId, stamm.GameSystem)
+	return stamm.FirstwGS(name, gs.ID)
 }
 
 func (object *Skill) FirstId(value uint) error {
@@ -349,17 +356,25 @@ func (stamm *Spell) Create() error {
 	return err
 }
 
-func (stamm *Spell) First(name string) error {
+func (stamm *Spell) FirstwGS(name string, gameSystemId uint) error {
 	if name == "" {
 		return fmt.Errorf("name cannot be empty")
 	}
-	gs := GetGameSystem(stamm.GameSystemId, stamm.GameSystem)
+	gs := GetGameSystem(gameSystemId, stamm.GameSystem)
 	err := database.DB.First(&stamm, "(game_system=? OR game_system_id=?) AND name = ?", gs.Name, gs.ID, name).Error
 	if err != nil {
 		// zauber found
 		return err
 	}
 	return nil
+}
+
+func (stamm *Spell) First(name string) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
+	gs := GetGameSystem(stamm.GameSystemId, stamm.GameSystem)
+	return stamm.FirstwGS(name, gs.ID)
 }
 
 func (object *Spell) FirstId(value uint) error {

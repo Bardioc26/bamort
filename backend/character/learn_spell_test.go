@@ -40,7 +40,7 @@ func TestLearnSpell(t *testing.T) {
 			}
 		} else {
 			// Create minimal spell entry if missing
-			spell = models.Spell{GameSystem: "midgard", Name: "Befestigen", Stufe: 1, Category: "Zauber", LearningCategory: "Zauber"}
+			spell = models.Spell{GameSystemId: 1, Name: "Befestigen", Stufe: 1, Category: "Zauber", LearningCategory: "Zauber"}
 			_ = spell.Create()
 		}
 

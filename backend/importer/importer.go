@@ -36,10 +36,10 @@ func lookupSourceID(sourceCode string) (uint, error) {
 	if err := source.FirstByCode(sourceCode); err != nil {
 		// Source not found, create it automatically
 		newSource := models.Source{
-			Code:       sourceCode,
-			Name:       sourceCode, // Use code as name initially
-			GameSystem: "midgard",  // Default game system
-			IsActive:   true,       // Set as active by default
+			Code:         sourceCode,
+			Name:         sourceCode,                     // Use code as name initially
+			GameSystemId: models.GetGameSystem(0, "").ID, // Default game system
+			IsActive:     true,                           // Set as active by default
 		}
 
 		if createErr := newSource.Create(); createErr != nil {
@@ -63,7 +63,8 @@ func ImportChar(char CharacterImport) (*models.Char, error) {
 func CheckSkill(fertigkeit *Fertigkeit, autocreate bool) (*models.Skill, error) {
 	stammF := models.Skill{}
 	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, fertigkeit.Name).Error
-	err := stammF.First(fertigkeit.Name)
+	gs := models.GetGameSystem(0, "midgard")
+	err := stammF.FirstwGS(fertigkeit.Name, gs.ID)
 	if err == nil {
 		// Fertigkeit found
 		return &stammF, nil
@@ -71,7 +72,7 @@ func CheckSkill(fertigkeit *Fertigkeit, autocreate bool) (*models.Skill, error) 
 	if !autocreate {
 		return nil, fmt.Errorf("does not exist in Fertigkeit importer")
 	}
-	stammF.GameSystem = "midgard"
+	stammF.GameSystemId = models.GetGameSystem(0, "midgard").ID
 	stammF.Name = fertigkeit.Name
 	if stammF.Name != "Sprache" {
 		stammF.Beschreibung = fertigkeit.Beschreibung
@@ -92,7 +93,7 @@ func CheckSkill(fertigkeit *Fertigkeit, autocreate bool) (*models.Skill, error) 
 	}
 
 	//err = database.DB.First(&stammF, "system=? AND name = ?", gameSystem, fertigkeit.Name).Error
-	err = stammF.First(fertigkeit.Name)
+	err = stammF.FirstwGS(fertigkeit.Name, gs.ID)
 	if err != nil {
 		// Fertigkeit found
 		return nil, err
@@ -104,7 +105,8 @@ func CheckSpell(zauber *Zauber, autocreate bool) (*models.Spell, error) {
 	stammF := models.Spell{}
 
 	//err := database.DB.First(&stammF, "system=? AND name = ?", gameSystem, zauber.Name).Error
-	err := stammF.First(zauber.Name)
+	gs := models.GetGameSystem(0, "midgard")
+	err := stammF.FirstwGS(zauber.Name, gs.ID)
 	if err == nil {
 		// zauber found
 		return &stammF, nil
@@ -112,7 +114,7 @@ func CheckSpell(zauber *Zauber, autocreate bool) (*models.Spell, error) {
 	if !autocreate {
 		return nil, fmt.Errorf("does not exist in zauber importer")
 	}
-	stammF.GameSystem = "midgard"
+	stammF.GameSystemId = models.GetGameSystem(0, "midgard").ID
 	stammF.Name = zauber.Name
 	stammF.Beschreibung = zauber.Beschreibung
 	stammF.AP = "1"
@@ -129,7 +131,7 @@ func CheckSpell(zauber *Zauber, autocreate bool) (*models.Spell, error) {
 	}
 
 	//err = database.DB.First(&stammF, "system=? AND name = ?", gameSystem, zauber.Name).Error
-	err = stammF.First(zauber.Name)
+	err = stammF.FirstwGS(zauber.Name, gs.ID)
 	if err != nil {
 		// spell found
 		return nil, err
@@ -177,7 +179,7 @@ func ImportCsv2Spell(filepath string) error {
 
 		// Create spell struct
 		spell := models.Spell{
-			GameSystem: "midgard", // Default value
+			GameSystemId: models.GetGameSystem(0, "midgard").ID, // Default value
 		}
 
 		// Map CSV fields to struct fields
@@ -200,7 +202,8 @@ func ImportCsv2Spell(filepath string) error {
 			}
 		}
 		if idx, exists := fieldMap["game_system"]; exists && idx < len(record) && strings.TrimSpace(record[idx]) != "" {
-			spell.GameSystem = strings.ToLower(strings.TrimSpace(record[idx]))
+			//spell.GameSystem = strings.ToLower(strings.TrimSpace(record[idx]))
+			spell.GameSystemId = models.GetGameSystem(0, strings.ToLower(strings.TrimSpace(record[idx]))).ID
 		}
 		/*
 			if idx, exists := fieldMap["source_id"]; exists && idx < len(record) {
@@ -262,7 +265,7 @@ func ImportCsv2Spell(filepath string) error {
 
 		// Try to find existing spell by name
 		existingSpell := models.Spell{}
-		err := existingSpell.First(spell.Name)
+		err := existingSpell.FirstwGS(spell.Name, spell.GameSystemId)
 
 		if err == nil {
 			// Spell exists, update it

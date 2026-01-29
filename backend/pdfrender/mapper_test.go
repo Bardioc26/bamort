@@ -199,8 +199,8 @@ func TestMapCharacterToViewModel_Weapons(t *testing.T) {
 	database.DB.Where("name = ?", "Langschwert").Delete(&models.Weapon{})
 	testWeapon := &models.Weapon{
 		Equipment: models.Equipment{
-			GameSystem: "midgard",
-			Name:       "Langschwert",
+			GameSystemId: 1,
+			Name:         "Langschwert",
 		},
 		SkillRequired: "Schwerter",
 		Damage:        "1W6",

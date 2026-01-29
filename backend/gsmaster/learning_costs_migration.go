@@ -157,13 +157,14 @@ func migrateCharacterClasses() error {
 		"PS": "Priester Streiter",
 		"Sc": "Schamane",
 	}
+	gs := GetGameSystem(0, "")
 
 	for code, name := range characterClasses {
 		class := models.CharacterClass{
-			Code:       code,
-			Name:       name,
-			SourceID:   kodSource.ID,
-			GameSystem: "midgard",
+			Code:         code,
+			Name:         name,
+			SourceID:     kodSource.ID,
+			GameSystemId: gs.ID,
 		}
 
 		// Prüfe ob die Klasse bereits existiert
@@ -193,6 +194,7 @@ func migrateSkillCategories() error {
 		"Alltag", "Freiland", "Halbwelt", "Kampf", "Körper",
 		"Sozial", "Unterwelt", "Waffen", "Wissen", "Schilde und Parierwaﬀen",
 	}
+	gs := GetGameSystem(0, "")
 
 	for _, categoryName := range categories {
 		sourceID := kodSource.ID
@@ -206,9 +208,9 @@ func migrateSkillCategories() error {
 		}
 
 		category := models.SkillCategory{
-			Name:       categoryName,
-			SourceID:   sourceID,
-			GameSystem: "midgard",
+			Name:         categoryName,
+			SourceID:     sourceID,
+			GameSystemId: gs.ID,
 		}
 
 		// Prüfe ob die Kategorie bereits existiert
@@ -228,11 +230,12 @@ func migrateSkillCategories() error {
 // migrateSkillDifficulties erstellt Schwierigkeitsgrade
 func migrateSkillDifficulties() error {
 	difficulties := []string{"leicht", "normal", "schwer", "sehr schwer"}
+	gs := GetGameSystem(0, "")
 
 	for _, difficultyName := range difficulties {
 		difficulty := models.SkillDifficulty{
-			Name:       difficultyName,
-			GameSystem: "midgard",
+			Name:         difficultyName,
+			GameSystemId: gs.ID,
 		}
 
 		// Prüfe ob die Schwierigkeit bereits existiert
@@ -261,6 +264,7 @@ func migrateSpellSchools() error {
 	if err := arkSource.FirstByCode("ARK"); err != nil {
 		return fmt.Errorf("ARK source not found: %w", err)
 	}
+	gs := GetGameSystem(0, "")
 
 	schools := map[string]uint{
 		// Basis-Zauberschulen (Kodex)
@@ -279,9 +283,9 @@ func migrateSpellSchools() error {
 
 	for schoolName, sourceID := range schools {
 		school := models.SpellSchool{
-			Name:       schoolName,
-			SourceID:   sourceID,
-			GameSystem: "midgard",
+			Name:         schoolName,
+			SourceID:     sourceID,
+			GameSystemId: gs.ID,
 		}
 
 		// Prüfe ob die Schule bereits existiert
@@ -371,11 +375,12 @@ func migrateClassSpellSchoolEPCosts() error {
 
 // migrateSpellLevelLECosts migriert LE-Kosten pro Zauber-Level
 func migrateSpellLevelLECosts() error {
+	gs := GetGameSystem(0, "")
 	for level, leCost := range learningCostsData.SpellLEPerLevel {
 		cost := models.SpellLevelLECost{
-			Level:      level,
-			LERequired: leCost,
-			GameSystem: "midgard",
+			Level:        level,
+			LERequired:   leCost,
+			GameSystemId: gs.ID,
 		}
 
 		if err := cost.Create(); err != nil {

@@ -288,15 +288,15 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 
 	// Create test skill categories in the lookup table
 	cat1 := &SkillCategory{
-		GameSystem: "midgard",
-		Name:       "TestCategory1",
+		GameSystemId: 1,
+		Name:         "TestCategory1",
 	}
 	err := cat1.Create()
 	require.NoError(t, err)
 
 	cat2 := &SkillCategory{
-		GameSystem: "midgard",
-		Name:       "TestCategory2",
+		GameSystemId: 1,
+		Name:         "TestCategory2",
 	}
 	err = cat2.Create()
 	require.NoError(t, err)
@@ -530,15 +530,15 @@ func TestSpell_GetSpellCategories(t *testing.T) {
 
 	// Create test spell categories in the lookup table (SpellSchool)
 	school1 := &SpellSchool{
-		GameSystem: "midgard",
-		Name:       "TestSpellCat1",
+		GameSystemId: 1,
+		Name:         "TestSpellCat1",
 	}
 	err := school1.Create()
 	require.NoError(t, err)
 
 	school2 := &SpellSchool{
-		GameSystem: "midgard",
-		Name:       "TestSpellCat2",
+		GameSystemId: 1,
+		Name:         "TestSpellCat2",
 	}
 	err = school2.Create()
 	require.NoError(t, err)
@@ -869,8 +869,8 @@ func TestWeapon_IsRanged(t *testing.T) {
 	// Test ranged weapon (has at least one range > 0)
 	rangedWeapon := &Weapon{
 		Equipment: Equipment{
-			GameSystem: "midgard",
-			Name:       "TestArmbrust",
+			GameSystemId: 1,
+			Name:         "TestArmbrust",
 		},
 		SkillRequired: "Armbrust",
 		Damage:        "2W6",
@@ -886,8 +886,8 @@ func TestWeapon_IsRanged(t *testing.T) {
 	// Test melee weapon (all ranges are 0)
 	meleeWeapon := &Weapon{
 		Equipment: Equipment{
-			GameSystem: "midgard",
-			Name:       "TestSchwert",
+			GameSystemId: 1,
+			Name:         "TestSchwert",
 		},
 		SkillRequired: "Einhandschwerter",
 		Damage:        "1W6+2",

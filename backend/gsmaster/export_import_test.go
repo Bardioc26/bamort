@@ -19,7 +19,7 @@ func TestExportSkills(t *testing.T) {
 	source := getOrCreateSource("KOD", "Kodex")
 	skill := models.Skill{
 		Name:             "Schwimmen",
-		GameSystem:       "midgard",
+		GameSystemId:     1,
 		Beschreibung:     "Schwimmen im Wasser",
 		Initialwert:      12,
 		BasisWert:        0,
@@ -58,7 +58,7 @@ func TestImportSkills(t *testing.T) {
 	tmpDir := t.TempDir()
 	skill := models.Skill{
 		Name:             "TestImportSkill",
-		GameSystem:       "midgard",
+		GameSystemId:     1,
 		Beschreibung:     "Klettern an Wänden",
 		Initialwert:      10,
 		BasisWert:        0,
@@ -114,7 +114,7 @@ func TestImportSkillsUpdate(t *testing.T) {
 	// Create existing skill
 	skill := models.Skill{
 		Name:         "Reiten",
-		GameSystem:   "midgard",
+		GameSystemId: 1,
 		Beschreibung: "Alte Beschreibung",
 		Initialwert:  8,
 		SourceID:     source.ID,
@@ -349,7 +349,7 @@ func TestExportImportSkillDifficulties(t *testing.T) {
 
 	// Verify the difficulty was recreated
 	var imported models.SkillDifficulty
-	result := database.DB.Where("name = ? AND game_system = ?", "TestDifficulty", "midgard").First(&imported)
+	result := database.DB.Where("name = ? AND game_system_id = ?", "TestDifficulty", 1).First(&imported)
 	if result.Error != nil {
 		t.Fatalf("Difficulty not found after import: %v", result.Error)
 	}
@@ -364,7 +364,7 @@ func TestExportImportSpells(t *testing.T) {
 	source := getOrCreateSource("TEST_SP", "Test Spell Source")
 	spell := models.Spell{
 		Name:             "TestSpell",
-		GameSystem:       "midgard",
+		GameSystemId:     1,
 		Beschreibung:     "Test description",
 		SourceID:         source.ID,
 		PageNumber:       42,
@@ -443,10 +443,10 @@ func TestExportImportAll(t *testing.T) {
 	database.DB.Create(&difficulty)
 
 	skill := models.Skill{
-		Name:        "AllSkill",
-		GameSystem:  "midgard",
-		SourceID:    source.ID,
-		Initialwert: 10,
+		Name:         "AllSkill",
+		GameSystemId: 1,
+		SourceID:     source.ID,
+		Initialwert:  10,
 	}
 	if err := skill.Create(); err != nil {
 		t.Fatalf("failed to create skill: %v", err)
@@ -562,7 +562,7 @@ func TestExportImportWeaponSkills(t *testing.T) {
 	weaponSkill := models.WeaponSkill{
 		Skill: models.Skill{
 			Name:             "Langschwert",
-			GameSystem:       "midgard",
+			GameSystemId:     1,
 			Beschreibung:     "Langschwert Waffenfertigkeiten",
 			SourceID:         source.ID,
 			PageNumber:       50,
@@ -616,7 +616,7 @@ func TestExportImportEquipment(t *testing.T) {
 	source := getOrCreateSource("TEST_EQ", "Test Equipment Source")
 	equipment := models.Equipment{
 		Name:         "Seil",
-		GameSystem:   "midgard",
+		GameSystemId: 1,
 		Beschreibung: "10m langes Hanfseil",
 		SourceID:     source.ID,
 		PageNumber:   75,
@@ -663,7 +663,7 @@ func TestExportImportWeapons(t *testing.T) {
 	weapon := models.Weapon{
 		Equipment: models.Equipment{
 			Name:         "Kurzschwert",
-			GameSystem:   "midgard",
+			GameSystemId: 1,
 			Beschreibung: "Einhändiges Kurzschwert",
 			SourceID:     source.ID,
 			PageNumber:   80,
@@ -716,7 +716,7 @@ func TestExportImportContainers(t *testing.T) {
 	container := models.Container{
 		Equipment: models.Equipment{
 			Name:         "Rucksack",
-			GameSystem:   "midgard",
+			GameSystemId: 1,
 			Beschreibung: "Großer Lederrucksack",
 			SourceID:     source.ID,
 			PageNumber:   85,
@@ -767,7 +767,7 @@ func TestExportImportTransportation(t *testing.T) {
 		Container: models.Container{
 			Equipment: models.Equipment{
 				Name:         "Pferdewagen",
-				GameSystem:   "midgard",
+				GameSystemId: 1,
 				Beschreibung: "Zweirädriger Wagen",
 				SourceID:     source.ID,
 				PageNumber:   90,
@@ -817,7 +817,7 @@ func TestExportImportBelieves(t *testing.T) {
 	source := getOrCreateSource("TEST_BL", "Test Believe Source")
 	believe := models.Believe{
 		Name:         "Kirche des Lichts",
-		GameSystem:   "midgard",
+		GameSystemId: 1,
 		Beschreibung: "Hauptreligion in Valian",
 		SourceID:     source.ID,
 		PageNumber:   95,
@@ -1257,10 +1257,10 @@ func TestExportImportClassTypicalSkills(t *testing.T) {
 	database.DB.Create(&class)
 
 	skill := models.Skill{
-		Name:        "Test-Spurenlesen",
-		GameSystem:  "midgard",
-		Improvable:  true,
-		InnateSkill: false,
+		Name:         "Test-Spurenlesen",
+		GameSystemId: 1,
+		Improvable:   true,
+		InnateSkill:  false,
 	}
 	if err := skill.Create(); err != nil {
 		t.Fatalf("failed to create skill: %v", err)

@@ -41,7 +41,7 @@ func createTestSkillData() error {
 
 	// GSM Test-Skill erstellen
 	gsmSkill := models.Skill{
-		GameSystem:   "midgard",
+		GameSystemId: 1,
 		Name:         "Menschenkenntnis",
 		Beschreibung: "Test Skill",
 		Quelle:       "Test",
@@ -56,7 +56,7 @@ func createTestSkillData() error {
 
 	// GSM Test-Spell erstellen
 	gsmSpell := models.Spell{
-		GameSystem:   "midgard",
+		GameSystemId: 1,
 		Name:         "Macht über das Selbst",
 		Beschreibung: "Test Spell",
 		Quelle:       "Test",

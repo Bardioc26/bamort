@@ -19,7 +19,7 @@ func TestCreateSkillWithCategories(t *testing.T) {
 	req := SkillUpdateRequest{
 		Skill: models.Skill{
 			Name:             "Neue Fertigkeit",
-			GameSystem:       "midgard",
+			GameSystemId:     1,
 			Beschreibung:     "Test Fertigkeit",
 			Initialwert:      5,
 			BasisWert:        0,
@@ -94,11 +94,11 @@ func TestCreateSkillWithMultipleCategories(t *testing.T) {
 	// Prepare create request with multiple categories
 	req := SkillUpdateRequest{
 		Skill: models.Skill{
-			Name:        "Multi-Kategorie Fertigkeit",
-			GameSystem:  "midgard",
-			Initialwert: 10,
-			Improvable:  true,
-			SourceID:    source.ID,
+			Name:         "Multi-Kategorie Fertigkeit",
+			GameSystemId: 1,
+			Initialwert:  10,
+			Improvable:   true,
+			SourceID:     source.ID,
 		},
 		CategoryDifficulties: []CategoryDifficultyPair{
 			{
@@ -136,8 +136,8 @@ func TestCreateSkillValidation(t *testing.T) {
 	// Test creating skill without name
 	req := SkillUpdateRequest{
 		Skill: models.Skill{
-			GameSystem:  "midgard",
-			Initialwert: 5,
+			GameSystemId: 1,
+			Initialwert:  5,
 		},
 		CategoryDifficulties: []CategoryDifficultyPair{},
 	}

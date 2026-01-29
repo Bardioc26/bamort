@@ -102,7 +102,7 @@ func TestImportCharacterUpdatesIncompleteGSMData(t *testing.T) {
 	incompleteSkill := models.Skill{
 		ID:           1000,
 		Name:         "TestSkillIncomplete",
-		GameSystem:   "midgard",
+		GameSystemId: 1,
 		Beschreibung: "",
 		Category:     "",
 	}
@@ -122,7 +122,7 @@ func TestImportCharacterUpdatesIncompleteGSMData(t *testing.T) {
 		GSMSkills: []models.Skill{
 			{
 				Name:         "TestSkillIncomplete",
-				GameSystem:   "midgard",
+				GameSystemId: 1,
 				Beschreibung: "Complete description",
 				Category:     "Alltag",
 				Difficulty:   "normal",

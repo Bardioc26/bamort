@@ -144,7 +144,7 @@ func TestGetSpellInfo(t *testing.T) {
 	// Create minimal test spell data for our test
 	testSpells := []models.Spell{
 		{
-			GameSystem:   "midgard",
+			GameSystemId: 1,
 			Name:         "Schlummer",
 			Beschreibung: "Test spell for GetSpellInfo",
 			Quelle:       "Test",
@@ -152,7 +152,7 @@ func TestGetSpellInfo(t *testing.T) {
 			Category:     "Beherrschen",
 		},
 		{
-			GameSystem:   "midgard",
+			GameSystemId: 1,
 			Name:         "Erkennen von Krankheit",
 			Beschreibung: "Test spell for GetSpellInfo",
 			Quelle:       "Test",
@@ -160,7 +160,7 @@ func TestGetSpellInfo(t *testing.T) {
 			Category:     "Dweomerzauber",
 		},
 		{
-			GameSystem:   "midgard",
+			GameSystemId: 1,
 			Name:         "Das Loblied",
 			Beschreibung: "Test spell for GetSpellInfo",
 			Quelle:       "Test",

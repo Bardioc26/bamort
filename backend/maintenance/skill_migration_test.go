@@ -49,7 +49,7 @@ func TestMigrateSkillCategoriesToRelations(t *testing.T) {
 			Name:             "TestMigSkill_Schwimmen",
 			Category:         "Körper",
 			Difficulty:       "leicht",
-			GameSystem:       "midgard",
+			GameSystemId: 1,
 			Initialwert:      12,
 			Improvable:       true,
 			Bonuseigenschaft: "Gw",
@@ -59,7 +59,7 @@ func TestMigrateSkillCategoriesToRelations(t *testing.T) {
 			Name:             "TestMigSkill_Klettern",
 			Category:         "Körper",
 			Difficulty:       "normal",
-			GameSystem:       "midgard",
+			GameSystemId: 1,
 			Initialwert:      10,
 			Improvable:       true,
 			Bonuseigenschaft: "Gw",
@@ -69,7 +69,7 @@ func TestMigrateSkillCategoriesToRelations(t *testing.T) {
 			Name:             "TestMigSkill_LesenSchreiben",
 			Category:         "Wissen",
 			Difficulty:       "schwer",
-			GameSystem:       "midgard",
+			GameSystemId: 1,
 			Initialwert:      0,
 			Improvable:       true,
 			Bonuseigenschaft: "In",
@@ -190,7 +190,7 @@ func TestMigrateSkillCategoryDifficulty_NoCategory(t *testing.T) {
 		Name:        "TestMigSkill_NoCategory",
 		Category:    "", // Empty category
 		Difficulty:  "", // Empty difficulty
-		GameSystem:  "midgard",
+		GameSystemId: 1,
 		Initialwert: 10,
 		SourceID:    source.ID,
 	}

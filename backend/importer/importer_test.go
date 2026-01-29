@@ -14,7 +14,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func defaultGameSystem(t *testing.T) *models.GameSystem {
+	gs := models.GetGameSystem(0, "midgard")
+	require.NotNil(t, gs)
+	require.NotZero(t, gs.ID)
+	return gs
+}
 
 func NoT_estImportCsv2Spell(t *testing.T) {
 	// Clear source cache to ensure clean test state
@@ -102,7 +110,7 @@ func NoT_estImportCsv2Spell(t *testing.T) {
 	t.Run("Test update existing spell", func(t *testing.T) {
 		// Create a test spell first
 		testSpell := models.Spell{
-			GameSystem:   "midgard",
+			GameSystemId: 1,
 			Name:         "Test Zauber",
 			Beschreibung: "Original description",
 			Stufe:        1,
@@ -135,6 +143,7 @@ Test Zauber,Updated description,2`
 	})
 
 	t.Run("Test source lookup function", func(t *testing.T) {
+		gs := defaultGameSystem(t)
 		// Clear cache to ensure fresh lookups
 		ClearSourceCache()
 
@@ -154,7 +163,7 @@ Test Zauber,Updated description,2`
 		assert.NoError(t, err, "Should find newly created source")
 		assert.Equal(t, "NEWCODE", newSource.Code, "Source code should match")
 		assert.Equal(t, "NEWCODE", newSource.Name, "Source name should default to code")
-		assert.Equal(t, "midgard", newSource.GameSystem, "Game system should be midgard")
+		assert.Equal(t, gs.ID, newSource.GameSystemId, "Game system ID should match default")
 		assert.True(t, newSource.IsActive, "New source should be active")
 
 		// Test that the second lookup uses cache (should return same ID)

@@ -70,7 +70,7 @@ func TestGetSkillWithCategories(t *testing.T) {
 
 	skill := models.Skill{
 		Name:             "TestSchwimmen",
-		GameSystem:       "midgard",
+		GameSystemId: 1,
 		Initialwert:      12,
 		Improvable:       true,
 		Bonuseigenschaft: "Gw",
@@ -127,7 +127,7 @@ func TestGetSkillWithCategories_MultipleCategories(t *testing.T) {
 
 	skill := models.Skill{
 		Name:             "TestReiten",
-		GameSystem:       "midgard",
+		GameSystemId: 1,
 		Initialwert:      5,
 		Improvable:       true,
 		Bonuseigenschaft: "Gw",
@@ -201,7 +201,7 @@ func TestUpdateSkillWithCategories(t *testing.T) {
 
 	skill := models.Skill{
 		Name:             "TestKlettern",
-		GameSystem:       "midgard",
+		GameSystemId: 1,
 		Initialwert:      10,
 		Improvable:       true,
 		Bonuseigenschaft: "Gw",
@@ -230,7 +230,7 @@ func TestUpdateSkillWithCategories(t *testing.T) {
 		Skill: models.Skill{
 			ID:               skill.ID,
 			Name:             "TestKlettern",
-			GameSystem:       "midgard",
+			GameSystemId: 1,
 			Initialwert:      12, // Changed
 			Improvable:       true,
 			Bonuseigenschaft: "St", // Changed
@@ -300,7 +300,7 @@ func TestUpdateSkillBooleanFields(t *testing.T) {
 	source := getOrCreateSource("TSTBOOL", "TestBoolean")
 	skill := models.Skill{
 		Name:        "TestBooleanSkill",
-		GameSystem:  "midgard",
+		GameSystemId: 1,
 		Initialwert: 5,
 		Improvable:  true,
 		InnateSkill: false,
@@ -326,7 +326,7 @@ func TestUpdateSkillBooleanFields(t *testing.T) {
 		Skill: models.Skill{
 			ID:          skill.ID,
 			Name:        "TestBooleanSkill",
-			GameSystem:  "midgard",
+			GameSystemId: 1,
 			Initialwert: 5,
 			Improvable:  false, // Change to false
 			InnateSkill: true,  // Change to true

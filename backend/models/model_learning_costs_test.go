@@ -17,6 +17,13 @@ func setupLearningCostsTestDB(t *testing.T) {
 	require.NoError(t, err, "Failed to migrate database structure")
 }
 
+func defaultGameSystem(t *testing.T) *GameSystem {
+	gs := GetGameSystem(0, "midgard")
+	require.NotNil(t, gs)
+	require.NotZero(t, gs.ID)
+	return gs
+}
+
 // =============================================================================
 // Tests for Source struct and methods
 // =============================================================================
@@ -67,6 +74,7 @@ func TestSource_FirstByName_NotFound(t *testing.T) {
 
 func TestSource_Create_SetsGameSystem(t *testing.T) {
 	setupLearningCostsTestDB(t)
+	gs := defaultGameSystem(t)
 
 	source := Source{
 		Code: "TGS1",
@@ -77,8 +85,8 @@ func TestSource_Create_SetsGameSystem(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotZero(t, source.ID)
-	assert.Equal(t, "midgard", source.GameSystem)
-	assert.NotZero(t, source.GameSystemId)
+	assert.Equal(t, gs.Name, source.GameSystem)
+	assert.Equal(t, gs.ID, source.GameSystemId)
 }
 
 // =============================================================================
@@ -127,6 +135,7 @@ func TestCharacterClass_FirstByName_NotFound(t *testing.T) {
 
 func TestCharacterClass_Create_SetsGameSystem(t *testing.T) {
 	setupLearningCostsTestDB(t)
+	gs := defaultGameSystem(t)
 
 	var src Source
 	require.NoError(t, src.FirstByCode("KOD"))
@@ -141,8 +150,8 @@ func TestCharacterClass_Create_SetsGameSystem(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotZero(t, class.ID)
-	assert.Equal(t, "midgard", class.GameSystem)
-	assert.NotZero(t, class.GameSystemId)
+	assert.Equal(t, gs.Name, class.GameSystem)
+	assert.Equal(t, gs.ID, class.GameSystemId)
 }
 
 // =============================================================================
@@ -170,6 +179,7 @@ func TestSkillCategory_FirstByName_NotFound(t *testing.T) {
 
 func TestSkillCategory_Create_SetsGameSystem(t *testing.T) {
 	setupLearningCostsTestDB(t)
+	gs := defaultGameSystem(t)
 
 	var src Source
 	require.NoError(t, src.FirstByCode("KOD"))
@@ -183,8 +193,8 @@ func TestSkillCategory_Create_SetsGameSystem(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotZero(t, category.ID)
-	assert.Equal(t, "midgard", category.GameSystem)
-	assert.NotZero(t, category.GameSystemId)
+	assert.Equal(t, gs.Name, category.GameSystem)
+	assert.Equal(t, gs.ID, category.GameSystemId)
 }
 
 // =============================================================================
@@ -212,6 +222,7 @@ func TestSkillDifficulty_FirstByName_NotFound(t *testing.T) {
 
 func TestSkillDifficulty_Create_SetsGameSystem(t *testing.T) {
 	setupLearningCostsTestDB(t)
+	gs := defaultGameSystem(t)
 
 	difficulty := SkillDifficulty{
 		Name: "gs-diff",
@@ -221,8 +232,8 @@ func TestSkillDifficulty_Create_SetsGameSystem(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotZero(t, difficulty.ID)
-	assert.Equal(t, "midgard", difficulty.GameSystem)
-	assert.NotZero(t, difficulty.GameSystemId)
+	assert.Equal(t, gs.Name, difficulty.GameSystem)
+	assert.Equal(t, gs.ID, difficulty.GameSystemId)
 }
 
 // =============================================================================
@@ -272,6 +283,7 @@ func TestSpellSchool_FirstByName_NotFound(t *testing.T) {
 
 func TestSpellSchool_Create_SetsGameSystem(t *testing.T) {
 	setupLearningCostsTestDB(t)
+	gs := defaultGameSystem(t)
 
 	var src Source
 	require.NoError(t, src.FirstByCode("KOD"))
@@ -285,8 +297,8 @@ func TestSpellSchool_Create_SetsGameSystem(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotZero(t, school.ID)
-	assert.Equal(t, "midgard", school.GameSystem)
-	assert.NotZero(t, school.GameSystemId)
+	assert.Equal(t, gs.Name, school.GameSystem)
+	assert.Equal(t, gs.ID, school.GameSystemId)
 }
 
 // =============================================================================
@@ -527,6 +539,7 @@ func TestGetActiveSourceCodes_Success(t *testing.T) {
 func TestGetSourcesByGameSystem_Success(t *testing.T) {
 	setupLearningCostsTestDB(t)
 
+	gs := defaultGameSystem(t)
 	sources, err := GetSourcesByGameSystem("midgard")
 
 	assert.NoError(t, err)
@@ -534,7 +547,7 @@ func TestGetSourcesByGameSystem_Success(t *testing.T) {
 
 	// Verify that all returned sources are for the correct game system
 	for _, source := range sources {
-		assert.Equal(t, "midgard", source.GameSystem)
+		assert.Equal(t, gs.ID, source.GameSystemId)
 	}
 }
 
@@ -550,6 +563,7 @@ func TestGetSourcesByGameSystem_InvalidGameSystem(t *testing.T) {
 func TestGetSkillsByActiveSources_Success(t *testing.T) {
 	setupLearningCostsTestDB(t)
 
+	gs := defaultGameSystem(t)
 	// This function may have implementation issues, so we test but accept errors
 	skills, err := GetSkillsByActiveSources("midgard")
 
@@ -557,7 +571,7 @@ func TestGetSkillsByActiveSources_Success(t *testing.T) {
 	if err == nil {
 		// Verify that all returned skills are for the correct game system (if any returned)
 		for _, skill := range skills {
-			assert.Equal(t, "midgard", skill.GameSystem)
+			assert.Equal(t, gs.ID, skill.GameSystemId)
 		}
 	}
 	// If there's an error, that's acceptable as the function may have implementation issues
@@ -566,6 +580,7 @@ func TestGetSkillsByActiveSources_Success(t *testing.T) {
 func TestGetSpellsByActiveSources_Success(t *testing.T) {
 	setupLearningCostsTestDB(t)
 
+	gs := defaultGameSystem(t)
 	// This function may have implementation issues, so we test but accept errors
 	spells, err := GetSpellsByActiveSources("midgard")
 
@@ -573,7 +588,7 @@ func TestGetSpellsByActiveSources_Success(t *testing.T) {
 	if err == nil {
 		// Verify that all returned spells are for the correct game system (if any returned)
 		for _, spell := range spells {
-			assert.Equal(t, "midgard", spell.GameSystem)
+			assert.Equal(t, gs.ID, spell.GameSystemId)
 		}
 	}
 	// If there's an error, that's acceptable as the function may have implementation issues
@@ -582,6 +597,7 @@ func TestGetSpellsByActiveSources_Success(t *testing.T) {
 func TestGetCharacterClassesByActiveSources_Success(t *testing.T) {
 	setupLearningCostsTestDB(t)
 
+	gs := defaultGameSystem(t)
 	classes, err := GetCharacterClassesByActiveSources("midgard")
 
 	assert.NoError(t, err)
@@ -589,7 +605,7 @@ func TestGetCharacterClassesByActiveSources_Success(t *testing.T) {
 
 	// Verify that all returned classes are for the correct game system
 	for _, class := range classes {
-		assert.Equal(t, "midgard", class.GameSystem)
+		assert.Equal(t, gs.ID, class.GameSystemId)
 	}
 }
 

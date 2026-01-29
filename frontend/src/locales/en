@@ -26,7 +26,7 @@ export default {
     description: 'Upload character data from VTT or CSV files.',
     charVTT: 'Character VTT',
     charCSV: 'Character CSV (optional)',
-    vttHelp: 'JSON or CSV file with character data',
+    vttHelp: 'JSON file with character data',
     csvHelp: 'Optional CSV file with additional data',
     upload: 'Upload',
     invalidFileType: 'Invalid file type. Only .csv and .json files are allowed.',

@@ -1138,7 +1138,6 @@ func TestSearchBeliefs(t *testing.T) {
 	// Ensure game systems exist in the test DB
 	// Ensure game system rows exist (use INSERT OR IGNORE to avoid unique constraint errors)
 	database.DB.Exec("INSERT OR IGNORE INTO game_systems(code,name,description,is_active,created_at,modified_at) VALUES (?,?,?,?,strftime('%s','now'),strftime('%s','now'))", "M5", "M5", "", true)
-	//database.DB.Exec("INSERT OR IGNORE INTO game_systems(code,name,description,is_active,created_at,modified_at) VALUES (?,?,?,?,strftime('%s','now'),strftime('%s','now'))", "midgard", "midgard", "", true)
 
 	// Create some test believes for midgard
 	b1 := &models.Believe{GameSystemId: 1, Name: "TestFaithOne", SourceID: 1}
@@ -1157,10 +1156,10 @@ func TestSearchBeliefs(t *testing.T) {
 		expectHits  int
 		expectError bool
 	}{
-		//{name: "GameSystem midgard", q: "Test", gameSystem: "midgard", expectHits: 1, expectError: false},
-		//{name: "GameSystem M5", q: "Test", gameSystem: "M5", expectHits: 2, expectError: false},
+		{name: "GameSystemID 1", q: "Test", gameSystem: "M5", expectHits: 1, expectError: false},
+		{name: "GameSystem M5", q: "Test", gameSystem: "M5", expectHits: 2, expectError: false},
 		{name: "GameSystem XYZ", q: "Test", gameSystem: "XYZ", expectHits: 0, expectError: true},
-		//{name: "GameSystem not set (default)", q: "Test", gameSystem: "", expectHits: 0, expectError: false},
+		{name: "GameSystem not set (default)", q: "Test", gameSystem: "M5", expectHits: 0, expectError: false},
 	}
 
 	for _, tt := range tests {

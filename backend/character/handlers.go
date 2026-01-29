@@ -1773,7 +1773,7 @@ func getSpellLECost(level int) int {
 	var spellLECost models.SpellLevelLECost
 
 	// Query the database for the LE cost for this level
-	err := database.DB.Where("level = ? AND game_system = ?", level, "midgard").First(&spellLECost).Error
+	err := database.DB.Where("level = ? AND game_system_id = ?", level, 1).First(&spellLECost).Error
 	if err != nil {
 		// If not found in database, fall back to standard RPG costs
 		spellLECosts := map[int]int{
@@ -3155,7 +3155,7 @@ func SearchBeliefs(c *gin.Context) {
 	}
 
 	// Get game system from query parameter, default to "midgard"
-	gameSystem := c.DefaultQuery("game_system", "")
+	gameSystem := c.DefaultQuery("game_system", "midgard")
 
 	// Load beliefs from database
 	believes, err := models.GetBelievesByActiveSources(gameSystem)

@@ -37,7 +37,7 @@ func getOrCreateSource(code, name string) models.Source {
 // Helper function to get or create a category
 func getOrCreateCategory(name string, sourceID uint) models.SkillCategory {
 	var category models.SkillCategory
-	if err := database.DB.Where("name = ? AND game_system = ?", name, "midgard").First(&category).Error; err != nil {
+	if err := database.DB.Where("name = ? AND game_system_id = ?", name, 1).First(&category).Error; err != nil {
 		category = models.SkillCategory{
 			Name:         name,
 			GameSystemId: 1,
@@ -51,7 +51,7 @@ func getOrCreateCategory(name string, sourceID uint) models.SkillCategory {
 // Helper function to get or create a difficulty
 func getOrCreateDifficulty(name string) models.SkillDifficulty {
 	var difficulty models.SkillDifficulty
-	if err := database.DB.Where("name = ? AND game_system = ?", name, "midgard").First(&difficulty).Error; err != nil {
+	if err := database.DB.Where("name = ? AND game_system_id = ?", name, 1).First(&difficulty).Error; err != nil {
 		difficulty = models.SkillDifficulty{
 			Name:         name,
 			GameSystemId: 1,
@@ -70,7 +70,7 @@ func TestGetSkillWithCategories(t *testing.T) {
 
 	skill := models.Skill{
 		Name:             "TestSchwimmen",
-		GameSystemId: 1,
+		GameSystemId:     1,
 		Initialwert:      12,
 		Improvable:       true,
 		Bonuseigenschaft: "Gw",
@@ -127,7 +127,7 @@ func TestGetSkillWithCategories_MultipleCategories(t *testing.T) {
 
 	skill := models.Skill{
 		Name:             "TestReiten",
-		GameSystemId: 1,
+		GameSystemId:     1,
 		Initialwert:      5,
 		Improvable:       true,
 		Bonuseigenschaft: "Gw",
@@ -201,7 +201,7 @@ func TestUpdateSkillWithCategories(t *testing.T) {
 
 	skill := models.Skill{
 		Name:             "TestKlettern",
-		GameSystemId: 1,
+		GameSystemId:     1,
 		Initialwert:      10,
 		Improvable:       true,
 		Bonuseigenschaft: "Gw",
@@ -230,7 +230,7 @@ func TestUpdateSkillWithCategories(t *testing.T) {
 		Skill: models.Skill{
 			ID:               skill.ID,
 			Name:             "TestKlettern",
-			GameSystemId: 1,
+			GameSystemId:     1,
 			Initialwert:      12, // Changed
 			Improvable:       true,
 			Bonuseigenschaft: "St", // Changed
@@ -299,12 +299,12 @@ func TestUpdateSkillBooleanFields(t *testing.T) {
 	// Create test data with improvable=true and innateskill=false
 	source := getOrCreateSource("TSTBOOL", "TestBoolean")
 	skill := models.Skill{
-		Name:        "TestBooleanSkill",
+		Name:         "TestBooleanSkill",
 		GameSystemId: 1,
-		Initialwert: 5,
-		Improvable:  true,
-		InnateSkill: false,
-		SourceID:    source.ID,
+		Initialwert:  5,
+		Improvable:   true,
+		InnateSkill:  false,
+		SourceID:     source.ID,
 	}
 	database.DB.Create(&skill)
 
@@ -324,13 +324,13 @@ func TestUpdateSkillBooleanFields(t *testing.T) {
 	// Update to set improvable=false and innateskill=true
 	updateReq := SkillUpdateRequest{
 		Skill: models.Skill{
-			ID:          skill.ID,
-			Name:        "TestBooleanSkill",
+			ID:           skill.ID,
+			Name:         "TestBooleanSkill",
 			GameSystemId: 1,
-			Initialwert: 5,
-			Improvable:  false, // Change to false
-			InnateSkill: true,  // Change to true
-			SourceID:    source.ID,
+			Initialwert:  5,
+			Improvable:   false, // Change to false
+			InnateSkill:  true,  // Change to true
+			SourceID:     source.ID,
 		},
 		CategoryDifficulties: []CategoryDifficultyPair{
 			{

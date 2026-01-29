@@ -88,7 +88,7 @@ func TestImportSkills(t *testing.T) {
 
 	// Verify skill was imported
 	var importedSkill models.Skill
-	err = database.DB.Where("name = ? AND game_system = ?", "TestImportSkill", "midgard").First(&importedSkill).Error
+	err = database.DB.Where("name = ? AND game_system_id = ?", "TestImportSkill", 1).First(&importedSkill).Error
 	if err != nil {
 		t.Fatalf("Imported skill not found: %v", err)
 	}
@@ -155,7 +155,7 @@ func TestImportSkillsUpdate(t *testing.T) {
 
 	// Verify update
 	var updatedSkill models.Skill
-	err = database.DB.Where("name = ? AND game_system = ?", "Reiten", "midgard").First(&updatedSkill).Error
+	err = database.DB.Where("name = ? AND game_system_id = ?", "Reiten", 1).First(&updatedSkill).Error
 	if err != nil {
 		t.Fatalf("Updated skill not found: %v", err)
 	}
@@ -304,7 +304,7 @@ func TestExportImportSkillCategories(t *testing.T) {
 
 	// Verify the category was recreated
 	var imported models.SkillCategory
-	result := database.DB.Where("name = ? AND game_system = ?", "TestCategory", "midgard").First(&imported)
+	result := database.DB.Where("name = ? AND game_system_id = ?", "TestCategory", 1).First(&imported)
 	if result.Error != nil {
 		t.Fatalf("Category not found after import: %v", result.Error)
 	}
@@ -410,7 +410,7 @@ func TestExportImportSpells(t *testing.T) {
 
 	// Verify the spell was updated
 	var imported models.Spell
-	result := database.DB.Where("name = ? AND game_system = ?", "TestSpell", "midgard").First(&imported)
+	result := database.DB.Where("name = ? AND game_system_id = ?", "TestSpell", 1).First(&imported)
 	if result.Error != nil {
 		t.Fatalf("Spell not found after import: %v", result.Error)
 	}
@@ -510,22 +510,22 @@ func TestExportImportAll(t *testing.T) {
 
 	// Verify all data was recreated
 	var importedCategory models.SkillCategory
-	if err := database.DB.Where("name = ? AND game_system = ?", "AllCategory", "midgard").First(&importedCategory).Error; err != nil {
+	if err := database.DB.Where("name = ? AND game_system_id = ?", "AllCategory", 1).First(&importedCategory).Error; err != nil {
 		t.Errorf("Category not found after import: %v", err)
 	}
 
 	var importedDifficulty models.SkillDifficulty
-	if err := database.DB.Where("name = ? AND game_system = ?", "AllDifficulty", "midgard").First(&importedDifficulty).Error; err != nil {
+	if err := database.DB.Where("name = ? AND game_system_id = ?", "AllDifficulty", 1).First(&importedDifficulty).Error; err != nil {
 		t.Errorf("Difficulty not found after import: %v", err)
 	}
 
 	var importedSkill models.Skill
-	if err := database.DB.Where("name = ? AND game_system = ?", "AllSkill", "midgard").First(&importedSkill).Error; err != nil {
+	if err := database.DB.Where("name = ? AND game_system_id = ?", "AllSkill", 1).First(&importedSkill).Error; err != nil {
 		t.Errorf("Skill not found after import: %v", err)
 	}
 
 	var importedSpell models.Spell
-	if err := database.DB.Where("name = ? AND game_system = ?", "AllSpell", "midgard").First(&importedSpell).Error; err != nil {
+	if err := database.DB.Where("name = ? AND game_system_id = ?", "AllSpell", 1).First(&importedSpell).Error; err != nil {
 		t.Errorf("Spell not found after import: %v", err)
 	}
 }
@@ -598,7 +598,7 @@ func TestExportImportWeaponSkills(t *testing.T) {
 	}
 
 	var imported models.WeaponSkill
-	result := database.DB.Where("name = ? AND game_system = ?", "Langschwert", "midgard").First(&imported)
+	result := database.DB.Where("name = ? AND game_system_id = ?", "Langschwert", 1).First(&imported)
 	if result.Error != nil {
 		t.Fatalf("Weapon skill not found after import: %v", result.Error)
 	}
@@ -646,7 +646,7 @@ func TestExportImportEquipment(t *testing.T) {
 	}
 
 	var imported models.Equipment
-	result := database.DB.Where("name = ? AND game_system = ?", "Seil", "midgard").First(&imported)
+	result := database.DB.Where("name = ? AND game_system_id = ?", "Seil", 1).First(&imported)
 	if result.Error != nil {
 		t.Fatalf("Equipment not found after import: %v", result.Error)
 	}
@@ -699,7 +699,7 @@ func TestExportImportWeapons(t *testing.T) {
 	}
 
 	var imported models.Weapon
-	result := database.DB.Where("name = ? AND game_system = ?", "Kurzschwert", "midgard").First(&imported)
+	result := database.DB.Where("name = ? AND game_system_id = ?", "Kurzschwert", 1).First(&imported)
 	if result.Error != nil {
 		t.Fatalf("Weapon not found after import: %v", result.Error)
 	}
@@ -749,7 +749,7 @@ func TestExportImportContainers(t *testing.T) {
 	}
 
 	var imported models.Container
-	result := database.DB.Where("name = ? AND game_system = ?", "Rucksack", "midgard").First(&imported)
+	result := database.DB.Where("name = ? AND game_system_id = ?", "Rucksack", 1).First(&imported)
 	if result.Error != nil {
 		t.Fatalf("Container not found after import: %v", result.Error)
 	}
@@ -801,7 +801,7 @@ func TestExportImportTransportation(t *testing.T) {
 	}
 
 	var imported models.Transportation
-	result := database.DB.Where("name = ? AND game_system = ?", "Pferdewagen", "midgard").First(&imported)
+	result := database.DB.Where("name = ? AND game_system_id = ?", "Pferdewagen", 1).First(&imported)
 	if result.Error != nil {
 		t.Fatalf("Transportation not found after import: %v", result.Error)
 	}
@@ -844,7 +844,7 @@ func TestExportImportBelieves(t *testing.T) {
 	}
 
 	var imported models.Believe
-	result := database.DB.Where("name = ? AND game_system = ?", "Kirche des Lichts", "midgard").First(&imported)
+	result := database.DB.Where("name = ? AND game_system_id = ?", "Kirche des Lichts", 1).First(&imported)
 	if result.Error != nil {
 		t.Fatalf("Believe not found after import: %v", result.Error)
 	}

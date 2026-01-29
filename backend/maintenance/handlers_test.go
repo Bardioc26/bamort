@@ -163,20 +163,21 @@ func TestImprovableFieldTransfer(t *testing.T) {
 	// Insert test data with different Improvable values
 	// Use raw SQL to avoid GORM applying default values
 	testSkills := []struct {
-		ID          uint
-		Name        string
-		GameSystem  string
-		Improvable  bool
-		InnateSkill bool
+		ID           uint
+		Name         string
+		GameSystem   string
+		GameSystemID uint
+		Improvable   bool
+		InnateSkill  bool
 	}{
-		{1, "Hören", "midgard", false, true},
-		{2, "Alchimie", "midgard", true, false},
-		{3, "Nachtsicht", "midgard", false, true},
+		{1, "Hören", "midgard", 1, false, true},
+		{2, "Alchimie", "midgard", 1, true, false},
+		{3, "Nachtsicht", "midgard", 1, false, true},
 	}
 
 	for _, skill := range testSkills {
-		err = sourceDB.Exec(`INSERT INTO gsm_skills (id, name, game_system, improvable, innate_skill, initialwert, basis_wert) VALUES (?, ?, ?, ?, ?, 5, 0)`,
-			skill.ID, skill.Name, skill.GameSystem, skill.Improvable, skill.InnateSkill).Error
+		err = sourceDB.Exec(`INSERT INTO gsm_skills (id, name, game_system, game_system_id, improvable, innate_skill, initialwert, basis_wert) VALUES (?, ?, ?, ?, ?, ?, 5, 0)`,
+			skill.ID, skill.Name, skill.GameSystem, skill.GameSystemID, skill.Improvable, skill.InnateSkill).Error
 		require.NoError(t, err)
 	}
 

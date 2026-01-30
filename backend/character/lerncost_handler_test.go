@@ -219,3 +219,152 @@ func TestGetLernCostEndpointNewSystem(t *testing.T) {
 	})
 
 }
+
+func TestCalculateSpellLearnCostNewSystem(t *testing.T) {
+	rewardHalve := "halveep"
+
+	tests := []struct {
+		name              string
+		request           gsmaster.LernCostRequest
+		spellInfo         models.SpellLearningInfo
+		remainingPP       int
+		remainingGold     int
+		wantLE            int
+		wantEP            int
+		wantGold          int
+		wantPPUsed        int
+		wantGoldUsed      int
+		wantRemainingPP   int
+		wantRemainingGold int
+	}{
+		{
+			name:    "applies PP before cost calculation",
+			request: gsmaster.LernCostRequest{Reward: nil, CharId: 15},
+			spellInfo: models.SpellLearningInfo{
+				SpellID:    47,
+				SpellName:  "Scharfblick",
+				SpellLevel: 1,
+				LERequired: 1,
+				EPPerLE:    60,
+				SchoolName: "Verändern",
+			},
+			remainingPP:       1,
+			remainingGold:     0,
+			wantLE:            0,
+			wantEP:            00,
+			wantGold:          00,
+			wantPPUsed:        1,
+			wantGoldUsed:      0,
+			wantRemainingPP:   0,
+			wantRemainingGold: 0,
+		},
+		{
+			name:    "halves EP via reward",
+			request: gsmaster.LernCostRequest{Reward: &rewardHalve, CharId: 22},
+			spellInfo: models.SpellLearningInfo{
+				SpellID:    1,
+				SpellName:  "Angst",
+				SpellLevel: 2,
+				LERequired: 1,
+				EPPerLE:    60,
+				SchoolName: "Beherrschen",
+			},
+			remainingPP:       0,
+			remainingGold:     0,
+			wantLE:            1,
+			wantEP:            30, // 3 LE * 40 EP/LE -> 120, reward halves to 60
+			wantGold:          100,
+			wantPPUsed:        0,
+			wantGoldUsed:      0,
+			wantRemainingPP:   0,
+			wantRemainingGold: 0,
+		},
+		{
+			name:    "Zaubersprung Hx uses gold up to available but below cap",
+			request: gsmaster.LernCostRequest{Reward: nil, CharId: 18},
+			spellInfo: models.SpellLearningInfo{
+				SpellID:    68,
+				SpellName:  "Zaubersprung",
+				SpellLevel: 3,
+				LERequired: 2,
+				EPPerLE:    30,
+				SchoolName: "Beherrschen",
+			},
+			remainingPP:       0,
+			remainingGold:     50, // 5 EP replacement, below EP/2 cap (60)
+			wantLE:            2,
+			wantEP:            55,
+			wantGold:          200,
+			wantPPUsed:        0,
+			wantGoldUsed:      50,
+			wantRemainingPP:   0,
+			wantRemainingGold: 0,
+		},
+
+		{
+			name:    "Zaubersprung Ma uses gold up to available but below cap",
+			request: gsmaster.LernCostRequest{Reward: nil, CharId: 22},
+			spellInfo: models.SpellLearningInfo{
+				SpellID:    68,
+				SpellName:  "Zaubersprung",
+				SpellLevel: 3,
+				LERequired: 2,
+				EPPerLE:    60,
+				SchoolName: "Beherrschen",
+			},
+			remainingPP:       0,
+			remainingGold:     50, // 5 EP replacement, below EP/2 cap (60)
+			wantLE:            2,
+			wantEP:            115,
+			wantGold:          200,
+			wantPPUsed:        0,
+			wantGoldUsed:      50,
+			wantRemainingPP:   0,
+			wantRemainingGold: 0,
+		},
+		{
+
+			name:    "caps gold conversion at half EP",
+			request: gsmaster.LernCostRequest{CharId: 22},
+			spellInfo: models.SpellLearningInfo{
+				SpellID:    68,
+				SpellName:  "Zaubersprung",
+				SpellLevel: 3,
+				LERequired: 2,
+				EPPerLE:    60,
+				SchoolName: "Beherrschen",
+			},
+			remainingPP:       0,
+			remainingGold:     2000, // would allow 200 EP replacement but cap is EP/2 = 60
+			wantLE:            2,
+			wantEP:            60,
+			wantGold:          200,
+			wantPPUsed:        0,
+			wantGoldUsed:      600,
+			wantRemainingPP:   0,
+			wantRemainingGold: 1400,
+		},
+	}
+
+	for _, tc := range tests {
+		//tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			remainingPP := tc.remainingPP
+			remainingGold := tc.remainingGold
+
+			var result gsmaster.SkillCostResultNew
+			err := calculateSpellLearnCostNewSystem(&tc.request, &result, &remainingPP, &remainingGold, &tc.spellInfo)
+			assert.NoError(t, err)
+
+			assert.Equal(t, tc.spellInfo.SchoolName, result.Category)
+			assert.Equal(t, fmt.Sprintf("Stufe %d", tc.spellInfo.SpellLevel), result.Difficulty)
+			assert.Equal(t, tc.wantLE, result.LE)
+			assert.Equal(t, tc.wantEP, result.EP)
+			assert.Equal(t, tc.wantGold, result.GoldCost)
+			assert.Equal(t, tc.wantPPUsed, result.PPUsed)
+			assert.Equal(t, tc.wantGoldUsed, result.GoldUsed)
+			assert.Equal(t, tc.wantRemainingPP, remainingPP)
+			assert.Equal(t, tc.wantRemainingGold, remainingGold)
+		})
+	}
+}

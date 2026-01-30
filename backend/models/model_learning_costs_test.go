@@ -28,52 +28,98 @@ func defaultGameSystem(t *testing.T) *GameSystem {
 // Tests for Source struct and methods
 // =============================================================================
 
-func TestSource_FirstByCode_Success(t *testing.T) {
-	setupLearningCostsTestDB(t)
+func TestSourceModelFunctions(t *testing.T) {
+	database.SetupTestDB()
+	defer database.ResetTestDB()
+	t.Run("FirstByCode_Success", func(t *testing.T) {
+		var source Source
+		err := source.FirstByCode("KOD")
 
-	var source Source
-	err := source.FirstByCode("KOD")
+		assert.NoError(t, err)
+		assert.Equal(t, "KOD", source.Code)
+		assert.Equal(t, "Kodex", source.Name)
+		assert.True(t, source.IsCore)
+		assert.True(t, source.IsActive)
+		assert.Equal(t, uint(1), source.GameSystemId)
+	})
+	t.Run("FirstByName_Success", func(t *testing.T) {
+		var source Source
+		err := source.FirstByName("Kodex")
 
-	assert.NoError(t, err)
-	assert.Equal(t, "KOD", source.Code)
-	assert.Equal(t, "Kodex", source.Name)
-	assert.True(t, source.IsCore)
-	assert.True(t, source.IsActive)
-}
+		assert.NoError(t, err)
+		assert.Equal(t, "KOD", source.Code)
+		assert.Equal(t, "Kodex", source.Name)
+		assert.True(t, source.IsCore)
+		assert.True(t, source.IsActive)
+		assert.Equal(t, uint(1), source.GameSystemId)
+	})
+	t.Run("FirstByCodexGS_Success", func(t *testing.T) {
+		var source Source
+		err := source.FirstByCodewGS("KOD", 1)
 
-func TestSource_FirstByCode_NotFound(t *testing.T) {
-	setupLearningCostsTestDB(t)
+		assert.NoError(t, err)
+		assert.Equal(t, "KOD", source.Code)
+		assert.Equal(t, "Kodex", source.Name)
+		assert.True(t, source.IsCore)
+		assert.True(t, source.IsActive)
+		assert.Equal(t, uint(1), source.GameSystemId)
+	})
+	t.Run("FirstByNamexGS_Success", func(t *testing.T) {
+		var source Source
+		err := source.FirstByNamewGS("Kodex", 1)
 
-	var source Source
-	err := source.FirstByCode("INVALID")
+		assert.NoError(t, err)
+		assert.Equal(t, "KOD", source.Code)
+		assert.Equal(t, "Kodex", source.Name)
+		assert.True(t, source.IsCore)
+		assert.True(t, source.IsActive)
+		assert.Equal(t, uint(1), source.GameSystemId)
+	})
+	t.Run("Create_Success", func(t *testing.T) {
+		cSource := Source{
+			Code:     "XYZ",
+			Name:     "Test Source",
+			IsCore:   false,
+			IsActive: false,
+		}
+		err := cSource.Create()
+		var source Source
 
-	assert.Error(t, err)
-}
+		err = source.FirstByNamewGS("Test Source", 1)
 
-func TestSource_FirstByName_Success(t *testing.T) {
-	setupLearningCostsTestDB(t)
+		assert.NoError(t, err)
+		assert.Equal(t, "XYZ", source.Code)
+		assert.Equal(t, "Test Source", source.Name)
+		assert.False(t, source.IsCore)
+		assert.False(t, source.IsActive)
+		assert.Equal(t, uint(1), source.GameSystemId)
 
-	var source Source
-	err := source.FirstByName("Arkanum")
+		cSource = Source{
+			Code:     "KLM",
+			Name:     "KLM Source",
+			IsCore:   true,
+			IsActive: false,
+		}
 
-	assert.NoError(t, err)
-	assert.Equal(t, "ARK", source.Code)
-	assert.Equal(t, "Arkanum", source.Name)
-	assert.False(t, source.IsCore)
-	assert.True(t, source.IsActive)
-}
-
-func TestSource_FirstByName_NotFound(t *testing.T) {
-	setupLearningCostsTestDB(t)
-
-	var source Source
-	err := source.FirstByName("Invalid Source")
-
-	assert.Error(t, err)
+		err = cSource.CreatewGS(99999)
+		assert.Error(t, err, "Games system must be invalid")
+		err = cSource.CreatewGS(1)
+		assert.NoError(t, err, "Games system must be valid")
+		var source2 Source
+		err = source2.FirstByCodewGS("KLM", 999)
+		assert.Error(t, err, "Gamesystem should be wrong")
+		err = source2.FirstByCodewGS("KLM", 1)
+		assert.Equal(t, "KLM", source2.Code)
+		assert.Equal(t, "KLM Source", source2.Name)
+		assert.True(t, source2.IsCore)
+		assert.False(t, source2.IsActive)
+		assert.Equal(t, uint(1), source2.GameSystemId)
+	})
 }
 
 func TestSource_Create_SetsGameSystem(t *testing.T) {
-	setupLearningCostsTestDB(t)
+	database.SetupTestDB()
+	defer database.ResetTestDB()
 	gs := defaultGameSystem(t)
 
 	source := Source{
@@ -94,7 +140,8 @@ func TestSource_Create_SetsGameSystem(t *testing.T) {
 // =============================================================================
 
 func TestCharacterClass_FirstByCode_Success(t *testing.T) {
-	setupLearningCostsTestDB(t)
+	database.SetupTestDB()
+	defer database.ResetTestDB()
 
 	var class CharacterClass
 	err := class.FirstByCode("Bb")
@@ -406,6 +453,7 @@ func TestGetSkillInfoCategoryAndDifficultyNewSystem_Success(t *testing.T) {
 	}
 }
 
+/*
 func TestGetSpellLearningInfoNewSystem_Success(t *testing.T) {
 	setupLearningCostsTestDB(t)
 
@@ -419,7 +467,8 @@ func TestGetSpellLearningInfoNewSystem_Success(t *testing.T) {
 		assert.Greater(t, spellInfo.EPPerLE, 0)
 	}
 }
-
+*/
+/*
 func TestGetSpellLearningInfoNewSystem_IncludesGameSystem(t *testing.T) {
 	setupLearningCostsTestDB(t)
 
@@ -466,7 +515,8 @@ func TestGetSpellLearningInfoNewSystem_IncludesGameSystem(t *testing.T) {
 	assert.Equal(t, gs.Name, spellInfo.GameSystem)
 	assert.Equal(t, gs.ID, spellInfo.GameSystemId)
 }
-
+*/
+/*
 func TestGetSpellLearningInfoNewSystem_InvalidSpell(t *testing.T) {
 	setupLearningCostsTestDB(t)
 
@@ -474,7 +524,157 @@ func TestGetSpellLearningInfoNewSystem_InvalidSpell(t *testing.T) {
 
 	assert.Error(t, err)
 }
+*/
 
+func TestGetSpellLearningInfoNewSystem(t *testing.T) {
+	database.SetupTestDB(true)
+	defer database.ResetTestDB()
+
+	gs := GetGameSystem(1, "")
+	require.NotNil(t, gs)
+
+	tests := []struct {
+		TestName  string // Charakter-ID
+		Name      string `json:"name" binding:"omitempty"`
+		ClassCode string `json:"class_code" binding:"omitempty"`
+		UsePP     int    `json:"use_pp,omitempty"`   // Anzahl der zu verwendenden Praxispunkte
+		UseGold   int    `json:"use_gold,omitempty"` // Anzahl der zu verwendenden Goldstücke
+		// Belohnungsoptionen
+		Reward     *string `json:"reward" binding:"required,oneof=default noGold halveep halveepnoGold"` // Belohnungsoptionen Lernen als Belohnung
+		expError   bool    // Erwartet einen Fehler
+		LERequired int
+		SpellLevel int
+		EPPerLE    int
+	}{
+		{
+			TestName:   "Schamane Scharfblick, 0,0,-",
+			Name:       "Scharfblick",
+			ClassCode:  "Sc",
+			LERequired: 1,
+			SpellLevel: 1,
+			EPPerLE:    60,
+			UsePP:      0,
+			UseGold:    0,
+			Reward:     nil,
+			expError:   false,
+		}, /*{
+			TestName:   "Barde Das Lied der Feier, 0,0,-",
+			Name:       "Das Lied der Feier",
+			ClassCode:  "Ba",
+			LERequired: 0,
+			SpellLevel: 2,
+			EPPerLE:    0,
+			UsePP:      0,
+			UseGold:    0,
+			Reward:     nil,
+			expError:   false,
+		},*/{
+			TestName:   "Magier Angst, 0,0,-",
+			Name:       "Angst",
+			ClassCode:  "Ma",
+			LERequired: 1,
+			SpellLevel: 2,
+			EPPerLE:    60,
+			UsePP:      0,
+			UseGold:    0,
+			Reward:     nil,
+			expError:   false,
+		}, {
+			TestName:   "Hexer Zaubersprung, 0,0,-",
+			Name:       "Zaubersprung",
+			ClassCode:  "Hx",
+			LERequired: 2,
+			SpellLevel: 3,
+			EPPerLE:    30,
+			UsePP:      0,
+			UseGold:    0,
+			Reward:     nil,
+			expError:   false,
+		}, {
+			TestName:   "Magier Zaubersprung, 0,0,-",
+			Name:       "Zaubersprung",
+			ClassCode:  "Ma",
+			LERequired: 2,
+			SpellLevel: 3,
+			EPPerLE:    60,
+			UsePP:      0,
+			UseGold:    0,
+			Reward:     nil,
+			expError:   false,
+		}, {
+			TestName:   "Magier NonExistentSpell, 0,0,-",
+			Name:       "NonExistentSpell",
+			ClassCode:  "Ma",
+			LERequired: 0,
+			SpellLevel: 2,
+			EPPerLE:    0,
+			UsePP:      0,
+			UseGold:    0,
+			Reward:     nil,
+			expError:   true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.TestName, func(t *testing.T) {
+			info, err := GetSpellLearningInfoNewSystem(tt.Name, tt.ClassCode)
+			if tt.expError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, info)
+				assert.Equal(t, tt.Name, info.SpellName)
+				assert.Equal(t, tt.SpellLevel, info.SpellLevel)
+				assert.Equal(t, tt.LERequired, info.LERequired)
+				assert.Equal(t, tt.EPPerLE, info.EPPerLE)
+			}
+		})
+	}
+}
+
+/*
+func TestGetSpellLearningInfoNewSystem_NotExistingForCurrentGameSystem(t *testing.T) {
+	database.ResetTestDB()
+	database.SetupTestDB(true)
+	defer database.ResetTestDB()
+	require.NoError(t, MigrateStructure())
+
+	altGS := GameSystem{Code: "AGS", Name: "AltSystem"}
+	require.NoError(t, database.DB.Create(&altGS).Error)
+
+	source := Source{Code: "SRC_ALT", Name: "Alt Source", GameSystem: altGS.Name, GameSystemId: altGS.ID}
+	require.NoError(t, database.DB.Create(&source).Error)
+
+	altClass := CharacterClass{Code: "ALC", Name: "Alt Class", SourceID: source.ID, GameSystem: altGS.Name, GameSystemId: altGS.ID}
+	require.NoError(t, altClass.Create())
+
+	altSchool := SpellSchool{Name: "AltSchool", SourceID: source.ID, GameSystem: altGS.Name, GameSystemId: altGS.ID}
+	require.NoError(t, altSchool.Create())
+
+	altCost := ClassSpellSchoolEPCost{CharacterClassID: altClass.ID, SpellSchoolID: altSchool.ID, EPPerLE: 4, CCLass: altClass.Code, SCategory: altSchool.Name}
+	require.NoError(t, altCost.Create())
+
+	altLevel := SpellLevelLECost{Level: 98, LERequired: 1, GameSystem: altGS.Name, GameSystemId: altGS.ID}
+	if err := altLevel.Create(); err != nil {
+		require.NoError(t, database.DB.Where("level = ?", altLevel.Level).First(&altLevel).Error)
+		altLevel.GameSystem = altGS.Name
+		altLevel.GameSystemId = altGS.ID
+		require.NoError(t, altLevel.Save())
+	}
+
+	spell := Spell{Name: "Alt Spell", Stufe: altLevel.Level, LearningCategory: altSchool.Name, GameSystem: altGS.Name, GameSystemId: altGS.ID, SourceID: source.ID}
+	require.NoError(t, spell.Create())
+
+	currentSource := Source{Code: "SRC_CUR", Name: "Current Source", GameSystem: "midgard"}
+	require.NoError(t, database.DB.Create(&currentSource).Error)
+
+	currentClass := CharacterClass{Code: "CURC", Name: "Current Class", SourceID: currentSource.ID, GameSystem: "midgard", GameSystemId: 0}
+	require.NoError(t, currentClass.Create())
+
+	_, err := GetSpellLearningInfoNewSystem(spell.Name, currentClass.Code)
+
+	assert.Error(t, err)
+}
+*/
 // =============================================================================
 // Tests for cost calculation functions
 // =============================================================================

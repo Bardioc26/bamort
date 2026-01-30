@@ -870,8 +870,8 @@ func GetGameSystem(id uint, name string) *GameSystem {
 		return gs
 	}
 	gs.FirstByID(uint(id))
-	if gs.ID == 0 && name != "" {
-		gs.Name = name
+	if gs.ID == 0 {
+		return nil
 	}
 	return gs
 }

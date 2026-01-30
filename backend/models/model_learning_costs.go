@@ -18,8 +18,8 @@ type Source struct {
 	Publisher    string `json:"publisher,omitempty"`                      // z.B. "Pegasus Spiele"
 	PublishYear  int    `json:"publish_year,omitempty"`                   // Erscheinungsjahr
 	Description  string `json:"description,omitempty"`                    // Beschreibung des Werks
-	IsCore       bool   `gorm:"default:false" json:"is_core"`             // Ist es ein Grundregelwerk?
-	IsActive     bool   `gorm:"default:true" json:"is_active"`            // Ist das Werk aktiv/verfügbar?
+	IsCore       bool   `json:"is_core"`                                  // Ist es ein Grundregelwerk?
+	IsActive     bool   `json:"is_active"`                                // Ist das Werk aktiv/verfügbar?
 	GameSystem   string `gorm:"index;default:midgard" json:"game_system"`
 	GameSystemId uint   `json:"game_system_id,omitempty"`
 }
@@ -364,20 +364,47 @@ func (ss *SpellSchool) Save() error {
 }
 
 // CRUD-Methoden
-
-func (s *Source) Create() error {
-	s.ensureGameSystem()
-	return database.DB.Create(s).Error
+func (object *Source) CreatewGS(gamesystemId uint) error {
+	gs := GetGameSystem(gamesystemId, "")
+	if gs == nil {
+		return fmt.Errorf("invalid game system")
+	}
+	object.GameSystemId = gs.ID
+	return database.DB.Create(object).Error
 }
 
-func (s *Source) FirstByCode(code string) error {
-	gs := GetGameSystem(s.GameSystemId, s.GameSystem)
-	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND code = ?", gs.Name, gs.ID, code).First(s).Error
+func (object *Source) Create() error {
+	object.ensureGameSystem()
+	return object.CreatewGS(object.GameSystemId)
 }
 
-func (s *Source) FirstByName(name string) error {
-	gs := GetGameSystem(s.GameSystemId, s.GameSystem)
-	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND name = ?", gs.Name, gs.ID, name).First(s).Error
+func (object *Source) FirstByCodewGS(code string, gameSystemId uint) error {
+	if code == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
+	gs := GetGameSystem(gameSystemId, "")
+	if gs == nil {
+		return fmt.Errorf("invalid game system")
+	}
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND code = ?", gs.Name, gs.ID, code).First(object).Error
+}
+
+func (object *Source) FirstByCode(code string) error {
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	return object.FirstByCodewGS(code, gs.ID)
+}
+
+func (object *Source) FirstByNamewGS(name string, gameSystemId uint) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
+	gs := GetGameSystem(gameSystemId, "")
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND name = ?", gs.Name, gs.ID, name).First(object).Error
+}
+
+func (object *Source) FirstByName(name string) error {
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	return object.FirstByNamewGS(name, gs.ID)
 }
 
 func (cc *CharacterClass) Create() error {
@@ -569,13 +596,13 @@ func GetSpellLearningInfoNewSystem(spellName string, classCode string) (*SpellLe
 			s.game_system as game_system,
 			s.game_system_id as game_system_id,
 			s.stufe as spell_level,
-			s.learning_category as school_name,
+			COALESCE(NULLIF(s.category, ''), s.learning_category) as school_name,
 			cssec.character_class as class_code,
 			cssec.character_class as class_name,
 			cssec.ep_per_le,
 			COALESCE(sllc.le_required, 0) as le_required
 		FROM gsm_spells s
-		JOIN learning_class_spell_school_ep_costs cssec ON s.learning_category = cssec.spell_school
+		JOIN learning_class_spell_school_ep_costs cssec ON COALESCE(NULLIF(s.category, ''), s.learning_category) = cssec.spell_school
 		LEFT JOIN learning_spell_level_le_costs sllc ON s.stufe = sllc.level AND (sllc.game_system = s.game_system OR sllc.game_system_id = s.game_system_id OR sllc.game_system_id IS NULL)
 		WHERE s.name = ? AND cssec.character_class = ?
 	`, spellName, classCode).Scan(&result).Error

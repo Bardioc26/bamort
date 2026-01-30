@@ -355,15 +355,17 @@ type SkillCategoryOption struct {
 	LE         int    `json:"le"`
 }
 
+// ToDo: GameSystemId noch einbauen
 func GetClassAbbreviationNewSystem(characterClass string) string {
 	// Try to find by code first (e.g., "Kr" -> "Kr")
 	var charClass models.CharacterClass
 	if err := charClass.FirstByName(characterClass); err == nil {
 		return charClass.Code
 	}
+	gs := GetGameSystem(1, "")
 
 	// Try to find by name (e.g., "Krieger" -> "Kr")
-	if err := database.DB.Where("name = ?", characterClass).First(&charClass).Error; err == nil {
+	if err := database.DB.Where("(game_system=? OR game_system_id=?) AND name = ?", characterClass, gs.ID, characterClass).First(&charClass).Error; err == nil {
 		return charClass.Code
 	}
 	return ""

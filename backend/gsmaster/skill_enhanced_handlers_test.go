@@ -7,6 +7,7 @@ import (
 	"testing"
 )
 
+// setupTestEnvironment ensures ENVIRONMENT is set to test for this package.
 func setupTestEnvironment(t *testing.T) {
 	original := os.Getenv("ENVIRONMENT")
 	os.Setenv("ENVIRONMENT", "test")

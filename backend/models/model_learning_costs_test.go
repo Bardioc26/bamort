@@ -631,6 +631,80 @@ func TestGetSpellLearningInfoNewSystem(t *testing.T) {
 	}
 }
 
+func TestGetSkillCategoryAndDifficultyNewSystem(t *testing.T) {
+	database.SetupTestDB(true)
+	defer database.ResetTestDB()
+
+	tests := []struct {
+		TestName       string
+		SkillName      string
+		ClassCode      string
+		CategoryName   string
+		DifficultyName string
+		EPPerTE        int
+		LearnCost      int
+		expError       bool
+	}{
+		{
+			TestName:       "Schwimmen for Barbar",
+			SkillName:      "Schwimmen",
+			ClassCode:      "Bb",
+			CategoryName:   "Körper",
+			DifficultyName: "leicht",
+			EPPerTE:        10,
+			LearnCost:      1,
+			expError:       false,
+		}, {
+			TestName:       "Abrichten for Barbar",
+			SkillName:      "Abrichten",
+			ClassCode:      "Bb",
+			CategoryName:   "Freiland",
+			DifficultyName: "schwer",
+			EPPerTE:        10,
+			LearnCost:      4,
+			expError:       false,
+		}, {
+			TestName:       "Betäuben for Schamane",
+			SkillName:      "Betäuben",
+			ClassCode:      "Sc",
+			CategoryName:   "Kampf",
+			DifficultyName: "schwer",
+			EPPerTE:        40,
+			LearnCost:      10,
+			expError:       false,
+		},
+		{
+			TestName:       "Invalid skill",
+			SkillName:      "InvalidSkill",
+			ClassCode:      "Bb",
+			CategoryName:   "",
+			DifficultyName: "",
+			EPPerTE:        0,
+			LearnCost:      0,
+			expError:       true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.TestName, func(t *testing.T) {
+			info, err := GetSkillCategoryAndDifficultyNewSystem(tt.SkillName, tt.ClassCode)
+			if tt.expError {
+				assert.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, info)
+
+			assert.Equal(t, tt.SkillName, info.SkillName)
+			assert.Equal(t, tt.CategoryName, info.CategoryName, info.SkillName)
+			assert.Equal(t, tt.DifficultyName, info.DifficultyName, info.SkillName)
+			assert.Equal(t, tt.EPPerTE, info.EPPerTE, info.SkillName)
+			assert.Equal(t, tt.LearnCost, info.LearnCost, info.SkillName)
+		})
+	}
+}
+
 /*
 func TestGetSpellLearningInfoNewSystem_NotExistingForCurrentGameSystem(t *testing.T) {
 	database.ResetTestDB()

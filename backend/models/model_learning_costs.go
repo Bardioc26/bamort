@@ -151,7 +151,7 @@ type SkillLearningInfo struct {
 	CategoryName     string `json:"category_name"`
 	DifficultyID     uint   `json:"difficulty_id"`
 	DifficultyName   string `json:"difficulty_name"`
-	LearnCost        int    `json:"learn_cost"`
+	LearnCost        int    `json:"learn_cost"` // LE-Kosten für das Erlernen
 	CharacterClassID uint   `json:"character_class_id"`
 	ClassCode        string `json:"class_code"`
 	ClassName        string `json:"class_name"`

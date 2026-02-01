@@ -313,7 +313,9 @@ export default {
       public: 'Öffentlich',
       private: 'Privat',
       grade: 'Grad',
-      owner: 'Besitzer'
+      owner: 'Besitzer',
+      shared_characters_title: 'Geteilte Charaktere',
+      owned_characters_title: 'Eigene Charaktere'
     },
     create: {
       spells: {

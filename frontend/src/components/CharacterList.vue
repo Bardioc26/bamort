@@ -16,29 +16,50 @@
       @delete-session="handleDeleteSession"
     />
     
-    <div v-if="characters.length === 0" class="empty-state">
+    <div v-if="ownedCharacters.length === 0" class="empty-state">
       <h3>{{ $t('characters.list.no_characters') }}</h3>
       <p>{{ $t('characters.list.no_characters_description') }}</p>
     </div>
     
-    <div v-else class="list-container">
-      <div v-for="character in characters" :key="character.character_id" class="list-item">
-        <router-link :to="`/character/${character.id}`" class="list-item-content">
-          <h4 class="list-item-title">{{ character.name }}</h4>
-          <div class="list-item-details">
-            {{ character.rasse }} <span class="list-item-separator">|</span>
-            {{ character.typ }} <span class="list-item-separator">|</span>
-            {{ $t('characters.list.grade') }}: {{ character.grad }} <span class="list-item-separator">|</span>
-            {{ $t('characters.list.owner') }}: {{ character.owner }} <span class="list-item-separator">|</span>
-            <span class="badge" :class="character.public ? 'badge-success' : 'badge-secondary'">
-              {{ character.public ? $t('characters.list.public') : $t('characters.list.private') }}
-            </span>
-          </div>
-        </router-link>
+    <div v-else class="list-container horizontal-placement">
+      <div class="charlist">
+        {{ $t('characters.list.owned_characters_title') }}
+        <div v-for="character in ownedCharacters" :key="character.character_id" class="list-item">
+          <router-link :to="`/character/${character.id}`" class="list-item-content">
+            <h4 class="list-item-title">{{ character.name }}</h4>
+            <div class="list-item-details">
+              {{ character.rasse }} <span class="list-item-separator">|</span>
+              {{ character.typ }} <span class="list-item-separator">|</span>
+              {{ $t('characters.list.grade') }}: {{ character.grad }} <span class="list-item-separator">|</span>
+              {{ $t('characters.list.owner') }}: {{ character.owner }} <span class="list-item-separator">|</span>
+              <span class="badge" :class="character.public ? 'badge-success' : 'badge-secondary'">
+                {{ character.public ? $t('characters.list.public') : $t('characters.list.private') }}
+              </span>
+            </div>
+          </router-link>
+        </div>
+      </div>
+      <div class="charlist">
+        {{ $t('characters.list.shared_characters_title') }}
+        <div v-for="character in sharedCharacters" :key="character.character_id" class="list-item">
+          <router-link :to="`/character/${character.id}`" class="list-item-content">
+            <h4 class="list-item-title">{{ character.name }}</h4>
+            <div class="list-item-details">
+              {{ character.rasse }} <span class="list-item-separator">|</span>
+              {{ character.typ }} <span class="list-item-separator">|</span>
+              {{ $t('characters.list.grade') }}: {{ character.grad }} <span class="list-item-separator">|</span>
+              {{ $t('characters.list.owner') }}: {{ character.owner }} <span class="list-item-separator">|</span>
+              <span class="badge" :class="character.public ? 'badge-success' : 'badge-secondary'">
+                {{ character.public ? $t('characters.list.public') : $t('characters.list.private') }}
+              </span>
+            </div>
+          </router-link>
+        </div>
       </div>
     </div>
   </div>
-</template><script>
+</template>
+<script>
 import API from '../utils/api'
 import { formatDate } from '@/utils/dateUtils'
 import CharacterCreationSessions from './CharacterCreationSessions.vue'
@@ -49,7 +70,8 @@ export default {
   },
   data() {
     return {
-      characters: [],
+      ownedCharacters: [],
+      sharedCharacters: [],
       creationSessions: [],
     }
   },
@@ -64,7 +86,8 @@ export default {
         const response = await API.get('/api/characters', {
           headers: { Authorization: `Bearer ${token}` },
         })
-        this.characters = response.data.self_owned
+        this.ownedCharacters = response.data.self_owned
+        this.sharedCharacters = response.data.others
       } catch (error) {
         console.error('Error loading characters:', error)
       }
@@ -132,7 +155,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 /* All common styles moved to main.css */
 
 .create-character-section {
@@ -164,6 +187,19 @@ export default {
 
 .list-item-content:hover .list-item-title {
   color: #007bff;
+}
+
+.horizontal-placement {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.charlist {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Responsive Design */

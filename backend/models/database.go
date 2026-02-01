@@ -49,6 +49,7 @@ func MigrateStructure(db ...*gorm.DB) error {
 
 	return nil
 }
+
 func gameSystemMigrateStructure(db ...*gorm.DB) error {
 	// Use provided DB or default to database.DB
 	var targetDB *gorm.DB
@@ -66,6 +67,7 @@ func gameSystemMigrateStructure(db ...*gorm.DB) error {
 	}
 	return nil
 }
+
 func gsMasterMigrateStructure(db ...*gorm.DB) error {
 	// Use provided DB or default to database.DB
 	var targetDB *gorm.DB
@@ -112,6 +114,7 @@ func characterMigrateStructure(db ...*gorm.DB) error {
 		&Bennies{},
 		&Vermoegen{},
 		&CharacterCreationSession{},
+		&CharShare{},
 	)
 	if err != nil {
 		return err

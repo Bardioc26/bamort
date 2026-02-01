@@ -59,6 +59,14 @@ func ListCharacters(c *gin.Context) {
 		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve public characters")
 		return
 	}
+	listShared, err := models.FindSharedCharList(c.GetUint("userID"))
+	if err != nil {
+		logger.Error("Fehler beim Laden der geteilten Charaktere: %s", err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve shared characters")
+		return
+	}
+	listPublic = append(listPublic, listShared...)
+
 	allCharacters.Others = listPublic
 
 	logger.Info("Charakterliste erfolgreich geladen: %d Charaktere", len(listOfChars))

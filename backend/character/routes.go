@@ -10,6 +10,8 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.POST("", CreateCharacter)
 	charGrp.GET("/:id", GetCharacter)
 	charGrp.PUT("/:id", UpdateCharacter)
+	charGrp.PATCH("/:id", UpdateCharacter)
+
 	charGrp.DELETE("/:id", DeleteCharacter)
 	charGrp.PUT("/:id/image", UpdateCharacterImage)
 	charGrp.GET("/:id/datasheet-options", GetDatasheetOptions)

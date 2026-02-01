@@ -6,6 +6,9 @@
         <button @click="showExportDialog = true" class="export-button-small" :title="$t('export.title')">
           📄
         </button>
+        <button @click="showVisibilityDialog = true" class="export-button-small" :title="$t('visibility.title')">
+          {{ character.public ? '🌐' : '🔒' }}
+        </button>
         <h2>{{ $t('char') }}: {{ character.name }} ({{ $t(currentView) }})</h2>
       </div>
     </div>
@@ -16,6 +19,15 @@
       :showDialog="showExportDialog"
       @update:showDialog="showExportDialog = $event"
       @export-success="handleExportSuccess"
+    />
+
+    <!-- Visibility Dialog -->
+    <VisibilityDialog 
+      :characterId="id" 
+      :currentVisibility="character.public"
+      :showDialog="showVisibilityDialog"
+      @update:showDialog="showVisibilityDialog = $event"
+      @visibility-updated="handleVisibilityUpdated"
     />
 
     <!-- Submenu Content -->
@@ -53,6 +65,7 @@
 <script>
 import API from '../utils/api'
 import ExportDialog from "./ExportDialog.vue";
+import VisibilityDialog from "./VisibilityDialog.vue";
 import DatasheetView from "./DatasheetView.vue"; // Component for character stats
 import SkillView from "./SkillView.vue"; // Component for character history
 import WeaponView from "./WeaponView.vue"; // Component for character history
@@ -67,6 +80,7 @@ export default {
   props: ["id"], // Receive the route parameter as a prop
   components: {
     ExportDialog,
+    VisibilityDialog,
     DatasheetView,
     SkillView,
     WeaponView,
@@ -81,6 +95,7 @@ export default {
       currentView: "DatasheetView", // Default view
       lastView: "DatasheetView",
       showExportDialog: false,
+      showVisibilityDialog: false,
       menus: [
         { id: 1, name: "Datasheet", component: "DatasheetView" },
         { id: 2, name: "Skill", component: "SkillView" },
@@ -106,6 +121,12 @@ export default {
   methods: {
     handleExportSuccess() {
       console.log('PDF exported successfully')
+    },
+    
+    handleVisibilityUpdated(isPublic) {
+      this.character.public = isPublic
+      this.showVisibilityDialog = false
+      console.log('Character visibility updated to:', isPublic ? 'public' : 'private')
     },
     
     changeView(view) {

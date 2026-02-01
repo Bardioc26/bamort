@@ -509,6 +509,19 @@ export default {
     pleaseWait: 'Please wait, this may take a moment',
     popupBlocked: 'Popup was blocked. Please allow popups for this site.'
   },
+  visibility: {
+    title: 'Change Visibility',
+    description: 'Set who can see this character.',
+    private: 'Private',
+    privateDescription: 'Only you can see this character',
+    public: 'Public',
+    publicDescription: 'All users can see this character',
+    cancel: 'Cancel',
+    save: 'Save',
+    saving: 'Saving...',
+    updating: 'Updating visibility...',
+    updateError: 'Failed to update visibility'
+  },
   userManagement: {
     title: 'User Management',
     loading: 'Loading users...',

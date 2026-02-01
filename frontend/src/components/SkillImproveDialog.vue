@@ -130,7 +130,7 @@
             @click="selectLevel(level)"
           >
             <div class="level-header">
-              <span class="level-target">{{ skill?.fertigkeitswert || 0 }} → {{ level.targetLevel }}</span>
+              <span class="level-target">{{ level.startLevel }} → {{ level.targetLevel }}</span>
               <span class="level-cost" v-if="selectedRewardType === 'default'">{{ level.epCost }} EP + {{ level.goldCost }} GS</span>
               <span class="level-cost" v-else-if="selectedRewardType === 'noGold'">{{ level.epCost }} EP</span>
               <span class="level-cost" v-else-if="selectedRewardType === 'halveepnoGold'">{{ Math.floor(level.epCost / 2) }} EP</span>
@@ -507,6 +507,7 @@ export default {
             }
             
             return {
+              startLevel: Math.max(cost.target_level - 1, 0),
               targetLevel: cost.target_level,
               epCost: cost.ep,
               goldCost: cost.gold_cost,
@@ -581,6 +582,7 @@ export default {
         }
         
         this.availableLevels.push({
+          startLevel: targetLevel - 1,
           targetLevel,
           epCost,
           goldCost,

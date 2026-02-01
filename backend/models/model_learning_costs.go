@@ -20,7 +20,7 @@ type Source struct {
 	Description  string `json:"description,omitempty"`                    // Beschreibung des Werks
 	IsCore       bool   `json:"is_core"`                                  // Ist es ein Grundregelwerk?
 	IsActive     bool   `json:"is_active"`                                // Ist das Werk aktiv/verfügbar?
-	GameSystem   string `gorm:"index;default:midgard" json:"game_system"`
+	GameSystem   string `gorm:"index" json:"game_system"`
 	GameSystemId uint   `json:"game_system_id,omitempty"`
 }
 
@@ -31,7 +31,7 @@ type CharacterClass struct {
 	Name         string `gorm:"unique;not null" json:"name"`     // z.B. "Hexer", "Magier", "Krieger"
 	Description  string `json:"description,omitempty"`           // Optional: Beschreibung der Klasse
 	SourceID     uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
-	GameSystem   string `gorm:"index;default:midgard" json:"game_system"`
+	GameSystem   string `gorm:"index" json:"game_system"`
 	GameSystemId uint   `json:"game_system_id,omitempty"`
 	Source       Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
 	Quelle       string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
@@ -42,7 +42,7 @@ type SkillCategory struct {
 	ID           uint   `gorm:"primaryKey" json:"id"`
 	Name         string `gorm:"unique;not null" json:"name"`     // z.B. "Alltag", "Kampf", "Waffen"
 	SourceID     uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
-	GameSystem   string `gorm:"index;default:midgard" json:"game_system"`
+	GameSystem   string `gorm:"index" json:"game_system"`
 	GameSystemId uint   `json:"game_system_id,omitempty"`
 	Source       Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
 	Quelle       string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
@@ -53,7 +53,7 @@ type SkillDifficulty struct {
 	ID           uint   `gorm:"primaryKey" json:"id"`
 	Name         string `gorm:"unique;not null" json:"name"` // z.B. "leicht", "normal", "schwer", "sehr schwer"
 	Description  string `json:"description,omitempty"`       // Optional: Beschreibung
-	GameSystem   string `gorm:"index;default:midgard" json:"game_system"`
+	GameSystem   string `gorm:"index" json:"game_system"`
 	GameSystemId uint   `json:"game_system_id,omitempty"`
 }
 
@@ -63,7 +63,7 @@ type SpellSchool struct {
 	Name         string `gorm:"unique;not null" json:"name"`     // z.B. "Beherrschen", "Bewegen", "Erkennen"
 	Description  string `json:"description,omitempty"`           // Optional: Beschreibung
 	SourceID     uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
-	GameSystem   string `gorm:"index;default:midgard" json:"game_system"`
+	GameSystem   string `gorm:"index" json:"game_system"`
 	GameSystemId uint   `json:"game_system_id,omitempty"`
 	Source       Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
 	Quelle       string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
@@ -98,7 +98,7 @@ type SpellLevelLECost struct {
 	ID           uint   `gorm:"primaryKey" json:"id"`
 	Level        int    `gorm:"uniqueIndex;not null" json:"level"` // Zauber-Stufe (1-12)
 	LERequired   int    `gorm:"not null" json:"le_required"`       // Benötigte Lerneinheiten
-	GameSystem   string `gorm:"index;default:midgard" json:"game_system"`
+	GameSystem   string `gorm:"index" json:"game_system"`
 	GameSystemId uint   `json:"game_system_id,omitempty"`
 }
 

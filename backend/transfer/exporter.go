@@ -31,7 +31,7 @@ type LearningDataExport struct {
 	ClassSpellSchoolEPCosts   []models.ClassSpellSchoolEPCost  `json:"class_spell_school_ep_costs"`
 	SpellLevelLECosts         []models.SpellLevelLECost        `json:"spell_level_le_costs"`
 	SkillCategoryDifficulties []models.SkillCategoryDifficulty `json:"skill_category_difficulties"`
-	SkillImprovementCosts     []models.SkillImprovementCost    `json:"skill_improvement_costs"`
+	SkillImprovementCosts     []models.SkillImprovementCost2   `json:"skill_improvement_costs"`
 }
 
 // ExportCharacter exports a complete character with all related data
@@ -177,7 +177,7 @@ func ExportCharacter(characterID uint) (*CharacterExport, error) {
 		ClassSpellSchoolEPCosts:   make([]models.ClassSpellSchoolEPCost, 0),
 		SpellLevelLECosts:         make([]models.SpellLevelLECost, 0),
 		SkillCategoryDifficulties: make([]models.SkillCategoryDifficulty, 0),
-		SkillImprovementCosts:     make([]models.SkillImprovementCost, 0),
+		SkillImprovementCosts:     make([]models.SkillImprovementCost2, 0),
 	}
 
 	database.DB.Find(&export.LearningData.Sources)
@@ -189,7 +189,7 @@ func ExportCharacter(characterID uint) (*CharacterExport, error) {
 	database.DB.Preload("CharacterClass").Preload("SpellSchool").Find(&export.LearningData.ClassSpellSchoolEPCosts)
 	database.DB.Find(&export.LearningData.SpellLevelLECosts)
 	database.DB.Preload("Skill").Preload("SkillCategory").Preload("SkillDifficulty").Find(&export.LearningData.SkillCategoryDifficulties)
-	database.DB.Preload("SkillCategoryDifficulty").Find(&export.LearningData.SkillImprovementCosts)
+	database.DB.Find(&export.LearningData.SkillImprovementCosts)
 
 	// Load audit log entries
 	export.AuditLogEntries = make([]models.AuditLogEntry, 0)

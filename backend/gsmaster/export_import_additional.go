@@ -13,30 +13,39 @@ import (
 
 // ExportSkillImprovementCosts exports all skill improvement costs to a JSON file
 func ExportSkillImprovementCosts(outputDir string) error {
-	var costs []models.SkillImprovementCost
-	if err := database.DB.Preload("SkillCategoryDifficulty.Skill").
-		Preload("SkillCategoryDifficulty.SkillCategory").
-		Preload("SkillCategoryDifficulty.SkillDifficulty").
-		Find(&costs).Error; err != nil {
+	var costs []models.SkillImprovementCost2
+	if err := database.DB.Find(&costs).Error; err != nil {
 		return fmt.Errorf("failed to fetch skill improvement costs: %w", err)
 	}
 
 	exportable := make([]ExportableSkillImprovementCost, 0, len(costs))
 	for _, cost := range costs {
-		// Skip records with incomplete relationships
-		if cost.SkillCategoryDifficulty.Skill.Name == "" ||
-			cost.SkillCategoryDifficulty.SkillCategory.Name == "" ||
-			cost.SkillCategoryDifficulty.SkillDifficulty.Name == "" {
+		// Resolve category and difficulty names
+		var lc models.SkillCategory
+		if err := database.DB.First(&lc, cost.CategoryID).Error; err != nil {
+			continue
+		}
+		var ld models.SkillDifficulty
+		if err := database.DB.First(&ld, cost.DifficultyID).Error; err != nil {
+			continue
+		}
+		// Find skill via learning_skill_category_difficulties
+		var scd models.SkillCategoryDifficulty
+		if err := database.DB.Where("skill_category = ? AND skill_difficulty = ?", lc.Name, ld.Name).First(&scd).Error; err != nil {
+			continue
+		}
+		var skill models.Skill
+		if err := database.DB.First(&skill, scd.SkillID).Error; err != nil {
 			continue
 		}
 
 		exportable = append(exportable, ExportableSkillImprovementCost{
-			SkillName:        cost.SkillCategoryDifficulty.Skill.Name,
-			SkillSystem:      cost.SkillCategoryDifficulty.Skill.GameSystem,
-			CategoryName:     cost.SkillCategoryDifficulty.SkillCategory.Name,
-			CategorySystem:   cost.SkillCategoryDifficulty.SkillCategory.GameSystem,
-			DifficultyName:   cost.SkillCategoryDifficulty.SkillDifficulty.Name,
-			DifficultySystem: cost.SkillCategoryDifficulty.SkillDifficulty.GameSystem,
+			SkillName:        skill.Name,
+			SkillSystem:      skill.GameSystem,
+			CategoryName:     lc.Name,
+			CategorySystem:   lc.GameSystem,
+			DifficultyName:   ld.Name,
+			DifficultySystem: ld.GameSystem,
 			CurrentLevel:     cost.CurrentLevel,
 			TERequired:       cost.TERequired,
 		})
@@ -84,16 +93,17 @@ func ImportSkillImprovementCosts(inputDir string) error {
 				exp.SkillName, exp.CategoryName, exp.DifficultyName, err)
 		}
 
-		// Find or create SkillImprovementCost
-		var cost models.SkillImprovementCost
-		result := database.DB.Where("skill_category_difficulty_id = ? AND current_level = ?",
-			scd.ID, exp.CurrentLevel).First(&cost)
+		// Find or create SkillImprovementCost2 using category/difficulty IDs
+		var cost models.SkillImprovementCost2
+		result := database.DB.Where("skill_category_id = ? AND skill_difficulty_id = ? AND current_level = ?",
+			categoryID, difficultyID, exp.CurrentLevel).First(&cost)
 
 		if result.Error == gorm.ErrRecordNotFound {
-			cost = models.SkillImprovementCost{
-				SkillCategoryDifficultyID: scd.ID,
-				CurrentLevel:              exp.CurrentLevel,
-				TERequired:                exp.TERequired,
+			cost = models.SkillImprovementCost2{
+				CategoryID:   categoryID,
+				DifficultyID: difficultyID,
+				CurrentLevel: exp.CurrentLevel,
+				TERequired:   exp.TERequired,
 			}
 			if err := database.DB.Create(&cost).Error; err != nil {
 				return fmt.Errorf("failed to create skill improvement cost: %w", err)

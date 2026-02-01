@@ -32,7 +32,7 @@ func TestTableListCompleteness(t *testing.T) {
 		"*models.SpellLevelLECost":              true,
 		"*models.SkillCategoryDifficulty":       true,
 		"*models.WeaponSkillCategoryDifficulty": true,
-		"*models.SkillImprovementCost":          true,
+		"*models.SkillImprovementCost2":         true,
 
 		// GSMaster Base Data
 		"*models.Skill":          true,
@@ -88,7 +88,7 @@ func TestTableListCompleteness(t *testing.T) {
 		&models.SpellLevelLECost{},
 		&models.SkillCategoryDifficulty{},
 		&models.WeaponSkillCategoryDifficulty{},
-		&models.SkillImprovementCost{},
+		&models.SkillImprovementCost2{},
 		&models.Skill{},
 		&models.WeaponSkill{},
 		&models.Spell{},
@@ -301,8 +301,8 @@ func getModelTypeName(model interface{}) string {
 		return "*models.SkillCategoryDifficulty"
 	case *models.WeaponSkillCategoryDifficulty:
 		return "*models.WeaponSkillCategoryDifficulty"
-	case *models.SkillImprovementCost:
-		return "*models.SkillImprovementCost"
+	case *models.SkillImprovementCost2:
+		return "*models.SkillImprovementCost2"
 	case *models.Skill:
 		return "*models.Skill"
 	case *models.WeaponSkill:

@@ -306,7 +306,7 @@ func TestLearningMigrateStructure_VerifyStructures(t *testing.T) {
 		&ClassSpellSchoolEPCost{},
 		&SpellLevelLECost{},
 		&SkillCategoryDifficulty{},
-		&SkillImprovementCost{},
+		&SkillImprovementCost2{},
 		&AuditLogEntry{},
 	}
 

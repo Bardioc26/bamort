@@ -368,3 +368,116 @@ func TestCalculateSpellLearnCostNewSystem(t *testing.T) {
 		})
 	}
 }
+
+// ToDo: add more test cases for other classes dificulties and higher TEs
+func TestCalculateSkillImproveCostNewSystem(t *testing.T) {
+	// Ensure DB is initialized so GetImprovementCost can run without nil DB
+	database.SetupTestDB()
+	defer database.ResetTestDB()
+
+	tests := []struct {
+		name          string
+		request       gsmaster.LernCostRequest
+		skillInfo     models.SkillLearningInfo
+		targetLevel   int
+		requiredTE    int
+		requiredEP    int
+		requiredGold  int
+		availablePP   int
+		availableGold int
+	}{
+		{
+			name:    "Base cost calculation without rewards",
+			request: gsmaster.LernCostRequest{},
+			skillInfo: models.SkillLearningInfo{
+				SkillName:      "Schwimmen",
+				CategoryName:   "Körper",
+				DifficultyName: "leicht",
+				ClassCode:      "Bb",
+				EPPerTE:        10,
+				LearnCost:      1,
+			},
+			requiredTE:    1,
+			requiredEP:    10,
+			requiredGold:  200,
+			targetLevel:   13,
+			availablePP:   0,
+			availableGold: 0,
+		}, {
+			name:    "applies PP reduction",
+			request: gsmaster.LernCostRequest{},
+			skillInfo: models.SkillLearningInfo{
+				SkillName:      "Schwimmen",
+				CategoryName:   "Körper",
+				DifficultyName: "leicht",
+				ClassCode:      "Bb",
+				EPPerTE:        10,
+				LearnCost:      1,
+			},
+			requiredTE:    0,
+			requiredEP:    0,
+			requiredGold:  0,
+			targetLevel:   13,
+			availablePP:   1,
+			availableGold: 0,
+		},
+
+		{
+			name:    "converts gold up to half EP",
+			request: gsmaster.LernCostRequest{},
+			skillInfo: models.SkillLearningInfo{
+				SkillName:      "Schwimmen",
+				CategoryName:   "Körper",
+				DifficultyName: "leicht",
+				ClassCode:      "Bb",
+				EPPerTE:        10,
+			},
+			requiredTE:    1,
+			requiredEP:    5,
+			targetLevel:   13,
+			availablePP:   0,
+			availableGold: 50,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			remainingPP := tt.availablePP
+			remainingGold := tt.availableGold
+
+			result := gsmaster.SkillCostResultNew{
+				CharacterClass: tt.skillInfo.ClassCode,
+				SkillName:      tt.skillInfo.SkillName,
+				Category:       tt.skillInfo.CategoryName,
+				Difficulty:     tt.skillInfo.DifficultyName,
+				TargetLevel:    tt.targetLevel,
+			}
+
+			err := CalculateSkillImproveCostNewSystem(&tt.request, &result, tt.targetLevel, &remainingPP, &remainingGold, &tt.skillInfo)
+			assert.NoError(t, err)
+
+			// Base EP before gold conversion is computed from post-PP LE
+			baseEP := tt.skillInfo.EPPerTE * result.LE
+			originalTrain := result.LE + result.PPUsed
+
+			assert.Greater(t, originalTrain, 0, "should have positive training cost")
+			assert.Equal(t, tt.availablePP-result.PPUsed, remainingPP, "PP tracking should be consistent")
+			assert.Equal(t, tt.availableGold-result.GoldUsed, remainingGold, "Gold tracking should match usage")
+
+			if tt.availablePP > 0 {
+				assert.Equal(t, tt.availablePP-remainingPP, result.PPUsed, "PP used should reduce remaining PP")
+				assert.Equal(t, baseEP, result.EP, "No gold in this case; EP equals base")
+				assert.Equal(t, tt.skillInfo.EPPerTE*result.LE, result.EP)
+			} else {
+				expectedGoldUsed := tt.availableGold
+				halfEPCap := (baseEP / 2) * 10
+				if expectedGoldUsed > halfEPCap {
+					expectedGoldUsed = halfEPCap
+				}
+				assert.Equal(t, expectedGoldUsed, result.GoldUsed)
+				assert.Equal(t, baseEP-expectedGoldUsed/10, result.EP)
+				assert.Equal(t, tt.availableGold-expectedGoldUsed, remainingGold)
+			}
+		})
+	}
+}

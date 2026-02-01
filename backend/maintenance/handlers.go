@@ -248,7 +248,7 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 		&models.SpellLevelLECost{},
 		&models.SkillCategoryDifficulty{},
 		&models.WeaponSkillCategoryDifficulty{},
-		&models.SkillImprovementCost{},
+		&models.SkillImprovementCost2{},
 		&models.ClassCategoryLearningPoints{},
 		&models.ClassSpellPoints{},
 		&models.ClassTypicalSkill{},
@@ -368,10 +368,11 @@ func copyTableData(sourceDB, targetDB *gorm.DB, model interface{}) error {
 		}
 
 		// Batch in SQLite einfügen
-		// Use Save() instead of Create() to avoid GORM applying default values to zero values (e.g., false for booleans)
+		// Use Save() with SkipHooks to preserve raw values and avoid callbacks that rely on global DB state
+		db := targetDB.Session(&gorm.Session{SkipHooks: true})
 		for i := 0; i < recordsVal.Len(); i++ {
 			record := recordsVal.Index(i).Addr().Interface()
-			if err := targetDB.Save(record).Error; err != nil {
+			if err := db.Save(record).Error; err != nil {
 				logger.Error("Fehler beim Speichern von Datensatz in Batch %d für %s: %s", batchNum, tableName, err.Error())
 				return err
 			}
@@ -770,7 +771,7 @@ func copySQLiteToMariaDB(sqliteDB, mariaDB *gorm.DB) error {
 		&models.SpellLevelLECost{},
 		&models.SkillCategoryDifficulty{}, // Jetzt nach Skills
 		&models.WeaponSkillCategoryDifficulty{},
-		&models.SkillImprovementCost{},
+		&models.SkillImprovementCost2{},
 		&models.ClassCategoryLearningPoints{},
 		&models.ClassSpellPoints{},
 		&models.ClassTypicalSkill{},
@@ -923,8 +924,8 @@ func copyTableDataReverse(sourceDB, targetDB *gorm.DB, model interface{}) error 
 				return fmt.Errorf("failed to read batch from source: %w", err)
 			}
 			records = batch
-		case *models.SkillImprovementCost:
-			var batch []models.SkillImprovementCost
+		case *models.SkillImprovementCost2:
+			var batch []models.SkillImprovementCost2
 			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
 				return fmt.Errorf("failed to read batch from source: %w", err)
 			}
@@ -1162,7 +1163,7 @@ func clearMariaDBData(db *gorm.DB) error {
 		&models.Char{},
 
 		// Learning Costs System - Abhängige Tabellen (vor Skills/Spells löschen)
-		&models.SkillImprovementCost{},
+		&models.SkillImprovementCost2{},
 		&models.WeaponSkillCategoryDifficulty{},
 		&models.SkillCategoryDifficulty{},
 		&models.SpellLevelLECost{},

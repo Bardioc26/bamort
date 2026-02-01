@@ -893,11 +893,12 @@ func TestExportImportSkillImprovementCosts(t *testing.T) {
 		t.Fatalf("Failed to query SkillCategoryDifficulty: %v", err)
 	}
 
-	// Create SkillImprovementCost
-	improvementCost := models.SkillImprovementCost{
-		SkillCategoryDifficultyID: scd.ID,
-		CurrentLevel:              15, // Use unique level to avoid conflicts
-		TERequired:                5,
+	// Create SkillImprovementCost2 (new model)
+	improvementCost := models.SkillImprovementCost2{
+		CategoryID:   category.ID,
+		DifficultyID: difficulty.ID,
+		CurrentLevel: 15, // Use unique level to avoid conflicts
+		TERequired:   5,
 	}
 	database.DB.Create(&improvementCost)
 
@@ -923,10 +924,10 @@ func TestExportImportSkillImprovementCosts(t *testing.T) {
 		t.Fatalf("ImportSkillImprovementCosts failed: %v", err)
 	}
 
-	var imported models.SkillImprovementCost
-	result := database.DB.Where("skill_category_difficulty_id = ? AND current_level = ?", scd.ID, 15).First(&imported)
+	var imported models.SkillImprovementCost2
+	result := database.DB.Where("skill_category_id = ? AND skill_difficulty_id = ? AND current_level = ?", category.ID, difficulty.ID, 15).First(&imported)
 	if result.Error != nil {
-		t.Fatalf("SkillImprovementCost not found after import: %v", result.Error)
+		t.Fatalf("SkillImprovementCost2 not found after import: %v", result.Error)
 	}
 
 	// Should be restored to original value from export

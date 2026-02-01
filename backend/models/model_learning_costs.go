@@ -132,6 +132,7 @@ type WeaponSkillCategoryDifficulty struct {
 	SCategory         string          `gorm:"column:skill_category;size:25;not null;index;default:Waffen" json:"skillCategory"`
 }
 
+/*
 // SkillImprovementCost definiert TE-Kosten für Verbesserungen basierend auf Kategorie, Schwierigkeit und aktuellem Wert
 type SkillImprovementCost struct {
 	ID                        uint                    `gorm:"primaryKey" json:"id"`
@@ -139,6 +140,17 @@ type SkillImprovementCost struct {
 	CurrentLevel              int                     `gorm:"not null;index" json:"current_level"` // Aktueller Fertigkeitswert
 	TERequired                int                     `gorm:"not null" json:"te_required"`         // Benötigte Trainingseinheiten
 	SkillCategoryDifficulty   SkillCategoryDifficulty `gorm:"foreignKey:SkillCategoryDifficultyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"skill_category_difficulty"`
+	CategoryID                uint                    `gorm:"column:skill_category_id;not null;index;default:1" json:"skillCategoryId"`     // SkillCategoryID
+	DifficultyID              uint                    `gorm:"column:skill_difficulty_id;not null;index;default:1" json:"skillDifficultyId"` // SkillDifficultyID
+}
+*/
+// SkillImprovementCost definiert TE-Kosten für Verbesserungen basierend auf Kategorie, Schwierigkeit und aktuellem Wert
+type SkillImprovementCost2 struct {
+	ID           uint `gorm:"primaryKey" json:"id"`
+	CurrentLevel int  `gorm:"not null;index" json:"current_level"`                                          // Aktueller Fertigkeitswert
+	TERequired   int  `gorm:"not null" json:"te_required"`                                                  // Benötigte Trainingseinheiten
+	CategoryID   uint `gorm:"column:skill_category_id;not null;index;default:1" json:"skillCategoryId"`     // SkillCategoryID
+	DifficultyID uint `gorm:"column:skill_difficulty_id;not null;index;default:1" json:"skillDifficultyId"` // SkillDifficultyID
 }
 
 // Für komplexere Queries: View oder Helper-Strukturen
@@ -151,7 +163,7 @@ type SkillLearningInfo struct {
 	CategoryName     string `json:"category_name"`
 	DifficultyID     uint   `json:"difficulty_id"`
 	DifficultyName   string `json:"difficulty_name"`
-	LearnCost        int    `json:"learn_cost"` // LE-Kosten für das Erlernen
+	LearnCost        int    `json:"learn_cost"` // LE-Kosten / TE-Kosten für das Erlernen
 	CharacterClassID uint   `json:"character_class_id"`
 	ClassCode        string `json:"class_code"`
 	ClassName        string `json:"class_name"`
@@ -233,8 +245,14 @@ func (WeaponSkillCategoryDifficulty) TableName() string {
 	return "learning_weaponskill_category_difficulties"
 }
 
+/*
 func (SkillImprovementCost) TableName() string {
 	return "learning_skill_improvement_costs"
+}
+*/
+
+func (SkillImprovementCost2) TableName() string {
+	return "skill_improvement_cost2"
 }
 
 func (sllc *SpellLevelLECost) ensureGameSystem() {
@@ -476,7 +494,13 @@ func (wscd *WeaponSkillCategoryDifficulty) Create() error {
 	return database.DB.Create(wscd).Error
 }
 
+/*
 func (sic *SkillImprovementCost) Create() error {
+	return database.DB.Create(sic).Error
+}
+*/
+
+func (sic *SkillImprovementCost2) Create() error {
 	return database.DB.Create(sic).Error
 }
 
@@ -630,15 +654,20 @@ func GetSpellLearningInfoNewSystem(spellName string, classCode string) (*SpellLe
 
 // GetImprovementCost holt die Verbesserungskosten für eine Fertigkeit
 func GetImprovementCost(skillName string, categoryName string, difficultyName string, currentLevel int) (int, error) {
-	var result SkillImprovementCost
+	var result SkillImprovementCost2
 
 	err := database.DB.Raw(`
-        SELECT sic.te_required
-        FROM learning_skill_improvement_costs sic
-        JOIN learning_skill_category_difficulties scd ON sic.skill_category_difficulty_id = scd.id
-        JOIN gsm_skills s ON scd.skill_id = s.id
-        WHERE s.name = ? AND scd.skill_category = ? AND scd.skill_difficulty = ? AND sic.current_level = ?
-    `, skillName, categoryName, difficultyName, currentLevel).Scan(&result).Error
+		SELECT sic.te_required
+		FROM skill_improvement_cost2 sic
+		JOIN learning_skill_categories lc ON lc.id = sic.skill_category_id
+		JOIN learning_skill_difficulties ld ON ld.id = sic.skill_difficulty_id
+		JOIN learning_skill_category_difficulties scd ON scd.skill_category = lc.name AND scd.skill_difficulty = ld.name
+		JOIN gsm_skills s ON scd.skill_id = s.id
+		WHERE s.name = ?
+		  AND lc.name = ?
+		  AND ld.name = ?
+		  AND sic.current_level = ?
+	`, skillName, categoryName, difficultyName, currentLevel).Scan(&result).Error
 
 	if err != nil {
 		return 0, err

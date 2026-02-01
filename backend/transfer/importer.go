@@ -170,6 +170,11 @@ func importOrUpdateSkill(tx *gorm.DB, skill *models.Skill) error {
 		skill.SourceID = 1
 	}
 
+	// Ensure game system fields are populated so queries match existing records
+	gs := models.GetGameSystem(skill.GameSystemId, skill.GameSystem)
+	skill.GameSystem = gs.Name
+	skill.GameSystemId = gs.ID
+
 	var existing models.Skill
 	err := tx.Where("name = ? AND game_system = ?", skill.Name, skill.GameSystem).First(&existing).Error
 

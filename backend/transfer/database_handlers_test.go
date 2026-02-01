@@ -80,7 +80,7 @@ func TestImportDatabaseHandler_Success(t *testing.T) {
 
 	assert.Equal(t, "Database imported successfully", response["message"])
 	assert.Greater(t, response["record_count"], float64(0))
-	assert.Equal(t, response["record_count"], exportResult)
+	assert.Equal(t, float64(exportResult.RecordCount), response["record_count"])
 }
 
 func TestImportDatabaseHandler_MissingFilepath(t *testing.T) {

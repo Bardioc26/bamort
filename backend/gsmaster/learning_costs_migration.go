@@ -5,6 +5,8 @@ import (
 	"bamort/models"
 	"fmt"
 	"log"
+
+	"gorm.io/gorm"
 )
 
 // MigrateLearningCostsToDatabase überträgt die Daten aus learningCostsData in die Datenbank
@@ -473,16 +475,32 @@ func migrateSkillImprovementCosts() error {
 
 				// Für jeden Level in TrainCosts
 				for level, teCost := range data.TrainCosts {
-					improvementCost := models.SkillImprovementCost{
-						SkillCategoryDifficultyID: categoryDifficulty.ID,
-						CurrentLevel:              level,
-						TERequired:                teCost,
+					var improvementCost models.SkillImprovementCost2
+					err := database.DB.Where(
+						"skill_category_id = ? AND skill_difficulty_id = ? AND current_level = ?",
+						skillCategory.ID, skillDifficulty.ID, level,
+					).First(&improvementCost).Error
+
+					if err == gorm.ErrRecordNotFound {
+						improvementCost = models.SkillImprovementCost2{
+							CategoryID:   skillCategory.ID,
+							DifficultyID: skillDifficulty.ID,
+							CurrentLevel: level,
+							TERequired:   teCost,
+						}
+						if err := improvementCost.Create(); err != nil {
+							return fmt.Errorf("failed to create improvement cost for %s level %d: %w", skillName, level, err)
+						}
+					} else if err != nil {
+						return fmt.Errorf("failed to query improvement cost for %s level %d: %w", skillName, level, err)
+					} else {
+						improvementCost.TERequired = teCost
+						if err := database.DB.Save(&improvementCost).Error; err != nil {
+							return fmt.Errorf("failed to update improvement cost for %s level %d: %w", skillName, level, err)
+						}
 					}
 
-					if err := improvementCost.Create(); err != nil {
-						return fmt.Errorf("failed to create improvement cost for %s level %d: %w", skillName, level, err)
-					}
-					log.Printf("Created improvement cost: %s - %s - %s Level %d = %d TE",
+					log.Printf("Upserted improvement cost: %s - %s - %s Level %d = %d TE",
 						skillName, categoryName, difficultyName, level, teCost)
 				}
 			}

@@ -64,7 +64,7 @@ type DatabaseExport struct {
 	ClassSpellSchoolEPCosts   []models.ClassSpellSchoolEPCost  `json:"learning_class_spell_school_ep_costs"`
 	SpellLevelLECosts         []models.SpellLevelLECost        `json:"learning_spell_level_le_costs"`
 	SkillCategoryDifficulties []models.SkillCategoryDifficulty `json:"learning_skill_category_difficulties"`
-	SkillImprovementCosts     []models.SkillImprovementCost2   `json:"learning_skill_improvement_costs"`
+	SkillImprovementCosts     []models.SkillImprovementCost    `json:"learning_skill_improvement_costs"`
 	AuditLogEntries           []models.AuditLogEntry           `json:"audit_log_entries"`
 }
 

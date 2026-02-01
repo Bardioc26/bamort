@@ -13,7 +13,7 @@ import (
 
 // ExportSkillImprovementCosts exports all skill improvement costs to a JSON file
 func ExportSkillImprovementCosts(outputDir string) error {
-	var costs []models.SkillImprovementCost2
+	var costs []models.SkillImprovementCost
 	if err := database.DB.Find(&costs).Error; err != nil {
 		return fmt.Errorf("failed to fetch skill improvement costs: %w", err)
 	}
@@ -93,13 +93,13 @@ func ImportSkillImprovementCosts(inputDir string) error {
 				exp.SkillName, exp.CategoryName, exp.DifficultyName, err)
 		}
 
-		// Find or create SkillImprovementCost2 using category/difficulty IDs
-		var cost models.SkillImprovementCost2
+		// Find or create SkillImprovementCost using category/difficulty IDs
+		var cost models.SkillImprovementCost
 		result := database.DB.Where("skill_category_id = ? AND skill_difficulty_id = ? AND current_level = ?",
 			categoryID, difficultyID, exp.CurrentLevel).First(&cost)
 
 		if result.Error == gorm.ErrRecordNotFound {
-			cost = models.SkillImprovementCost2{
+			cost = models.SkillImprovementCost{
 				CategoryID:   categoryID,
 				DifficultyID: difficultyID,
 				CurrentLevel: exp.CurrentLevel,

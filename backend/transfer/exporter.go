@@ -31,7 +31,7 @@ type LearningDataExport struct {
 	ClassSpellSchoolEPCosts   []models.ClassSpellSchoolEPCost  `json:"class_spell_school_ep_costs"`
 	SpellLevelLECosts         []models.SpellLevelLECost        `json:"spell_level_le_costs"`
 	SkillCategoryDifficulties []models.SkillCategoryDifficulty `json:"skill_category_difficulties"`
-	SkillImprovementCosts     []models.SkillImprovementCost2   `json:"skill_improvement_costs"`
+	SkillImprovementCosts     []models.SkillImprovementCost    `json:"skill_improvement_costs"`
 }
 
 // ExportCharacter exports a complete character with all related data
@@ -177,7 +177,7 @@ func ExportCharacter(characterID uint) (*CharacterExport, error) {
 		ClassSpellSchoolEPCosts:   make([]models.ClassSpellSchoolEPCost, 0),
 		SpellLevelLECosts:         make([]models.SpellLevelLECost, 0),
 		SkillCategoryDifficulties: make([]models.SkillCategoryDifficulty, 0),
-		SkillImprovementCosts:     make([]models.SkillImprovementCost2, 0),
+		SkillImprovementCosts:     make([]models.SkillImprovementCost, 0),
 	}
 
 	database.DB.Find(&export.LearningData.Sources)

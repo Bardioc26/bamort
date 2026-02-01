@@ -132,20 +132,8 @@ type WeaponSkillCategoryDifficulty struct {
 	SCategory         string          `gorm:"column:skill_category;size:25;not null;index;default:Waffen" json:"skillCategory"`
 }
 
-/*
 // SkillImprovementCost definiert TE-Kosten für Verbesserungen basierend auf Kategorie, Schwierigkeit und aktuellem Wert
 type SkillImprovementCost struct {
-	ID                        uint                    `gorm:"primaryKey" json:"id"`
-	SkillCategoryDifficultyID uint                    `gorm:"not null;index" json:"skill_category_difficulty_id"`
-	CurrentLevel              int                     `gorm:"not null;index" json:"current_level"` // Aktueller Fertigkeitswert
-	TERequired                int                     `gorm:"not null" json:"te_required"`         // Benötigte Trainingseinheiten
-	SkillCategoryDifficulty   SkillCategoryDifficulty `gorm:"foreignKey:SkillCategoryDifficultyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"skill_category_difficulty"`
-	CategoryID                uint                    `gorm:"column:skill_category_id;not null;index;default:1" json:"skillCategoryId"`     // SkillCategoryID
-	DifficultyID              uint                    `gorm:"column:skill_difficulty_id;not null;index;default:1" json:"skillDifficultyId"` // SkillDifficultyID
-}
-*/
-// SkillImprovementCost definiert TE-Kosten für Verbesserungen basierend auf Kategorie, Schwierigkeit und aktuellem Wert
-type SkillImprovementCost2 struct {
 	ID           uint `gorm:"primaryKey" json:"id"`
 	CurrentLevel int  `gorm:"not null;index" json:"current_level"`                                          // Aktueller Fertigkeitswert
 	TERequired   int  `gorm:"not null" json:"te_required"`                                                  // Benötigte Trainingseinheiten
@@ -251,7 +239,7 @@ func (SkillImprovementCost) TableName() string {
 }
 */
 
-func (SkillImprovementCost2) TableName() string {
+func (SkillImprovementCost) TableName() string {
 	return "skill_improvement_cost2"
 }
 
@@ -500,7 +488,7 @@ func (sic *SkillImprovementCost) Create() error {
 }
 */
 
-func (sic *SkillImprovementCost2) Create() error {
+func (sic *SkillImprovementCost) Create() error {
 	return database.DB.Create(sic).Error
 }
 
@@ -654,7 +642,7 @@ func GetSpellLearningInfoNewSystem(spellName string, classCode string) (*SpellLe
 
 // GetImprovementCost holt die Verbesserungskosten für eine Fertigkeit
 func GetImprovementCost(skillName string, categoryName string, difficultyName string, currentLevel int) (int, error) {
-	var result SkillImprovementCost2
+	var result SkillImprovementCost
 
 	err := database.DB.Raw(`
 		SELECT sic.te_required

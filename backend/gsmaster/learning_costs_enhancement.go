@@ -291,7 +291,7 @@ func CreateLearningCostsTables() error {
 		&models.ClassSpellSchoolEPCost{},
 		&models.SpellLevelLECost{},
 		&models.SkillCategoryDifficulty{},
-		&models.SkillImprovementCost2{},
+		&models.SkillImprovementCost{},
 	}
 
 	// Erstelle oder migriere alle Tabellen

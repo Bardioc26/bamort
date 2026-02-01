@@ -248,7 +248,7 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 		&models.SpellLevelLECost{},
 		&models.SkillCategoryDifficulty{},
 		&models.WeaponSkillCategoryDifficulty{},
-		&models.SkillImprovementCost2{},
+		&models.SkillImprovementCost{},
 		&models.ClassCategoryLearningPoints{},
 		&models.ClassSpellPoints{},
 		&models.ClassTypicalSkill{},
@@ -771,7 +771,7 @@ func copySQLiteToMariaDB(sqliteDB, mariaDB *gorm.DB) error {
 		&models.SpellLevelLECost{},
 		&models.SkillCategoryDifficulty{}, // Jetzt nach Skills
 		&models.WeaponSkillCategoryDifficulty{},
-		&models.SkillImprovementCost2{},
+		&models.SkillImprovementCost{},
 		&models.ClassCategoryLearningPoints{},
 		&models.ClassSpellPoints{},
 		&models.ClassTypicalSkill{},
@@ -924,8 +924,8 @@ func copyTableDataReverse(sourceDB, targetDB *gorm.DB, model interface{}) error 
 				return fmt.Errorf("failed to read batch from source: %w", err)
 			}
 			records = batch
-		case *models.SkillImprovementCost2:
-			var batch []models.SkillImprovementCost2
+		case *models.SkillImprovementCost:
+			var batch []models.SkillImprovementCost
 			if err := sourceDB.Limit(batchSize).Offset(offset).Find(&batch).Error; err != nil {
 				return fmt.Errorf("failed to read batch from source: %w", err)
 			}
@@ -1163,7 +1163,7 @@ func clearMariaDBData(db *gorm.DB) error {
 		&models.Char{},
 
 		// Learning Costs System - Abhängige Tabellen (vor Skills/Spells löschen)
-		&models.SkillImprovementCost2{},
+		&models.SkillImprovementCost{},
 		&models.WeaponSkillCategoryDifficulty{},
 		&models.SkillCategoryDifficulty{},
 		&models.SpellLevelLECost{},

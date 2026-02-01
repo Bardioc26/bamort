@@ -475,14 +475,14 @@ func migrateSkillImprovementCosts() error {
 
 				// Für jeden Level in TrainCosts
 				for level, teCost := range data.TrainCosts {
-					var improvementCost models.SkillImprovementCost2
+					var improvementCost models.SkillImprovementCost
 					err := database.DB.Where(
 						"skill_category_id = ? AND skill_difficulty_id = ? AND current_level = ?",
 						skillCategory.ID, skillDifficulty.ID, level,
 					).First(&improvementCost).Error
 
 					if err == gorm.ErrRecordNotFound {
-						improvementCost = models.SkillImprovementCost2{
+						improvementCost = models.SkillImprovementCost{
 							CategoryID:   skillCategory.ID,
 							DifficultyID: skillDifficulty.ID,
 							CurrentLevel: level,

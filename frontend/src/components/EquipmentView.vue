@@ -2,7 +2,7 @@
   <div class="fullwidth-container">
     <div class="header-section">
       <h2>{{ $t('EquipmentView') }}</h2>
-      <button @click="openAddEquipmentDialog" class="btn-add-equipment">
+      <button v-if="isOwner" @click="openAddEquipmentDialog" class="btn-add-equipment">
         {{ $t('equipment.add') }}
       </button>
     </div>
@@ -18,7 +18,7 @@
           <th>{{ $t('equipment.amount') }}</th>
           <th>{{ $t('equipment.contained_in') }}</th>
           <th>{{ $t('equipment.bonus') }}</th>
-          <th>{{ $t('equipment.actions') }}</th>
+          <th v-if="isOwner">{{ $t('equipment.actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -31,7 +31,7 @@
           <td>{{ equipment.anzahl || '-' }}</td>
           <td>{{ equipment.beinhaltet_in || '-' }}</td>
           <td>{{ equipment.bonus || '-' }}</td>
-          <td class="action-cell">
+          <td v-if="isOwner" class="action-cell">
             <button @click="deleteEquipment(equipment)" class="btn-delete" title="Löschen">
               🗑️
             </button>
@@ -126,6 +126,24 @@
 .cd-table th {
   background-color: #1da766;
 }
+
+/* Fix modal footer visibility */
+.modal-fullscreen {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 50px);
+}
+
+.modal-fullscreen .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.modal-fullscreen .modal-header,
+.modal-fullscreen .modal-footer {
+  flex-shrink: 0;
+}
 </style>
 
 <script>
@@ -137,6 +155,10 @@ name: "EquipmentView",
     character: {
       type: Object,
       required: true
+    },
+    isOwner: {
+      type: Boolean,
+      default: false
     }
   },
   data() {

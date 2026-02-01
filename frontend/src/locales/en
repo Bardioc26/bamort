@@ -85,6 +85,9 @@ export default {
     Characters:'Characters',
     Admin:'Administration',
   },
+  deleteChar: {
+    notAuthorized: 'You are not authorized to delete this character. Only the owner can perform this action.'
+  },
   landing:{
     title:'BaMoRT - Character Management for Role-Playing Games',
     description:'BaMoRT is a modern character management tool for role-playing games. It provides comprehensive features for character creation, development, and management with support for skills, spells, equipment, and more.',

@@ -6,7 +6,7 @@
         <button @click="showExportDialog = true" class="export-button-small" :title="$t('export.title')">
           📄
         </button>
-        <button @click="showVisibilityDialog = true" class="export-button-small" :title="$t('visibility.title')">
+        <button v-if="isOwner" @click="showVisibilityDialog = true" class="export-button-small" :title="$t('visibility.title')">
           {{ character.public ? '🌐' : '🔒' }}
         </button>
         <h2>{{ $t('char') }}: {{ character.name }} ({{ $t(currentView) }})</h2>
@@ -32,7 +32,7 @@
 
     <!-- Submenu Content -->
     <!-- <div class="character-aspect"> -->
-      <component :is="currentView" :character="character" @character-updated="refreshCharacter"/>
+      <component :is="currentView" :character="character" :isOwner="isOwner" @character-updated="refreshCharacter"/>
     <!-- </div> -->
 
     <!-- Submenu -->
@@ -64,6 +64,7 @@
 
 <script>
 import API from '../utils/api'
+import { useUserStore } from '../stores/userStore'
 import ExportDialog from "./ExportDialog.vue";
 import VisibilityDialog from "./VisibilityDialog.vue";
 import DatasheetView from "./DatasheetView.vue"; // Component for character stats
@@ -110,6 +111,12 @@ export default {
         //{ id: 2, name: "Campagne", component: "CampagneView" },
       ],
     };
+  },
+  computed: {
+    isOwner() {
+      const userStore = useUserStore()
+      return userStore.currentUser && this.character.user_id === userStore.currentUser.id
+    }
   },
   async created() {
     const token = localStorage.getItem('token')

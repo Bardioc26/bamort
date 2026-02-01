@@ -1,7 +1,7 @@
 <template>
   <div class="fullwidth-container">
     <!-- Header mit Lernmodus-Kontrollen -->
-    <div class="page-header header-section">      
+    <div v-if="isOwner" class="page-header header-section">      
       <div class="learning-mode-controls">
         <!-- Lernmodus Toggle Button -->
         <button 
@@ -99,6 +99,10 @@ export default {
     character: {
       type: Object,
       required: true
+    },
+    isOwner: {
+      type: Boolean,
+      default: false
     }
   },
   data() {

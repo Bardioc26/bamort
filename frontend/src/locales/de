@@ -86,6 +86,9 @@ export default {
     Characters:'Charaktere',
     Admin:'Administration',
   },
+  deleteChar: {
+    notAuthorized: 'Sie sind nicht berechtigt, diesen Charakter zu löschen. Nur der Besitzer kann diese Aktion durchführen.'
+  },
   landing:{
     title:'BaMoRT - Charakterverwaltung für mein Lieblingsrollenspielsystem',
     description:'BaMoRT ist ein Werkzeug zur Charakterverwaltung für Rollenspiele. Es bietet Funktionen zur Charaktererstellung, -entwicklung und -verwaltung mit Unterstützung für Fertigkeiten, Zauber, Ausrüstung und mehr. Viele Ausrüstungsteile, Fertikeiten und Zauber fehlen noch, da das Projekt noch in der Entwicklung ist.',

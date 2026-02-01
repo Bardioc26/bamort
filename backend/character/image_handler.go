@@ -25,6 +25,11 @@ func UpdateCharacterImage(c *gin.Context) {
 		return
 	}
 
+	// Check ownership
+	if !checkCharacterOwnership(c, &character) {
+		return
+	}
+
 	var request ImageUpdateRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		logger.Error("Invalid request data: %s", err.Error())

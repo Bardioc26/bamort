@@ -30,6 +30,17 @@ func respondWithError(c *gin.Context, status int, message string) {
 	c.JSON(status, gin.H{"error": message})
 }
 
+// checkCharacterOwnership verifies that the logged-in user owns the character
+func checkCharacterOwnership(c *gin.Context, character *models.Char) bool {
+	userID := c.GetUint("userID")
+	if character.UserID != userID {
+		logger.Warn("Unauthorized access attempt: user %d tried to modify character %d owned by user %d", userID, character.ID, character.UserID)
+		respondWithError(c, http.StatusForbidden, "You are not authorized to modify this character")
+		return false
+	}
+	return true
+}
+
 func ListCharacters(c *gin.Context) {
 	logger.Debug("ListCharacters aufgerufen")
 
@@ -109,6 +120,11 @@ func UpdateCharacter(c *gin.Context) {
 		return
 	}
 
+	// Check ownership
+	if !checkCharacterOwnership(c, &character) {
+		return
+	}
+
 	// Store the original ID to preserve it
 	originalID := character.ID
 	originalGameSystem := character.GameSystem
@@ -141,6 +157,12 @@ func DeleteCharacter(c *gin.Context) {
 		respondWithError(c, http.StatusNotFound, "Character not found")
 		return
 	}
+
+	// Check ownership
+	if !checkCharacterOwnership(c, &character) {
+		return
+	}
+
 	err = character.Delete()
 	if err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to delete character")
@@ -275,6 +297,11 @@ func UpdateCharacterExperience(c *gin.Context) {
 		return
 	}
 
+	// Check ownership
+	if !checkCharacterOwnership(c, &character) {
+		return
+	}
+
 	// Parse Request
 	var req UpdateExperienceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -362,6 +389,11 @@ func UpdateCharacterWealth(c *gin.Context) {
 		First(&character, id).Error
 	if err != nil {
 		respondWithError(c, http.StatusNotFound, "Character not found")
+		return
+	}
+
+	// Check ownership
+	if !checkCharacterOwnership(c, &character) {
 		return
 	}
 
@@ -572,6 +604,11 @@ func LearnSkill(c *gin.Context) {
 
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	// Check ownership
+	if !checkCharacterOwnership(c, &character) {
 		return
 	}
 
@@ -1060,6 +1097,11 @@ func ImproveSkill(c *gin.Context) {
 		return
 	}
 
+	// Check ownership
+	if !checkCharacterOwnership(c, char) {
+		return
+	}
+
 	// 2. Skill validieren und Level ermitteln
 	characterClass, skillInfo, currentLevel, err := validateSkillForImprovement(char, &request)
 	if err != nil {
@@ -1232,6 +1274,18 @@ func LearnSpell(c *gin.Context) {
 		return
 	}
 	charID := uint(charIDInt)
+
+	// Load character to check ownership
+	var character models.Char
+	if err := character.FirstID(char_ID); err != nil {
+		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	// Check ownership
+	if !checkCharacterOwnership(c, &character) {
+		return
+	}
 
 	var lernRequest gsmaster.LernCostRequest
 	if err := c.ShouldBindJSON(&lernRequest); err != nil {

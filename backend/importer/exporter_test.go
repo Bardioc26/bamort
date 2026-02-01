@@ -25,7 +25,7 @@ func TestExportChar2VTT(t *testing.T) {
 	assert.NoError(t, err, "Expected no error when exporting char")
 
 	// Basic validations
-	assert.Equal(t, char.UserID, 1)
+	assert.Equal(t, char.UserID, uint(1))
 	assert.Equal(t, char.Name, exportedChar.Name)
 	assert.Equal(t, char.Rasse, exportedChar.Rasse)
 	assert.Equal(t, char.Typ, exportedChar.Typ)

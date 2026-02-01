@@ -23,6 +23,28 @@ func parseID(c *gin.Context) (uint, error) {
 	return uint(intID), nil
 }
 
+func resolveGameSystem(c *gin.Context) (*models.GameSystem, bool) {
+	gsIDStr := c.Query("game_system_id")
+	var gsID uint
+	if gsIDStr != "" {
+		id, err := strconv.ParseUint(gsIDStr, 10, 32)
+		if err != nil {
+			respondWithError(c, http.StatusBadRequest, "Invalid game_system_id")
+			return nil, false
+		}
+		gsID = uint(id)
+	}
+
+	gsName := c.Query("game_system")
+	gs := models.GetGameSystem(gsID, gsName)
+	if gs == nil {
+		respondWithError(c, http.StatusBadRequest, "Invalid game system")
+		return nil, false
+	}
+
+	return gs, true
+}
+
 type Creator interface {
 	Create() error
 }
@@ -308,42 +330,234 @@ func DeleteMDSpell(c *gin.Context) {
 }
 
 func GetMDEquipments(c *gin.Context) {
-	getMDItems[models.Equipment](c)
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
+	var equipments []models.Equipment
+	if err := database.DB.Where("game_system=? OR game_system_id=?", gs.Name, gs.ID).Find(&equipments).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve items")
+		return
+	}
+
+	c.JSON(http.StatusOK, equipments)
 }
 
 func GetMDEquipment(c *gin.Context) {
-	getMDItem[models.Equipment](c)
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
+	id, err := parseID(c)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+
+	equipment := &models.Equipment{GameSystem: gs.Name, GameSystemId: gs.ID}
+	if err := equipment.FirstId(id); err != nil {
+		respondWithError(c, http.StatusNotFound, "Item not found")
+		return
+	}
+
+	c.JSON(http.StatusOK, equipment)
 }
 
 func UpdateMDEquipment(c *gin.Context) {
-	updateMDItem[models.Equipment](c)
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
+	id, err := parseID(c)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+
+	equipment := &models.Equipment{GameSystem: gs.Name, GameSystemId: gs.ID}
+	if err := equipment.FirstId(id); err != nil {
+		respondWithError(c, http.StatusNotFound, "Item not found")
+		return
+	}
+
+	if err := c.ShouldBindJSON(equipment); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Invalid input data")
+		return
+	}
+
+	equipment.ID = id
+	equipment.GameSystem = gs.Name
+	equipment.GameSystemId = gs.ID
+
+	if err := equipment.Save(); err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to update item: "+err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, equipment)
 }
 
 func AddEquipment(c *gin.Context) {
-	addMDItem[models.Equipment](c)
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
+	equipment := &models.Equipment{GameSystem: gs.Name, GameSystemId: gs.ID}
+	if err := c.ShouldBindJSON(equipment); err != nil {
+		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if equipment.GameSystemId == 0 && equipment.GameSystem == "" {
+		equipment.GameSystem = gs.Name
+		equipment.GameSystemId = gs.ID
+	}
+
+	if err := equipment.Create(); err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to create item: "+err.Error())
+		return
+	}
+
+	c.JSON(http.StatusCreated, equipment)
 }
 
 func DeleteMDEquipment(c *gin.Context) {
-	deleteMDItem[models.Equipment](c)
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
+	id, err := parseID(c)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+
+	if err := database.DB.Where("(game_system=? OR game_system_id=?) AND id = ?", gs.Name, gs.ID, id).Delete(&models.Equipment{}).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to delete item")
+		return
+	}
+
+	c.JSON(http.StatusNoContent, nil)
 }
 
 // Refactored handler functions
 func GetMDWeapons(c *gin.Context) {
-	getMDItems[models.Weapon](c)
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
+	var weapons []models.Weapon
+	if err := database.DB.Where("game_system=? OR game_system_id=?", gs.Name, gs.ID).Find(&weapons).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to retrieve items")
+		return
+	}
+
+	c.JSON(http.StatusOK, weapons)
 }
 
 func GetMDWeapon(c *gin.Context) {
-	getMDItem[models.Weapon](c)
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
+	id, err := parseID(c)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+
+	weapon := &models.Weapon{Equipment: models.Equipment{GameSystem: gs.Name, GameSystemId: gs.ID}}
+	if err := weapon.FirstId(id); err != nil {
+		respondWithError(c, http.StatusNotFound, "Item not found")
+		return
+	}
+
+	c.JSON(http.StatusOK, weapon)
 }
 
 func UpdateMDWeapon(c *gin.Context) {
-	updateMDItem[models.Weapon](c)
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
+	id, err := parseID(c)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+
+	weapon := &models.Weapon{Equipment: models.Equipment{GameSystem: gs.Name, GameSystemId: gs.ID}}
+	if err := weapon.FirstId(id); err != nil {
+		respondWithError(c, http.StatusNotFound, "Item not found")
+		return
+	}
+
+	if err := c.ShouldBindJSON(weapon); err != nil {
+		respondWithError(c, http.StatusBadRequest, "Invalid input data")
+		return
+	}
+
+	weapon.ID = id
+	weapon.GameSystem = gs.Name
+	weapon.GameSystemId = gs.ID
+
+	if err := weapon.Save(); err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to update item: "+err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, weapon)
 }
 
 func AddWeapon(c *gin.Context) {
-	addMDItem[models.Weapon](c)
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
+	weapon := &models.Weapon{Equipment: models.Equipment{GameSystem: gs.Name, GameSystemId: gs.ID}}
+	if err := c.ShouldBindJSON(weapon); err != nil {
+		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if weapon.GameSystemId == 0 && weapon.GameSystem == "" {
+		weapon.GameSystem = gs.Name
+		weapon.GameSystemId = gs.ID
+	}
+
+	if err := weapon.Create(); err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to create item: "+err.Error())
+		return
+	}
+
+	c.JSON(http.StatusCreated, weapon)
 }
 
 func DeleteMDWeapon(c *gin.Context) {
-	deleteMDItem[models.Weapon](c)
+	gs, ok := resolveGameSystem(c)
+	if !ok {
+		return
+	}
+
+	id, err := parseID(c)
+	if err != nil {
+		respondWithError(c, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+
+	if err := database.DB.Where("(game_system=? OR game_system_id=?) AND id = ?", gs.Name, gs.ID, id).Delete(&models.Weapon{}).Error; err != nil {
+		respondWithError(c, http.StatusInternalServerError, "Failed to delete item")
+		return
+	}
+
+	c.JSON(http.StatusNoContent, nil)
 }

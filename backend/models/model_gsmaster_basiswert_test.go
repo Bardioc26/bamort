@@ -7,9 +7,9 @@ import (
 func TestSkillBasisWert(t *testing.T) {
 	// Test that BasisWert defaults to 0 in master skill data
 	skill := Skill{
-		Name:        "TestSkill",
-		GameSystem:  "midgard",
-		Initialwert: 5,
+		Name:         "TestSkill",
+		GameSystemId: 1,
+		Initialwert:  5,
 	}
 
 	// BasisWert should default to 0
@@ -21,10 +21,10 @@ func TestSkillBasisWert(t *testing.T) {
 func TestSkillBasisWertSet(t *testing.T) {
 	// Test that BasisWert can be set in master skill data
 	skill := Skill{
-		Name:        "TestSkill",
-		GameSystem:  "midgard",
-		Initialwert: 5,
-		BasisWert:   3,
+		Name:         "TestSkill",
+		GameSystemId: 1,
+		Initialwert:  5,
+		BasisWert:    3,
 	}
 
 	if skill.BasisWert != 3 {
@@ -36,10 +36,10 @@ func TestWeaponSkillBasisWert(t *testing.T) {
 	// Test that BasisWert works for WeaponSkill (inherited from Skill)
 	weaponSkill := WeaponSkill{
 		Skill: Skill{
-			Name:        "TestWeaponSkill",
-			GameSystem:  "midgard",
-			Initialwert: 5,
-			BasisWert:   2,
+			Name:         "TestWeaponSkill",
+			GameSystemId: 1,
+			Initialwert:  5,
+			BasisWert:    2,
 		},
 	}
 

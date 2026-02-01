@@ -10,58 +10,63 @@ import (
 
 // Source repräsentiert ein Regelwerk/Quellenbuch
 type Source struct {
-	ID          uint   `gorm:"primaryKey" json:"id"`
-	Code        string `gorm:"uniqueIndex;size:10;not null" json:"code"` // z.B. "KOD", "ARK", "MYS"
-	Name        string `gorm:"unique;not null" json:"name"`              // z.B. "Kodex", "Arkanum", "Mysterium"
-	FullName    string `json:"full_name,omitempty"`                      // z.B. "Midgard Regelwerk - Kodex"
-	Edition     string `json:"edition,omitempty"`                        // z.B. "5. Edition"
-	Publisher   string `json:"publisher,omitempty"`                      // z.B. "Pegasus Spiele"
-	PublishYear int    `json:"publish_year,omitempty"`                   // Erscheinungsjahr
-	Description string `json:"description,omitempty"`                    // Beschreibung des Werks
-	IsCore      bool   `gorm:"default:false" json:"is_core"`             // Ist es ein Grundregelwerk?
-	IsActive    bool   `gorm:"default:true" json:"is_active"`            // Ist das Werk aktiv/verfügbar?
-	GameSystem  string `gorm:"index;default:midgard" json:"game_system"`
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	Code         string `gorm:"uniqueIndex;size:10;not null" json:"code"` // z.B. "KOD", "ARK", "MYS"
+	Name         string `gorm:"unique;not null" json:"name"`              // z.B. "Kodex", "Arkanum", "Mysterium"
+	FullName     string `json:"full_name,omitempty"`                      // z.B. "Midgard Regelwerk - Kodex"
+	Edition      string `json:"edition,omitempty"`                        // z.B. "5. Edition"
+	Publisher    string `json:"publisher,omitempty"`                      // z.B. "Pegasus Spiele"
+	PublishYear  int    `json:"publish_year,omitempty"`                   // Erscheinungsjahr
+	Description  string `json:"description,omitempty"`                    // Beschreibung des Werks
+	IsCore       bool   `json:"is_core"`                                  // Ist es ein Grundregelwerk?
+	IsActive     bool   `json:"is_active"`                                // Ist das Werk aktiv/verfügbar?
+	GameSystem   string `gorm:"index" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
 }
 
 // CharacterClass repräsentiert eine Charakterklasse mit Code und vollständigem Namen
 type CharacterClass struct {
-	ID          uint   `gorm:"primaryKey" json:"id"`
-	Code        string `gorm:"uniqueIndex;size:3" json:"code"`  // z.B. "Hx", "Ma", "Kr"
-	Name        string `gorm:"unique;not null" json:"name"`     // z.B. "Hexer", "Magier", "Krieger"
-	Description string `json:"description,omitempty"`           // Optional: Beschreibung der Klasse
-	SourceID    uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
-	GameSystem  string `gorm:"index;default:midgard" json:"game_system"`
-	Source      Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
-	Quelle      string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	Code         string `gorm:"uniqueIndex;size:3" json:"code"`  // z.B. "Hx", "Ma", "Kr"
+	Name         string `gorm:"unique;not null" json:"name"`     // z.B. "Hexer", "Magier", "Krieger"
+	Description  string `json:"description,omitempty"`           // Optional: Beschreibung der Klasse
+	SourceID     uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
+	GameSystem   string `gorm:"index" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
+	Source       Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
+	Quelle       string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
 }
 
 // SkillCategory repräsentiert eine Fertigkeitskategorie
 type SkillCategory struct {
-	ID         uint   `gorm:"primaryKey" json:"id"`
-	Name       string `gorm:"unique;not null" json:"name"`     // z.B. "Alltag", "Kampf", "Waffen"
-	SourceID   uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
-	GameSystem string `gorm:"index;default:midgard" json:"game_system"`
-	Source     Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
-	Quelle     string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	Name         string `gorm:"unique;not null" json:"name"`     // z.B. "Alltag", "Kampf", "Waffen"
+	SourceID     uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
+	GameSystem   string `gorm:"index" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
+	Source       Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
+	Quelle       string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
 }
 
 // SkillDifficulty repräsentiert Schwierigkeitsgrade
 type SkillDifficulty struct {
-	ID          uint   `gorm:"primaryKey" json:"id"`
-	Name        string `gorm:"unique;not null" json:"name"` // z.B. "leicht", "normal", "schwer", "sehr schwer"
-	Description string `json:"description,omitempty"`       // Optional: Beschreibung
-	GameSystem  string `gorm:"index;default:midgard" json:"game_system"`
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	Name         string `gorm:"unique;not null" json:"name"` // z.B. "leicht", "normal", "schwer", "sehr schwer"
+	Description  string `json:"description,omitempty"`       // Optional: Beschreibung
+	GameSystem   string `gorm:"index" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
 }
 
 // SpellSchool repräsentiert Zauberschulen
 type SpellSchool struct {
-	ID          uint   `gorm:"primaryKey" json:"id"`
-	Name        string `gorm:"unique;not null" json:"name"`     // z.B. "Beherrschen", "Bewegen", "Erkennen"
-	Description string `json:"description,omitempty"`           // Optional: Beschreibung
-	SourceID    uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
-	GameSystem  string `gorm:"index;default:midgard" json:"game_system"`
-	Source      Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
-	Quelle      string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	Name         string `gorm:"unique;not null" json:"name"`     // z.B. "Beherrschen", "Bewegen", "Erkennen"
+	Description  string `json:"description,omitempty"`           // Optional: Beschreibung
+	SourceID     uint   `gorm:"not null;index" json:"source_id"` // Verweis auf das Quellenbuch
+	GameSystem   string `gorm:"index" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
+	Source       Source `gorm:"foreignKey:SourceID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT" json:"source"`
+	Quelle       string `gorm:"index;size:3;default:KOD" json:"quelle,omitempty"` // Optional: Quelle der Kategorie, falls abweichend
 }
 
 // ClassCategoryEPCost definiert EP-Kosten für 1 Trainingseinheit (TE) pro Charakterklasse und Fertigkeitskategorie
@@ -90,10 +95,11 @@ type ClassSpellSchoolEPCost struct {
 
 // SpellLevelLECost definiert LE-Kosten pro Zauber-Stufe
 type SpellLevelLECost struct {
-	ID         uint   `gorm:"primaryKey" json:"id"`
-	Level      int    `gorm:"uniqueIndex;not null" json:"level"` // Zauber-Stufe (1-12)
-	LERequired int    `gorm:"not null" json:"le_required"`       // Benötigte Lerneinheiten
-	GameSystem string `gorm:"index;default:midgard" json:"game_system"`
+	ID           uint   `gorm:"primaryKey" json:"id"`
+	Level        int    `gorm:"uniqueIndex;not null" json:"level"` // Zauber-Stufe (1-12)
+	LERequired   int    `gorm:"not null" json:"le_required"`       // Benötigte Lerneinheiten
+	GameSystem   string `gorm:"index" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id,omitempty"`
 }
 
 // SkillCategoryDifficulty definiert die Schwierigkeit einer Fertigkeit in einer bestimmten Kategorie
@@ -128,11 +134,11 @@ type WeaponSkillCategoryDifficulty struct {
 
 // SkillImprovementCost definiert TE-Kosten für Verbesserungen basierend auf Kategorie, Schwierigkeit und aktuellem Wert
 type SkillImprovementCost struct {
-	ID                        uint                    `gorm:"primaryKey" json:"id"`
-	SkillCategoryDifficultyID uint                    `gorm:"not null;index" json:"skill_category_difficulty_id"`
-	CurrentLevel              int                     `gorm:"not null;index" json:"current_level"` // Aktueller Fertigkeitswert
-	TERequired                int                     `gorm:"not null" json:"te_required"`         // Benötigte Trainingseinheiten
-	SkillCategoryDifficulty   SkillCategoryDifficulty `gorm:"foreignKey:SkillCategoryDifficultyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"skill_category_difficulty"`
+	ID           uint `gorm:"primaryKey" json:"id"`
+	CurrentLevel int  `gorm:"not null;index" json:"current_level"`                                          // Aktueller Fertigkeitswert
+	TERequired   int  `gorm:"not null" json:"te_required"`                                                  // Benötigte Trainingseinheiten
+	CategoryID   uint `gorm:"column:skill_category_id;not null;index;default:1" json:"skillCategoryId"`     // SkillCategoryID
+	DifficultyID uint `gorm:"column:skill_difficulty_id;not null;index;default:1" json:"skillDifficultyId"` // SkillDifficultyID
 }
 
 // Für komplexere Queries: View oder Helper-Strukturen
@@ -145,11 +151,13 @@ type SkillLearningInfo struct {
 	CategoryName     string `json:"category_name"`
 	DifficultyID     uint   `json:"difficulty_id"`
 	DifficultyName   string `json:"difficulty_name"`
-	LearnCost        int    `json:"learn_cost"`
+	LearnCost        int    `json:"learn_cost"` // LE-Kosten / TE-Kosten für das Erlernen
 	CharacterClassID uint   `json:"character_class_id"`
 	ClassCode        string `json:"class_code"`
 	ClassName        string `json:"class_name"`
 	EPPerTE          int    `json:"ep_per_te"`
+	GameSystem       string `json:"game_system"`
+	GameSystemId     uint   `json:"game_system_id,omitempty"`
 }
 
 // SpellLearningInfo kombiniert alle Informationen für einen Zauber
@@ -164,6 +172,8 @@ type SpellLearningInfo struct {
 	ClassName        string `json:"class_name"`
 	EPPerLE          int    `json:"ep_per_le"`
 	LERequired       int    `json:"le_required"`
+	GameSystem       string `json:"game_system"`
+	GameSystemId     uint   `json:"game_system_id,omitempty"`
 }
 
 // AuditLogEntry repräsentiert einen Eintrag im Audit-Log
@@ -223,60 +233,232 @@ func (WeaponSkillCategoryDifficulty) TableName() string {
 	return "learning_weaponskill_category_difficulties"
 }
 
+/*
 func (SkillImprovementCost) TableName() string {
 	return "learning_skill_improvement_costs"
 }
+*/
+
+func (SkillImprovementCost) TableName() string {
+	return "skill_improvement_cost2"
+}
+
+func (sllc *SpellLevelLECost) ensureGameSystem() {
+	gs := GetGameSystem(sllc.GameSystemId, sllc.GameSystem)
+	sllc.GameSystemId = gs.ID
+	sllc.GameSystem = gs.Name
+}
+
+func (sllc *SpellLevelLECost) BeforeCreate(tx *gorm.DB) error {
+	sllc.ensureGameSystem()
+	return nil
+}
+
+func (sllc *SpellLevelLECost) BeforeSave(tx *gorm.DB) error {
+	sllc.ensureGameSystem()
+	return nil
+}
+
+func (sllc *SpellLevelLECost) Save() error {
+	sllc.ensureGameSystem()
+	return database.DB.Save(sllc).Error
+}
+
+func (s *Source) ensureGameSystem() {
+	gs := GetGameSystem(s.GameSystemId, s.GameSystem)
+	s.GameSystemId = gs.ID
+	s.GameSystem = gs.Name
+}
+
+func (s *Source) BeforeCreate(tx *gorm.DB) error {
+	s.ensureGameSystem()
+	return nil
+}
+
+func (s *Source) BeforeSave(tx *gorm.DB) error {
+	s.ensureGameSystem()
+	return nil
+}
+
+func (s *Source) Save() error {
+	s.ensureGameSystem()
+	return database.DB.Save(s).Error
+}
+
+func (cc *CharacterClass) ensureGameSystem() {
+	gs := GetGameSystem(cc.GameSystemId, cc.GameSystem)
+	cc.GameSystemId = gs.ID
+	cc.GameSystem = gs.Name
+}
+
+func (cc *CharacterClass) BeforeCreate(tx *gorm.DB) error {
+	cc.ensureGameSystem()
+	return nil
+}
+
+func (cc *CharacterClass) BeforeSave(tx *gorm.DB) error {
+	cc.ensureGameSystem()
+	return nil
+}
+
+func (cc *CharacterClass) Save() error {
+	cc.ensureGameSystem()
+	return database.DB.Save(cc).Error
+}
+
+func (sc *SkillCategory) ensureGameSystem() {
+	gs := GetGameSystem(sc.GameSystemId, sc.GameSystem)
+	sc.GameSystemId = gs.ID
+	sc.GameSystem = gs.Name
+}
+
+func (sc *SkillCategory) BeforeCreate(tx *gorm.DB) error {
+	sc.ensureGameSystem()
+	return nil
+}
+
+func (sc *SkillCategory) BeforeSave(tx *gorm.DB) error {
+	sc.ensureGameSystem()
+	return nil
+}
+
+func (sc *SkillCategory) Save() error {
+	sc.ensureGameSystem()
+	return database.DB.Save(sc).Error
+}
+
+func (sd *SkillDifficulty) ensureGameSystem() {
+	gs := GetGameSystem(sd.GameSystemId, sd.GameSystem)
+	sd.GameSystemId = gs.ID
+	sd.GameSystem = gs.Name
+}
+
+func (sd *SkillDifficulty) BeforeCreate(tx *gorm.DB) error {
+	sd.ensureGameSystem()
+	return nil
+}
+
+func (sd *SkillDifficulty) BeforeSave(tx *gorm.DB) error {
+	sd.ensureGameSystem()
+	return nil
+}
+
+func (sd *SkillDifficulty) Save() error {
+	sd.ensureGameSystem()
+	return database.DB.Save(sd).Error
+}
+
+func (ss *SpellSchool) ensureGameSystem() {
+	gs := GetGameSystem(ss.GameSystemId, ss.GameSystem)
+	ss.GameSystemId = gs.ID
+	ss.GameSystem = gs.Name
+}
+
+func (ss *SpellSchool) BeforeCreate(tx *gorm.DB) error {
+	ss.ensureGameSystem()
+	return nil
+}
+
+func (ss *SpellSchool) BeforeSave(tx *gorm.DB) error {
+	ss.ensureGameSystem()
+	return nil
+}
+
+func (ss *SpellSchool) Save() error {
+	ss.ensureGameSystem()
+	return database.DB.Save(ss).Error
+}
 
 // CRUD-Methoden
-
-func (s *Source) Create() error {
-	return database.DB.Create(s).Error
+func (object *Source) CreatewGS(gamesystemId uint) error {
+	gs := GetGameSystem(gamesystemId, "")
+	if gs == nil {
+		return fmt.Errorf("invalid game system")
+	}
+	object.GameSystemId = gs.ID
+	return database.DB.Create(object).Error
 }
 
-func (s *Source) FirstByCode(code string) error {
-	return database.DB.Where("code = ?", code).First(s).Error
+func (object *Source) Create() error {
+	object.ensureGameSystem()
+	return object.CreatewGS(object.GameSystemId)
 }
 
-func (s *Source) FirstByName(name string) error {
-	return database.DB.Where("name = ?", name).First(s).Error
+func (object *Source) FirstByCodewGS(code string, gameSystemId uint) error {
+	if code == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
+	gs := GetGameSystem(gameSystemId, "")
+	if gs == nil {
+		return fmt.Errorf("invalid game system")
+	}
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND code = ?", gs.Name, gs.ID, code).First(object).Error
+}
+
+func (object *Source) FirstByCode(code string) error {
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	return object.FirstByCodewGS(code, gs.ID)
+}
+
+func (object *Source) FirstByNamewGS(name string, gameSystemId uint) error {
+	if name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
+	gs := GetGameSystem(gameSystemId, "")
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND name = ?", gs.Name, gs.ID, name).First(object).Error
+}
+
+func (object *Source) FirstByName(name string) error {
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	return object.FirstByNamewGS(name, gs.ID)
 }
 
 func (cc *CharacterClass) Create() error {
+	cc.ensureGameSystem()
 	return database.DB.Create(cc).Error
 }
 
 func (cc *CharacterClass) FirstByCode(code string) error {
-	return database.DB.Where("code = ?", code).First(cc).Error
+	gs := GetGameSystem(cc.GameSystemId, cc.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND code = ?", gs.Name, gs.ID, code).First(cc).Error
 }
 func (cc *CharacterClass) FirstByName(code string) error {
-	return database.DB.Where("name = ?", code).First(cc).Error
+	gs := GetGameSystem(cc.GameSystemId, cc.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND name = ?", gs.Name, gs.ID, code).First(cc).Error
 }
 func (cc *CharacterClass) FirstByNameOrCode(value string) error {
-	return database.DB.Where("name = ? OR code = ?", value, value).First(cc).Error
+	gs := GetGameSystem(cc.GameSystemId, cc.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND (name = ? OR code = ?)", gs.Name, gs.ID, value, value).First(cc).Error
 }
 
 func (sc *SkillCategory) Create() error {
+	sc.ensureGameSystem()
 	return database.DB.Create(sc).Error
 }
 
 func (sc *SkillCategory) FirstByName(name string) error {
-	return database.DB.Where("name = ?", name).First(sc).Error
+	gs := GetGameSystem(sc.GameSystemId, sc.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND name = ?", gs.Name, gs.ID, name).First(sc).Error
 }
 
 func (sd *SkillDifficulty) Create() error {
+	sd.ensureGameSystem()
 	return database.DB.Create(sd).Error
 }
 
 func (sd *SkillDifficulty) FirstByName(name string) error {
-	return database.DB.Where("name = ?", name).First(sd).Error
+	gs := GetGameSystem(sd.GameSystemId, sd.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND name = ?", gs.Name, gs.ID, name).First(sd).Error
 }
 
 func (ss *SpellSchool) Create() error {
+	ss.ensureGameSystem()
 	return database.DB.Create(ss).Error
 }
 
 func (ss *SpellSchool) FirstByName(name string) error {
-	return database.DB.Where("name = ?", name).First(ss).Error
+	gs := GetGameSystem(ss.GameSystemId, ss.GameSystem)
+	return database.DB.Where("(game_system = ? OR game_system_id = ?) AND name = ?", gs.Name, gs.ID, name).First(ss).Error
 }
 
 func (ccec *ClassCategoryEPCost) Create() error {
@@ -288,6 +470,7 @@ func (cssec *ClassSpellSchoolEPCost) Create() error {
 }
 
 func (sllc *SpellLevelLECost) Create() error {
+	sllc.ensureGameSystem()
 	return database.DB.Create(sllc).Error
 }
 
@@ -298,6 +481,12 @@ func (scd *SkillCategoryDifficulty) Create() error {
 func (wscd *WeaponSkillCategoryDifficulty) Create() error {
 	return database.DB.Create(wscd).Error
 }
+
+/*
+func (sic *SkillImprovementCost) Create() error {
+	return database.DB.Create(sic).Error
+}
+*/
 
 func (sic *SkillImprovementCost) Create() error {
 	return database.DB.Create(sic).Error
@@ -334,11 +523,14 @@ func GetEPPerLEForClassAndSpellSchool(classCode string, schoolName string) (int,
 // GetSkillCategoryAndDifficultyNewSystem findet die beste Kategorie für eine Fertigkeit basierend auf niedrigsten EP-Kosten
 func GetSkillCategoryAndDifficultyNewSystem(skillName string, classCode string) (*SkillLearningInfo, error) {
 	var results []SkillLearningInfo
+	gs := GetGameSystem(0, "midgard")
 
 	err := database.DB.Raw(`
 		SELECT 
 			scd.skill_id,
 			s.name as skill_name,
+			s.game_system as game_system,
+			s.game_system_id as game_system_id,
 			scd.skill_category as category_name,
 			scd.skill_difficulty as difficulty_name,
 			scd.learn_cost,
@@ -349,12 +541,18 @@ func GetSkillCategoryAndDifficultyNewSystem(skillName string, classCode string) 
 		FROM learning_skill_category_difficulties scd
 		JOIN learning_class_category_ep_costs ccec ON scd.skill_category = ccec.skill_category
 		JOIN gsm_skills s ON scd.skill_id = s.id
-		WHERE s.name = ? AND ccec.character_class = ?
+		WHERE s.name = ? AND ccec.character_class = ? AND (s.game_system = ? OR s.game_system_id = ?)
 		ORDER BY total_cost ASC
-	`, skillName, classCode).Scan(&results).Error
+	`, skillName, classCode, gs.Name, gs.ID).Scan(&results).Error
 
 	if err != nil {
 		return nil, err
+	}
+
+	for i := range results {
+		gs := GetGameSystem(results[i].GameSystemId, results[i].GameSystem)
+		results[i].GameSystemId = gs.ID
+		results[i].GameSystem = gs.Name
 	}
 
 	if len(results) == 0 {
@@ -367,11 +565,14 @@ func GetSkillCategoryAndDifficultyNewSystem(skillName string, classCode string) 
 // GetSkillInfoCategoryAndDifficultyNewSystem holt die Informationen für eine spezifische Kategorie/Schwierigkeit
 func GetSkillInfoCategoryAndDifficultyNewSystem(skillName, category, difficulty, classCode string) (*SkillLearningInfo, error) {
 	var result SkillLearningInfo
+	gs := GetGameSystem(0, "midgard")
 
 	err := database.DB.Raw(`
 		SELECT 
 			scd.skill_id,
 			s.name as skill_name,
+			s.game_system as game_system,
+			s.game_system_id as game_system_id,
 			scd.skill_category as category_name,
 			scd.skill_difficulty as difficulty_name,
 			scd.learn_cost,
@@ -382,12 +583,16 @@ func GetSkillInfoCategoryAndDifficultyNewSystem(skillName, category, difficulty,
 		FROM learning_skill_category_difficulties scd
 		JOIN learning_class_category_ep_costs ccec ON scd.skill_category = ccec.skill_category
 		JOIN gsm_skills s ON scd.skill_id = s.id
-		WHERE s.name = ? AND scd.skill_category = ? AND scd.skill_difficulty = ? AND ccec.character_class = ?
-	`, skillName, category, difficulty, classCode).Scan(&result).Error
+		WHERE s.name = ? AND scd.skill_category = ? AND scd.skill_difficulty = ? AND ccec.character_class = ? AND (s.game_system = ? OR s.game_system_id = ?)
+	`, skillName, category, difficulty, classCode, gs.Name, gs.ID).Scan(&result).Error
 
 	if err != nil {
 		return nil, err
 	}
+
+	gs = GetGameSystem(result.GameSystemId, result.GameSystem)
+	result.GameSystemId = gs.ID
+	result.GameSystem = gs.Name
 
 	return &result, nil
 }
@@ -400,15 +605,17 @@ func GetSpellLearningInfoNewSystem(spellName string, classCode string) (*SpellLe
 		SELECT 
 			s.id as spell_id,
 			s.name as spell_name,
+			s.game_system as game_system,
+			s.game_system_id as game_system_id,
 			s.stufe as spell_level,
-			s.learning_category as school_name,
+			COALESCE(NULLIF(s.category, ''), s.learning_category) as school_name,
 			cssec.character_class as class_code,
 			cssec.character_class as class_name,
 			cssec.ep_per_le,
 			COALESCE(sllc.le_required, 0) as le_required
 		FROM gsm_spells s
-		JOIN learning_class_spell_school_ep_costs cssec ON s.learning_category = cssec.spell_school
-		LEFT JOIN learning_spell_level_le_costs sllc ON s.stufe = sllc.level
+		JOIN learning_class_spell_school_ep_costs cssec ON COALESCE(NULLIF(s.category, ''), s.learning_category) = cssec.spell_school
+		LEFT JOIN learning_spell_level_le_costs sllc ON s.stufe = sllc.level AND (sllc.game_system = s.game_system OR sllc.game_system_id = s.game_system_id OR sllc.game_system_id IS NULL)
 		WHERE s.name = ? AND cssec.character_class = ?
 	`, spellName, classCode).Scan(&result).Error
 
@@ -416,15 +623,19 @@ func GetSpellLearningInfoNewSystem(spellName string, classCode string) (*SpellLe
 		return nil, err
 	}
 
+	// Validate that we found a spell (spell_id should be > 0)
+	if result.SpellID == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+
 	// Validate spell level - level 0 is not a valid spell level
 	if result.SpellLevel <= 0 {
 		return nil, fmt.Errorf("invalid spell level %d for spell '%s' - spell levels must be 1 or higher", result.SpellLevel, spellName)
 	}
 
-	// Validate that we found a spell (spell_id should be > 0)
-	if result.SpellID == 0 {
-		return nil, gorm.ErrRecordNotFound
-	}
+	gs := GetGameSystem(result.GameSystemId, result.GameSystem)
+	result.GameSystemId = gs.ID
+	result.GameSystem = gs.Name
 
 	return &result, nil
 }
@@ -434,12 +645,17 @@ func GetImprovementCost(skillName string, categoryName string, difficultyName st
 	var result SkillImprovementCost
 
 	err := database.DB.Raw(`
-        SELECT sic.te_required
-        FROM learning_skill_improvement_costs sic
-        JOIN learning_skill_category_difficulties scd ON sic.skill_category_difficulty_id = scd.id
-        JOIN gsm_skills s ON scd.skill_id = s.id
-        WHERE s.name = ? AND scd.skill_category = ? AND scd.skill_difficulty = ? AND sic.current_level = ?
-    `, skillName, categoryName, difficultyName, currentLevel).Scan(&result).Error
+		SELECT sic.te_required
+		FROM skill_improvement_cost2 sic
+		JOIN learning_skill_categories lc ON lc.id = sic.skill_category_id
+		JOIN learning_skill_difficulties ld ON ld.id = sic.skill_difficulty_id
+		JOIN learning_skill_category_difficulties scd ON scd.skill_category = lc.name AND scd.skill_difficulty = ld.name
+		JOIN gsm_skills s ON scd.skill_id = s.id
+		WHERE s.name = ?
+		  AND lc.name = ?
+		  AND ld.name = ?
+		  AND sic.current_level = ?
+	`, skillName, categoryName, difficultyName, currentLevel).Scan(&result).Error
 
 	if err != nil {
 		return 0, err

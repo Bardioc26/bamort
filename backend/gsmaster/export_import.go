@@ -22,6 +22,7 @@ type ExportableCategoryDifficulty struct {
 type ExportableSkill struct {
 	Name                   string                         `json:"name"`
 	GameSystem             string                         `json:"game_system"`
+	GameSystemId           uint                           `json:"game_system_id"`
 	Beschreibung           string                         `json:"beschreibung"`
 	SourceCode             string                         `json:"source_code"` // Instead of SourceID
 	PageNumber             int                            `json:"page_number"`
@@ -88,6 +89,7 @@ type ExportableWeaponSkillCategoryDifficulty struct {
 type ExportableSpell struct {
 	Name             string `json:"name"`
 	GameSystem       string `json:"game_system"`
+	GameSystemId     uint   `json:"game_system_id"`
 	Beschreibung     string `json:"beschreibung"`
 	SourceCode       string `json:"source_code"`
 	PageNumber       int    `json:"page_number"`
@@ -138,9 +140,10 @@ type ExportableClassSpellSchoolEPCost struct {
 
 // ExportableSpellLevelLECost represents spell level LE costs for export
 type ExportableSpellLevelLECost struct {
-	Level      int    `json:"level"`
-	LERequired int    `json:"le_required"`
-	GameSystem string `json:"game_system"`
+	Level        int    `json:"level"`
+	LERequired   int    `json:"le_required"`
+	GameSystem   string `json:"game_system"`
+	GameSystemId uint   `json:"game_system_id"`
 }
 
 // ExportableSkillImprovementCost represents skill improvement costs for export
@@ -159,6 +162,7 @@ type ExportableSkillImprovementCost struct {
 type ExportableWeaponSkill struct {
 	Name                   string                         `json:"name"`
 	GameSystem             string                         `json:"game_system"`
+	GameSystemId           uint                           `json:"game_system_id"`
 	Beschreibung           string                         `json:"beschreibung"`
 	SourceCode             string                         `json:"source_code"`
 	PageNumber             int                            `json:"page_number"`
@@ -276,10 +280,11 @@ type ExportableClassTypicalSpell struct {
 
 // ExportableMiscLookup represents miscellaneous lookup values for export
 type ExportableMiscLookup struct {
-	Key        string `json:"key"`
-	Value      string `json:"value"`
-	SourceCode string `json:"source_code"`
-	PageNumber int    `json:"page_number"`
+	Key          string `json:"key"`
+	Value        string `json:"value"`
+	SourceCode   string `json:"source_code"`
+	PageNumber   int    `json:"page_number"`
+	GameSystemId uint   `json:"game_system_id"`
 }
 
 // ExportSkills exports all skills to a JSON file
@@ -311,6 +316,7 @@ func ExportSkills(outputDir string) error {
 		exportable[i] = ExportableSkill{
 			Name:                   skill.Name,
 			GameSystem:             skill.GameSystem,
+			GameSystemId:           skill.GameSystemId,
 			Beschreibung:           skill.Beschreibung,
 			SourceCode:             sourceMap[skill.SourceID],
 			PageNumber:             skill.PageNumber,
@@ -335,13 +341,27 @@ func ImportSkills(inputDir string) error {
 		return err
 	}
 
+	if err := database.DB.AutoMigrate(&models.Skill{}); err != nil {
+		return fmt.Errorf("failed to migrate skills table: %w", err)
+	}
+
 	sourceMap := buildSourceMapReverse()
 	categoryMap := buildCategoryMap()
 	difficultyMap := buildDifficultyMap()
 
 	for _, exp := range exportable {
 		var skill models.Skill
-		result := database.DB.Where("name = ? AND game_system = ?", exp.Name, exp.GameSystem).First(&skill)
+		gs := models.GetGameSystem(exp.GameSystemId, exp.GameSystem)
+		effectiveName := exp.GameSystem
+		if effectiveName == "" {
+			effectiveName = gs.Name
+		}
+		effectiveID := gs.ID
+		if effectiveID == 0 {
+			effectiveID = models.GetGameSystem(0, "").ID
+		}
+
+		result := database.DB.Where("name = ? AND (game_system = ? OR game_system_id = ?)", exp.Name, effectiveName, effectiveID).First(&skill)
 
 		sourceID := sourceMap[exp.SourceCode]
 
@@ -349,7 +369,8 @@ func ImportSkills(inputDir string) error {
 			// Create new skill
 			skill = models.Skill{
 				Name:             exp.Name,
-				GameSystem:       exp.GameSystem,
+				GameSystem:       effectiveName,
+				GameSystemId:     effectiveID,
 				Beschreibung:     exp.Beschreibung,
 				SourceID:         sourceID,
 				PageNumber:       exp.PageNumber,
@@ -378,6 +399,8 @@ func ImportSkills(inputDir string) error {
 			skill.InnateSkill = exp.InnateSkill
 			skill.Category = exp.Category
 			skill.Difficulty = exp.Difficulty
+			skill.GameSystemId = effectiveID
+			skill.GameSystem = effectiveName
 
 			if err := database.DB.Save(&skill).Error; err != nil {
 				return fmt.Errorf("failed to update skill %s: %w", exp.Name, err)
@@ -391,8 +414,8 @@ func ImportSkills(inputDir string) error {
 
 			// Create new relationships
 			for _, cd := range exp.CategoriesDifficulties {
-				categoryID := categoryMap[exp.GameSystem][cd.Category]
-				difficultyID := difficultyMap[exp.GameSystem][cd.Difficulty]
+				categoryID := categoryMap[effectiveName][cd.Category]
+				difficultyID := difficultyMap[effectiveName][cd.Difficulty]
 
 				if categoryID == 0 || difficultyID == 0 {
 					continue // Skip if category or difficulty not found
@@ -785,6 +808,7 @@ func ExportSpells(outputDir string) error {
 		exportable[i] = ExportableSpell{
 			Name:             spell.Name,
 			GameSystem:       spell.GameSystem,
+			GameSystemId:     spell.GameSystemId,
 			Beschreibung:     spell.Beschreibung,
 			SourceCode:       sourceMap[spell.SourceID],
 			PageNumber:       spell.PageNumber,
@@ -815,16 +839,23 @@ func ImportSpells(inputDir string) error {
 
 	sourceMap := buildSourceMapReverse()
 
+	if err := database.DB.AutoMigrate(&models.Spell{}); err != nil {
+		return fmt.Errorf("failed to migrate spells table: %w", err)
+	}
+
+	gs := models.GetGameSystem(exportable[0].GameSystemId, exportable[0].GameSystem)
 	for _, exp := range exportable {
 		var spell models.Spell
-		result := database.DB.Where("name = ? AND game_system = ?", exp.Name, exp.GameSystem).First(&spell)
+
+		result := database.DB.Where("name = ? AND (game_system = ? OR game_system_id = ?)", exp.Name, gs.Name, gs.ID).First(&spell)
 
 		sourceID := sourceMap[exp.SourceCode]
 
 		if result.Error == gorm.ErrRecordNotFound {
 			spell = models.Spell{
 				Name:             exp.Name,
-				GameSystem:       exp.GameSystem,
+				GameSystem:       gs.Name,
+				GameSystemId:     gs.ID,
 				Beschreibung:     exp.Beschreibung,
 				SourceID:         sourceID,
 				PageNumber:       exp.PageNumber,
@@ -863,6 +894,8 @@ func ImportSpells(inputDir string) error {
 			spell.Ursprung = exp.Ursprung
 			spell.Category = exp.Category
 			spell.LearningCategory = exp.LearningCategory
+			spell.GameSystemId = gs.ID
+			spell.GameSystem = gs.Name
 
 			if err := database.DB.Save(&spell).Error; err != nil {
 				return fmt.Errorf("failed to update spell %s: %w", exp.Name, err)
@@ -1172,9 +1205,10 @@ func ExportSpellLevelLECosts(outputDir string) error {
 	exportable := make([]ExportableSpellLevelLECost, len(costs))
 	for i, cost := range costs {
 		exportable[i] = ExportableSpellLevelLECost{
-			Level:      cost.Level,
-			LERequired: cost.LERequired,
-			GameSystem: cost.GameSystem,
+			Level:        cost.Level,
+			LERequired:   cost.LERequired,
+			GameSystem:   cost.GameSystem,
+			GameSystemId: cost.GameSystemId,
 		}
 	}
 
@@ -1189,23 +1223,27 @@ func ImportSpellLevelLECosts(inputDir string) error {
 	}
 
 	for _, exp := range exportable {
+		gs := models.GetGameSystem(exp.GameSystemId, exp.GameSystem)
 		var cost models.SpellLevelLECost
-		result := database.DB.Where("level = ? AND game_system = ?", exp.Level, exp.GameSystem).First(&cost)
+		result := database.DB.Where("level = ? AND (game_system = ? OR game_system_id = ?)", exp.Level, gs.Name, gs.ID).First(&cost)
 
 		if result.Error == gorm.ErrRecordNotFound {
 			cost = models.SpellLevelLECost{
-				Level:      exp.Level,
-				LERequired: exp.LERequired,
-				GameSystem: exp.GameSystem,
+				Level:        exp.Level,
+				LERequired:   exp.LERequired,
+				GameSystem:   gs.Name,
+				GameSystemId: gs.ID,
 			}
-			if err := database.DB.Create(&cost).Error; err != nil {
+			if err := cost.Create(); err != nil {
 				return fmt.Errorf("failed to create spell level LE cost: %w", err)
 			}
 		} else if result.Error != nil {
 			return fmt.Errorf("failed to query spell level LE cost: %w", result.Error)
 		} else {
 			cost.LERequired = exp.LERequired
-			if err := database.DB.Save(&cost).Error; err != nil {
+			cost.GameSystem = gs.Name
+			cost.GameSystemId = gs.ID
+			if err := cost.Save(); err != nil {
 				return fmt.Errorf("failed to update spell level LE cost: %w", err)
 			}
 		}
@@ -1217,29 +1255,36 @@ func ImportSpellLevelLECosts(inputDir string) error {
 // ExportSkillImprovementCosts exports all skill improvement costs to a JSON file
 func ExportSkillImprovementCosts(outputDir string) error {
 	var costs []models.SkillImprovementCost
-	if err := database.DB.Preload("SkillCategoryDifficulty.Skill").
-		Preload("SkillCategoryDifficulty.SkillCategory").
-		Preload("SkillCategoryDifficulty.SkillDifficulty").
-		Find(&costs).Error; err != nil {
+	if err := database.DB.Find(&costs).Error; err != nil {
 		return fmt.Errorf("failed to fetch skill improvement costs: %w", err)
 	}
 
 	exportable := make([]ExportableSkillImprovementCost, 0, len(costs))
 	for _, cost := range costs {
-		// Skip records with incomplete relationships
-		if cost.SkillCategoryDifficulty.Skill.Name == "" ||
-			cost.SkillCategoryDifficulty.SkillCategory.Name == "" ||
-			cost.SkillCategoryDifficulty.SkillDifficulty.Name == "" {
+		var lc models.SkillCategory
+		if err := database.DB.First(&lc, cost.CategoryID).Error; err != nil {
+			continue
+		}
+		var ld models.SkillDifficulty
+		if err := database.DB.First(&ld, cost.DifficultyID).Error; err != nil {
+			continue
+		}
+		var scd models.SkillCategoryDifficulty
+		if err := database.DB.Where("skill_category = ? AND skill_difficulty = ?", lc.Name, ld.Name).First(&scd).Error; err != nil {
+			continue
+		}
+		var skill models.Skill
+		if err := database.DB.First(&skill, scd.SkillID).Error; err != nil {
 			continue
 		}
 
 		exportable = append(exportable, ExportableSkillImprovementCost{
-			SkillName:        cost.SkillCategoryDifficulty.Skill.Name,
-			SkillSystem:      cost.SkillCategoryDifficulty.Skill.GameSystem,
-			CategoryName:     cost.SkillCategoryDifficulty.SkillCategory.Name,
-			CategorySystem:   cost.SkillCategoryDifficulty.SkillCategory.GameSystem,
-			DifficultyName:   cost.SkillCategoryDifficulty.SkillDifficulty.Name,
-			DifficultySystem: cost.SkillCategoryDifficulty.SkillDifficulty.GameSystem,
+			SkillName:        skill.Name,
+			SkillSystem:      skill.GameSystem,
+			CategoryName:     lc.Name,
+			CategorySystem:   lc.GameSystem,
+			DifficultyName:   ld.Name,
+			DifficultySystem: ld.GameSystem,
 			CurrentLevel:     cost.CurrentLevel,
 			TERequired:       cost.TERequired,
 		})
@@ -1287,16 +1332,17 @@ func ImportSkillImprovementCosts(inputDir string) error {
 				exp.SkillName, exp.CategoryName, exp.DifficultyName, err)
 		}
 
-		// Find or create SkillImprovementCost
+		// Find or create SkillImprovementCost using category/difficulty IDs
 		var cost models.SkillImprovementCost
-		result := database.DB.Where("skill_category_difficulty_id = ? AND current_level = ?",
-			scd.ID, exp.CurrentLevel).First(&cost)
+		result := database.DB.Where("skill_category_id = ? AND skill_difficulty_id = ? AND current_level = ?",
+			categoryID, difficultyID, exp.CurrentLevel).First(&cost)
 
 		if result.Error == gorm.ErrRecordNotFound {
 			cost = models.SkillImprovementCost{
-				SkillCategoryDifficultyID: scd.ID,
-				CurrentLevel:              exp.CurrentLevel,
-				TERequired:                exp.TERequired,
+				CategoryID:   categoryID,
+				DifficultyID: difficultyID,
+				CurrentLevel: exp.CurrentLevel,
+				TERequired:   exp.TERequired,
 			}
 			if err := database.DB.Create(&cost).Error; err != nil {
 				return fmt.Errorf("failed to create skill improvement cost: %w", err)
@@ -1342,6 +1388,7 @@ func ExportWeaponSkills(outputDir string) error {
 		exportable[i] = ExportableWeaponSkill{
 			Name:                   skill.Name,
 			GameSystem:             skill.GameSystem,
+			GameSystemId:           skill.GameSystemId,
 			Beschreibung:           skill.Beschreibung,
 			SourceCode:             sourceMap[skill.SourceID],
 			PageNumber:             skill.PageNumber,
@@ -1366,11 +1413,25 @@ func ImportWeaponSkills(inputDir string) error {
 		return err
 	}
 
+	if err := database.DB.AutoMigrate(&models.Skill{}, &models.WeaponSkill{}); err != nil {
+		return fmt.Errorf("failed to migrate weapon skills: %w", err)
+	}
+
 	sourceMap := buildSourceMapReverse()
 
 	for _, exp := range exportable {
 		var skill models.WeaponSkill
-		result := database.DB.Where("name = ? AND game_system = ?", exp.Name, exp.GameSystem).First(&skill)
+		gs := models.GetGameSystem(exp.GameSystemId, exp.GameSystem)
+		effectiveName := exp.GameSystem
+		if effectiveName == "" {
+			effectiveName = gs.Name
+		}
+		effectiveID := gs.ID
+		if effectiveID == 0 {
+			effectiveID = models.GetGameSystem(0, "").ID
+		}
+
+		result := database.DB.Where("name = ? AND (game_system = ? OR game_system_id = ?)", exp.Name, effectiveName, effectiveID).First(&skill)
 
 		sourceID := sourceMap[exp.SourceCode]
 
@@ -1378,7 +1439,8 @@ func ImportWeaponSkills(inputDir string) error {
 			skill = models.WeaponSkill{
 				Skill: models.Skill{
 					Name:             exp.Name,
-					GameSystem:       exp.GameSystem,
+					GameSystem:       effectiveName,
+					GameSystemId:     effectiveID,
 					Beschreibung:     exp.Beschreibung,
 					SourceID:         sourceID,
 					PageNumber:       exp.PageNumber,
@@ -1407,6 +1469,8 @@ func ImportWeaponSkills(inputDir string) error {
 			skill.InnateSkill = exp.InnateSkill
 			skill.Category = exp.Category
 			skill.Difficulty = exp.Difficulty
+			skill.GameSystemId = effectiveID
+			skill.GameSystem = effectiveName
 
 			if err := database.DB.Save(&skill).Error; err != nil {
 				return fmt.Errorf("failed to update weapon skill %s: %w", exp.Name, err)
@@ -2121,10 +2185,11 @@ func ExportMiscLookups(outputDir string) error {
 	exportable := make([]ExportableMiscLookup, len(lookups))
 	for i, lookup := range lookups {
 		exportable[i] = ExportableMiscLookup{
-			Key:        lookup.Key,
-			Value:      lookup.Value,
-			SourceCode: sourceMap[lookup.SourceID],
-			PageNumber: lookup.PageNumber,
+			Key:          lookup.Key,
+			Value:        lookup.Value,
+			SourceCode:   sourceMap[lookup.SourceID],
+			PageNumber:   lookup.PageNumber,
+			GameSystemId: lookup.GameSystemId,
 		}
 	}
 
@@ -2140,18 +2205,25 @@ func ImportMiscLookups(inputDir string) error {
 
 	sourceMap := buildSourceMapReverse()
 
+	// ensure new columns exist when importing older exports
+	if err := database.DB.AutoMigrate(&models.MiscLookup{}); err != nil {
+		return fmt.Errorf("failed to migrate misc lookup table: %w", err)
+	}
+
+	gs := models.GetGameSystem(exportable[0].GameSystemId, "")
 	for _, exp := range exportable {
 		var lookup models.MiscLookup
-		result := database.DB.Where("key = ?", exp.Key).First(&lookup)
+		result := database.DB.Where("key = ? AND (game_system_id = ? OR game_system_id = 0)", exp.Key, gs.ID).First(&lookup)
 
 		sourceID := sourceMap[exp.SourceCode]
 
 		if result.Error == gorm.ErrRecordNotFound {
 			lookup = models.MiscLookup{
-				Key:        exp.Key,
-				Value:      exp.Value,
-				SourceID:   sourceID,
-				PageNumber: exp.PageNumber,
+				Key:          exp.Key,
+				Value:        exp.Value,
+				SourceID:     sourceID,
+				PageNumber:   exp.PageNumber,
+				GameSystemId: gs.ID,
 			}
 			if err := database.DB.Create(&lookup).Error; err != nil {
 				return fmt.Errorf("failed to create misc lookup %s: %w", exp.Key, err)
@@ -2162,6 +2234,7 @@ func ImportMiscLookups(inputDir string) error {
 			lookup.Value = exp.Value
 			lookup.SourceID = sourceID
 			lookup.PageNumber = exp.PageNumber
+			lookup.GameSystemId = gs.ID
 
 			if err := database.DB.Save(&lookup).Error; err != nil {
 				return fmt.Errorf("failed to update misc lookup %s: %w", exp.Key, err)

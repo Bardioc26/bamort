@@ -189,7 +189,7 @@ func ExportCharacter(characterID uint) (*CharacterExport, error) {
 	database.DB.Preload("CharacterClass").Preload("SpellSchool").Find(&export.LearningData.ClassSpellSchoolEPCosts)
 	database.DB.Find(&export.LearningData.SpellLevelLECosts)
 	database.DB.Preload("Skill").Preload("SkillCategory").Preload("SkillDifficulty").Find(&export.LearningData.SkillCategoryDifficulties)
-	database.DB.Preload("SkillCategoryDifficulty").Find(&export.LearningData.SkillImprovementCosts)
+	database.DB.Find(&export.LearningData.SkillImprovementCosts)
 
 	// Load audit log entries
 	export.AuditLogEntries = make([]models.AuditLogEntry, 0)

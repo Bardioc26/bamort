@@ -76,21 +76,23 @@ type Vermoegen struct {
 
 type Char struct {
 	BamortBase
-	UserID      uint      `gorm:"index;not null;default:1" json:"user_id"`
-	User        user.User `gorm:"foreignKey:UserID;references:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"user"`
-	Rasse       string    `json:"rasse"`
-	Typ         string    `json:"typ"`
-	Alter       int       `json:"alter"`
-	Anrede      string    `json:"anrede"`
-	Grad        int       `json:"grad"`
-	Gender      string    `json:"gender"`
-	SocialClass string    `json:"social_class"`
-	Groesse     int       `json:"groesse"`
-	Gewicht     int       `json:"gewicht"`
-	Herkunft    string    `json:"origin"`
-	Glaube      string    `json:"glaube"`
-	Hand        string    `json:"hand"`
-	Public      bool      `json:"public"`
+	GameSystem   string    `gorm:"column:game_system;index;default:midgard" json:"game_system"`
+	GameSystemId uint      `json:"game_system_id,omitempty"`
+	UserID       uint      `gorm:"index;not null;default:1" json:"user_id"`
+	User         user.User `gorm:"foreignKey:UserID;references:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"user"`
+	Rasse        string    `json:"rasse"`
+	Typ          string    `json:"typ"`
+	Alter        int       `json:"alter"`
+	Anrede       string    `json:"anrede"`
+	Grad         int       `json:"grad"`
+	Gender       string    `json:"gender"`
+	SocialClass  string    `json:"social_class"`
+	Groesse      int       `json:"groesse"`
+	Gewicht      int       `json:"gewicht"`
+	Herkunft     string    `json:"origin"`
+	Glaube       string    `json:"glaube"`
+	Hand         string    `json:"hand"`
+	Public       bool      `json:"public"`
 	// Static derived values (can increase with grade)
 	ResistenzKoerper   int                  `json:"resistenz_koerper"`
 	ResistenzGeist     int                  `json:"resistenz_geist"`
@@ -117,12 +119,14 @@ type Char struct {
 }
 type CharList struct {
 	BamortBase
-	UserID uint   `json:"user_id"`
-	Rasse  string `json:"rasse"`
-	Typ    string `json:"typ"`
-	Grad   int    `json:"grad"`
-	Owner  string `json:"owner"`
-	Public bool   `json:"public"`
+	GameSystem   string `gorm:"column:game_system" json:"game_system"`
+	GameSystemId uint   `json:"game_system_id"`
+	UserID       uint   `json:"user_id"`
+	Rasse        string `json:"rasse"`
+	Typ          string `json:"typ"`
+	Grad         int    `json:"grad"`
+	Owner        string `json:"owner"`
+	Public       bool   `json:"public"`
 }
 
 type FeChar struct {
@@ -136,7 +140,32 @@ func (object *Char) TableName() string {
 	return dbPrefix + "_" + "chars"
 }
 
+func (object *Char) ensureGameSystem() {
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	if gs == nil {
+		gs = GetGameSystem(0, "midgard")
+	}
+	if gs != nil {
+		object.GameSystemId = gs.ID
+		object.GameSystem = gs.Name
+	}
+}
+
+func (object *Char) BeforeCreate(tx *gorm.DB) error {
+	object.ensureGameSystem()
+	return nil
+}
+
+func (object *Char) BeforeSave(tx *gorm.DB) error {
+	object.ensureGameSystem()
+	return nil
+}
+
 func (object *Char) First(charName string) error {
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	if gs == nil {
+		gs = GetGameSystem(0, "midgard")
+	}
 	err := database.DB.
 		Preload("User").
 		Preload("Lp").
@@ -154,7 +183,8 @@ func (object *Char) First(charName string) error {
 		Preload("Behaeltnisse").
 		Preload("Transportmittel").
 		Preload("Ausruestung").
-		First(&object, " name = ?", charName).Error
+		Where("(game_system = ? OR game_system_id = ?) AND name = ?", gs.Name, gs.ID, charName).
+		First(&object).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -163,6 +193,10 @@ func (object *Char) First(charName string) error {
 }
 
 func (object *Char) FirstID(charID string) error {
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	if gs == nil {
+		gs = GetGameSystem(0, "midgard")
+	}
 	err := database.DB.
 		Preload("User").
 		Preload("Lp").
@@ -180,7 +214,8 @@ func (object *Char) FirstID(charID string) error {
 		Preload("Behaeltnisse").
 		Preload("Transportmittel").
 		Preload("Ausruestung").
-		First(&object, charID).Error
+		Where("(game_system = ? OR game_system_id = ?) AND char_chars.id = ?", gs.Name, gs.ID, charID).
+		First(&object).Error
 	if err != nil {
 		// zauber found
 		return err
@@ -191,6 +226,10 @@ func (object *Char) FirstID(charID string) error {
 // FindByUserID finds all characters belonging to a specific user
 func (object *Char) FindByUserID(userID uint) ([]Char, error) {
 	var chars []Char
+	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
+	if gs == nil {
+		gs = GetGameSystem(0, "midgard")
+	}
 	err := database.DB.
 		Preload("User").
 		Preload("Lp").
@@ -208,7 +247,7 @@ func (object *Char) FindByUserID(userID uint) ([]Char, error) {
 		Preload("Behaeltnisse").
 		Preload("Transportmittel").
 		Preload("Ausruestung").
-		Where("user_id = ?", userID).
+		Where("user_id = ? AND (game_system = ? OR game_system_id = ?)", userID, gs.Name, gs.ID).
 		Find(&chars).Error
 	if err != nil {
 		return nil, err
@@ -218,10 +257,11 @@ func (object *Char) FindByUserID(userID uint) ([]Char, error) {
 
 func FindPublicCharList() ([]CharList, error) {
 	var chars []CharList
+	gs := GetGameSystem(0, "midgard")
 	err := database.DB.Table("char_chars").
-		Select("char_chars.id, char_chars.name, char_chars.user_id, char_chars.rasse, char_chars.typ, char_chars.grad, char_chars.public, users.username as owner").
+		Select("char_chars.id, char_chars.name, char_chars.user_id, char_chars.rasse, char_chars.typ, char_chars.grad, char_chars.public, char_chars.game_system, char_chars.game_system_id, users.username as owner").
 		Joins("LEFT JOIN users ON char_chars.user_id = users.user_id").
-		Where("char_chars.public = ?", true).
+		Where("char_chars.public = ? AND (char_chars.game_system = ? OR char_chars.game_system_id = ?)", true, gs.Name, gs.ID).
 		Find(&chars).Error
 	if err != nil {
 		return nil, err
@@ -232,10 +272,11 @@ func FindPublicCharList() ([]CharList, error) {
 // FindCharListByUserID finds all characters belonging to a specific user for listing (minimal data)
 func FindCharListByUserID(userID uint) ([]CharList, error) {
 	var chars []CharList
+	gs := GetGameSystem(0, "midgard")
 	err := database.DB.Table("char_chars").
-		Select("char_chars.id, char_chars.name, char_chars.user_id, char_chars.rasse, char_chars.typ, char_chars.grad, char_chars.public, users.username as owner").
+		Select("char_chars.id, char_chars.name, char_chars.user_id, char_chars.rasse, char_chars.typ, char_chars.grad, char_chars.public, char_chars.game_system, char_chars.game_system_id, users.username as owner").
 		Joins("LEFT JOIN users ON char_chars.user_id = users.user_id").
-		Where("char_chars.user_id = ?", userID).
+		Where("char_chars.user_id = ? AND (char_chars.game_system = ? OR char_chars.game_system_id = ?)", userID, gs.Name, gs.ID).
 		Find(&chars).Error
 	if err != nil {
 		return nil, err
@@ -244,6 +285,7 @@ func FindCharListByUserID(userID uint) ([]CharList, error) {
 }
 
 func (object *Char) Create() error {
+	object.ensureGameSystem()
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		// Save the main character record
 		if err := tx.Create(&object).Error; err != nil {

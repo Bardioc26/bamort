@@ -147,8 +147,8 @@ func TestWeaponsWithEW(t *testing.T) {
 	database.DB.Where("name = ?", "Schwert").Delete(&models.Weapon{})
 	testWeapon := &models.Weapon{
 		Equipment: models.Equipment{
-			GameSystem: "midgard",
-			Name:       "Schwert",
+			GameSystemId: 1,
+			Name:         "Schwert",
 		},
 		SkillRequired: "Schwerter",
 		Damage:        "1W6",

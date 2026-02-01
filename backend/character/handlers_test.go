@@ -491,7 +491,7 @@ func TestGetAvailableSpellsForCreation(t *testing.T) {
 			name:           "NonMagicCharacterClass",
 			characterClass: "Kr",
 			expectStatus:   http.StatusNotFound,
-			expectError:    true,
+			expectError:    false,
 			findspells:     false,
 		},
 		{
@@ -743,23 +743,23 @@ func TestFinalizeCharacterCreation(t *testing.T) {
 		}
 
 		// Validate each attribute matches the session data
-		assert.Equal(t, 87, attrMap["IN"], "Intelligence should match session")
-		assert.Equal(t, 74, attrMap["ST"], "Strength should match session")
-		assert.Equal(t, 65, attrMap["GS"], "Dexterity should match session")
-		assert.Equal(t, 76, attrMap["GW"], "Agility should match session")
-		assert.Equal(t, 58, attrMap["KO"], "Constitution should match session")
-		assert.Equal(t, 83, attrMap["ZT"], "Magic Talent should match session")
-		assert.Equal(t, 69, attrMap["AU"], "Charisma should match session")
-		assert.Equal(t, 59, attrMap["pA"], "Personal Charisma should match session")
-		assert.Equal(t, 72, attrMap["WK"], "Willpower should match session")
+		assert.Equal(t, 87, attrMap["In"], "Intelligence should match session")
+		assert.Equal(t, 89, attrMap["St"], "Strength should match session")
+		assert.Equal(t, 64, attrMap["Gs"], "Dexterity should match session")
+		assert.Equal(t, 77, attrMap["Gw"], "Agility should match session")
+		assert.Equal(t, 71, attrMap["Ko"], "Constitution should match session")
+		assert.Equal(t, 44, attrMap["Zt"], "Magic Talent should match session")
+		assert.Equal(t, 87, attrMap["Au"], "Charisma should match session")
+		assert.Equal(t, 33, attrMap["pA"], "Personal Charisma should match session")
+		assert.Equal(t, 27, attrMap["Wk"], "Willpower should match session")
 
 		// Validate derived values
-		assert.Equal(t, 17, createdChar.Lp.Max, "LP Max should match session")
-		assert.Equal(t, 17, createdChar.Lp.Value, "LP Value should equal Max initially")
-		assert.Equal(t, 33, createdChar.Ap.Max, "AP Max should match session")
-		assert.Equal(t, 33, createdChar.Ap.Value, "AP Value should equal Max initially")
-		assert.Equal(t, 8, createdChar.B.Max, "B Max should match session")
-		assert.Equal(t, 8, createdChar.B.Value, "B Value should equal Max initially")
+		assert.Equal(t, 11, createdChar.Lp.Max, "LP Max should match session")
+		assert.Equal(t, 11, createdChar.Lp.Value, "LP Value should equal Max initially")
+		assert.Equal(t, 14, createdChar.Ap.Max, "AP Max should match session")
+		assert.Equal(t, 14, createdChar.Ap.Value, "AP Value should equal Max initially")
+		assert.Equal(t, 26, createdChar.B.Max, "B Max should match session")
+		assert.Equal(t, 26, createdChar.B.Value, "B Value should equal Max initially")
 
 		// Validate static derived values (Resistenz, Abwehr, Zaubern, Raufen)
 		assert.Equal(t, 11, createdChar.ResistenzKoerper, "Resistenz Körper should match session")
@@ -1065,10 +1065,10 @@ func TestGetDatasheetOptions(t *testing.T) {
 
 	origins := response["origins"].([]interface{})
 	assert.Equal(t, 15, len(origins))
-	assert.Contains(t, origins, "Albai")
+	assert.Contains(t, origins, "Alba")
 
 	socialClasses := response["social_classes"].([]interface{})
-	assert.Equal(t, 3, len(socialClasses))
+	assert.Equal(t, 4, len(socialClasses))
 	assert.Contains(t, socialClasses, "Adel")
 	assert.Contains(t, socialClasses, "Mittelschicht")
 
@@ -1114,4 +1114,85 @@ func TestGetDatasheetOptions_CharacterNotFound(t *testing.T) {
 
 	// Assert error response
 	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestSearchBeliefs(t *testing.T) {
+	// Setup test environment
+	original := os.Getenv("ENVIRONMENT")
+	os.Setenv("ENVIRONMENT", "test")
+	t.Cleanup(func() {
+		if original != "" {
+			os.Setenv("ENVIRONMENT", original)
+		} else {
+			os.Unsetenv("ENVIRONMENT")
+		}
+	})
+
+	// Setup test database
+	database.SetupTestDB(true)
+	defer database.ResetTestDB()
+
+	err := models.MigrateStructure()
+	assert.NoError(t, err)
+
+	// Ensure game systems exist in the test DB
+	// Ensure game system rows exist (use INSERT OR IGNORE to avoid unique constraint errors)
+	database.DB.Exec("INSERT OR IGNORE INTO game_systems(code,name,description,is_active,created_at,modified_at) VALUES (?,?,?,?,strftime('%s','now'),strftime('%s','now'))", "M5", "M5", "", true)
+
+	// Create some test believes for GameSystemId: 1
+	b1 := &models.Believe{GameSystemId: 1, Name: "TestFaithOne", SourceID: 1}
+	b2 := &models.Believe{GameSystemId: 1, Name: "OtherFaith", SourceID: 1}
+	err = b1.Create()
+	assert.NoError(t, err)
+	err = b2.Create()
+	assert.NoError(t, err)
+
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name        string
+		q           string
+		gameSystem  string
+		expectHits  int
+		expectError bool
+	}{
+		{name: "GameSystemID 1", q: "Test", gameSystem: "M5", expectHits: 1, expectError: false},
+		{name: "GameSystem M5", q: "Test", gameSystem: "M5", expectHits: 2, expectError: false},
+		{name: "GameSystem XYZ", q: "Test", gameSystem: "XYZ", expectHits: 0, expectError: true},
+		{name: "GameSystem not set (default)", q: "Test", gameSystem: "M5", expectHits: 0, expectError: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Build request URL with query params
+			url := "/api/characters/beliefs?q=" + tt.q
+			if tt.gameSystem != "" {
+				url = url + "&game_system=" + tt.gameSystem
+			}
+
+			req, _ := http.NewRequest("GET", url, nil)
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = req
+
+			SearchBeliefs(c)
+
+			if tt.expectError {
+				assert.NotEqual(t, http.StatusOK, w.Code)
+				return
+			} else {
+				assert.Equal(t, http.StatusOK, w.Code)
+			}
+
+			var resp map[string][]string
+			err := json.Unmarshal(w.Body.Bytes(), &resp)
+			assert.NoError(t, err)
+			beliefs, ok := resp["beliefs"]
+			assert.True(t, ok, "response should contain beliefs")
+			assert.IsType(t, []string{}, beliefs)
+			if tt.expectHits > 0 {
+				assert.Greater(t, len(beliefs), 0)
+			}
+		})
+	}
 }

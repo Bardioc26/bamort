@@ -104,8 +104,8 @@ func linkExistingSpellsToSchools() error {
 		if err := spellSchool.FirstByName(spell.Category); err != nil {
 			// Zauberschule existiert nicht, erstelle sie
 			newSchool := models.SpellSchool{
-				Name:       spell.Category,
-				GameSystem: "midgard",
+				Name:         spell.Category,
+				GameSystemId: 1,
 			}
 			if err := newSchool.Create(); err != nil {
 				log.Printf("Warning: Failed to create spell school %s for spell %s: %v", spell.Category, spell.Name, err)
@@ -225,11 +225,12 @@ func findSkillInLearningData(skillName string) (string, string) {
 func createSkillCategoryLink(skillID uint, skillName, categoryName, difficultyName string) error {
 	// Hole oder erstelle die Kategorie
 	var skillCategory models.SkillCategory
+	gs := GetGameSystem(0, "midgard")
 	if err := skillCategory.FirstByName(categoryName); err != nil {
 		// Kategorie existiert nicht, erstelle sie
 		skillCategory = models.SkillCategory{
-			Name:       categoryName,
-			GameSystem: "midgard",
+			Name:         categoryName,
+			GameSystemId: gs.ID,
 		}
 		if err := skillCategory.Create(); err != nil {
 			return fmt.Errorf("failed to create skill category %s: %w", categoryName, err)
@@ -242,8 +243,8 @@ func createSkillCategoryLink(skillID uint, skillName, categoryName, difficultyNa
 	if err := skillDifficulty.FirstByName(difficultyName); err != nil {
 		// Schwierigkeit existiert nicht, erstelle sie
 		skillDifficulty = models.SkillDifficulty{
-			Name:       difficultyName,
-			GameSystem: "midgard",
+			Name:         difficultyName,
+			GameSystemId: gs.ID,
 		}
 		if err := skillDifficulty.Create(); err != nil {
 			return fmt.Errorf("failed to create skill difficulty %s: %w", difficultyName, err)

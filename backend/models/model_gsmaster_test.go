@@ -18,7 +18,7 @@ func setupGSMasterTestDB(t *testing.T) {
 
 func createTestGSMSkill(name string) *Skill {
 	return &Skill{
-		GameSystem:       "midgard",
+		GameSystemId:     1,
 		Name:             name,
 		Beschreibung:     "Test skill description",
 		Category:         "Körper",
@@ -33,7 +33,7 @@ func createTestGSMSkill(name string) *Skill {
 func createTestWeaponSkill(name string) *WeaponSkill {
 	return &WeaponSkill{
 		Skill: Skill{
-			GameSystem:       "midgard",
+			GameSystemId:     1,
 			Name:             name,
 			Beschreibung:     "Test weapon skill description",
 			Category:         "Kampf",
@@ -48,7 +48,7 @@ func createTestWeaponSkill(name string) *WeaponSkill {
 
 func createTestSpell(name string) *Spell {
 	return &Spell{
-		GameSystem:       "midgard",
+		GameSystemId:     1,
 		Name:             name,
 		Beschreibung:     "Test spell description",
 		Bonus:            0,
@@ -68,7 +68,7 @@ func createTestSpell(name string) *Spell {
 
 func createTestEquipment(name string) *Equipment {
 	return &Equipment{
-		GameSystem:   "midgard",
+		GameSystemId: 1,
 		Name:         name,
 		Beschreibung: "Test equipment description",
 		Gewicht:      1.5,
@@ -80,7 +80,7 @@ func createTestEquipment(name string) *Equipment {
 func createTestWeapon(name string) *Weapon {
 	return &Weapon{
 		Equipment: Equipment{
-			GameSystem:   "midgard",
+			GameSystemId: 1,
 			Name:         name,
 			Beschreibung: "Test weapon description",
 			Gewicht:      2.0,
@@ -95,7 +95,7 @@ func createTestWeapon(name string) *Weapon {
 func createTestContainer(name string) *Container {
 	return &Container{
 		Equipment: Equipment{
-			GameSystem:   "midgard",
+			GameSystemId: 1,
 			Name:         name,
 			Beschreibung: "Test container description",
 			Gewicht:      0.5,
@@ -109,7 +109,7 @@ func createTestContainer(name string) *Container {
 
 func createTestBelieve(name string) *Believe {
 	return &Believe{
-		GameSystem:   "midgard",
+		GameSystemId: 1,
 		Name:         name,
 		Beschreibung: "Test believe description",
 		SourceID:     1, // Use active source KOD
@@ -169,7 +169,7 @@ func TestSkill_Create(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotZero(t, skill.ID)
-	assert.Equal(t, "midgard", skill.GameSystem)
+	assert.Equal(t, uint(1), skill.GameSystemId)
 }
 
 func TestSkill_First_Success(t *testing.T) {
@@ -186,7 +186,7 @@ func TestSkill_First_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "TestFirstSkill", foundSkill.Name)
-	assert.Equal(t, "midgard", foundSkill.GameSystem)
+	assert.Equal(t, uint(1), foundSkill.GameSystemId)
 }
 
 func TestSkill_First_NotFound(t *testing.T) {
@@ -288,15 +288,15 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 
 	// Create test skill categories in the lookup table
 	cat1 := &SkillCategory{
-		GameSystem: "midgard",
-		Name:       "TestCategory1",
+		GameSystemId: 1,
+		Name:         "TestCategory1",
 	}
 	err := cat1.Create()
 	require.NoError(t, err)
 
 	cat2 := &SkillCategory{
-		GameSystem: "midgard",
-		Name:       "TestCategory2",
+		GameSystemId: 1,
+		Name:         "TestCategory2",
 	}
 	err = cat2.Create()
 	require.NoError(t, err)
@@ -374,7 +374,7 @@ func TestWeaponSkill_Create(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotZero(t, weaponSkill.ID)
-	assert.Equal(t, "midgard", weaponSkill.GameSystem)
+	assert.Equal(t, uint(1), weaponSkill.GameSystemId)
 }
 
 func TestWeaponSkill_First_Success(t *testing.T) {
@@ -391,7 +391,7 @@ func TestWeaponSkill_First_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "TestFirstWeaponSkill", foundWeaponSkill.Name)
-	assert.Equal(t, "midgard", foundWeaponSkill.GameSystem)
+	assert.Equal(t, uint(1), foundWeaponSkill.GameSystemId)
 }
 
 func TestWeaponSkill_First_NotFound(t *testing.T) {
@@ -459,7 +459,7 @@ func TestSpell_Create(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotZero(t, spell.ID)
-	assert.Equal(t, "midgard", spell.GameSystem)
+	assert.Equal(t, uint(1), spell.GameSystemId)
 }
 
 func TestSpell_First_Success(t *testing.T) {
@@ -476,7 +476,7 @@ func TestSpell_First_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "TestFirstSpell", foundSpell.Name)
-	assert.Equal(t, "midgard", foundSpell.GameSystem)
+	assert.Equal(t, uint(1), foundSpell.GameSystemId)
 }
 
 func TestSpell_First_NotFound(t *testing.T) {
@@ -530,15 +530,15 @@ func TestSpell_GetSpellCategories(t *testing.T) {
 
 	// Create test spell categories in the lookup table (SpellSchool)
 	school1 := &SpellSchool{
-		GameSystem: "midgard",
-		Name:       "TestSpellCat1",
+		GameSystemId: 1,
+		Name:         "TestSpellCat1",
 	}
 	err := school1.Create()
 	require.NoError(t, err)
 
 	school2 := &SpellSchool{
-		GameSystem: "midgard",
-		Name:       "TestSpellCat2",
+		GameSystemId: 1,
+		Name:         "TestSpellCat2",
 	}
 	err = school2.Create()
 	require.NoError(t, err)
@@ -616,7 +616,7 @@ func TestEquipment_Create(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotZero(t, equipment.ID)
-	assert.Equal(t, "midgard", equipment.GameSystem)
+	assert.Equal(t, uint(1), equipment.GameSystemId)
 }
 
 func TestEquipment_First_Success(t *testing.T) {
@@ -633,7 +633,7 @@ func TestEquipment_First_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "TestFirstEquipment", foundEquipment.Name)
-	assert.Equal(t, "midgard", foundEquipment.GameSystem)
+	assert.Equal(t, uint(1), foundEquipment.GameSystemId)
 }
 
 func TestEquipment_First_NotFound(t *testing.T) {
@@ -682,6 +682,50 @@ func TestEquipment_Save(t *testing.T) {
 	assert.Equal(t, "Updated equipment description", foundEquipment.Beschreibung)
 }
 
+func TestEquipment_Create_SetsDefaultGameSystem(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	equipment := &Equipment{
+		Name:         "TestDefaultEquipment",
+		Beschreibung: "Defaults to midgard",
+		Gewicht:      1.0,
+		Wert:         2.0,
+		PersonalItem: false,
+	}
+
+	err := equipment.Create()
+	require.NoError(t, err)
+	assert.Equal(t, uint(1), equipment.GameSystemId)
+	assert.NotEmpty(t, equipment.GameSystem)
+}
+
+func TestEquipment_First_UsesGameSystemId(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	otherGS := &GameSystem{Code: "TST-EQ", Name: "TestSystemEquipment"}
+	require.NoError(t, database.DB.Create(otherGS).Error)
+
+	defaultEquipment := createTestEquipment("SharedEquipmentName")
+	require.NoError(t, defaultEquipment.Create())
+
+	altEquipment := &Equipment{
+		GameSystem:   otherGS.Name,
+		GameSystemId: otherGS.ID,
+		Name:         "SharedEquipmentName",
+		Beschreibung: "Alternate system",
+		Gewicht:      1.5,
+		Wert:         5.0,
+		PersonalItem: false,
+	}
+	require.NoError(t, altEquipment.Create())
+
+	found := &Equipment{GameSystemId: otherGS.ID}
+	err := found.First("SharedEquipmentName")
+	require.NoError(t, err)
+	assert.Equal(t, otherGS.ID, found.GameSystemId)
+	assert.Equal(t, otherGS.Name, found.GameSystem)
+}
+
 // =============================================================================
 // Tests for Weapon struct
 // =============================================================================
@@ -701,7 +745,28 @@ func TestWeapon_Create(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotZero(t, weapon.ID)
-	assert.Equal(t, "midgard", weapon.GameSystem)
+	assert.Equal(t, uint(1), weapon.GameSystemId)
+}
+
+func TestWeapon_Create_SetsDefaultGameSystem(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	weapon := &Weapon{
+		Equipment: Equipment{
+			Name:         "TestWeaponDefaultGS",
+			Beschreibung: "Defaults to midgard",
+			Gewicht:      2.5,
+			Wert:         15.0,
+			PersonalItem: false,
+		},
+		SkillRequired: "Einhandschwerter",
+		Damage:        "1W6",
+	}
+
+	err := weapon.Create()
+	require.NoError(t, err)
+	assert.Equal(t, uint(1), weapon.GameSystemId)
+	assert.NotEmpty(t, weapon.GameSystem)
 }
 
 func TestWeapon_First_Success(t *testing.T) {
@@ -718,7 +783,7 @@ func TestWeapon_First_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "TestFirstWeapon", foundWeapon.Name)
-	assert.Equal(t, "midgard", foundWeapon.GameSystem)
+	assert.Equal(t, uint(1), foundWeapon.GameSystemId)
 }
 
 func TestWeapon_First_NotFound(t *testing.T) {
@@ -773,7 +838,7 @@ func TestWeapon_RangedWeaponRanges(t *testing.T) {
 	// Create a ranged weapon with ranges
 	weapon := &Weapon{
 		Equipment: Equipment{
-			GameSystem:   "midgard",
+			GameSystemId: 1,
 			Name:         "TestBogen",
 			Beschreibung: "Test ranged weapon",
 			Gewicht:      1.5,
@@ -804,8 +869,8 @@ func TestWeapon_IsRanged(t *testing.T) {
 	// Test ranged weapon (has at least one range > 0)
 	rangedWeapon := &Weapon{
 		Equipment: Equipment{
-			GameSystem: "midgard",
-			Name:       "TestArmbrust",
+			GameSystemId: 1,
+			Name:         "TestArmbrust",
 		},
 		SkillRequired: "Armbrust",
 		Damage:        "2W6",
@@ -821,8 +886,8 @@ func TestWeapon_IsRanged(t *testing.T) {
 	// Test melee weapon (all ranges are 0)
 	meleeWeapon := &Weapon{
 		Equipment: Equipment{
-			GameSystem: "midgard",
-			Name:       "TestSchwert",
+			GameSystemId: 1,
+			Name:         "TestSchwert",
 		},
 		SkillRequired: "Einhandschwerter",
 		Damage:        "1W6+2",
@@ -855,7 +920,7 @@ func TestContainer_Create(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotZero(t, container.ID)
-	assert.Equal(t, "midgard", container.GameSystem)
+	assert.Equal(t, uint(1), container.GameSystemId)
 }
 
 func TestContainer_First_Success(t *testing.T) {
@@ -872,7 +937,7 @@ func TestContainer_First_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "TestFirstContainer", foundContainer.Name)
-	assert.Equal(t, "midgard", foundContainer.GameSystem)
+	assert.Equal(t, uint(1), foundContainer.GameSystemId)
 }
 
 func TestContainer_First_NotFound(t *testing.T) {
@@ -921,6 +986,27 @@ func TestContainer_Save(t *testing.T) {
 	assert.Equal(t, 25.0, foundContainer.Tragkraft)
 }
 
+func TestContainer_Create_SetsDefaultGameSystem(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	container := &Container{
+		Equipment: Equipment{
+			Name:         "TestContainerDefaultGS",
+			Beschreibung: "Defaults to midgard",
+			Gewicht:      0.3,
+			Wert:         3.0,
+			PersonalItem: false,
+		},
+		Tragkraft: 5.0,
+		Volumen:   8.0,
+	}
+
+	err := container.Create()
+	require.NoError(t, err)
+	assert.Equal(t, uint(1), container.GameSystemId)
+	assert.NotEmpty(t, container.GameSystem)
+}
+
 // =============================================================================
 // Tests for Transportation struct
 // =============================================================================
@@ -938,7 +1024,7 @@ func TestTransportation_Create(t *testing.T) {
 	transportation := &Transportation{
 		Container: Container{
 			Equipment: Equipment{
-				GameSystem:   "midgard",
+				GameSystemId: 1,
 				Name:         "TestCreateTransportation",
 				Beschreibung: "Test transportation description",
 				Gewicht:      100.0,
@@ -953,7 +1039,7 @@ func TestTransportation_Create(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotZero(t, transportation.ID)
-	assert.Equal(t, "midgard", transportation.GameSystem)
+	assert.Equal(t, uint(1), transportation.GameSystemId)
 }
 
 func TestTransportation_First_Success(t *testing.T) {
@@ -963,7 +1049,7 @@ func TestTransportation_First_Success(t *testing.T) {
 	testTransportation := &Transportation{
 		Container: Container{
 			Equipment: Equipment{
-				GameSystem:   "midgard",
+				GameSystemId: 1,
 				Name:         "TestFirstTransportation",
 				Beschreibung: "Test transportation description",
 				Gewicht:      100.0,
@@ -983,7 +1069,7 @@ func TestTransportation_First_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "TestFirstTransportation", foundTransportation.Name)
-	assert.Equal(t, "midgard", foundTransportation.GameSystem)
+	assert.Equal(t, uint(1), foundTransportation.GameSystemId)
 }
 
 func TestTransportation_FirstId_Success(t *testing.T) {
@@ -993,7 +1079,7 @@ func TestTransportation_FirstId_Success(t *testing.T) {
 	testTransportation := &Transportation{
 		Container: Container{
 			Equipment: Equipment{
-				GameSystem:   "midgard",
+				GameSystemId: 1,
 				Name:         "TestFirstIdTransportation",
 				Beschreibung: "Test transportation description",
 				Gewicht:      100.0,
@@ -1022,7 +1108,7 @@ func TestTransportation_Save(t *testing.T) {
 	transportation := &Transportation{
 		Container: Container{
 			Equipment: Equipment{
-				GameSystem:   "midgard",
+				GameSystemId: 1,
 				Name:         "TestSaveTransportation",
 				Beschreibung: "Test transportation description",
 				Gewicht:      100.0,
@@ -1049,6 +1135,29 @@ func TestTransportation_Save(t *testing.T) {
 	assert.Equal(t, 300.0, foundTransportation.Tragkraft)
 }
 
+func TestTransportation_Create_SetsDefaultGameSystem(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	transportation := &Transportation{
+		Container: Container{
+			Equipment: Equipment{
+				Name:         "TestTransportDefaultGS",
+				Beschreibung: "Defaults to midgard",
+				Gewicht:      20.0,
+				Wert:         200.0,
+				PersonalItem: false,
+			},
+			Tragkraft: 100.0,
+			Volumen:   250.0,
+		},
+	}
+
+	err := transportation.Create()
+	require.NoError(t, err)
+	assert.Equal(t, uint(1), transportation.GameSystemId)
+	assert.NotEmpty(t, transportation.GameSystem)
+}
+
 // =============================================================================
 // Tests for Believe struct
 // =============================================================================
@@ -1068,7 +1177,7 @@ func TestBelieve_Create(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotZero(t, believe.ID)
-	assert.Equal(t, "midgard", believe.GameSystem)
+	assert.Equal(t, uint(1), believe.GameSystemId)
 }
 
 func TestBelieve_First_Success(t *testing.T) {
@@ -1085,7 +1194,7 @@ func TestBelieve_First_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "TestFirstBelieve", foundBelieve.Name)
-	assert.Equal(t, "midgard", foundBelieve.GameSystem)
+	assert.Equal(t, uint(1), foundBelieve.GameSystemId)
 }
 
 func TestBelieve_FirstId_Success(t *testing.T) {
@@ -1322,7 +1431,7 @@ func TestFirst_EmptyName_EdgeCases(t *testing.T) {
 func TestSkill_StructFieldValidation(t *testing.T) {
 	skill := Skill{
 		ID:               1,
-		GameSystem:       "midgard",
+		GameSystemId:     1,
 		Name:             "TestSkill",
 		Beschreibung:     "Test description",
 		Quelle:           "Test source",
@@ -1337,7 +1446,7 @@ func TestSkill_StructFieldValidation(t *testing.T) {
 	}
 
 	assert.Equal(t, uint(1), skill.ID)
-	assert.Equal(t, "midgard", skill.GameSystem)
+	assert.Equal(t, uint(1), skill.GameSystemId)
 	assert.Equal(t, "TestSkill", skill.Name)
 	assert.Equal(t, "Test description", skill.Beschreibung)
 	assert.Equal(t, "Test source", skill.Quelle)
@@ -1355,7 +1464,7 @@ func TestWeaponSkill_StructFieldValidation(t *testing.T) {
 	weaponSkill := WeaponSkill{
 		Skill: Skill{
 			ID:               1,
-			GameSystem:       "midgard",
+			GameSystemId:     1,
 			Name:             "TestWeaponSkill",
 			Beschreibung:     "Test weapon skill description",
 			Category:         "Kampf",
@@ -1368,7 +1477,7 @@ func TestWeaponSkill_StructFieldValidation(t *testing.T) {
 	}
 
 	assert.Equal(t, uint(1), weaponSkill.ID)
-	assert.Equal(t, "midgard", weaponSkill.GameSystem)
+	assert.Equal(t, uint(1), weaponSkill.GameSystemId)
 	assert.Equal(t, "TestWeaponSkill", weaponSkill.Name)
 	assert.Equal(t, "Test weapon skill description", weaponSkill.Beschreibung)
 	assert.Equal(t, "Kampf", weaponSkill.Category)
@@ -1382,7 +1491,7 @@ func TestWeaponSkill_StructFieldValidation(t *testing.T) {
 func TestSpell_StructFieldValidation(t *testing.T) {
 	spell := Spell{
 		ID:               1,
-		GameSystem:       "midgard",
+		GameSystemId:     1,
 		Name:             "TestSpell",
 		Beschreibung:     "Test spell description",
 		Quelle:           "Test source",
@@ -1403,7 +1512,6 @@ func TestSpell_StructFieldValidation(t *testing.T) {
 	}
 
 	assert.Equal(t, uint(1), spell.ID)
-	assert.Equal(t, "midgard", spell.GameSystem)
 	assert.Equal(t, "TestSpell", spell.Name)
 	assert.Equal(t, "Test spell description", spell.Beschreibung)
 	assert.Equal(t, "Test source", spell.Quelle)
@@ -1421,12 +1529,13 @@ func TestSpell_StructFieldValidation(t *testing.T) {
 	assert.Equal(t, "elementar", spell.Ursprung)
 	assert.Equal(t, "Zerstören", spell.Category)
 	assert.Equal(t, "Spruch", spell.LearningCategory)
+	assert.Equal(t, uint(1), spell.GameSystemId)
 }
 
 func TestEquipment_StructFieldValidation(t *testing.T) {
 	equipment := Equipment{
 		ID:           1,
-		GameSystem:   "midgard",
+		GameSystemId: 1,
 		Name:         "TestEquipment",
 		Beschreibung: "Test equipment description",
 		Quelle:       "Test source",
@@ -1438,7 +1547,6 @@ func TestEquipment_StructFieldValidation(t *testing.T) {
 	}
 
 	assert.Equal(t, uint(1), equipment.ID)
-	assert.Equal(t, "midgard", equipment.GameSystem)
 	assert.Equal(t, "TestEquipment", equipment.Name)
 	assert.Equal(t, "Test equipment description", equipment.Beschreibung)
 	assert.Equal(t, "Test source", equipment.Quelle)
@@ -1447,13 +1555,14 @@ func TestEquipment_StructFieldValidation(t *testing.T) {
 	assert.Equal(t, 2.5, equipment.Gewicht)
 	assert.Equal(t, 15.0, equipment.Wert)
 	assert.True(t, equipment.PersonalItem)
+	assert.Equal(t, uint(1), equipment.GameSystemId)
 }
 
 func TestWeapon_StructFieldValidation(t *testing.T) {
 	weapon := Weapon{
 		Equipment: Equipment{
 			ID:           1,
-			GameSystem:   "midgard",
+			GameSystemId: 1,
 			Name:         "TestWeapon",
 			Beschreibung: "Test weapon description",
 			Gewicht:      3.0,
@@ -1465,7 +1574,6 @@ func TestWeapon_StructFieldValidation(t *testing.T) {
 	}
 
 	assert.Equal(t, uint(1), weapon.ID)
-	assert.Equal(t, "midgard", weapon.GameSystem)
 	assert.Equal(t, "TestWeapon", weapon.Name)
 	assert.Equal(t, "Test weapon description", weapon.Beschreibung)
 	assert.Equal(t, 3.0, weapon.Gewicht)
@@ -1473,13 +1581,14 @@ func TestWeapon_StructFieldValidation(t *testing.T) {
 	assert.False(t, weapon.PersonalItem)
 	assert.Equal(t, "Einhandschwerter", weapon.SkillRequired)
 	assert.Equal(t, "1W8+3", weapon.Damage)
+	assert.Equal(t, uint(1), weapon.GameSystemId)
 }
 
 func TestContainer_StructFieldValidation(t *testing.T) {
 	container := Container{
 		Equipment: Equipment{
 			ID:           1,
-			GameSystem:   "midgard",
+			GameSystemId: 1,
 			Name:         "TestContainer",
 			Beschreibung: "Test container description",
 			Gewicht:      1.0,
@@ -1491,7 +1600,6 @@ func TestContainer_StructFieldValidation(t *testing.T) {
 	}
 
 	assert.Equal(t, uint(1), container.ID)
-	assert.Equal(t, "midgard", container.GameSystem)
 	assert.Equal(t, "TestContainer", container.Name)
 	assert.Equal(t, "Test container description", container.Beschreibung)
 	assert.Equal(t, 1.0, container.Gewicht)
@@ -1499,6 +1607,7 @@ func TestContainer_StructFieldValidation(t *testing.T) {
 	assert.False(t, container.PersonalItem)
 	assert.Equal(t, 15.0, container.Tragkraft)
 	assert.Equal(t, 30.0, container.Volumen)
+	assert.Equal(t, uint(1), container.GameSystemId)
 }
 
 func TestTransportation_StructFieldValidation(t *testing.T) {
@@ -1506,7 +1615,7 @@ func TestTransportation_StructFieldValidation(t *testing.T) {
 		Container: Container{
 			Equipment: Equipment{
 				ID:           1,
-				GameSystem:   "midgard",
+				GameSystemId: 1,
 				Name:         "TestTransportation",
 				Beschreibung: "Test transportation description",
 				Gewicht:      150.0,
@@ -1519,7 +1628,6 @@ func TestTransportation_StructFieldValidation(t *testing.T) {
 	}
 
 	assert.Equal(t, uint(1), transportation.ID)
-	assert.Equal(t, "midgard", transportation.GameSystem)
 	assert.Equal(t, "TestTransportation", transportation.Name)
 	assert.Equal(t, "Test transportation description", transportation.Beschreibung)
 	assert.Equal(t, 150.0, transportation.Gewicht)
@@ -1527,12 +1635,13 @@ func TestTransportation_StructFieldValidation(t *testing.T) {
 	assert.False(t, transportation.PersonalItem)
 	assert.Equal(t, 300.0, transportation.Tragkraft)
 	assert.Equal(t, 600.0, transportation.Volumen)
+	assert.Equal(t, uint(1), transportation.GameSystemId)
 }
 
 func TestBelieve_StructFieldValidation(t *testing.T) {
 	believe := Believe{
 		ID:           1,
-		GameSystem:   "midgard",
+		GameSystemId: 1,
 		Name:         "TestBelieve",
 		Beschreibung: "Test believe description",
 		Quelle:       "Test source",
@@ -1541,12 +1650,12 @@ func TestBelieve_StructFieldValidation(t *testing.T) {
 	}
 
 	assert.Equal(t, uint(1), believe.ID)
-	assert.Equal(t, "midgard", believe.GameSystem)
 	assert.Equal(t, "TestBelieve", believe.Name)
 	assert.Equal(t, "Test believe description", believe.Beschreibung)
 	assert.Equal(t, "Test source", believe.Quelle)
 	assert.Equal(t, uint(10), believe.SourceID)
 	assert.Equal(t, 42, believe.PageNumber)
+	assert.Equal(t, uint(1), believe.GameSystemId)
 }
 
 // =============================================================================
@@ -1691,12 +1800,13 @@ func TestGSMaster_EdgeCases(t *testing.T) {
 
 func TestLearnCost_StructFields(t *testing.T) {
 	learnCost := LearnCost{
-		Stufe: 3,
-		LE:    10,
-		TE:    5,
-		Ep:    100,
-		Money: 50,
-		PP:    2,
+		GameSystemId: 1,
+		Stufe:        3,
+		LE:           10,
+		TE:           5,
+		Ep:           100,
+		Money:        50,
+		PP:           2,
 	}
 
 	assert.Equal(t, 3, learnCost.Stufe)
@@ -1707,16 +1817,39 @@ func TestLearnCost_StructFields(t *testing.T) {
 	assert.Equal(t, 2, learnCost.PP)
 }
 
+func TestLearnCost_EnsureGameSystem_DefaultsToMidgard(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	lc := LearnCost{}
+	lc.ensureGameSystem()
+
+	assert.NotZero(t, lc.GameSystemId)
+	assert.NotEmpty(t, lc.GameSystem)
+}
+
+func TestLearnCost_EnsureGameSystem_UsesProvidedGameSystem(t *testing.T) {
+	setupGSMasterTestDB(t)
+
+	gs := &GameSystem{Code: "TST-LC", Name: "Test LearnCost"}
+	require.NoError(t, database.DB.Create(gs).Error)
+
+	lc := LearnCost{GameSystemId: gs.ID}
+	lc.ensureGameSystem()
+
+	assert.Equal(t, gs.ID, lc.GameSystemId)
+	assert.Equal(t, gs.Name, lc.GameSystem)
+}
+
 // TestSkill_Create_DefaultImprovable verifies that new skills get Improvable=true by default
 func TestSkill_Create_DefaultImprovable(t *testing.T) {
 	database.SetupTestDB(true)
 
 	// Test 1: Create skill without setting Improvable or InnateSkill
 	skill1 := Skill{
-		Name:        "Test Skill Default",
-		GameSystem:  "midgard",
-		Category:    "test",
-		Initialwert: 5,
+		Name:         "Test Skill Default",
+		GameSystemId: 1,
+		Category:     "test",
+		Initialwert:  5,
 	}
 	err := skill1.Create()
 	require.NoError(t, err)
@@ -1730,12 +1863,12 @@ func TestSkill_Create_DefaultImprovable(t *testing.T) {
 
 	// Test 2: Create skill with explicit Improvable=false and InnateSkill=true
 	skill2 := Skill{
-		Name:        "Test Innate Skill",
-		GameSystem:  "midgard",
-		Category:    "test",
-		Initialwert: 5,
-		Improvable:  false,
-		InnateSkill: true,
+		Name:         "Test Innate Skill",
+		GameSystemId: 1,
+		Category:     "test",
+		Initialwert:  5,
+		Improvable:   false,
+		InnateSkill:  true,
 	}
 	err = skill2.Create()
 	require.NoError(t, err)
@@ -1749,12 +1882,12 @@ func TestSkill_Create_DefaultImprovable(t *testing.T) {
 
 	// Test 3: Create skill with explicit Improvable=true
 	skill3 := Skill{
-		Name:        "Test Explicit Improvable",
-		GameSystem:  "midgard",
-		Category:    "test",
-		Initialwert: 5,
-		Improvable:  true,
-		InnateSkill: false,
+		Name:         "Test Explicit Improvable",
+		GameSystemId: 1,
+		Category:     "test",
+		Initialwert:  5,
+		Improvable:   true,
+		InnateSkill:  false,
 	}
 	err = skill3.Create()
 	require.NoError(t, err)
@@ -1774,10 +1907,10 @@ func TestWeaponSkill_Create_DefaultImprovable(t *testing.T) {
 	// Test 1: Create weapon skill without setting Improvable or InnateSkill
 	weaponSkill := WeaponSkill{
 		Skill: Skill{
-			Name:        "Test Weapon Skill",
-			GameSystem:  "midgard",
-			Category:    "weapon",
-			Initialwert: 5,
+			Name:         "Test Weapon Skill",
+			GameSystemId: 1,
+			Category:     "weapon",
+			Initialwert:  5,
 		},
 	}
 	err := weaponSkill.Create()

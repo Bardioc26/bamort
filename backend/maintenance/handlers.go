@@ -3,6 +3,7 @@ package maintenance
 import (
 	"bamort/config"
 	"bamort/database"
+	"bamort/gamesystem"
 	"bamort/logger"
 	"bamort/models"
 	"bamort/user"
@@ -40,6 +41,13 @@ func migrateAllStructures(db *gorm.DB) error {
 		return fmt.Errorf("failed to migrate database structures: %w", err)
 	}
 
+	// Migrate all structures in the correct order
+	logger.Debug("Migriere GameSystemstrukturen...")
+	if err := gamesystem.MigrateStructure(db); err != nil {
+		logger.Error("Fehler beim Migrieren der GameSystemstrukturen: %s", err.Error())
+		return fmt.Errorf("failed to migrate game system structures: %w", err)
+	}
+
 	logger.Debug("Migriere Benutzerstrukturen...")
 	if err := user.MigrateStructure(db); err != nil {
 		logger.Error("Fehler beim Migrieren der Benutzerstrukturen: %s", err.Error())
@@ -67,6 +75,16 @@ func migrateDataIfNeeded(db *gorm.DB) error {
 	if err != nil {
 		logger.Error("Fehler beim Migrieren der Datenbankdaten: %s", err.Error())
 		return fmt.Errorf("failed to migrate database data: %w", err)
+	}
+	err = gamesystem.MigrateDataIfNeeded(db)
+	if err != nil {
+		logger.Error("Fehler beim Migrieren der GameSystem-Daten: %s", err.Error())
+		return fmt.Errorf("failed to migrate game system data: %w", err)
+	}
+	err = models.MigrateDataIfNeeded(db)
+	if err != nil {
+		logger.Error("Fehler beim Migrieren der Models-Daten: %s", err.Error())
+		return fmt.Errorf("failed to migrate models data: %w", err)
 	}
 
 	// Kopiere categorie nach learning_category für Spells, wenn learning_category leer ist
@@ -209,7 +227,12 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 	// (Basis-Tabellen zuerst wegen Foreign Key-Abhängigkeiten)
 	tables := []interface{}{
 		// Basis-Strukturen (keine Abhängigkeiten)
+		&database.MigrationHistory{},
+		&database.SchemaVersion{},
 		&user.User{},
+
+		// Game System - Basis
+		&models.GameSystem{},
 
 		// Learning Costs System - Basis
 		&models.Source{},
@@ -345,10 +368,11 @@ func copyTableData(sourceDB, targetDB *gorm.DB, model interface{}) error {
 		}
 
 		// Batch in SQLite einfügen
-		// Use Save() instead of Create() to avoid GORM applying default values to zero values (e.g., false for booleans)
+		// Use Save() with SkipHooks to preserve raw values and avoid callbacks that rely on global DB state
+		db := targetDB.Session(&gorm.Session{SkipHooks: true})
 		for i := 0; i < recordsVal.Len(); i++ {
 			record := recordsVal.Index(i).Addr().Interface()
-			if err := targetDB.Save(record).Error; err != nil {
+			if err := db.Save(record).Error; err != nil {
 				logger.Error("Fehler beim Speichern von Datensatz in Batch %d für %s: %s", batchNum, tableName, err.Error())
 				return err
 			}

@@ -34,10 +34,10 @@ func TestMigrateSkillCategoriesToRelations(t *testing.T) {
 
 	// Create a test source - use unique code to avoid conflicts
 	source := models.Source{
-		Code:       "TSTMIG1",
-		Name:       "Test Migration Source",
-		GameSystem: "midgard",
-		IsActive:   true,
+		Code:         "TSTMIG1",
+		Name:         "Test Migration Source",
+		GameSystemId: 1,
+		IsActive:     true,
 	}
 	if err := testDB.Create(&source).Error; err != nil {
 		t.Fatalf("Failed to create test source: %v", err)
@@ -49,7 +49,7 @@ func TestMigrateSkillCategoriesToRelations(t *testing.T) {
 			Name:             "TestMigSkill_Schwimmen",
 			Category:         "Körper",
 			Difficulty:       "leicht",
-			GameSystem:       "midgard",
+			GameSystemId: 1,
 			Initialwert:      12,
 			Improvable:       true,
 			Bonuseigenschaft: "Gw",
@@ -59,7 +59,7 @@ func TestMigrateSkillCategoriesToRelations(t *testing.T) {
 			Name:             "TestMigSkill_Klettern",
 			Category:         "Körper",
 			Difficulty:       "normal",
-			GameSystem:       "midgard",
+			GameSystemId: 1,
 			Initialwert:      10,
 			Improvable:       true,
 			Bonuseigenschaft: "Gw",
@@ -69,7 +69,7 @@ func TestMigrateSkillCategoriesToRelations(t *testing.T) {
 			Name:             "TestMigSkill_LesenSchreiben",
 			Category:         "Wissen",
 			Difficulty:       "schwer",
-			GameSystem:       "midgard",
+			GameSystemId: 1,
 			Initialwert:      0,
 			Improvable:       true,
 			Bonuseigenschaft: "In",
@@ -177,7 +177,7 @@ func TestMigrateSkillCategoryDifficulty_NoCategory(t *testing.T) {
 		source = models.Source{
 			Code:       "TSTMIG2",
 			Name:       "Test Migration Source 2",
-			GameSystem: "midgard",
+			GameSystemId: 1,
 			IsActive:   true,
 		}
 		if err := testDB.Create(&source).Error; err != nil {
@@ -190,7 +190,7 @@ func TestMigrateSkillCategoryDifficulty_NoCategory(t *testing.T) {
 		Name:        "TestMigSkill_NoCategory",
 		Category:    "", // Empty category
 		Difficulty:  "", // Empty difficulty
-		GameSystem:  "midgard",
+		GameSystemId: 1,
 		Initialwert: 10,
 		SourceID:    source.ID,
 	}

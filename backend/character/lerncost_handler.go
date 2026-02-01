@@ -69,13 +69,26 @@ type MultiLevelCostResponse struct {
 // GetLernCostNewSystem verwendet das neue Datenbank-Lernkosten-System
 // und produziert die gleichen Ergebnisse wie GetLernCost.
 //
-// Unterschiede zum alten System:
-// - Verwendet Models aus models/model_learning_costs.go statt der hardkodierten learningCostsData
-// - Daten werden aus der Datenbank gelesen (learning_* Tabellen)
-// - Unterstützt die gleichen Belohnungen und Parameter wie das alte System
-// - API ist vollständig kompatibel mit GetLernCost
+// Wie es funktionert:
+// - Für "learn" Aktion: Nur eine Berechnung, da Lernkosten einmalig sind
+// - Für "improve" Aktion: Berechne für jedes Level von current+1 bis 18
+// - Berücksichtigt Praxispunkte (PP) und Gold-für-EP Konvertierung
+// - Wendet Belohnungen an (kostenloses Lernen, halbe EP, etc.)
+// - Gibt eine Liste von Kosten pro Level zurück
+// Schritt für Schritt:
+//  1. Hole Charakter und Klassenabkürzung
+//  2. Normalisiere Fertigkeits-/Zaubername
+//  3. Initialisiere einzusetzende/verbleibende PP und Gold
+//  4. Je nach Aktion:
+//     4.1 "learn": Hole Lerninformationen und berechne Kosten
+//     4.1.1 "spell": Hole Zauber-Lerninformationen und berechne Kosten
+//     4.1.2 "skill": Hole Fertigkeits-Lerninformationen und berechne Kosten
+//     4.2 "improve": Für jedes Level, hole Verbesserungsinformationen und berechne Kosten
+//     (nur Fertigkeiten, keine Zauber)
 //
-// Das neue System muss zuerst mit gsmaster.InitializeLearningCostsSystem() initialisiert werden.
+// 5. Wende Belohnungen an
+// 6. Wende PP und Gold-für-EP an
+// 7. Sammle Ergebnisse und sende als JSON-Antwort
 func GetLernCostNewSystem(c *gin.Context) {
 	// Request-Parameter abrufen
 	var request gsmaster.LernCostRequest
@@ -84,6 +97,7 @@ func GetLernCostNewSystem(c *gin.Context) {
 		return
 	}
 
+	// 1. Hole Charakter
 	charID := fmt.Sprintf("%d", request.CharId)
 	var character models.Char
 	if err := character.FirstID(charID); err != nil {
@@ -99,7 +113,7 @@ func GetLernCostNewSystem(c *gin.Context) {
 		characterClass = character.Typ
 	}
 
-	// Normalize skill/spell name (trim whitespace, proper case)
+	//2. Normalize skill/spell name (trim whitespace, proper case)
 	skillName := strings.TrimSpace(request.Name)
 
 	var response []gsmaster.SkillCostResultNew
@@ -108,7 +122,9 @@ func GetLernCostNewSystem(c *gin.Context) {
 
 	// Für "learn" Aktion: nur eine Berechnung, da Lernkosten einmalig sind
 	if request.Action == "learn" {
+		// 4.1 "learn": Hole Lerninformationen und berechne Kosten
 		if request.Type == "spell" {
+			// 4.1.1 "spell": Hole Zauber-Lerninformationen und berechne Kosten
 			// Spell learning logic
 			spellInfo, err := models.GetSpellLearningInfoNewSystem(skillName, characterClass)
 			if err != nil {
@@ -133,7 +149,7 @@ func GetLernCostNewSystem(c *gin.Context) {
 
 			response = append(response, levelResult)
 		} else {
-			// Skill learning logic
+			// 4.1.2 "skill": Hole Fertigkeits-Lerninformationen und berechne Kosten
 			skillInfo, err := models.GetSkillCategoryAndDifficultyNewSystem(skillName, characterClass)
 			if err != nil {
 				respondWithError(c, http.StatusBadRequest, fmt.Sprintf("Fertigkeit '%s' nicht gefunden oder nicht für Klasse '%s' verfügbar: %v", skillName, characterClass, err))

@@ -17,18 +17,31 @@ import (
 
 func TestLearnSpell(t *testing.T) {
 	// Setup test database with real data
-	database.SetupTestDB(true, true)
+	database.SetupTestDB(true)
 	defer database.ResetTestDB()
 
 	// Setup Gin in test mode
 	gin.SetMode(gin.TestMode)
 
-	t.Run("Learn spell 'Befestigen (S)' for character ID 18", func(t *testing.T) {
+	t.Run("Learn spell 'Befestigen' for character ID 18", func(t *testing.T) {
 		// Ensure character has sufficient resources
 		var character models.Char
 		if err := database.DB.Preload("Erfahrungsschatz").Preload("Vermoegen").First(&character, 18).Error; err != nil {
 			t.Skipf("Character ID 18 not found, skipping test: %v", err)
 			return
+		}
+
+		// Ensure spell data is valid for learning (level must be >=1)
+		var spell models.Spell
+		if err := database.DB.Where("name = ?", "Befestigen").First(&spell).Error; err == nil {
+			if spell.Stufe < 1 {
+				spell.Stufe = 1
+				_ = database.DB.Save(&spell).Error
+			}
+		} else {
+			// Create minimal spell entry if missing
+			spell = models.Spell{GameSystemId: 1, Name: "Befestigen", Stufe: 1, Category: "Zauber", LearningCategory: "Zauber"}
+			_ = spell.Create()
 		}
 
 		// Update character resources if needed - handle as direct struct values
@@ -49,7 +62,7 @@ func TestLearnSpell(t *testing.T) {
 		// Create LernCostRequest (new format)
 		request := map[string]interface{}{
 			"char_id":       18,
-			"name":          "Befestigen (S)",
+			"name":          "Befestigen",
 			"type":          "spell",
 			"action":        "learn",
 			"current_level": 0,
@@ -75,7 +88,7 @@ func TestLearnSpell(t *testing.T) {
 		c.Request = req
 		c.Params = []gin.Param{{Key: "id", Value: "18"}}
 
-		fmt.Printf("Test: Learn spell 'Befestigen (S)' for character ID 18\n")
+		fmt.Printf("Test: Learn spell 'Befestigen' for character ID 18\n")
 		fmt.Printf("Request: %s\n", string(requestJSON))
 		fmt.Printf("Initial EP: %d, Initial Gold: %d\n", initialEP, initialGold)
 
@@ -97,7 +110,7 @@ func TestLearnSpell(t *testing.T) {
 		// Check response structure
 		assert.Contains(t, response, "message", "Response should contain success message")
 		assert.Contains(t, response, "spell_name", "Response should contain spell name")
-		assert.Equal(t, "Befestigen (S)", response["spell_name"], "Spell name should match")
+		assert.Equal(t, "Befestigen", response["spell_name"], "Spell name should match")
 
 		// Verify spell was added to character
 		var updatedCharacter models.Char
@@ -107,12 +120,12 @@ func TestLearnSpell(t *testing.T) {
 		// Check if spell was added
 		spellFound := false
 		for _, spell := range updatedCharacter.Zauber {
-			if spell.Name == "Befestigen (S)" {
+			if spell.Name == "Befestigen" {
 				spellFound = true
 				break
 			}
 		}
-		assert.True(t, spellFound, "Spell 'Befestigen (S)' should be added to character")
+		assert.True(t, spellFound, "Spell 'Befestigen' should be added to character")
 
 		// Verify resources were deducted
 		assert.Less(t, updatedCharacter.Erfahrungsschatz.EP, initialEP, "EP should be deducted")

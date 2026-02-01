@@ -26,7 +26,7 @@ export default {
     description: 'Laden Sie Charakterdaten aus VTT- oder CSV-Dateien hoch.',
     charVTT: 'Charakter VTT',
     charCSV: 'Charakter CSV (optional)',
-    vttHelp: 'JSON- oder CSV-Datei mit Charakterdaten',
+    vttHelp: 'JSON-Datei mit Charakterdaten',
     csvHelp: 'Optionale CSV-Datei mit zusätzlichen Daten',
     upload: 'Hochladen',
     invalidFileType: 'Ungültiger Dateityp. Nur .csv und .json Dateien sind erlaubt.',

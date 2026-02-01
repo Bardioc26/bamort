@@ -6,10 +6,19 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func defaultGameSystem(t *testing.T) *models.GameSystem {
+	gs := models.GetGameSystem(0, "midgard")
+	require.NotNil(t, gs)
+	require.NotZero(t, gs.ID)
+	return gs
+}
 
 func TestSkill_Create(t *testing.T) {
 	database.SetupTestDB()
+	gs := defaultGameSystem(t)
 	testDefinition := []struct {
 		name    string
 		skill   *models.Skill
@@ -44,7 +53,8 @@ func TestSkill_Create(t *testing.T) {
 				return
 			}
 			assert.NoError(t, err)
-			assert.Equal(t, "midgard", tt.skill.GameSystem)
+			assert.Equal(t, gs.ID, tt.skill.GameSystemId)
+			assert.NotZero(t, tt.skill.GameSystemId)
 			assert.NotZero(t, tt.skill.ID)
 		})
 	}
@@ -53,6 +63,7 @@ func TestSkill_Create(t *testing.T) {
 
 func TestWeaponSkill_Create(t *testing.T) {
 	database.SetupTestDB()
+	gs := defaultGameSystem(t)
 	testDefinition := []struct {
 		name        string
 		weaponSkill *models.WeaponSkill
@@ -89,7 +100,8 @@ func TestWeaponSkill_Create(t *testing.T) {
 				return
 			}
 			assert.NoError(t, err)
-			assert.Equal(t, "midgard", tt.weaponSkill.GameSystem)
+			assert.Equal(t, gs.ID, tt.weaponSkill.GameSystemId)
+			assert.NotZero(t, tt.weaponSkill.GameSystemId)
 			assert.NotZero(t, tt.weaponSkill.ID)
 		})
 	}
@@ -106,6 +118,7 @@ func TestSkill_TableName(t *testing.T) {
 
 func TestSkill_First(t *testing.T) {
 	database.SetupTestDB()
+	gs := defaultGameSystem(t)
 	testDefinition := []struct {
 		name     string
 		skill    *models.Skill
@@ -115,8 +128,8 @@ func TestSkill_First(t *testing.T) {
 		{
 			name: "existing skill",
 			skill: &models.Skill{
-				Name:       "Test Skill",
-				GameSystem: "midgard",
+				Name:         "Test Skill",
+				GameSystemId: 1,
 			},
 			findName: "Test Skill",
 			wantErr:  false,
@@ -153,7 +166,8 @@ func TestSkill_First(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Equal(t, tt.skill.Name, s.Name)
-			assert.Equal(t, "midgard", s.GameSystem)
+			assert.Equal(t, gs.ID, s.GameSystemId)
+			assert.NotZero(t, s.GameSystemId)
 		})
 	}
 	database.ResetTestDB()
@@ -161,6 +175,7 @@ func TestSkill_First(t *testing.T) {
 
 func TestSkill_FirstId(t *testing.T) {
 	database.SetupTestDB()
+	gs := defaultGameSystem(t)
 	testDefinition := []struct {
 		name    string
 		skill   *models.Skill
@@ -170,8 +185,8 @@ func TestSkill_FirstId(t *testing.T) {
 		{
 			name: "existing skill",
 			skill: &models.Skill{
-				Name:       "Test Skill",
-				GameSystem: "midgard",
+				Name:         "Test Skill",
+				GameSystemId: 1,
 			},
 			findId:  1,
 			wantErr: false,
@@ -209,7 +224,8 @@ func TestSkill_FirstId(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Equal(t, tt.skill.Name, s.Name)
-			assert.Equal(t, "midgard", s.GameSystem)
+			assert.Equal(t, gs.ID, s.GameSystemId)
+			assert.NotZero(t, s.GameSystemId)
 			assert.Equal(t, tt.findId, s.ID)
 		})
 	}
@@ -228,7 +244,7 @@ func TestSkill_Save(t *testing.T) {
 			skill: &models.Skill{
 				Name:         "Test Skill",
 				Beschreibung: "Original Description",
-				GameSystem:   "midgard",
+				GameSystemId: 1,
 			},
 			wantErr: false,
 		},
@@ -264,6 +280,7 @@ func TestSkill_Save(t *testing.T) {
 				err = saved.FirstId(tt.skill.ID)
 				assert.NoError(t, err)
 				assert.Equal(t, "Updated Description", saved.Beschreibung)
+				assert.NotZero(t, saved.GameSystemId)
 			}
 		})
 	}
@@ -280,8 +297,8 @@ func TestSkill_Delete(t *testing.T) {
 		{
 			name: "delete existing skill",
 			skill: &models.Skill{
-				Name:       "Test Skill",
-				GameSystem: "midgard",
+				Name:         "Test Skill",
+				GameSystemId: 1,
 			},
 			wantErr: false,
 		},
@@ -334,12 +351,12 @@ func TestSkill_GetSkillCategories(t *testing.T) {
 	// Note: GetSkillCategories() reads from gsm_skill_categories table, not from skills
 	testCategories := []*models.SkillCategory{
 		{
-			Name:       "Category1",
-			GameSystem: "midgard",
+			Name:         "Category1",
+			GameSystemId: 1,
 		},
 		{
-			Name:       "Category2",
-			GameSystem: "midgard",
+			Name:         "Category2",
+			GameSystemId: 1,
 		},
 	}
 

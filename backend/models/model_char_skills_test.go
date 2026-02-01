@@ -18,7 +18,7 @@ func setupTestDB(t *testing.T) {
 
 func createTestSkill(name string) *Skill {
 	return &Skill{
-		GameSystem:       "midgard",
+		GameSystemId:     1,
 		Name:             name,
 		Beschreibung:     "Test skill description",
 		Category:         "Körper",
@@ -342,7 +342,7 @@ func TestSkillStructures_WithDatabase(t *testing.T) {
 
 	weaponSkillData := WeaponSkill{
 		Skill: Skill{
-			GameSystem:       "midgard",
+			GameSystemId:     1,
 			Name:             "Bögen",
 			Beschreibung:     "Bow skills",
 			Category:         "Fernkampf",

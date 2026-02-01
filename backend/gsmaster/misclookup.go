@@ -7,13 +7,18 @@ import (
 	"strings"
 )
 
-// GetMiscLookupByKey retrieves all values for a given key
-// Optional order parameter can be: "id", "value", "source", "source_value"
-// Default is "value" if not specified or invalid
+// GetMiscLookupByKey retrieves values for a key using the default game system id.
+// Optional order parameter can be: "id", "value", "source", "source_value" (defaults to "value").
 func GetMiscLookupByKey(key string, order ...string) ([]models.MiscLookup, error) {
+	gs := models.GetGameSystem(0, "")
+	return GetMiscLookupByKeyForSystem(key, gs.ID, order...)
+}
+
+// GetMiscLookupByKeyForSystem retrieves values for a key filtered by the provided game system id.
+// Optional order parameter can be: "id", "value", "source", "source_value" (defaults to "value").
+func GetMiscLookupByKeyForSystem(key string, gameSystemId uint, order ...string) ([]models.MiscLookup, error) {
 	var items []models.MiscLookup
 
-	// Determine ordering
 	orderBy := "value ASC"
 	if len(order) > 0 && order[0] != "" {
 		switch order[0] {
@@ -30,8 +35,29 @@ func GetMiscLookupByKey(key string, order ...string) ([]models.MiscLookup, error
 		}
 	}
 
-	err := database.DB.Where("`key` = ?", key).Order(orderBy).Find(&items).Error
-	return items, err
+	gs := models.GetGameSystem(gameSystemId, "")
+
+	query := database.DB.Where("`key` = ?", key)
+	if gs.ID != 0 {
+		query = query.Where("game_system_id = ? OR game_system_id = 0 OR game_system_id IS NULL", gs.ID)
+	} else {
+		query = query.Where("game_system_id = 0 OR game_system_id IS NULL")
+	}
+
+	if err := query.Order(orderBy).Find(&items).Error; err != nil {
+		return items, err
+	}
+
+	if gs.ID != 0 {
+		for i := range items {
+			if items[i].GameSystemId == 0 {
+				items[i].GameSystemId = gs.ID
+				database.DB.Model(&items[i]).Update("game_system_id", gs.ID)
+			}
+		}
+	}
+
+	return items, nil
 }
 
 /*

@@ -369,12 +369,12 @@ func TestMigrationWorkflow_StructureIntegrity(t *testing.T) {
 
 	// Test gsmaster category with a skill
 	testSkill := &Skill{
-		GameSystem:  "midgard",
-		Name:        "Test Skill",
-		Category:    "Test Category",
-		Difficulty:  "normal",
-		Initialwert: 5,
-		Improvable:  true,
+		GameSystemId: 1,
+		Name:         "Test Skill",
+		Category:     "Test Category",
+		Difficulty:   "normal",
+		Initialwert:  5,
+		Improvable:   true,
 	}
 	err = database.DB.Create(testSkill).Error
 	assert.NoError(t, err, "Should be able to create a skill")
@@ -386,10 +386,10 @@ func TestMigrationWorkflow_StructureIntegrity(t *testing.T) {
 
 	// Test learning category with a source
 	testSource := &Source{
-		Code:       "TEST",
-		Name:       "Test Source",
-		GameSystem: "midgard",
-		IsActive:   true,
+		Code:         "TEST",
+		Name:         "Test Source",
+		GameSystemId: 1,
+		IsActive:     true,
 	}
 	err = database.DB.Create(testSource).Error
 	assert.NoError(t, err, "Should be able to create a source")

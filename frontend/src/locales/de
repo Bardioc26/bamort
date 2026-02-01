@@ -527,7 +527,16 @@ export default {
     save: 'Speichern',
     saving: 'Wird gespeichert...',
     updating: 'Sichtbarkeit wird aktualisiert...',
-    updateError: 'Fehler beim Aktualisieren der Sichtbarkeit'
+    updateError: 'Fehler beim Aktualisieren der Sichtbarkeit',
+    shareWithUsers: 'Mit bestimmten Benutzern teilen',
+    shareDescription: 'Wählen Sie Benutzer aus, die diesen Charakter sehen können',
+    currentlySharedWith: 'Derzeit geteilt mit',
+    addUsers: 'Benutzer hinzufügen',
+    searchUsers: 'Benutzer suchen...',
+    loadingUsers: 'Lade Benutzer...',
+    noOtherUsers: 'Keine anderen Benutzer verfügbar',
+    noMatchingUsers: 'Keine Benutzer entsprechen Ihrer Suche',
+    noSharedUsers: 'Noch nicht mit Benutzern geteilt'
   },
   userManagement: {
     title: 'Benutzerverwaltung',

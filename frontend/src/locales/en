@@ -523,7 +523,16 @@ export default {
     save: 'Save',
     saving: 'Saving...',
     updating: 'Updating visibility...',
-    updateError: 'Failed to update visibility'
+    updateError: 'Failed to update visibility',
+    shareWithUsers: 'Share with specific users',
+    shareDescription: 'Select users who can view this character',
+    currentlySharedWith: 'Currently shared with',
+    addUsers: 'Add users',
+    searchUsers: 'Search users...',
+    loadingUsers: 'Loading users...',
+    noOtherUsers: 'No other users available',
+    noMatchingUsers: 'No users match your search',
+    noSharedUsers: 'Not shared with any users yet'
   },
   userManagement: {
     title: 'User Management',

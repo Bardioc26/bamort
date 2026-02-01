@@ -1,5 +1,5 @@
 // Frontend version information
-export const VERSION = '0.1.30'
+export const VERSION = '0.2.0'
 
 // Git commit will be injected at build time or detected from env
 export const GIT_COMMIT = import.meta.env.VITE_GIT_COMMIT || 'unknown'

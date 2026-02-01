@@ -1139,7 +1139,7 @@ func TestSearchBeliefs(t *testing.T) {
 	// Ensure game system rows exist (use INSERT OR IGNORE to avoid unique constraint errors)
 	database.DB.Exec("INSERT OR IGNORE INTO game_systems(code,name,description,is_active,created_at,modified_at) VALUES (?,?,?,?,strftime('%s','now'),strftime('%s','now'))", "M5", "M5", "", true)
 
-	// Create some test believes for midgard
+	// Create some test believes for GameSystemId: 1
 	b1 := &models.Believe{GameSystemId: 1, Name: "TestFaithOne", SourceID: 1}
 	b2 := &models.Believe{GameSystemId: 1, Name: "OtherFaith", SourceID: 1}
 	err = b1.Create()

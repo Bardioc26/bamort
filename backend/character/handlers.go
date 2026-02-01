@@ -3113,7 +3113,7 @@ func GetRaces(c *gin.Context) {
 
 // GetCharacterClasses gibt verfügbare Klassen zurück
 func GetCharacterClasses(c *gin.Context) {
-	// Get game system from query parameter, default to "midgard"
+	// Get game system from query parameter, default to GameSystemId: 1
 	gameSystem := c.DefaultQuery("game_system", "midgard")
 
 	// Load character classes from database
@@ -3154,7 +3154,7 @@ func SearchBeliefs(c *gin.Context) {
 		return
 	}
 
-	// Get game system from query parameter, default to "midgard"
+	// Get game system from query parameter, default to GameSystemId: 1
 	gameSystem := c.DefaultQuery("game_system", "midgard")
 
 	// Load beliefs from database

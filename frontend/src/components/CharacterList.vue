@@ -23,7 +23,7 @@
     
     <div v-else class="list-container horizontal-placement">
       <div class="charlist">
-        {{ $t('characters.list.owned_characters_title') }}
+        <div class="charlist-header">{{ $t('characters.list.owned_characters_title') }}</div>
         <div v-for="character in ownedCharacters" :key="character.character_id" class="list-item">
           <router-link :to="`/character/${character.id}`" class="list-item-content">
             <h4 class="list-item-title">{{ character.name }}</h4>
@@ -40,7 +40,7 @@
         </div>
       </div>
       <div class="charlist">
-        {{ $t('characters.list.shared_characters_title') }}
+        <div class="charlist-header">{{ $t('characters.list.shared_characters_title') }}</div>
         <div v-for="character in sharedCharacters" :key="character.character_id" class="list-item">
           <router-link :to="`/character/${character.id}`" class="list-item-content">
             <h4 class="list-item-title">{{ character.name }}</h4>
@@ -191,7 +191,7 @@ export default {
 
 .horizontal-placement {
   display: flex;
-  gap: 20px;
+  gap: 10px;
   align-items: flex-start;
 }
 
@@ -200,6 +200,19 @@ export default {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  max-height: calc(100vh - 15px - 300px);
+  overflow-y: auto;
+}
+
+.charlist-header {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  padding: 12px 20px;
+  background: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 /* Responsive Design */

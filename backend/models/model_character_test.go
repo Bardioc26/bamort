@@ -13,8 +13,11 @@ import (
 func setupCharacterTestDB(t *testing.T) {
 	database.SetupTestDB()
 
+	err := user.MigrateStructure()
+	require.NoError(t, err, "Failed to migrate user structure")
+
 	// Migrate structures
-	err := MigrateStructure()
+	err = MigrateStructure()
 	require.NoError(t, err, "Failed to migrate database structure")
 
 	// Clean up any existing test data
@@ -353,6 +356,40 @@ func TestFindCharListByUserID_Success(t *testing.T) {
 	for _, char := range userChars {
 		assert.Equal(t, uint(1), char.UserID, "All characters should belong to user 1")
 	}
+}
+
+func TestFindPublicCharList_UsesOwnerDisplayName(t *testing.T) {
+	setupCharacterTestDB(t)
+
+	displayOwner := &user.User{
+		Username:     "display-owner",
+		DisplayName:  "Display Owner",
+		PasswordHash: "hash",
+		Email:        "display-owner@example.com",
+	}
+	err := displayOwner.Create()
+	require.NoError(t, err, "User creation should succeed")
+
+	char := createTestChar("Public Char With Display Name")
+	char.UserID = displayOwner.UserID
+	char.Public = true
+
+	err = char.Create()
+	require.NoError(t, err, "Character creation should succeed")
+
+	publicChars, err := FindPublicCharList()
+	require.NoError(t, err, "FindPublicCharList should succeed")
+
+	var found *CharList
+	for i := range publicChars {
+		if publicChars[i].ID == char.ID {
+			found = &publicChars[i]
+			break
+		}
+	}
+
+	require.NotNil(t, found, "Created public character should be present in list")
+	assert.Equal(t, displayOwner.DisplayName, found.Owner, "Owner should use display name")
 }
 
 // =============================================================================

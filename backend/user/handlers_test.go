@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"bamort/database"
@@ -28,6 +29,83 @@ func setupTestEnvironment(t *testing.T) {
 		} else {
 			os.Unsetenv("ENVIRONMENT")
 		}
+	})
+}
+
+func TestUpdateDisplayName(t *testing.T) {
+	setupHandlerTestEnvironment(t)
+
+	t.Run("Success - Update display name", func(t *testing.T) {
+		user := createTestUser(t, "displayuser", "password123", "display@test.com")
+
+		requestData := map[string]interface{}{
+			"display_name": "Neuer Anzeigename",
+		}
+		requestBody, _ := json.Marshal(requestData)
+
+		req, _ := http.NewRequest("PUT", "/api/user/display-name", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", user.UserID)
+
+		UpdateDisplayName(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, "Display name updated successfully", response["message"])
+		assert.Equal(t, "Neuer Anzeigename", response["display_name"])
+
+		var updated User
+		err = updated.FirstId(user.UserID)
+		assert.NoError(t, err)
+		assert.Equal(t, "Neuer Anzeigename", updated.DisplayName)
+	})
+
+	t.Run("Failure - Display name too long", func(t *testing.T) {
+		user := createTestUser(t, "displayuser2", "password123", "display2@test.com")
+
+		requestData := map[string]interface{}{
+			"display_name": strings.Repeat("a", 31),
+		}
+		requestBody, _ := json.Marshal(requestData)
+
+		req, _ := http.NewRequest("PUT", "/api/user/display-name", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", user.UserID)
+
+		UpdateDisplayName(c)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, "Display name must be at most 30 characters", response["error"])
+	})
+
+	t.Run("Failure - No user ID in context", func(t *testing.T) {
+		requestData := map[string]interface{}{
+			"display_name": "Any",
+		}
+		requestBody, _ := json.Marshal(requestData)
+
+		req, _ := http.NewRequest("PUT", "/api/user/display-name", bytes.NewBuffer(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+
+		UpdateDisplayName(c)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
 	})
 }
 
@@ -87,6 +165,45 @@ func TestGetUserProfile(t *testing.T) {
 		assert.Equal(t, testUser.Username, response["username"])
 		assert.Equal(t, testUser.Email, response["email"])
 		assert.Equal(t, float64(testUser.UserID), response["id"])
+	})
+
+	t.Run("Success - Profile uses display name with fallback", func(t *testing.T) {
+		userWithDisplay := createTestUser(t, "profiledisplay", "password123", "profiledisplay@test.com")
+
+		req, _ := http.NewRequest("GET", "/api/user/profile", nil)
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = req
+		c.Set("userID", userWithDisplay.UserID)
+
+		GetUserProfile(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response map[string]interface{}
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+
+		assert.Equal(t, userWithDisplay.Username, response["display_name"])
+
+		userWithDisplay.DisplayName = "Profile Display"
+		require.NoError(t, userWithDisplay.Save())
+
+		req2, _ := http.NewRequest("GET", "/api/user/profile", nil)
+		w2 := httptest.NewRecorder()
+		c2, _ := gin.CreateTestContext(w2)
+		c2.Request = req2
+		c2.Set("userID", userWithDisplay.UserID)
+
+		GetUserProfile(c2)
+
+		assert.Equal(t, http.StatusOK, w2.Code)
+
+		var response2 map[string]interface{}
+		err = json.Unmarshal(w2.Body.Bytes(), &response2)
+		assert.NoError(t, err)
+
+		assert.Equal(t, userWithDisplay.DisplayName, response2["display_name"])
 	})
 
 	t.Run("Failure - No user ID in context", func(t *testing.T) {

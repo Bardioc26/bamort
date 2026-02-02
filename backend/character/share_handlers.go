@@ -33,8 +33,9 @@ func GetCharacterShares(c *gin.Context) {
 	// Get user details for each share
 	type ShareWithUser struct {
 		models.CharShare
-		Username string `json:"username"`
-		Email    string `json:"email"`
+		Username    string `json:"username"`
+		DisplayName string `json:"display_name"`
+		Email       string `json:"email"`
 	}
 
 	var sharesWithUsers []ShareWithUser
@@ -42,9 +43,10 @@ func GetCharacterShares(c *gin.Context) {
 		var u user.User
 		if err := u.FirstId(share.UserID); err == nil {
 			sharesWithUsers = append(sharesWithUsers, ShareWithUser{
-				CharShare: share,
-				Username:  u.Username,
-				Email:     u.Email,
+				CharShare:   share,
+				Username:    u.Username,
+				DisplayName: u.DisplayNameOrUsername(),
+				Email:       u.Email,
 			})
 		}
 	}
@@ -128,17 +130,19 @@ func GetAvailableUsersForSharing(c *gin.Context) {
 
 	// Remove sensitive data
 	type UserInfo struct {
-		UserID   uint   `json:"user_id"`
-		Username string `json:"username"`
-		Email    string `json:"email"`
+		UserID      uint   `json:"user_id"`
+		Username    string `json:"username"`
+		DisplayName string `json:"display_name"`
+		Email       string `json:"email"`
 	}
 
 	var userInfos []UserInfo
 	for _, u := range users {
 		userInfos = append(userInfos, UserInfo{
-			UserID:   u.UserID,
-			Username: u.Username,
-			Email:    u.Email,
+			UserID:      u.UserID,
+			Username:    u.Username,
+			DisplayName: u.DisplayNameOrUsername(),
+			Email:       u.Email,
 		})
 	}
 

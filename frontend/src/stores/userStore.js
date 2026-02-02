@@ -21,12 +21,14 @@ export const useUserStore = defineStore('user', {
       this.isLoading = true
       try {
         const response = await API.get('/api/user/profile')
-        this.currentUser = response.data
+        const profile = { ...response.data }
+        profile.display_name = profile.display_name || profile.username
+        this.currentUser = profile
         
         // Set user's preferred language
-        if (response.data.preferred_language) {
-          i18n.global.locale.value = response.data.preferred_language
-          localStorage.setItem('language', response.data.preferred_language)
+        if (profile.preferred_language) {
+          i18n.global.locale.value = profile.preferred_language
+          localStorage.setItem('language', profile.preferred_language)
         }
       } catch (error) {
         console.error('Failed to fetch user profile:', error)

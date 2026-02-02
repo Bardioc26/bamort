@@ -12,6 +12,10 @@
         <div class="profile-section">
           <h2>{{ $t('profile.userInfo') }}</h2>
           <div class="info-row">
+            <label>{{ $t('profile.displayName') }}:</label>
+            <span>{{ userProfile.display_name || userProfile.username }}</span>
+          </div>
+          <div class="info-row">
             <label>{{ $t('profile.username') }}:</label>
             <span>{{ userProfile.username }}</span>
           </div>
@@ -29,6 +33,28 @@
             <label>{{ $t('profile.language') }}:</label>
             <span>{{ userProfile.preferred_language === 'de' ? 'Deutsch' : 'English' }}</span>
           </div>
+        </div>
+
+        <!-- Change Display Name Section -->
+        <div class="profile-section">
+          <h2>{{ $t('profile.changeDisplayName') }}</h2>
+          <form @submit.prevent="updateDisplayName" class="profile-form">
+            <div class="form-group">
+              <label for="displayName">{{ $t('profile.displayName') }}:</label>
+              <input
+                type="text"
+                id="displayName"
+                v-model="displayNameForm.newDisplayName"
+                :placeholder="$t('profile.displayNamePlaceholder')"
+                maxlength="30"
+              />
+              <small>{{ $t('profile.displayNameHelper') }}</small>
+            </div>
+            <button type="submit" :disabled="isUpdating" class="btn-primary">
+              <span v-if="!isUpdating">{{ $t('profile.updateDisplayName') }}</span>
+              <span v-else>{{ $t('profile.updating') }}</span>
+            </button>
+          </form>
         </div>
 
         <!-- Change Language Section -->
@@ -222,6 +248,7 @@ h1 {
 
 <script>
 import API from '../utils/api'
+import { useUserStore } from '../stores/userStore'
 
 export default {
   name: 'UserProfileView',
@@ -231,9 +258,13 @@ export default {
       isUpdating: false,
       userProfile: {
         username: '',
+        display_name: '',
         email: '',
         role: 'standard',
         preferred_language: 'de'
+      },
+      displayNameForm: {
+        newDisplayName: ''
       },
       languageForm: {
         selectedLanguage: 'de'
@@ -259,6 +290,7 @@ export default {
         this.userProfile = response.data
         this.emailForm.newEmail = this.userProfile.email
         this.languageForm.selectedLanguage = this.userProfile.preferred_language || 'de'
+        this.displayNameForm.newDisplayName = this.userProfile.display_name || ''
       } catch (error) {
         console.error('Failed to load profile:', error)
         alert(this.$t('profile.loadError') + ': ' + (error.response?.data?.error || error.message))
@@ -268,6 +300,38 @@ export default {
     },
     getRoleBadgeClass(role) {
       return `badge-role-${role}`
+    },
+    async updateDisplayName() {
+      if (this.displayNameForm.newDisplayName.length > 30) {
+        alert(this.$t('profile.displayNameTooLong'))
+        return
+      }
+
+      this.isUpdating = true
+      try {
+        const response = await API.put('/api/user/display-name', {
+          display_name: this.displayNameForm.newDisplayName
+        })
+
+        this.userProfile.display_name = response.data.display_name || this.userProfile.username
+        this.displayNameForm.newDisplayName = this.userProfile.display_name
+
+        const userStore = useUserStore()
+        if (userStore.currentUser) {
+          userStore.currentUser.display_name = this.userProfile.display_name
+        }
+
+        //alert(this.$t('profile.displayNameUpdateSuccess'))
+      } catch (error) {
+        console.error('Failed to update display name:', error)
+        let errorMsg = this.$t('profile.displayNameUpdateError')
+        if (error.response?.data?.error) {
+          errorMsg = error.response.data.error
+        }
+        alert(errorMsg)
+      } finally {
+        this.isUpdating = false
+      }
     },
     async updateEmail() {
       if (!this.emailForm.newEmail) {
@@ -287,7 +351,7 @@ export default {
         })
         
         this.userProfile.email = response.data.email
-        alert(this.$t('profile.emailUpdateSuccess'))
+        //alert(this.$t('profile.emailUpdateSuccess'))
       } catch (error) {
         console.error('Failed to update email:', error)
         let errorMsg = this.$t('profile.emailUpdateError')

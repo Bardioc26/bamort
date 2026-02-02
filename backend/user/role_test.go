@@ -39,6 +39,21 @@ func TestUserRoleDefaults(t *testing.T) {
 	assert.Equal(t, RoleStandardUser, user.Role, "New users should have standard role")
 }
 
+// TestUserDisplayNameDefaultsToUsername ensures a user's display name falls back to the username
+func TestUserDisplayNameDefaultsToUsername(t *testing.T) {
+	setupRoleTestEnvironment(t)
+
+	user := &User{
+		Username:     "display_user",
+		PasswordHash: "hashedpw",
+		Email:        "display@example.com",
+	}
+
+	err := user.Create()
+	require.NoError(t, err, "Should create user")
+	assert.Equal(t, user.Username, user.DisplayName, "DisplayName should default to username")
+}
+
 // TestRoleValidation tests role validation
 func TestRoleValidation(t *testing.T) {
 	assert.True(t, ValidateRole(RoleStandardUser), "standard should be valid")
@@ -75,7 +90,7 @@ func TestListUsers(t *testing.T) {
 	setupRoleTestEnvironment(t)
 
 	// Create test users
-	admin := &User{Username: "listadmin", PasswordHash: "hash", Email: "listadmin@test.com", Role: RoleAdmin}
+	admin := &User{Username: "listadmin", PasswordHash: "hash", Email: "listadmin@test.com", Role: RoleAdmin, DisplayName: "List Admin"}
 	require.NoError(t, admin.Create())
 
 	standardUser := &User{Username: "listuser", PasswordHash: "hash", Email: "listuser@test.com", Role: RoleStandardUser}
@@ -92,6 +107,27 @@ func TestListUsers(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code, "Admin should access list")
+
+	var response []map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	require.NoError(t, err)
+
+	var adminEntry map[string]interface{}
+	var standardEntry map[string]interface{}
+	for _, entry := range response {
+		switch entry["username"] {
+		case admin.Username:
+			adminEntry = entry
+		case standardUser.Username:
+			standardEntry = entry
+		}
+	}
+
+	require.NotNil(t, adminEntry, "admin should be present in response")
+	require.NotNil(t, standardEntry, "standard user should be present in response")
+
+	assert.Equal(t, admin.DisplayName, adminEntry["display_name"], "admin display name should be returned")
+	assert.Equal(t, standardUser.Username, standardEntry["display_name"], "standard user should fall back to username when display name is empty")
 
 	// Test standard user access (should fail)
 	router2 := gin.Default()

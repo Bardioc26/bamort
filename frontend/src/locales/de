@@ -665,10 +665,10 @@ export default {
     featureEquipmentText: 'Verwalten Sie Waffen, Rüstungen und andere Ausrüstungsgegenstände Ihres Charakters.',
     featureExport: 'PDF-Export',
     featureExportText: 'Exportieren Sie Ihre Charaktere als PDF-Dokumente für den Spieltisch.',
-    featureImport: 'Datenimport',
-    featureImportText: 'Importieren Sie Charaktere aus anderen Formaten oder exportieren Sie Ihre Daten.',
+    featureImport: 'Daten Import/Export',
+    featureImportText: 'Importieren Sie Charaktere aus anderen Formaten oder exportieren Sie Ihre Daten. (Derzeit noch in Entwicklung und evtl. nicht vollständig oder nicht korrekt.)',
     faq: 'Häufig gestellte Fragen',
-    faqCount: 5,
+    faqCount: 6,
     faq1: {
       question: 'Wie erstelle ich einen neuen Charakter?',
       answer: 'Gehen Sie zum Dashboard und klicken Sie auf "Neuen Charakter erstellen". Folgen Sie den Schritten zur Charaktererstellung. Sie können jederzeit zum Dashboard zurückkehren, Ihr Fortschritt wird automatisch gespeichert und kann später fortgesetzt werden.'
@@ -688,6 +688,10 @@ export default {
     faq5: {
       question: 'Werden meine Daten gespeichert?',
       answer: 'Ja, alle Charakterdaten werden automatisch in der Datenbank gespeichert. Sie können jederzeit zu Ihren Charakteren zurückkehren und sie weiter bearbeiten.'
+    },
+    faq6: {
+      question: 'Import Export ist nicht vollständig. Was bedeutet das?',
+      answer: 'Der Import und Export von Charakterdaten befindet sich noch in der Entwicklung und ist möglicherweise nicht vollständig oder fehlerfrei. Bitte verwenden Sie diese Funktionen mit Vorsicht. Es kann sein das Fertigkeiten, Zauber oder Ausrüstung fehlen oder nicht korrekt importiert/exportiert werden. ES,EP, Gold LP,AP und andere Werte sind warscheinlich leer.'
     },
     support: 'Support',
     supportText: 'Benötigen Sie weitere Hilfe? Besuchen Sie das GitHub-Repository für Dokumentation, um Issues zu melden oder Fragen zu stellen.',

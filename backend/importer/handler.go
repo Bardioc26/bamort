@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -59,13 +58,9 @@ func UploadFiles(c *gin.Context) {
 			return
 		}
 	}
-	userIDStr := c.GetString("userID")
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		respondWithError(c, http.StatusInternalServerError, "Invalid user ID")
-		return
-	}
-	character, err3 := ImportVTTJSON(vttFileName, uint(userID))
+	userID := c.GetUint("userID")
+
+	character, err3 := ImportVTTJSON(vttFileName, userID)
 	if err3 != nil {
 		respondWithError(c, http.StatusInternalServerError, fmt.Sprintf("Failed to Import Character from file %s", err3.Error()))
 		return

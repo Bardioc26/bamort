@@ -1,4 +1,8 @@
-package config
+package appsystem
+
+import (
+	"bamort/database"
+)
 
 // Version is the application version
 const Version = "0.2.2"
@@ -50,6 +54,22 @@ type Info struct {
 	Version   string `json:"version"`
 	GitCommit string `json:"gitCommit"`
 }
+type Info2 struct {
+	Version   string `json:"version"`
+	GitCommit string `json:"gitCommit"`
+	UserCount int64  `json:"userCount"`
+	CharCount int64  `json:"charCount"`
+	DbVersion string `json:"dbVersion"`
+}
+
+func getUserCount() int {
+	// Placeholder implementation
+	return 42
+}
+func getCharCount() int {
+	// Placeholder implementation
+	return 123456
+}
 
 // GetInfo returns version information as a struct
 func GetInfo() Info {
@@ -57,4 +77,21 @@ func GetInfo() Info {
 		Version:   Version,
 		GitCommit: GitCommit,
 	}
+}
+
+func GetInfo2() Info2 {
+	info := Info2{
+		Version:   Version,
+		GitCommit: GitCommit,
+	}
+	db := database.DB
+	if db == nil {
+		return info
+	}
+
+	db.Table("char_chars").Count(&info.CharCount)
+	db.Table("users").Count(&info.UserCount)
+	db.Raw("SELECT version FROM schema_version ORDER BY id DESC LIMIT 1").Scan(&info.DbVersion)
+
+	return info
 }

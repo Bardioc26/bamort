@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bamort/appsystem"
 	"bamort/character"
 	"bamort/config"
 	"bamort/database"
@@ -92,11 +93,11 @@ func main() {
 	importer.RegisterRoutes(protected)
 	pdfrender.RegisterRoutes(protected)
 	transfer.RegisterRoutes(protected)
-	config.RegisterRoutes(protected)
+	appsystem.RegisterRoutes(protected)
 
 	// Register public routes (no authentication)
 	pdfrender.RegisterPublicRoutes(r)
-	config.RegisterPublicRoutes(r)
+	appsystem.RegisterPublicRoutes(r)
 
 	logger.Info("API-Routen erfolgreich registriert")
 

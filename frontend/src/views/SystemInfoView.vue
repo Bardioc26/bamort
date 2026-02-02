@@ -19,16 +19,23 @@
       <div class="card">
         <h4>{{ $t('systemInfo.frontend') }}</h4>
         <p><strong>{{ $t('systemInfo.version') }}:</strong> {{ frontendVersion }}</p>
-        <p><strong>{{ $t('systemInfo.commit') }}:</strong> <code>{{ frontendCommit }}</code></p>
+        <!--<p><strong>{{ $t('systemInfo.commit') }}:</strong> <code>{{ frontendCommit }}</code></p>-->
       </div>
 
       <div class="card">
         <h4>{{ $t('systemInfo.backend') }}</h4>
         <p><strong>{{ $t('systemInfo.version') }}:</strong> {{ backendVersion }}</p>
-        <p><strong>{{ $t('systemInfo.commit') }}:</strong> <code>{{ backendCommit }}</code></p>
+        <!--<p><strong>{{ $t('systemInfo.commit') }}:</strong> <code>{{ backendCommit }}</code></p>-->
         <p><strong>{{ $t('systemInfo.status') }}:</strong> 
           <span :class="statusClass">{{ statusText }}</span>
         </p>
+      </div>
+
+      <div class="card">
+        <h4>{{ $t('systemInfo.system') }}</h4>
+        <p><strong>{{ $t('systemInfo.userCount') }}:</strong> {{ userCount }}</p>
+        <p><strong>{{ $t('systemInfo.charCount') }}:</strong> {{ charCount }}</p>
+        <p><strong>{{ $t('systemInfo.dbVersion') }}:</strong> {{ dbVersion ||"N/A" }}</p>
       </div>
     </div>
 
@@ -119,6 +126,9 @@ export default {
       frontendCommit: getGitCommit(),
       backendVersion: "Loading...",
       backendCommit: "Loading...",
+      userCount: "Loading...",
+      charCount: "Loading...",
+      dbVersion: "Loading...",
       githubUrl: "https://github.com/Bardioc26/bamort",
       koFiUrl: "https://ko-fi.com/bardioc26",
     }
@@ -148,16 +158,22 @@ export default {
     async fetchBackendVersion() {
       try {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8180'
-        const response = await axios.get(`${apiUrl}/api/public/version`)
+        const response = await axios.get(`${apiUrl}/api/public/systeminfo`)
         
         if (response.data) {
           this.backendVersion = response.data.version || "Unknown"
           this.backendCommit = response.data.gitCommit || "Unknown"
+          this.userCount = response.data.userCount || "Unknown"
+          this.charCount = response.data.charCount || "Unknown"
+          this.dbVersion = response.data.dbVersion || "Unknown"
         }
       } catch (error) {
         console.warn("Could not fetch backend version:", error)
         this.backendVersion = "Unavailable"
         this.backendCommit = "N/A"
+        this.userCount = "N/A"
+        this.charCount = "N/A"
+        this.dbVersion = "N/A"
       }
     }
   }

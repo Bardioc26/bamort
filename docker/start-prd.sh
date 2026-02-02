@@ -12,6 +12,8 @@ fi
 cd "$(dirname "$0")"
 
 echo "📦 Building and starting production containers..."
+# Build before stopping existing containers
+docker-compose -f docker-compose.yml build
 
 # Stoppe vorhandene Container
 docker-compose -f docker-compose.yml down

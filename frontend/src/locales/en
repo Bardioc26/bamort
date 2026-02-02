@@ -660,10 +660,10 @@ export default {
     featureEquipmentText: 'Manage weapons, armor, and other equipment items for your character.',
     featureExport: 'PDF Export',
     featureExportText: 'Export your characters as PDF documents for the gaming table.',
-    featureImport: 'Data Import',
-    featureImportText: 'Import characters from other formats or export your data.',
+    featureImport: 'Data Import/Export',
+    featureImportText: 'Import characters from other formats or export your data. (Currently still in development and may be incomplete or incorrect.)',
     faq: 'Frequently Asked Questions',
-    faqCount: 5,
+    faqCount: 6,
     faq1: {
       question: 'How do I create a new character?',
       answer: 'Go to the dashboard and click "Create New Character". Follow the steps for character creation. You can return to the dashboard at any time, your progress is automatically saved and can be continued later.'
@@ -683,6 +683,10 @@ export default {
     faq5: {
       question: 'Is my data saved?',
       answer: 'Yes, all character data is automatically saved in the database. You can return to your characters at any time and continue editing them.'
+    },
+    faq6: {
+      question: 'Import/Export is not complete. What does that mean?',
+      answer: 'The import and export of character data is still under development and may not be complete or error-free. Please use these features with caution. It is possible that skills, spells, or equipment are missing or not correctly imported/exported. ES, EP, Gold, LP, AP, and other values are likely empty.'
     },
     support: 'Support',
     supportText: 'Need more help? Visit the GitHub repository for documentation, to report issues, or ask questions.',

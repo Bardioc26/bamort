@@ -210,12 +210,14 @@ a:focus {
 }
 
 /* Global fullwidth page class for view components */
+/*
 .fullwidth-page {
-  /*width: 100%;
+  width: 100%;
   min-height: calc(100vh - 120px);
   padding: 20px;
-  box-sizing: border-box;*/
+  box-sizing: border-box;
 }
+*/
 
 /* Common Card Layouts */
 .card {

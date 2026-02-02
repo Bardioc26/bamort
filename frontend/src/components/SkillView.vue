@@ -5,7 +5,7 @@
         <div class="table-wrapper-left">
           <div class="header-section">            
             <!-- Lernmodus Toggle Button -->
-            <div class="learning-mode-controls">
+            <div v-if="isOwner" class="learning-mode-controls">
               <!-- Ressourcen-Anzeige (nur sichtbar wenn Lernmodus aktiv) -->
               <div v-if="learningMode" class="resources-display">
                 <div class="resource-item">
@@ -68,7 +68,7 @@
             <td>{{ skill.fertigkeitswert || '-' }}</td>
             <td>{{ skill.bonus || '0' }}</td>
             <td class="pp-cell">
-              <div class="pp-container">
+              <div v-if="isOwner" class="pp-container">
                 <button 
                   @click="decreasePP(skill)" 
                   class="pp-btn pp-btn-minus"
@@ -86,6 +86,7 @@
                   +
                 </button>
               </div>
+              <span v-else>{{ skill.pp || '0' }}</span>
             </td>
             <td>{{ skill.bemerkung || '-' }}</td>
             <td v-if="learningMode" class="action-cell">
@@ -109,7 +110,7 @@
           <td>{{ skill.fertigkeitswert || '-' }}</td>
           <td>{{ skill.bonus || '0' }}</td>
           <td class="pp-cell">
-            <div class="pp-container">
+            <div v-if="isOwner" class="pp-container">
               <button 
                 @click="decreaseWeaponPP(skill)" 
                 class="pp-btn pp-btn-minus"
@@ -127,6 +128,7 @@
                 +
               </button>
             </div>
+            <span v-else>{{ skill.pp || '0' }}</span>
           </td>
           <td>{{ skill.bemerkung || '-' }}</td>
           <td v-if="learningMode" class="action-cell">
@@ -290,6 +292,10 @@ export default {
     character: {
       type: Object,
       required: true
+    },
+    isOwner: {
+      type: Boolean,
+      default: false
     }
   },
   data() {

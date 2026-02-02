@@ -1,8 +1,13 @@
 <template>
   <div class="cd-view">
-    <p>Are you sure you want to delete {{ character.name }}?</p>
-    <button @click="deleteCharacter" class="btn btn-danger">Yes, Delete</button>
-    <button @click="$emit('cancel')" class="btn btn-secondary">Cancel</button>
+    <div v-if="!isOwner" class="error-message">
+      <p>{{ $t('deleteChar.notAuthorized') }}</p>
+    </div>
+    <div v-else>
+      <p>Are you sure you want to delete {{ character.name }}?</p>
+      <button @click="deleteCharacter" class="btn btn-danger">Yes, Delete</button>
+      <button @click="$emit('cancel')" class="btn btn-secondary">Cancel</button>
+    </div>
   </div>
 </template>
 
@@ -16,6 +21,10 @@ export default {
     character: {
       type: Object,
       required: true
+    },
+    isOwner: {
+      type: Boolean,
+      default: false
     }
   },
   

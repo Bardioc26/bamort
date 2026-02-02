@@ -82,8 +82,8 @@ func TestCreateAusruestung(t *testing.T) {
 					BamortBase: models.BamortBase{
 						Name: "Test Sword",
 					},
-					CharacterID: 1,
-					UserID:      1,
+					CharacterID: 21,
+					UserID:      4,
 				},
 				Magisch: models.Magisch{
 					IstMagisch:  false,
@@ -111,13 +111,17 @@ func TestCreateAusruestung(t *testing.T) {
 		{
 			name:           "Empty JSON",
 			payload:        map[string]interface{}{},
-			expectedStatus: http.StatusCreated,
+			expectedStatus: http.StatusNotFound,
 			shouldContain:  "",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// u := user.User{}
+			// u.FirstId(1)
+			// token := user.GenerateToken(&u)
+
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
@@ -129,8 +133,11 @@ func TestCreateAusruestung(t *testing.T) {
 				body = *bytes.NewBuffer(jsonData)
 			}
 
+			c.Set("userID", uint(4)) // Simulate logged-in user with ID 4
 			c.Request = httptest.NewRequest("POST", "/ausruestung", &body)
 			c.Request.Header.Set("Content-Type", "application/json")
+
+			//c.Request.Header.Set("Authorization", "Bearer "+token)
 
 			CreateAusruestung(c)
 
@@ -235,8 +242,8 @@ func TestUpdateAusruestung(t *testing.T) {
 			BamortBase: models.BamortBase{
 				Name: "Original Equipment",
 			},
-			CharacterID: 123,
-			UserID:      1,
+			CharacterID: 21,
+			UserID:      4,
 		},
 		Magisch: models.Magisch{
 			IstMagisch:  false,
@@ -297,6 +304,8 @@ func TestUpdateAusruestung(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
+			c.Set("userID", uint(4))
+
 			c.Params = gin.Params{
 				{Key: "ausruestung_id", Value: tt.ausruestungID},
 			}
@@ -332,8 +341,8 @@ func TestDeleteAusruestung(t *testing.T) {
 			BamortBase: models.BamortBase{
 				Name: "Equipment to Delete",
 			},
-			CharacterID: 123,
-			UserID:      1,
+			CharacterID: 21,
+			UserID:      4,
 		},
 		Magisch: models.Magisch{
 			IstMagisch:  false,
@@ -368,14 +377,14 @@ func TestDeleteAusruestung(t *testing.T) {
 		{
 			name:           "Non-existent Ausruestung",
 			ausruestungID:  "999",
-			expectedStatus: http.StatusOK, // GORM doesn't fail on deleting non-existent records
-			shouldContain:  "deleted successfully",
+			expectedStatus: http.StatusNotFound, // GORM doesn't fail on deleting non-existent records
+			shouldContain:  "Ausruestung not found",
 		},
 		{
 			name:           "Invalid Ausruestung ID",
 			ausruestungID:  "invalid",
-			expectedStatus: http.StatusInternalServerError,
-			shouldContain:  "error",
+			expectedStatus: http.StatusNotFound,
+			shouldContain:  "Ausruestung not found",
 		},
 	}
 
@@ -383,11 +392,11 @@ func TestDeleteAusruestung(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
+			c.Set("userID", uint(4))
 
 			c.Params = gin.Params{
 				{Key: "ausruestung_id", Value: tt.ausruestungID},
 			}
-
 			DeleteAusruestung(c)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)

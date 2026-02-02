@@ -85,6 +85,9 @@ export default {
     Characters:'Characters',
     Admin:'Administration',
   },
+  deleteChar: {
+    notAuthorized: 'You are not authorized to delete this character. Only the owner can perform this action.'
+  },
   landing:{
     title:'BaMoRT - Character Management for Role-Playing Games',
     description:'BaMoRT is a modern character management tool for role-playing games. It provides comprehensive features for character creation, development, and management with support for skills, spells, equipment, and more.',
@@ -309,7 +312,9 @@ export default {
       public: 'Public',
       private: 'Private',
       grade: 'Grade',
-      owner: 'Owner'
+      owner: 'Owner',
+      shared_characters_title: 'Geteilte Charaktere',
+      owned_characters_title: 'Eigene Charaktere'
     },
     create: {
       spells: {
@@ -506,6 +511,28 @@ export default {
     generating: 'Generating file...',
     pleaseWait: 'Please wait, this may take a moment',
     popupBlocked: 'Popup was blocked. Please allow popups for this site.'
+  },
+  visibility: {
+    title: 'Change Visibility',
+    description: 'Set who can see this character.',
+    private: 'Private',
+    privateDescription: 'Only you can see this character',
+    public: 'Public',
+    publicDescription: 'All users can see this character',
+    cancel: 'Cancel',
+    save: 'Save',
+    saving: 'Saving...',
+    updating: 'Updating visibility...',
+    updateError: 'Failed to update visibility',
+    shareWithUsers: 'Share with specific users',
+    shareDescription: 'Select users who can view this character',
+    currentlySharedWith: 'Currently shared with',
+    addUsers: 'Add users',
+    searchUsers: 'Search users...',
+    loadingUsers: 'Loading users...',
+    noOtherUsers: 'No other users available',
+    noMatchingUsers: 'No users match your search',
+    noSharedUsers: 'Not shared with any users yet'
   },
   userManagement: {
     title: 'User Management',

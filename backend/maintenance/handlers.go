@@ -295,6 +295,9 @@ func copyMariaDBToSQLite(mariaDB, sqliteDB *gorm.DB) error {
 		// Audit Logging (abhängig von Char)
 		&models.AuditLogEntry{},
 
+		// Char Shares (abhängig von Char und User)
+		&models.CharShare{},
+
 		// View-Strukturen ohne eigene Tabellen werden nicht kopiert:
 		// SkillLearningInfo, SpellLearningInfo, CharList, FeChar, etc.
 	}

@@ -86,6 +86,9 @@ export default {
     Characters:'Charaktere',
     Admin:'Administration',
   },
+  deleteChar: {
+    notAuthorized: 'Sie sind nicht berechtigt, diesen Charakter zu löschen. Nur der Besitzer kann diese Aktion durchführen.'
+  },
   landing:{
     title:'BaMoRT - Charakterverwaltung für mein Lieblingsrollenspielsystem',
     description:'BaMoRT ist ein Werkzeug zur Charakterverwaltung für Rollenspiele. Es bietet Funktionen zur Charaktererstellung, -entwicklung und -verwaltung mit Unterstützung für Fertigkeiten, Zauber, Ausrüstung und mehr. Viele Ausrüstungsteile, Fertikeiten und Zauber fehlen noch, da das Projekt noch in der Entwicklung ist.',
@@ -313,7 +316,9 @@ export default {
       public: 'Öffentlich',
       private: 'Privat',
       grade: 'Grad',
-      owner: 'Besitzer'
+      owner: 'Besitzer',
+      shared_characters_title: 'Geteilte Charaktere',
+      owned_characters_title: 'Eigene Charaktere'
     },
     create: {
       spells: {
@@ -510,6 +515,28 @@ export default {
     generating: 'Datei wird generiert...',
     pleaseWait: 'Bitte warten, dies kann einen Moment dauern',
     popupBlocked: 'Popup wurde blockiert. Bitte erlauben Sie Popups für diese Seite.'
+  },
+  visibility: {
+    title: 'Sichtbarkeit ändern',
+    description: 'Legen Sie fest, wer diesen Charakter sehen kann.',
+    private: 'Privat',
+    privateDescription: 'Nur Sie können diesen Charakter sehen',
+    public: 'Öffentlich',
+    publicDescription: 'Alle Benutzer können diesen Charakter sehen',
+    cancel: 'Abbrechen',
+    save: 'Speichern',
+    saving: 'Wird gespeichert...',
+    updating: 'Sichtbarkeit wird aktualisiert...',
+    updateError: 'Fehler beim Aktualisieren der Sichtbarkeit',
+    shareWithUsers: 'Mit bestimmten Benutzern teilen',
+    shareDescription: 'Wählen Sie Benutzer aus, die diesen Charakter sehen können',
+    currentlySharedWith: 'Derzeit geteilt mit',
+    addUsers: 'Benutzer hinzufügen',
+    searchUsers: 'Benutzer suchen...',
+    loadingUsers: 'Lade Benutzer...',
+    noOtherUsers: 'Keine anderen Benutzer verfügbar',
+    noMatchingUsers: 'Keine Benutzer entsprechen Ihrer Suche',
+    noSharedUsers: 'Noch nicht mit Benutzern geteilt'
   },
   userManagement: {
     title: 'Benutzerverwaltung',

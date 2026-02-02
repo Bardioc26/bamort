@@ -2,7 +2,7 @@
   <div class="cd-view">
     <div class="header-section">
       <h2>{{ $t('WeaponView') }}</h2>
-      <button @click="openAddWeaponDialog" class="btn-add-weapon">
+      <button v-if="isOwner" @click="openAddWeaponDialog" class="btn-add-weapon">
         {{ $t('weapon.add') }}
       </button>
     </div>
@@ -18,7 +18,7 @@
           <th>{{ $t('weapon.amount') }}</th>
           <th>{{ $t('weapon.contained_in') }}</th>
           <th>{{ $t('weapon.bonus') }}</th>
-          <th>{{ $t('weapon.actions') }}</th>
+          <th v-if="isOwner">{{ $t('weapon.actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -31,7 +31,7 @@
           <td>{{ weapon.anzahl || '-' }}</td>
           <td>{{ weapon.beinhaltet_in || '-' }}</td>
           <td>{{ weapon.anb || '-' }}/{{ weapon.abwb || '-' }}</td>
-          <td class="action-cell">
+          <td v-if="isOwner" class="action-cell">
             <button @click="editWeapon(weapon)" class="btn-edit" title="Bearbeiten">
               ✏️
             </button>
@@ -378,6 +378,10 @@ name: "WeaponView",
     character: {
       type: Object,
       required: true
+    },
+    isOwner: {
+      type: Boolean,
+      default: false
     }
   },
   data() {

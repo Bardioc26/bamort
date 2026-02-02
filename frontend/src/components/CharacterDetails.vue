@@ -6,6 +6,9 @@
         <button @click="showExportDialog = true" class="export-button-small" :title="$t('export.title')">
           📄
         </button>
+        <button v-if="isOwner" @click="showVisibilityDialog = true" class="export-button-small" :title="$t('visibility.title')">
+          {{ character.public ? '🌐' : '🔒' }}
+        </button>
         <h2>{{ $t('char') }}: {{ character.name }} ({{ $t(currentView) }})</h2>
       </div>
     </div>
@@ -18,9 +21,18 @@
       @export-success="handleExportSuccess"
     />
 
+    <!-- Visibility Dialog -->
+    <VisibilityDialog 
+      :characterId="id" 
+      :currentVisibility="character.public"
+      :showDialog="showVisibilityDialog"
+      @update:showDialog="showVisibilityDialog = $event"
+      @visibility-updated="handleVisibilityUpdated"
+    />
+
     <!-- Submenu Content -->
     <!-- <div class="character-aspect"> -->
-      <component :is="currentView" :character="character" @character-updated="refreshCharacter"/>
+      <component :is="currentView" :character="character" :isOwner="isOwner" @character-updated="refreshCharacter"/>
     <!-- </div> -->
 
     <!-- Submenu -->
@@ -52,7 +64,9 @@
 
 <script>
 import API from '../utils/api'
+import { useUserStore } from '../stores/userStore'
 import ExportDialog from "./ExportDialog.vue";
+import VisibilityDialog from "./VisibilityDialog.vue";
 import DatasheetView from "./DatasheetView.vue"; // Component for character stats
 import SkillView from "./SkillView.vue"; // Component for character history
 import WeaponView from "./WeaponView.vue"; // Component for character history
@@ -67,6 +81,7 @@ export default {
   props: ["id"], // Receive the route parameter as a prop
   components: {
     ExportDialog,
+    VisibilityDialog,
     DatasheetView,
     SkillView,
     WeaponView,
@@ -81,6 +96,7 @@ export default {
       currentView: "DatasheetView", // Default view
       lastView: "DatasheetView",
       showExportDialog: false,
+      showVisibilityDialog: false,
       menus: [
         { id: 1, name: "Datasheet", component: "DatasheetView" },
         { id: 2, name: "Skill", component: "SkillView" },
@@ -96,6 +112,12 @@ export default {
       ],
     };
   },
+  computed: {
+    isOwner() {
+      const userStore = useUserStore()
+      return userStore.currentUser && this.character.user_id === userStore.currentUser.id
+    }
+  },
   async created() {
     const token = localStorage.getItem('token')
     const response = await API.get(`/api/characters/${this.id}`, {
@@ -106,6 +128,12 @@ export default {
   methods: {
     handleExportSuccess() {
       console.log('PDF exported successfully')
+    },
+    
+    handleVisibilityUpdated(isPublic) {
+      this.character.public = isPublic
+      this.showVisibilityDialog = false
+      console.log('Character visibility updated to:', isPublic ? 'public' : 'private')
     },
     
     changeView(view) {

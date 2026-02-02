@@ -210,12 +210,14 @@ a:focus {
 }
 
 /* Global fullwidth page class for view components */
+/*
 .fullwidth-page {
-  /*width: 100%;
+  width: 100%;
   min-height: calc(100vh - 120px);
   padding: 20px;
-  box-sizing: border-box;*/
+  box-sizing: border-box;
 }
+*/
 
 /* Common Card Layouts */
 .card {
@@ -2544,7 +2546,7 @@ a:focus {
 }
 
 .remove-btn {
-  position: absolute;
+  /*position: absolute;*/
   right: 0;
   top: 50%;
   transform: translateY(-50%);
@@ -3999,10 +4001,15 @@ a:focus {
   padding: 2rem;
   text-align: center;
   color: white;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-items: center;
+  justify-items: center;
+  row-gap: 1.5rem;
 }
 
 .dragon-container {
-  margin-bottom: 2rem;
+  margin-bottom: 0;
 }
 
 .dragon-image {

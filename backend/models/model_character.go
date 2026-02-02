@@ -255,6 +255,21 @@ func (object *Char) FindByUserID(userID uint) ([]Char, error) {
 	return chars, nil
 }
 
+func FindSharedCharList(userID uint) ([]CharList, error) {
+	var chars []CharList
+	gs := GetGameSystem(0, "midgard")
+	err := database.DB.Table("char_chars").
+		Select("char_chars.id, char_chars.name, char_chars.user_id, char_chars.rasse, char_chars.typ, char_chars.grad, char_chars.public, char_chars.game_system, char_chars.game_system_id, users.username as owner").
+		Joins("LEFT JOIN users ON char_chars.user_id = users.user_id").
+		Joins("INNER JOIN char_shares ON char_shares.character_id = char_chars.id").
+		Where("char_shares.user_id = ? AND (char_chars.game_system = ? OR char_chars.game_system_id = ?)", userID, gs.Name, gs.ID).
+		Find(&chars).Error
+	if err != nil {
+		return nil, err
+	}
+	return chars, nil
+}
+
 func FindPublicCharList() ([]CharList, error) {
 	var chars []CharList
 	gs := GetGameSystem(0, "midgard")

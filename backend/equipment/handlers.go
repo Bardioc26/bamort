@@ -19,10 +19,30 @@ func respondWithError(c *gin.Context, status int, message string) {
 	c.JSON(status, gin.H{"error": message})
 }
 
+// checkEquipmentOwnership verifies that the logged-in user owns the equipment's character
+func checkEquipmentOwnership(c *gin.Context, characterID uint) bool {
+	userID := c.GetUint("userID")
+	var character models.Char
+	if err := database.DB.Select("id", "user_id").First(&character, characterID).Error; err != nil {
+		respondWithError(c, http.StatusNotFound, "Character not found")
+		return false
+	}
+	if character.UserID != userID {
+		respondWithError(c, http.StatusForbidden, "You are not authorized to modify this character's equipment")
+		return false
+	}
+	return true
+}
+
 func CreateAusruestung(c *gin.Context) {
 	var ausruestung models.EqAusruestung
 	if err := c.ShouldBindJSON(&ausruestung); err != nil {
 		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Check ownership
+	if !checkEquipmentOwnership(c, ausruestung.CharacterID) {
 		return
 	}
 
@@ -55,6 +75,11 @@ func UpdateAusruestung(c *gin.Context) {
 		return
 	}
 
+	// Check ownership
+	if !checkEquipmentOwnership(c, ausruestung.CharacterID) {
+		return
+	}
+
 	if err := c.ShouldBindJSON(&ausruestung); err != nil {
 		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
@@ -70,7 +95,19 @@ func UpdateAusruestung(c *gin.Context) {
 
 func DeleteAusruestung(c *gin.Context) {
 	ausruestungID := c.Param("ausruestung_id")
-	if err := database.DB.Delete(&models.EqAusruestung{}, ausruestungID).Error; err != nil {
+
+	var ausruestung models.EqAusruestung
+	if err := database.DB.First(&ausruestung, ausruestungID).Error; err != nil {
+		respondWithError(c, http.StatusNotFound, "Ausruestung not found")
+		return
+	}
+
+	// Check ownership
+	if !checkEquipmentOwnership(c, ausruestung.CharacterID) {
+		return
+	}
+
+	if err := database.DB.Delete(&ausruestung).Error; err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to delete Ausruestung")
 		return
 	}
@@ -86,6 +123,11 @@ func CreateWaffe(c *gin.Context) {
 	var waffe models.EqWaffe
 	if err := c.ShouldBindJSON(&waffe); err != nil {
 		respondWithError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Check ownership
+	if !checkEquipmentOwnership(c, waffe.CharacterID) {
 		return
 	}
 
@@ -118,6 +160,11 @@ func UpdateWaffe(c *gin.Context) {
 		return
 	}
 
+	// Check ownership
+	if !checkEquipmentOwnership(c, waffe.CharacterID) {
+		return
+	}
+
 	if err := c.ShouldBindJSON(&waffe); err != nil {
 		respondWithError(c, http.StatusBadRequest, err.Error())
 		return
@@ -133,7 +180,19 @@ func UpdateWaffe(c *gin.Context) {
 
 func DeleteWaffe(c *gin.Context) {
 	waffeID := c.Param("waffe_id")
-	if err := database.DB.Delete(&models.EqWaffe{}, waffeID).Error; err != nil {
+
+	var waffe models.EqWaffe
+	if err := database.DB.First(&waffe, waffeID).Error; err != nil {
+		respondWithError(c, http.StatusNotFound, "Waffe not found")
+		return
+	}
+
+	// Check ownership
+	if !checkEquipmentOwnership(c, waffe.CharacterID) {
+		return
+	}
+
+	if err := database.DB.Delete(&waffe).Error; err != nil {
 		respondWithError(c, http.StatusInternalServerError, "Failed to delete Waffe")
 		return
 	}

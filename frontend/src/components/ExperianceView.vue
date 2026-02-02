@@ -14,7 +14,7 @@
             <div class="resource-amount">{{ character.erfahrungsschatz?.ep || 0 }} EP</div>
           </div>
         </div>
-        <div class="form-row control-row">
+        <div v-if="isOwner" class="form-row control-row">
           <div class="form-group">
             <input 
               v-model.number="experienceAmount" 
@@ -51,7 +51,7 @@
             <div class="resource-amount">{{ character.vermoegen?.goldstücke || 0 }} GS</div>
           </div>
         </div>
-        <div class="form-row control-row">
+        <div v-if="isOwner" class="form-row control-row">
           <div class="form-group">
             <input 
               v-model.number="goldAmount" 
@@ -147,6 +147,10 @@ export default {
     character: {
       type: Object,
       required: true
+    },
+    isOwner: {
+      type: Boolean,
+      default: false
     }
   },
   data() {

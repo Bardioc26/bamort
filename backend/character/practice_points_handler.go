@@ -63,6 +63,11 @@ func UpdatePracticePoints(c *gin.Context) {
 		return
 	}
 
+	// Check ownership
+	if !checkCharacterOwnership(c, &character) {
+		return
+	}
+
 	// Request-Parameter abrufen
 	var practicePoints []PracticePointResponse
 	if err := c.ShouldBindJSON(&practicePoints); err != nil {
@@ -117,6 +122,11 @@ func AddPracticePoint(c *gin.Context) {
 	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	// Check ownership
+	if !checkCharacterOwnership(c, &character) {
 		return
 	}
 
@@ -215,6 +225,11 @@ func UsePracticePoint(c *gin.Context) {
 	var character models.Char
 	if err := character.FirstID(charID); err != nil {
 		respondWithError(c, http.StatusNotFound, "Charakter nicht gefunden")
+		return
+	}
+
+	// Check ownership
+	if !checkCharacterOwnership(c, &character) {
 		return
 	}
 

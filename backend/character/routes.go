@@ -10,9 +10,16 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp.POST("", CreateCharacter)
 	charGrp.GET("/:id", GetCharacter)
 	charGrp.PUT("/:id", UpdateCharacter)
+	charGrp.PATCH("/:id", UpdateCharacter)
+
 	charGrp.DELETE("/:id", DeleteCharacter)
 	charGrp.PUT("/:id/image", UpdateCharacterImage)
 	charGrp.GET("/:id/datasheet-options", GetDatasheetOptions)
+
+	// Character Sharing
+	charGrp.GET("/:id/shares", GetCharacterShares)
+	charGrp.PUT("/:id/shares", UpdateCharacterShares)
+	charGrp.GET("/:id/available-users", GetAvailableUsersForSharing)
 
 	// Erfahrung und Vermögen
 	charGrp.GET("/:id/experience-wealth", GetCharacterExperienceAndWealth) // NewSystem

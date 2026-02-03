@@ -195,6 +195,7 @@ func ToFeChar(object *models.Char) *models.FeChar {
 	feC.Fertigkeiten = skills
 	feC.InnateSkills = innateSkills
 	feC.CategorizedSkills = categories
+	feC.Git = object.GetGiftToleranz()
 	return feC
 }
 

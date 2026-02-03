@@ -131,6 +131,7 @@ type CharList struct {
 
 type FeChar struct {
 	Char
+	Git               int                       `json:"git"` // GiftToleranz
 	CategorizedSkills map[string][]SkFertigkeit `json:"categorizedskills"`
 	InnateSkills      []SkFertigkeit            `json:"innateskills"`
 }
@@ -140,6 +141,11 @@ func (object *Char) TableName() string {
 	return dbPrefix + "_" + "chars"
 }
 
+func (object *Char) GetGiftToleranz() int {
+	//30+(Konstitution/2)
+	konstitution := object.GetAttributeValue("Ko")
+	return 30 + (konstitution / 2)
+}
 func (object *Char) ensureGameSystem() {
 	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
 	if gs == nil {

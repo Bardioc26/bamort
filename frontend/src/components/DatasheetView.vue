@@ -290,14 +290,16 @@ export default {
       this.$emit('character-updated')
     },
     getStat(path) {
+      /*
       if (path === 'git') {
         // Todo: calculate poison tolerance based on character data
         return '64!'
       }
+      */
       return path.split('.').reduce((obj, key) => obj?.[key], this.character) ?? '-'
     },
     startEdit(index, path) {
-      if (path === 'git') return
+      //if (path === 'git') return
       
       this.editingIndex = index
       this.editValue = this.getStat(path)

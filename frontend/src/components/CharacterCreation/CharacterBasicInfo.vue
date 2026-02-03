@@ -6,7 +6,16 @@
       <div class="form-row">
         <!-- 1. Name -->
         <div class="form-group">
-          <label for="name">{{ $t('characters.basicInfo.characterName') }} {{ $t('characters.basicInfo.required') }}</label>
+          <label for="name">{{ $t('characters.basicInfo.characterName') }} {{ $t('characters.basicInfo.required') }}
+            <span
+            class="help-icon"
+            :title="$t('characters.basicInfo.characterNameHelp')"
+            role="img"
+            :aria-label="$t('characters.basicInfo.characterNameHelp')"
+          >
+            ?
+          </span>
+          </label>
           <input 
             id="name"
             v-model="formData.name"
@@ -30,7 +39,17 @@
 
       <!-- 3. Glaube -->
       <div class="form-group">
-        <label for="glaube">{{ $t('characters.basicInfo.religion') }}</label>
+        <label for="glaube">
+          {{ $t('characters.basicInfo.religion') }}
+          <span
+            class="help-icon"
+            :title="$t('characters.basicInfo.religionHelp')"
+            role="img"
+            :aria-label="$t('characters.basicInfo.religionHelp')"
+          >
+            ?
+          </span>
+        </label>
         <div class="belief-search">
           <input 
             id="glaube"
@@ -529,5 +548,26 @@ export default {
   font-size: 14px;
   color: #666;
   margin-top: 15px;
+}
+
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  border: 1px solid #999;
+  border-radius: 50%;
+  font-size: 12px;
+  line-height: 1;
+  /*cursor: help;*/
+  background: #f5f5f5;
+  color: #555;
+}
+
+.help-icon:hover {
+  background: #e0e0e0;
+  color: #222;
 }
 </style>

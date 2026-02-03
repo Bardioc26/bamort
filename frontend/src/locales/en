@@ -430,6 +430,8 @@ export default {
       unfree: 'Unfree',
       religion: 'Religion/Belief',
       religionPlaceholder: 'Type at least 2 characters to search beliefs...',
+      religionHelp: 'Type two or more letters to search available beliefs, then click a result to select it. Later you can change and extend it',
+      characterNameHelp: 'Enter the name of your character. This name will be displayed in the character overview and datasheet. Cannot be changed at the moment',
       selected: 'Selected',
       nextAttributes: 'Next: Attributes →',
       required: '*',

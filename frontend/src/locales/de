@@ -434,6 +434,8 @@ export default {
       unfree: 'Unfrei',
       religion: 'Religion/Glaube',
       religionPlaceholder: 'Mindestens 2 Zeichen für die Suche eingeben...',
+      religionHelp: 'Gib mindestens zwei Buchstaben ein, um passende Glaubensrichtungen zu finden. Klicken zum Auswählen. Kann später geändert und erweitert werden',
+      characterNameHelp: 'Geben Sie den Namen Ihres Charakters ein. Dieser Name wird in der Charakterübersicht und im Datenblatt angezeigt. Kann zur Zeit nich geändert werden',
       selected: 'Ausgewählt',
       nextAttributes: 'Weiter: Attribute →',
       required: '*',

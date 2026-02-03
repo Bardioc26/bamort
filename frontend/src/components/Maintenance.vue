@@ -34,6 +34,7 @@ import SpellView from "./maintenance/SpellView.vue"; // Component for character 
 import EquipmentView from "./maintenance/EquipmentView.vue"; // Component for character equipment
 import WeaponView from "./maintenance/WeaponView.vue"; // Component for character history
 import WeaponSkillView from "./maintenance/WeaponSkillView.vue"; // Component for character equipment
+import BelieveView from "./maintenance/BelieveView.vue"; // Component for believes maintenance
 
 
 export default {
@@ -45,6 +46,7 @@ export default {
     EquipmentView,
     WeaponView,
     WeaponSkillView,
+    BelieveView,
   },
   data() {
     return {
@@ -67,6 +69,7 @@ export default {
         { id: 3, name: "equipment", component: "EquipmentView" },
         { id: 1, name: "weapon", component: "WeaponView" },
         { id: 1, name: "weaponskill", component: "WeaponSkillView" },
+        { id: 4, name: "believe", component: "BelieveView" },
 
       ],
     };

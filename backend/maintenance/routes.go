@@ -10,6 +10,8 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	charGrp := r.Group("/maintenance")
 	charGrp.Use(user.RequireMaintainer())
 	{
+		charGrp.GET("/gsm-believes", GetBelieves)
+		charGrp.PUT("/gsm-believes/:id", UpdateBelieve)
 		charGrp.GET("/setupcheck", SetupCheck)
 		charGrp.GET("/setupcheck-dev", SetupCheckDev)
 		charGrp.GET("/mktestdata", MakeTestdataFromLive)

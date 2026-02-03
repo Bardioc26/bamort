@@ -167,7 +167,17 @@
               @dblclick="startEditProp('glaube', character.glaube)"
               class="editable-prop"
             >{{ character.glaube || '-' }}</span>
-            <select v-else v-model="editPropValue" @blur="saveProp('glaube')" @keyup.enter="saveProp('glaube')" @keyup.esc="cancelEditProp" ref="propInput" class="prop-input">
+            <select
+              v-else
+              v-model="editPropValue"
+              multiple
+              @blur="saveProp('glaube')"
+              @keyup.enter="saveProp('glaube')"
+              @keyup.esc="cancelEditProp"
+              ref="propInput"
+              class="prop-input multi-select"
+              size="8"
+            >
               <option v-for="option in getSelectOptions('glaube')" :key="option" :value="option">{{ option }}</option>
             </select>
           </p>
@@ -190,8 +200,12 @@
     <div v-else>Loading character data...</div>
 </template>
 
-<style>
-/* All styles moved to main.css */
+<style scoped>
+.multi-select {
+  min-width: 200px;
+  max-height: 180px;
+  overflow-y: auto;
+}
 </style>
 
 <script>
@@ -315,18 +329,22 @@ export default {
       const selectFields = ['gender', 'rasse', 'origin', 'social_class', 'glaube', 'hand', 'spezialisierung']
       if (selectFields.includes(prop)) {
         this.loadDatasheetOptions()
-        type = 'select'
+        type = prop === 'glaube' ? 'multi-select' : 'select'
       }
       
       this.editingProp = prop
-      this.editPropValue = value || ''
+      if (prop === 'glaube') {
+        this.editPropValue = value ? value.split(',').map(v => v.trim()).filter(Boolean) : []
+      } else {
+        this.editPropValue = value || ''
+      }
       this.editPropType = type
       this.$nextTick(() => {
         if (this.$refs.propInput) {
           const input = Array.isArray(this.$refs.propInput) ? this.$refs.propInput[0] : this.$refs.propInput
           if (input) {
             input.focus()
-            if (type !== 'select') {
+            if (type !== 'select' && type !== 'multi-select') {
               input.select()
             }
           }
@@ -335,6 +353,17 @@ export default {
     },
     async saveProp(prop) {
       if (this.editingProp === null) return
+      let newValue = this.editPropValue
+      if (this.editPropType === 'number') {
+        newValue = parseInt(this.editPropValue)
+        if (isNaN(newValue)) {
+          this.cancelEditProp()
+          return
+        }
+      } else if (this.editPropType === 'multi-select') {
+        newValue = Array.isArray(this.editPropValue) ? this.editPropValue.join(', ') : ''
+      }
+
       // Update the character object directly
       const pathParts = prop.split('.')
       let obj = this.character
@@ -345,19 +374,11 @@ export default {
         obj = obj[pathParts[i]]
       }
       obj[pathParts[pathParts.length - 1]] = newValue
-      
+
       // Save to backend
       await API.put(`/api/characters/${this.character.id}`, this.character)
-      
-      this.$emit('character-updated',this.character)
-      let newValue = this.editPropValue
-      if (this.editPropType === 'number') {
-        newValue = parseInt(this.editPropValue)
-        if (isNaN(newValue)) {
-          this.cancelEditProp()
-          return
-        }
-      }
+
+      this.$emit('character-updated', this.character)
       
       try {
         this.$emit('update-property', prop, newValue)

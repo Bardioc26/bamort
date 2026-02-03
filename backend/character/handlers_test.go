@@ -1073,9 +1073,11 @@ func TestGetDatasheetOptions(t *testing.T) {
 	assert.Contains(t, socialClasses, "Mittelschicht")
 
 	faiths := response["faiths"].([]interface{})
-	assert.Equal(t, 5, len(faiths))
+	assert.Equal(t, 15, len(faiths))
 	assert.Contains(t, faiths, "Druide")
 	assert.Contains(t, faiths, "Keine")
+	assert.Contains(t, faiths, "Torkin")
+	assert.NotContains(t, faiths, "")
 
 	handedness := response["handedness"].([]interface{})
 	assert.Equal(t, 3, len(handedness))

@@ -117,6 +117,13 @@
 
 <script>
 import API from '../../utils/api'
+import {
+  buildGameSystemParams,
+  findSystemById,
+  loadGameSystems as fetchGameSystems,
+  systemCodeFor as resolveSystemCode,
+  systemOptionsFor,
+} from '../../utils/maintenanceGameSystems'
 
 export default {
   name: 'MiscLookupView',
@@ -162,10 +169,13 @@ export default {
       return Array.from(set.values()).sort()
     },
     systemOptions() {
-      return this.gameSystems.map(gs => ({
-        id: gs.id,
-        label: gs.code ? `${gs.code} - ${gs.name || ''}`.trim() : gs.name || gs.id,
-      }))
+      const labelBuilder = system => {
+        const code = system.code || ''
+        const name = system.name || ''
+        if (code && name) return `${code} - ${name}`.trim()
+        return code || name || String(system.id ?? '')
+      }
+      return systemOptionsFor(this.gameSystems, labelBuilder)
     },
     sourceMap() {
       const map = new Map()
@@ -191,8 +201,7 @@ export default {
     },
     async loadGameSystems() {
       try {
-        const resp = await API.get('/api/maintenance/game-systems')
-        const systems = (resp.data?.game_systems || []).map(this.normalizeSystem)
+        const systems = await fetchGameSystems()
         this.gameSystems = systems
         const active = systems.find(s => s.is_active)
         this.currentGameSystem = active || systems[0] || null
@@ -203,7 +212,7 @@ export default {
     },
     async loadSources() {
       try {
-        const params = this.buildGameSystemParams()
+        const params = buildGameSystemParams(this.currentGameSystem)
         const resp = await API.get('/api/maintenance/gsm-lit-sources', { params })
         this.sources = resp.data?.sources || []
       } catch (err) {
@@ -215,7 +224,7 @@ export default {
       this.isLoading = true
       this.error = ''
       try {
-        const params = this.buildGameSystemParams()
+        const params = buildGameSystemParams(this.currentGameSystem)
         const resp = await API.get('/api/maintenance/gsm-misc', { params })
         this.items = resp.data?.misc || []
       } catch (err) {
@@ -225,29 +234,10 @@ export default {
         this.isLoading = false
       }
     },
-    buildGameSystemParams() {
-      if (!this.currentGameSystem) return {}
-      return {
-        game_system_id: this.currentGameSystem.id,
-        game_system: this.currentGameSystem.name,
-      }
-    },
     buildParamsForSystemId(systemId) {
-      const sys = this.gameSystems.find(s => s.id === systemId) || this.currentGameSystem
+      const sys = findSystemById(this.gameSystems, systemId) || this.currentGameSystem
       if (!sys) return {}
-      return {
-        game_system_id: sys.id,
-        game_system: sys.name,
-      }
-    },
-    normalizeSystem(gs) {
-      return {
-        id: gs.id ?? gs.ID,
-        code: gs.code ?? gs.Code,
-        name: gs.name ?? gs.Name,
-        description: gs.description ?? gs.Description,
-        is_active: gs.is_active ?? gs.IsActive,
-      }
+      return buildGameSystemParams(sys)
     },
     sourceCodeFor(id) {
       if (!id) return '-'
@@ -255,9 +245,7 @@ export default {
       return code || id
     },
     systemCodeFor(systemId, fallback = '') {
-      if (!systemId) return fallback
-      const sys = this.gameSystems.find(gs => gs.id === systemId)
-      return sys ? sys.code : fallback
+      return resolveSystemCode(this.gameSystems, systemId, fallback)
     },
     startEdit(item) {
       this.editingId = item.id

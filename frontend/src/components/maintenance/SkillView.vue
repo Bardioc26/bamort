@@ -360,6 +360,13 @@
 
 <script>
 import API from '../../utils/api'
+import {
+  findSystemIdByCode,
+  getSourceCode,
+  getSystemCodeById,
+  loadGameSystems as fetchGameSystems,
+  systemOptionsFor,
+} from '../../utils/maintenanceGameSystems'
 
 export default {
   name: "SkillView",
@@ -490,27 +497,15 @@ export default {
       return filtered
     },
     systemOptions() {
-      return this.gameSystems.map(gs => ({
-        id: gs.id,
-        label: gs.name ? `${gs.code} (${gs.name})` : gs.code
-      }))
+      return systemOptionsFor(this.gameSystems)
     }
   },
   methods: {
     async loadGameSystems() {
       try {
-        const resp = await API.get('/api/maintenance/game-systems')
-        this.gameSystems = (resp.data?.game_systems || []).map(this.normalizeSystem)
+        this.gameSystems = await fetchGameSystems()
       } catch (error) {
         console.error('Failed to load game systems:', error)
-      }
-    },
-    normalizeSystem(gs) {
-      return {
-        id: gs.id ?? gs.ID,
-        code: gs.code ?? gs.Code,
-        name: gs.name ?? gs.Name,
-        is_active: gs.is_active ?? gs.IsActive,
       }
     },
     async loadEnhancedSkills() {
@@ -579,19 +574,13 @@ export default {
       this.editingIndex = index
     },
     getSourceCode(sourceId) {
-      if (!sourceId || !this.availableSources.length) return ''
-      const source = this.availableSources.find(s => s.id === sourceId)
-      return source ? source.code : ''
+      return getSourceCode(this.availableSources, sourceId)
     },
     findSystemIdByCode(code) {
-      if (!code) return null
-      const match = this.gameSystems.find(gs => gs.code === code)
-      return match ? match.id : null
+      return findSystemIdByCode(this.gameSystems, code)
     },
     getSystemCodeById(systemId, fallback = '') {
-      if (!systemId) return fallback
-      const sys = this.gameSystems.find(gs => gs.id === systemId)
-      return sys ? sys.code : fallback
+      return getSystemCodeById(this.gameSystems, systemId, fallback)
     },
     onCategoryToggle(categoryId) {
       // If category was removed, also remove its difficulty setting

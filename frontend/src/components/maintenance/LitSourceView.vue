@@ -141,6 +141,13 @@
 
 <script>
 import API from '../../utils/api'
+import {
+  buildGameSystemParams,
+  findSystemById,
+  findSystemIdByCode,
+  loadGameSystems as fetchGameSystems,
+  systemOptionsFor,
+} from '../../utils/maintenanceGameSystems'
 
 export default {
   name: 'LitSourceView',
@@ -173,10 +180,7 @@ export default {
       return [...list].sort((a, b) => (a.code || '').localeCompare(b.code || ''))
     },
     systemOptions() {
-      return this.gameSystems.map(gs => ({
-        id: gs.id,
-        label: gs.name ? `${gs.code} (${gs.name})` : gs.code,
-      }))
+      return systemOptionsFor(this.gameSystems)
     },
   },
   methods: {
@@ -189,8 +193,7 @@ export default {
     },
     async loadGameSystems() {
       try {
-        const resp = await API.get('/api/maintenance/game-systems')
-        const systems = (resp.data?.game_systems || []).map(this.normalizeSystem)
+        const systems = await fetchGameSystems()
         this.gameSystems = systems
         const active = systems.find(s => s.is_active)
         this.currentGameSystem = active || systems[0] || null
@@ -204,7 +207,7 @@ export default {
       this.isLoading = true
       this.error = ''
       try {
-        const params = this.buildGameSystemParams(this.currentGameSystem)
+        const params = buildGameSystemParams(this.currentGameSystem)
         const resp = await API.get('/api/maintenance/gsm-lit-sources', { params })
         this.sources = resp.data?.sources || []
       } catch (err) {
@@ -212,23 +215,6 @@ export default {
         this.error = err.response?.data?.error || err.message
       } finally {
         this.isLoading = false
-      }
-    },
-    buildGameSystemParams(system) {
-      const target = system || this.currentGameSystem
-      if (!target) return {}
-      return {
-        game_system_id: target.id,
-        game_system: target.name,
-      }
-    },
-    normalizeSystem(gs) {
-      return {
-        id: gs.id ?? gs.ID,
-        code: gs.code ?? gs.Code,
-        name: gs.name ?? gs.Name,
-        description: gs.description ?? gs.Description,
-        is_active: gs.is_active ?? gs.IsActive,
       }
     },
     startEdit(src) {
@@ -252,13 +238,10 @@ export default {
       }
     },
     findSystemById(id) {
-      if (id === null || id === undefined) return null
-      return this.gameSystems.find(gs => gs.id === id) || null
+      return findSystemById(this.gameSystems, id)
     },
     findSystemIdByCode(code) {
-      if (!code) return null
-      const match = this.gameSystems.find(gs => gs.code === code)
-      return match ? match.id : null
+      return findSystemIdByCode(this.gameSystems, code)
     },
     async saveEdit() {
       if (!this.editedItem) return
@@ -277,7 +260,7 @@ export default {
       }
       this.isSaving = true
       try {
-        const params = this.buildGameSystemParams(targetSystem)
+        const params = buildGameSystemParams(targetSystem)
         const resp = await API.put(`/api/maintenance/gsm-lit-sources/${this.editingId}`, payload, { params })
         const idx = this.sources.findIndex(s => s.id === this.editingId)
         if (idx !== -1) this.sources.splice(idx, 1, resp.data)

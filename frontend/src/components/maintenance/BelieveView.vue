@@ -154,6 +154,13 @@
 
 <script>
 import API from '../../utils/api'
+import {
+  findSystemIdByCode,
+  getSourceCode,
+  getSystemCodeById,
+  loadGameSystems as fetchGameSystems,
+  systemOptionsFor,
+} from '../../utils/maintenanceGameSystems'
 
 export default {
   name: "BelieveView",
@@ -196,27 +203,16 @@ export default {
       return [...filtered].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
     },
     systemOptions() {
-      return this.gameSystems.map(gs => ({
-        id: gs.id,
-        label: gs.name ? `${gs.code} (${gs.name})` : gs.code,
-      }))
+      return systemOptionsFor(this.gameSystems)
     }
   },
   methods: {
     async loadGameSystems() {
       try {
-        const resp = await API.get('/api/maintenance/game-systems')
-        this.gameSystems = (resp.data?.game_systems || []).map(this.normalizeSystem)
+        this.gameSystems = await fetchGameSystems()
       } catch (err) {
         console.error('Failed to load game systems:', err)
         this.error = err.response?.data?.error || err.message
-      }
-    },
-    normalizeSystem(gs) {
-      return {
-        id: gs.id ?? gs.ID,
-        code: gs.code ?? gs.Code,
-        name: gs.name ?? gs.Name,
       }
     },
     async loadBelieves() {
@@ -234,13 +230,10 @@ export default {
       }
     },
     getSourceCode(sourceId) {
-      const source = this.sources.find(src => src.id === sourceId)
-      return source ? source.code : ''
+      return getSourceCode(this.sources, sourceId)
     },
     getSystemCodeById(systemId, fallback = '') {
-      if (!systemId) return fallback
-      const gs = this.gameSystems.find(item => item.id === systemId)
-      return gs ? gs.code : fallback
+      return getSystemCodeById(this.gameSystems, systemId, fallback)
     },
     startEdit(believe) {
       this.editingId = believe.id
@@ -256,9 +249,7 @@ export default {
       this.selectedSystemId = null
     },
     findSystemIdByCode(code) {
-      if (!code) return null
-      const match = this.gameSystems.find(gs => gs.code === code)
-      return match ? match.id : null
+      return findSystemIdByCode(this.gameSystems, code)
     },
     async saveEdit() {
       if (!this.editedItem || !this.editingId) {

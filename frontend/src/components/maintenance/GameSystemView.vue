@@ -98,6 +98,7 @@
 
 <script>
 import API from '../../utils/api'
+import { loadGameSystems as fetchGameSystems } from '../../utils/maintenanceGameSystems'
 
 export default {
   name: 'GameSystemView',
@@ -132,23 +133,12 @@ export default {
       this.isLoading = true
       this.error = ''
       try {
-        const resp = await API.get('/api/maintenance/game-systems')
-        const raw = resp.data?.game_systems || []
-        this.systems = raw.map(this.normalizeSystem)
+        this.systems = await fetchGameSystems()
       } catch (err) {
         console.error('Failed to load game systems:', err)
         this.error = err.response?.data?.error || err.message
       } finally {
         this.isLoading = false
-      }
-    },
-    normalizeSystem(gs) {
-      return {
-        id: gs.id ?? gs.ID,
-        code: gs.code ?? gs.Code,
-        name: gs.name ?? gs.Name,
-        description: gs.description ?? gs.Description,
-        is_active: gs.is_active ?? gs.IsActive,
       }
     },
     startEdit(gs) {

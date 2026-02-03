@@ -1,7 +1,7 @@
 package transfer
 
 import (
-	"bamort/config"
+	"bamort/appsystem"
 	"bamort/database"
 	"bamort/models"
 	"bamort/user"
@@ -90,7 +90,7 @@ func ExportDatabase(exportDir string) (*ExportResult, error) {
 	}
 
 	export := DatabaseExport{
-		Version:   config.GetVersion(),
+		Version:   appsystem.GetVersion(),
 		Timestamp: time.Now(),
 	}
 

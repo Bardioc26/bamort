@@ -10,6 +10,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 	{
 		// Protected routes - require authentication
 		userGroup.GET("/profile", GetUserProfile)
+		userGroup.PUT("/display-name", UpdateDisplayName)
 		userGroup.PUT("/email", UpdateEmail)
 		userGroup.PUT("/password", UpdatePassword)
 		userGroup.PUT("/language", UpdateLanguage)

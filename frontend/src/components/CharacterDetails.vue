@@ -9,7 +9,7 @@
         <button v-if="isOwner" @click="showVisibilityDialog = true" class="export-button-small" :title="$t('visibility.title')">
           {{ character.public ? '🌐' : '🔒' }}
         </button>
-        <h2>{{ $t('char') }}: {{ character.name }} ({{ $t(currentView) }})</h2>
+        <h2>{{ character.name }}  {{$t('characters.list.class')}}: {{ character.typ }}  {{$t('characters.list.grade') }}: {{ character.grad }} <!--({{ $t(currentView) }})--></h2>
       </div>
     </div>
 

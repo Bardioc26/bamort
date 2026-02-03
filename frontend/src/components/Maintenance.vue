@@ -34,6 +34,11 @@ import SpellView from "./maintenance/SpellView.vue"; // Component for character 
 import EquipmentView from "./maintenance/EquipmentView.vue"; // Component for character equipment
 import WeaponView from "./maintenance/WeaponView.vue"; // Component for character history
 import WeaponSkillView from "./maintenance/WeaponSkillView.vue"; // Component for character equipment
+import BelieveView from "./maintenance/BelieveView.vue"; // Component for believes maintenance
+import GameSystemView from "./maintenance/GameSystemView.vue";
+import LitSourceView from "./maintenance/LitSourceView.vue";
+import MiscLookupView from "./maintenance/MiscLookupView.vue";
+import SkillImprovementCostView from "./maintenance/SkillImprovementCostView.vue";
 
 
 export default {
@@ -45,6 +50,11 @@ export default {
     EquipmentView,
     WeaponView,
     WeaponSkillView,
+    BelieveView,
+    GameSystemView,
+    LitSourceView,
+    MiscLookupView,
+    SkillImprovementCostView,
   },
   data() {
     return {
@@ -63,10 +73,15 @@ export default {
       lastView: "SkillView",
       menus: [
         { id: 0, name: "skill", component: "SkillView" },
-        { id: 2, name: "spell", component: "SpellView" },
-        { id: 3, name: "equipment", component: "EquipmentView" },
-        { id: 1, name: "weapon", component: "WeaponView" },
-        { id: 1, name: "weaponskill", component: "WeaponSkillView" },
+        { id: 1, name: "spell", component: "SpellView" },
+        { id: 2, name: "equipment", component: "EquipmentView" },
+        { id: 3, name: "weapon", component: "WeaponView" },
+        { id: 4, name: "weaponskill", component: "WeaponSkillView" },
+        { id: 5, name: "believe", component: "BelieveView" },
+        { id: 6, name: "gamesystem", component: "GameSystemView" },
+        { id: 7, name: "litsource", component: "LitSourceView" },
+        { id: 8, name: "misc", component: "MiscLookupView" },
+        { id: 9, name: "skillimprovement", component: "SkillImprovementCostView" },
 
       ],
     };

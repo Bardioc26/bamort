@@ -4,6 +4,7 @@ import (
 	"bamort/database"
 	"bamort/models"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -19,23 +20,32 @@ func GetMiscLookupByKey(key string, order ...string) ([]models.MiscLookup, error
 func GetMiscLookupByKeyForSystem(key string, gameSystemId uint, order ...string) ([]models.MiscLookup, error) {
 	var items []models.MiscLookup
 
+	orderKey := "value"
 	orderBy := "value ASC"
 	if len(order) > 0 && order[0] != "" {
 		switch order[0] {
 		case "id":
+			orderKey = "id"
 			orderBy = "id ASC"
 		case "value":
+			orderKey = "value"
 			orderBy = "value ASC"
 		case "source":
+			orderKey = "source"
 			orderBy = "source_id ASC, value ASC"
 		case "source_value":
+			orderKey = "source"
 			orderBy = "source_id ASC, value ASC"
 		default:
+			orderKey = "value"
 			orderBy = "value ASC"
 		}
 	}
 
 	gs := models.GetGameSystem(gameSystemId, "")
+	if gs == nil {
+		gs = models.GetGameSystem(0, "")
+	}
 
 	query := database.DB.Where("`key` = ?", key)
 	if gs.ID != 0 {
@@ -57,7 +67,94 @@ func GetMiscLookupByKeyForSystem(key string, gameSystemId uint, order ...string)
 		}
 	}
 
+	if key == "faiths" {
+		existingValues := make(map[string]struct{}, len(items))
+		for i := range items {
+			trimmed := strings.TrimSpace(items[i].Value)
+			if trimmed == "" {
+				continue
+			}
+			existingValues[trimmed] = struct{}{}
+		}
+
+		believeItems, err := collectBeliefsForSystem(gs)
+		if err != nil {
+			return items, err
+		}
+
+		additions := make([]models.MiscLookup, 0, len(believeItems))
+		for _, believe := range believeItems {
+			value := strings.TrimSpace(believe.Name)
+			if value == "" {
+				continue
+			}
+
+			if _, exists := existingValues[value]; exists {
+				continue
+			}
+			existingValues[value] = struct{}{}
+
+			addition := models.MiscLookup{
+				ID:           believe.ID,
+				Key:          key,
+				Value:        value,
+				SourceID:     believe.SourceID,
+				PageNumber:   believe.PageNumber,
+				GameSystem:   believe.GameSystem,
+				GameSystemId: believe.GameSystemId,
+			}
+
+			if addition.GameSystemId == 0 && gs.ID != 0 {
+				addition.GameSystemId = gs.ID
+			}
+
+			additions = append(additions, addition)
+		}
+
+		if len(additions) > 0 {
+			items = append(items, additions...)
+			sortMiscLookup(items, orderKey)
+		}
+	}
+
 	return items, nil
+}
+
+func collectBeliefsForSystem(gs *models.GameSystem) ([]models.Believe, error) {
+	var believes []models.Believe
+	if gs == nil {
+		return believes, nil
+	}
+
+	query := database.DB.Model(&models.Believe{})
+	if gs.ID != 0 {
+		query = query.Where("game_system_id = ?", gs.ID)
+	}
+	if gs.Name != "" {
+		query = query.Or("game_system = ?", gs.Name)
+	}
+
+	if err := query.Find(&believes).Error; err != nil {
+		return believes, err
+	}
+
+	return believes, nil
+}
+
+func sortMiscLookup(items []models.MiscLookup, orderKey string) {
+	sort.SliceStable(items, func(i, j int) bool {
+		switch orderKey {
+		case "id":
+			return items[i].ID < items[j].ID
+		case "source":
+			if items[i].SourceID == items[j].SourceID {
+				return items[i].Value < items[j].Value
+			}
+			return items[i].SourceID < items[j].SourceID
+		default:
+			return items[i].Value < items[j].Value
+		}
+	})
 }
 
 /*

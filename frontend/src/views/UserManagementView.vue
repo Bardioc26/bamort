@@ -14,6 +14,7 @@
           <tr>
             <th>{{ $t('userManagement.id') }}</th>
             <th>{{ $t('userManagement.username') }}</th>
+            <th>{{ $t('userManagement.displayName') }}</th>
             <th>{{ $t('userManagement.email') }}</th>
             <th>{{ $t('userManagement.role') }}</th>
             <th>{{ $t('userManagement.createdAt') }}</th>
@@ -24,6 +25,7 @@
           <tr v-for="user in users" :key="user.id">
             <td>{{ user.id }}</td>
             <td>{{ user.username }}</td>
+            <td>{{ user.display_name }}</td>
             <td>{{ user.email }}</td>
             <td>
               <span :class="getRoleBadgeClass(user.role)">
@@ -65,7 +67,7 @@
           <h3>{{ $t('userManagement.changeRoleTitle') }}</h3>
         </div>
         <div class="modal-body">
-          <p>{{ $t('userManagement.changeRoleFor') }}: <strong>{{ selectedUser.username }}</strong></p>
+          <p>{{ $t('userManagement.changeRoleFor') }}: <strong>{{ selectedUser.display_name || selectedUser.username }}</strong></p>
           <div class="form-group">
             <label>{{ $t('userManagement.selectRole') }}</label>
             <select v-model="newRole" class="form-control">
@@ -93,7 +95,7 @@
           <h3>{{ $t('userManagement.deleteUserTitle') }}</h3>
         </div>
         <div class="modal-body">
-          <p>{{ $t('userManagement.deleteConfirm') }}: <strong>{{ selectedUser.username }}</strong>?</p>
+          <p>{{ $t('userManagement.deleteConfirm') }}: <strong>{{ selectedUser.display_name || selectedUser.username }}</strong>?</p>
           <p class="badge badge-warning">{{ $t('userManagement.deleteWarning') }}</p>
         </div>
         <div class="modal-footer">
@@ -114,7 +116,7 @@
           <h3>{{ $t('userManagement.changePasswordTitle') }}</h3>
         </div>
         <div class="modal-body">
-          <p>{{ $t('userManagement.changePasswordFor') }}: <strong>{{ selectedUser.username }}</strong></p>
+          <p>{{ $t('userManagement.changePasswordFor') }}: <strong>{{ selectedUser.display_name || selectedUser.username }}</strong></p>
           <div class="form-group">
             <label>{{ $t('userManagement.newPassword') }}</label>
             <input 

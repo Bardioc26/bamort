@@ -136,7 +136,7 @@
                   <td>{{ dtaItem.ursprung || '-' }}</td>
                   <td>{{ dtaItem.beschreibung || '-' }}</td>
                   <td>{{ formatQuelle(dtaItem) }}</td>
-                  <td>{{ dtaItem.system || 'midgard' }}</td>
+                  <td>{{ getSystemCodeById(dtaItem.game_system_id, dtaItem.system || 'midgard') }}</td>
                   <td>
                     <button @click="startEdit(index)">Edit</button>
                   </td>
@@ -223,7 +223,12 @@
                         </div>
                         <div class="edit-field">
                           <label>{{ $t('spell.system') }}:</label>
-                          <input v-model="editedItem.system" style="width:100px;" />
+                          <select v-model.number="selectedSystemId" style="width:140px;">
+                            <option value="">-</option>
+                            <option v-for="system in systemOptions" :key="system.id" :value="system.id">
+                              {{ system.label }}
+                            </option>
+                          </select>
                         </div>
                       </div>
 
@@ -354,6 +359,13 @@
 
 <script>
 import API from '../../utils/api'
+import {
+  findSystemIdByCode,
+  getSourceCode,
+  getSystemCodeById,
+  loadGameSystems as fetchGameSystems,
+  buildSystemOptions,
+} from '../../utils/maintenanceGameSystems'
 export default {
   name: "SpellView",
   props: {
@@ -383,11 +395,16 @@ export default {
       filterWirkungsziel: '',
       filterQuelle: '',
       enhancedSpells: [],
-      availableSources: []
+      availableSources: [],
+      gameSystems: [],
+      selectedSystemId: null
     }
   },
   async created() {
-    await this.loadEnhancedSpells()
+    await Promise.all([
+      this.loadGameSystems(),
+      this.loadEnhancedSpells()
+    ])
   },
   computed: {
     availableCategories() {
@@ -502,9 +519,19 @@ export default {
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       });
+    },
+    systemOptions() {
+      return buildSystemOptions(this.gameSystems)
     }
   },
   methods: {
+    async loadGameSystems() {
+      try {
+        this.gameSystems = await fetchGameSystems()
+      } catch (error) {
+        console.error('Failed to load game systems:', error)
+      }
+    },
     async loadEnhancedSpells() {
       try {
         const response = await API.get('/api/maintenance/spells-enhanced')
@@ -524,17 +551,21 @@ export default {
         ...spell,
         sourceCode: this.getSourceCode(spell.source_id)
       }
+      this.selectedSystemId = spell.game_system_id ?? this.findSystemIdByCode(spell.system)
       this.editingIndex = index
     },
     async saveEdit(index) {
       try {
         // Find source ID from code
         const source = this.availableSources.find(s => s.code === this.editedItem.sourceCode)
+        const selectedSystem = this.gameSystems.find(gs => gs.id === this.selectedSystemId)
         
         const updateData = {
           ...this.editedItem,
           source_id: source ? source.id : null,
-          page_number: this.editedItem.page_number || 0
+          page_number: this.editedItem.page_number || 0,
+          system: selectedSystem ? selectedSystem.code : (this.editedItem.system || ''),
+          game_system_id: selectedSystem ? selectedSystem.id : (this.editedItem.game_system_id ?? null)
         }
         
         const response = await API.put(
@@ -550,6 +581,7 @@ export default {
 
         this.editingIndex = -1
         this.editedItem = null
+        this.selectedSystemId = null
       } catch (error) {
         console.error('Failed to save spell:', error)
         alert('Failed to save spell: ' + (error.response?.data?.error || error.message))
@@ -558,6 +590,10 @@ export default {
     cancelEdit() {
       this.editingIndex = -1;
       this.editedItem = null;
+      this.selectedSystemId = null;
+    },
+    findSystemIdByCode(code) {
+      return findSystemIdByCode(this.gameSystems, code)
     },
     sortBy(field) {
       if (this.sortField === field) {
@@ -677,9 +713,10 @@ export default {
       return spell.quelle || '-'
     },
     getSourceCode(sourceId) {
-      if (!sourceId || !this.availableSources.length) return ''
-      const source = this.availableSources.find(s => s.id === sourceId)
-      return source ? source.code : ''
+      return getSourceCode(this.availableSources, sourceId)
+    },
+    getSystemCodeById(systemId, fallback = '') {
+      return getSystemCodeById(this.gameSystems, systemId, fallback)
     },
     clearFilters() {
       this.searchTerm = ''

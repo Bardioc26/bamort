@@ -72,7 +72,7 @@
                   @click="toggleUser(user.user_id)"
                 >
                   <div class="user-info">
-                    <span class="user-name">{{ user.username }}</span>
+                    <span class="user-name">{{ user.display_name || user.username }}</span>
                     <span class="user-email">{{ user.email }}</span>
                   </div>
                 </div>
@@ -161,6 +161,7 @@ export default {
       }
       const query = this.searchQuery.toLowerCase()
       return users.filter(user => 
+        (user.display_name && user.display_name.toLowerCase().includes(query)) ||
         user.username.toLowerCase().includes(query) ||
         user.email.toLowerCase().includes(query)
       )
@@ -228,7 +229,7 @@ export default {
     
     getUserName(userId) {
       const user = this.availableUsers.find(u => u.user_id === userId)
-      return user ? user.username : 'Unknown'
+      return user ? (user.display_name || user.username) : 'Unknown'
     },
     
     getUserEmail(userId) {

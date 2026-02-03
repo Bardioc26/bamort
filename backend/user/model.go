@@ -3,6 +3,7 @@ package user
 import (
 	"bamort/database"
 	"fmt"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -18,6 +19,7 @@ const (
 type User struct {
 	UserID             uint       `gorm:"primaryKey" json:"id"`
 	Username           string     `gorm:"unique" json:"username"`
+	DisplayName        string     `gorm:"not null;default:''" json:"display_name"`
 	PasswordHash       string     `json:"password"`
 	Email              string     `gorm:"unique" json:"email"`
 	Role               string     `gorm:"default:standard" json:"role"`
@@ -31,6 +33,10 @@ type User struct {
 func (object *User) Create() error {
 	if database.DB == nil {
 		return fmt.Errorf("database connection is nil")
+	}
+
+	if strings.TrimSpace(object.DisplayName) == "" {
+		object.DisplayName = object.Username
 	}
 
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
@@ -73,6 +79,10 @@ func (object *User) FirstId(value uint) error {
 func (object *User) Save() error {
 	if database.DB == nil {
 		return fmt.Errorf("database connection is nil")
+	}
+
+	if strings.TrimSpace(object.DisplayName) == "" {
+		object.DisplayName = object.Username
 	}
 
 	err := database.DB.Save(&object).Error
@@ -153,4 +163,11 @@ func (u *User) IsStandardUser() bool {
 // ValidateRole checks if the given role is valid
 func ValidateRole(role string) bool {
 	return role == RoleStandardUser || role == RoleMaintainer || role == RoleAdmin
+}
+
+func (u *User) DisplayNameOrUsername() string {
+	if strings.TrimSpace(u.DisplayName) != "" {
+		return u.DisplayName
+	}
+	return u.Username
 }

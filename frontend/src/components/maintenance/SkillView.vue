@@ -152,6 +152,30 @@
                   </div>
 
                   <div class="edit-row">
+                    <div class="edit-field">
+                      <label>{{ $t('skill.system') }}</label>
+                      <select v-model.number="selectedSystemId" style="width:140px;">
+                        <option value="">-</option>
+                        <option v-for="system in systemOptions" :key="system.id" :value="system.id">
+                          {{ system.label }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="edit-row">
+                    <div class="edit-field">
+                      <label>{{ $t('skill.system') }}</label>
+                      <select v-model.number="createSelectedSystemId" style="width:140px;">
+                        <option value="">-</option>
+                        <option v-for="system in systemOptions" :key="system.id" :value="system.id">
+                          {{ system.label }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="edit-row">
                     <div class="edit-field full-width">
                       <label>{{ $t('skill.categories') || 'Categories' }}:</label>
                       <div class="category-checkboxes">
@@ -206,7 +230,7 @@
                 <td>{{ dtaItem.beschreibung || '-' }}</td>
                 <td>{{ dtaItem.bonuseigenschaft || '-' }}</td>
                 <td>{{ formatQuelle(dtaItem) }}</td>
-                <td>{{ dtaItem.game_system || 'midgard' }}</td>
+                <td>{{ getSystemCodeById(dtaItem.game_system_id, dtaItem.game_system || 'midgard') }}</td>
                 <td>
                   <button @click="startEdit(index)">Edit</button>
                 </td>
@@ -336,6 +360,13 @@
 
 <script>
 import API from '../../utils/api'
+import {
+  findSystemIdByCode,
+  getSourceCode,
+  getSystemCodeById,
+  loadGameSystems as fetchGameSystems,
+  buildSystemOptions,
+} from '../../utils/maintenanceGameSystems'
 
 export default {
   name: "SkillView",
@@ -365,11 +396,17 @@ export default {
       filterInnateskill: '',
       filterBonuseigenschaft: '',
       enhancedSkills: [],
-      availableSources: []
+      availableSources: [],
+      gameSystems: [],
+      selectedSystemId: null,
+      createSelectedSystemId: null
     }
   },
   async created() {
-    await this.loadEnhancedSkills()
+    await Promise.all([
+      this.loadGameSystems(),
+      this.loadEnhancedSkills()
+    ])
   },
   computed: {
     availableCategories() {
@@ -458,9 +495,19 @@ export default {
       })
 
       return filtered
+    },
+    systemOptions() {
+      return buildSystemOptions(this.gameSystems)
     }
   },
   methods: {
+    async loadGameSystems() {
+      try {
+        this.gameSystems = await fetchGameSystems()
+      } catch (error) {
+        console.error('Failed to load game systems:', error)
+      }
+    },
     async loadEnhancedSkills() {
       try {
         const response = await API.get('/api/maintenance/skills-enhanced')
@@ -522,12 +569,18 @@ export default {
         })
       }
 
+      this.selectedSystemId = skill.game_system_id ?? this.findSystemIdByCode(skill.game_system)
+
       this.editingIndex = index
     },
     getSourceCode(sourceId) {
-      if (!sourceId || !this.availableSources.length) return ''
-      const source = this.availableSources.find(s => s.id === sourceId)
-      return source ? source.code : ''
+      return getSourceCode(this.availableSources, sourceId)
+    },
+    findSystemIdByCode(code) {
+      return findSystemIdByCode(this.gameSystems, code)
+    },
+    getSystemCodeById(systemId, fallback = '') {
+      return getSystemCodeById(this.gameSystems, systemId, fallback)
     },
     onCategoryToggle(categoryId) {
       // If category was removed, also remove its difficulty setting
@@ -546,6 +599,7 @@ export default {
       try {
         // Find source ID from code
         const source = this.availableSources.find(s => s.code === this.editedItem.sourceCode)
+        const selectedSystem = this.gameSystems.find(gs => gs.id === this.selectedSystemId)
         
         // Build category_difficulties array
         const categoryDifficulties = this.editedItem.selectedCategories.map(catId => ({
@@ -557,7 +611,8 @@ export default {
           id: this.editedItem.id,
           name: this.editedItem.name,
           beschreibung: this.editedItem.beschreibung,
-          game_system: this.editedItem.game_system || 'midgard',
+          game_system: selectedSystem ? selectedSystem.code : (this.editedItem.game_system || 'midgard'),
+          game_system_id: selectedSystem ? selectedSystem.id : (this.editedItem.game_system_id ?? null),
           initialwert: this.editedItem.initialwert,
           basiswert: this.editedItem.basiswert || 0,
           bonuseigenschaft: this.editedItem.bonuseigenschaft,
@@ -581,6 +636,7 @@ export default {
 
         this.editingIndex = -1
         this.editedItem = null
+        this.selectedSystemId = null
       } catch (error) {
         console.error('Failed to update skill:', error)
         alert('Failed to update skill: ' + (error.response?.data?.error || error.message))
@@ -608,10 +664,13 @@ export default {
     },
     startCreate() {
       // Initialize new skill object with defaults
+      const defaultSystem = this.gameSystems.find(gs => gs.is_active) || this.gameSystems[0] || null
+      this.createSelectedSystemId = defaultSystem ? defaultSystem.id : null
       this.editedItem = {
         name: '',
         beschreibung: '',
-        game_system: 'midgard',
+        game_system: defaultSystem ? defaultSystem.code : 'midgard',
+        game_system_id: defaultSystem ? defaultSystem.id : null,
         initialwert: 5,
         basiswert: 0,
         bonuseigenschaft: '',
@@ -634,6 +693,7 @@ export default {
 
         // Find source ID from code
         const source = this.availableSources.find(s => s.code === this.editedItem.sourceCode)
+        const selectedSystem = this.gameSystems.find(gs => gs.id === this.createSelectedSystemId)
         
         // Build category_difficulties array
         const categoryDifficulties = this.editedItem.selectedCategories.map(catId => ({
@@ -644,7 +704,8 @@ export default {
         const createData = {
           name: this.editedItem.name,
           beschreibung: this.editedItem.beschreibung,
-          game_system: this.editedItem.game_system || 'midgard',
+          game_system: selectedSystem ? selectedSystem.code : (this.editedItem.game_system || 'midgard'),
+          game_system_id: selectedSystem ? selectedSystem.id : (this.editedItem.game_system_id ?? null),
           initialwert: this.editedItem.initialwert,
           basiswert: this.editedItem.basiswert || 0,
           bonuseigenschaft: this.editedItem.bonuseigenschaft,
@@ -666,6 +727,7 @@ export default {
         // Hide the create dialog
         this.creatingNew = false
         this.editedItem = null
+        this.createSelectedSystemId = null
       } catch (error) {
         console.error('Failed to create skill:', error)
         alert('Failed to create skill: ' + (error.response?.data?.error || error.message))
@@ -675,6 +737,7 @@ export default {
     cancelCreate() {
       this.creatingNew = false
       this.editedItem = null
+      this.createSelectedSystemId = null
     }
   }
 }

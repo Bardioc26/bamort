@@ -55,7 +55,7 @@
                   <td>{{ dtaItem.initialwert || '0' }}</td>
                   <td>{{ dtaItem.beschreibung || '-' }}</td>
                   <td>{{ formatQuelle(dtaItem) }}</td>
-                  <td>{{ dtaItem.system || 'midgard' }}</td>
+                  <td>{{ getSystemCodeById(dtaItem.game_system_id, dtaItem.system || 'midgard') }}</td>
                   <td>
                     <button @click="startEdit(index)">Edit</button>
                   </td>
@@ -109,7 +109,12 @@
                         </div>
                         <div class="edit-field">
                           <label>{{ $t('weaponskill.system') }}:</label>
-                          <input v-model="editedItem.system" style="width:100px;" />
+                          <select v-model.number="selectedSystemId" style="width:140px;">
+                            <option value="">-</option>
+                            <option v-for="system in systemOptions" :key="system.id" :value="system.id">
+                              {{ system.label }}
+                            </option>
+                          </select>
                         </div>
                       </div>
 
@@ -174,6 +179,13 @@
 
 <script>
 import API from '../../utils/api'
+import {
+  findSystemIdByCode,
+  getSourceCode,
+  getSystemCodeById,
+  loadGameSystems as fetchGameSystems,
+  buildSystemOptions,
+} from '../../utils/maintenanceGameSystems'
 export default {
   name: "WaeponSkillView",
   props: {
@@ -197,11 +209,16 @@ export default {
       filterQuelle: '',
       enhancedWeaponSkills: [],
       availableSources: [],
-      availableDifficultiesData: []
+      availableDifficultiesData: [],
+      gameSystems: [],
+      selectedSystemId: null
     }
   },
   async created() {
-    await this.loadEnhancedWeaponSkills()
+    await Promise.all([
+      this.loadGameSystems(),
+      this.loadEnhancedWeaponSkills()
+    ])
   },
   computed: {
     availableDifficulties() {
@@ -259,9 +276,19 @@ export default {
       })
 
       return filtered
+    },
+    systemOptions() {
+      return buildSystemOptions(this.gameSystems)
     }
   },
   methods: {
+    async loadGameSystems() {
+      try {
+        this.gameSystems = await fetchGameSystems()
+      } catch (error) {
+        console.error('Failed to load game systems:', error)
+      }
+    },
     async loadEnhancedWeaponSkills() {
       try {
         const response = await API.get('/api/maintenance/weaponskills-enhanced')
@@ -278,19 +305,23 @@ export default {
         ...weaponSkill,
         sourceCode: this.getSourceCode(weaponSkill.source_id)
       }
+      this.selectedSystemId = weaponSkill.game_system_id ?? this.findSystemIdByCode(weaponSkill.system)
       this.editingIndex = index
     },
     async saveEdit(index) {
       try {
         // Find source ID from code
         const source = this.availableSources.find(s => s.code === this.editedItem.sourceCode)
+        const selectedSystem = this.gameSystems.find(gs => gs.id === this.selectedSystemId)
         
         const updateData = {
           ...this.editedItem,
           source_id: source ? source.id : null,
           page_number: this.editedItem.page_number || 0,
           difficulty: this.editedItem.difficulty,
-          category: 'Waffen' // Weapon skills always use 'Waffen' category
+          category: 'Waffen', // Weapon skills always use 'Waffen' category
+          system: selectedSystem ? selectedSystem.code : (this.editedItem.system || ''),
+          game_system_id: selectedSystem ? selectedSystem.id : (this.editedItem.game_system_id ?? null)
         }
         
         const response = await API.put(
@@ -303,6 +334,7 @@ export default {
 
         this.editingIndex = -1
         this.editedItem = null
+        this.selectedSystemId = null
       } catch (error) {
         console.error('Failed to save weapon skill:', error)
         alert('Failed to save weapon skill: ' + (error.response?.data?.error || error.message))
@@ -311,6 +343,10 @@ export default {
     cancelEdit() {
       this.editingIndex = -1
       this.editedItem = null
+      this.selectedSystemId = null
+    },
+    findSystemIdByCode(code) {
+      return findSystemIdByCode(this.gameSystems, code)
     },
     sortBy(field) {
       if (this.sortField === field) {
@@ -336,9 +372,10 @@ export default {
       return weaponSkill.quelle || '-'
     },
     getSourceCode(sourceId) {
-      if (!sourceId || !this.availableSources.length) return ''
-      const source = this.availableSources.find(s => s.id === sourceId)
-      return source ? source.code : ''
+      return getSourceCode(this.availableSources, sourceId)
+    },
+    getSystemCodeById(systemId, fallback = '') {
+      return getSystemCodeById(this.gameSystems, systemId, fallback)
     },
     clearFilters() {
       this.searchTerm = ''

@@ -32,8 +32,8 @@
       <div v-else>
         <div class="page-header">
           <h2>Neues Passwort setzen</h2>
-          <p style="color: #666; font-size: 0.9em; margin-top: 10px;" v-if="userInfo.username">
-            Für Benutzer: <strong>{{ userInfo.username }}</strong>
+          <p style="color: #666; font-size: 0.9em; margin-top: 10px;" v-if="userInfo.display_name || userInfo.username">
+            Für Benutzer: <strong>{{ userInfo.display_name || userInfo.username }}</strong>
           </p>
         </div>
         
@@ -155,6 +155,7 @@ export default {
         this.isValidToken = response.data.valid
         this.userInfo = {
           username: response.data.username,
+          display_name: response.data.display_name,
           expires: response.data.expires
         }
         

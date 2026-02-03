@@ -111,7 +111,7 @@ func TestPopulateMiscLookupData(t *testing.T) {
 		"races":          5,
 		"origins":        15,
 		"social_classes": 4,
-		"faiths":         5,
+		"faiths":         15,
 		"handedness":     3,
 	}
 
@@ -132,6 +132,21 @@ func TestPopulateMiscLookupData(t *testing.T) {
 	}
 	assert.Contains(t, raceValues, "Mensch")
 	assert.Contains(t, raceValues, "Elf")
+
+	faiths, _ := GetMiscLookupByKey("faiths")
+	faithValues := make([]string, len(faiths))
+	for i, f := range faiths {
+		faithValues[i] = f.Value
+	}
+	assert.Contains(t, faithValues, "Torkin")
+	assert.NotContains(t, faithValues, "")
+	mahalCount := 0
+	for _, v := range faithValues {
+		if v == "Mahal" {
+			mahalCount++
+		}
+	}
+	assert.Equal(t, 1, mahalCount)
 
 	/*
 		// Second population should not duplicate data

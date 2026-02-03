@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 )
@@ -414,9 +415,10 @@ func ValidateResetToken(c *gin.Context) {
 
 	logger.Debug("Reset-Token gültig für Benutzer: %s", user.Username)
 	c.JSON(http.StatusOK, gin.H{
-		"valid":    true,
-		"username": user.Username,
-		"expires":  user.ResetPwHashExpires,
+		"valid":        true,
+		"username":     user.Username,
+		"display_name": user.DisplayNameOrUsername(),
+		"expires":      user.ResetPwHashExpires,
 	})
 }
 
@@ -443,6 +445,7 @@ func GetUserProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"id":                 user.UserID,
 		"username":           user.Username,
+		"display_name":       user.DisplayNameOrUsername(),
 		"email":              user.Email,
 		"role":               user.Role,
 		"preferred_language": user.PreferredLanguage,
@@ -603,5 +606,53 @@ func UpdateLanguage(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "Language updated successfully",
 		"language": user.PreferredLanguage,
+	})
+}
+
+// UpdateDisplayName Handler to update user's display name
+func UpdateDisplayName(c *gin.Context) {
+	logger.Debug("Starte Anzeigenamen-Aktualisierung...")
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		logger.Error("Benutzer-ID nicht im Context gefunden")
+		respondWithError(c, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	var input struct {
+		DisplayName string `json:"display_name"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		logger.Error("Fehler beim Parsen des Anzeigenamens: %s", err.Error())
+		respondWithError(c, http.StatusBadRequest, "Display name is required")
+		return
+	}
+
+	if utf8.RuneCountInString(input.DisplayName) > 30 {
+		logger.Warn("Anzeigename zu lang: %d Zeichen", utf8.RuneCountInString(input.DisplayName))
+		respondWithError(c, http.StatusBadRequest, "Display name must be at most 30 characters")
+		return
+	}
+
+	var user User
+	if err := user.FirstId(userID.(uint)); err != nil {
+		logger.Error("Benutzer mit ID %v nicht gefunden: %s", userID, err.Error())
+		respondWithError(c, http.StatusNotFound, "User not found")
+		return
+	}
+
+	user.DisplayName = input.DisplayName
+	if err := user.Save(); err != nil {
+		logger.Error("Fehler beim Speichern des Anzeigenamens für Benutzer %s: %s", user.Username, err.Error())
+		respondWithError(c, http.StatusInternalServerError, "Failed to update display name")
+		return
+	}
+
+	logger.Info("Anzeigename erfolgreich aktualisiert für Benutzer: %s (ID: %d)", user.Username, user.UserID)
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Display name updated successfully",
+		"display_name": user.DisplayNameOrUsername(),
 	})
 }

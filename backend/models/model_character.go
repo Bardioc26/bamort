@@ -131,6 +131,7 @@ type CharList struct {
 
 type FeChar struct {
 	Char
+	Git               int                       `json:"git"` // GiftToleranz
 	CategorizedSkills map[string][]SkFertigkeit `json:"categorizedskills"`
 	InnateSkills      []SkFertigkeit            `json:"innateskills"`
 }
@@ -140,6 +141,11 @@ func (object *Char) TableName() string {
 	return dbPrefix + "_" + "chars"
 }
 
+func (object *Char) GetGiftToleranz() int {
+	//30+(Konstitution/2)
+	konstitution := object.GetAttributeValue("Ko")
+	return 30 + (konstitution / 2)
+}
 func (object *Char) ensureGameSystem() {
 	gs := GetGameSystem(object.GameSystemId, object.GameSystem)
 	if gs == nil {
@@ -259,7 +265,7 @@ func FindSharedCharList(userID uint) ([]CharList, error) {
 	var chars []CharList
 	gs := GetGameSystem(0, "midgard")
 	err := database.DB.Table("char_chars").
-		Select("char_chars.id, char_chars.name, char_chars.user_id, char_chars.rasse, char_chars.typ, char_chars.grad, char_chars.public, char_chars.game_system, char_chars.game_system_id, users.username as owner").
+		Select("char_chars.id, char_chars.name, char_chars.user_id, char_chars.rasse, char_chars.typ, char_chars.grad, char_chars.public, char_chars.game_system, char_chars.game_system_id, COALESCE(NULLIF(users.display_name, ''), users.username) as owner").
 		Joins("LEFT JOIN users ON char_chars.user_id = users.user_id").
 		Joins("INNER JOIN char_shares ON char_shares.character_id = char_chars.id").
 		Where("char_shares.user_id = ? AND (char_chars.game_system = ? OR char_chars.game_system_id = ?)", userID, gs.Name, gs.ID).
@@ -274,7 +280,7 @@ func FindPublicCharList() ([]CharList, error) {
 	var chars []CharList
 	gs := GetGameSystem(0, "midgard")
 	err := database.DB.Table("char_chars").
-		Select("char_chars.id, char_chars.name, char_chars.user_id, char_chars.rasse, char_chars.typ, char_chars.grad, char_chars.public, char_chars.game_system, char_chars.game_system_id, users.username as owner").
+		Select("char_chars.id, char_chars.name, char_chars.user_id, char_chars.rasse, char_chars.typ, char_chars.grad, char_chars.public, char_chars.game_system, char_chars.game_system_id, COALESCE(NULLIF(users.display_name, ''), users.username) as owner").
 		Joins("LEFT JOIN users ON char_chars.user_id = users.user_id").
 		Where("char_chars.public = ? AND (char_chars.game_system = ? OR char_chars.game_system_id = ?)", true, gs.Name, gs.ID).
 		Find(&chars).Error
@@ -289,7 +295,7 @@ func FindCharListByUserID(userID uint) ([]CharList, error) {
 	var chars []CharList
 	gs := GetGameSystem(0, "midgard")
 	err := database.DB.Table("char_chars").
-		Select("char_chars.id, char_chars.name, char_chars.user_id, char_chars.rasse, char_chars.typ, char_chars.grad, char_chars.public, char_chars.game_system, char_chars.game_system_id, users.username as owner").
+		Select("char_chars.id, char_chars.name, char_chars.user_id, char_chars.rasse, char_chars.typ, char_chars.grad, char_chars.public, char_chars.game_system, char_chars.game_system_id, COALESCE(NULLIF(users.display_name, ''), users.username) as owner").
 		Joins("LEFT JOIN users ON char_chars.user_id = users.user_id").
 		Where("char_chars.user_id = ? AND (char_chars.game_system = ? OR char_chars.game_system_id = ?)", userID, gs.Name, gs.ID).
 		Find(&chars).Error

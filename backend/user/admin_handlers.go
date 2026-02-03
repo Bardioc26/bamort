@@ -27,6 +27,7 @@ func ListUsers(c *gin.Context) {
 	for i := range users {
 		users[i].PasswordHash = ""
 		users[i].ResetPwHash = nil
+		users[i].DisplayName = users[i].DisplayNameOrUsername()
 	}
 
 	logger.Info("Successfully fetched %d users", len(users))
@@ -77,6 +78,7 @@ func GetUser(c *gin.Context) {
 	// Remove sensitive data
 	user.PasswordHash = ""
 	user.ResetPwHash = nil
+	user.DisplayName = user.DisplayNameOrUsername()
 
 	logger.Info("Successfully fetched user: %s (ID: %d)", user.Username, user.UserID)
 	c.JSON(http.StatusOK, user)
@@ -135,9 +137,10 @@ func UpdateUserRole(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User role updated successfully",
 		"user": gin.H{
-			"id":       user.UserID,
-			"username": user.Username,
-			"role":     user.Role,
+			"id":           user.UserID,
+			"username":     user.Username,
+			"display_name": user.DisplayNameOrUsername(),
+			"role":         user.Role,
 		},
 	})
 }

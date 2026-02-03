@@ -38,7 +38,7 @@
               <td>{{ believe.beschreibung || '-' }}</td>
               <td>{{ getSourceCode(believe.source_id) || '-' }}</td>
               <td>{{ believe.page_number || '-' }}</td>
-              <td>{{ believe.game_system || '-' }}</td>
+              <td>{{ getSystemCodeById(believe.game_system_id, believe.game_system) || '-' }}</td>
               <td>
                 <button @click="startEdit(believe)">{{ $t('believe.edit') }}</button>
               </td>
@@ -68,6 +68,16 @@
 
                     <label class="inline-label">{{ $t('believe.page') }}</label>
                     <input v-model.number="editedItem.page_number" type="number" min="0" />
+                  </div>
+
+                  <div class="edit-row">
+                    <label>{{ $t('believe.system') }}</label>
+                    <select v-model.number="selectedSystemId">
+                      <option value="">-</option>
+                      <option v-for="system in systemOptions" :key="system.id" :value="system.id">
+                        {{ system.label }}
+                      </option>
+                    </select>
                   </div>
 
                   <div class="edit-actions">
@@ -160,6 +170,8 @@ export default {
       sources: [],
       editingId: null,
       editedItem: null,
+      gameSystems: [],
+      selectedSystemId: null,
       isLoading: false,
       isSaving: false,
       error: '',
@@ -167,6 +179,7 @@ export default {
     }
   },
   async created() {
+    await this.loadGameSystems()
     await this.loadBelieves()
   },
   computed: {
@@ -181,9 +194,31 @@ export default {
         : this.believes
 
       return [...filtered].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+    },
+    systemOptions() {
+      return this.gameSystems.map(gs => ({
+        id: gs.id,
+        label: gs.name ? `${gs.code} (${gs.name})` : gs.code,
+      }))
     }
   },
   methods: {
+    async loadGameSystems() {
+      try {
+        const resp = await API.get('/api/maintenance/game-systems')
+        this.gameSystems = (resp.data?.game_systems || []).map(this.normalizeSystem)
+      } catch (err) {
+        console.error('Failed to load game systems:', err)
+        this.error = err.response?.data?.error || err.message
+      }
+    },
+    normalizeSystem(gs) {
+      return {
+        id: gs.id ?? gs.ID,
+        code: gs.code ?? gs.Code,
+        name: gs.name ?? gs.Name,
+      }
+    },
     async loadBelieves() {
       this.isLoading = true
       this.error = ''
@@ -202,16 +237,28 @@ export default {
       const source = this.sources.find(src => src.id === sourceId)
       return source ? source.code : ''
     },
+    getSystemCodeById(systemId, fallback = '') {
+      if (!systemId) return fallback
+      const gs = this.gameSystems.find(item => item.id === systemId)
+      return gs ? gs.code : fallback
+    },
     startEdit(believe) {
       this.editingId = believe.id
       this.editedItem = {
         ...believe,
         sourceCode: this.getSourceCode(believe.source_id)
       }
+      this.selectedSystemId = believe.game_system_id ?? this.findSystemIdByCode(believe.game_system)
     },
     cancelEdit() {
       this.editingId = null
       this.editedItem = null
+      this.selectedSystemId = null
+    },
+    findSystemIdByCode(code) {
+      if (!code) return null
+      const match = this.gameSystems.find(gs => gs.code === code)
+      return match ? match.id : null
     },
     async saveEdit() {
       if (!this.editedItem || !this.editingId) {
@@ -225,12 +272,15 @@ export default {
       }
 
       const selectedSource = this.sources.find(src => src.code === this.editedItem.sourceCode)
+      const selectedSystem = this.gameSystems.find(gs => gs.id === this.selectedSystemId)
 
       const payload = {
         name: trimmedName,
         beschreibung: this.editedItem.beschreibung || '',
         source_id: selectedSource ? selectedSource.id : null,
         page_number: this.editedItem.page_number || 0,
+        game_system_id: selectedSystem ? selectedSystem.id : null,
+        game_system: selectedSystem ? selectedSystem.code : '',
       }
 
       this.isSaving = true
@@ -238,10 +288,12 @@ export default {
         const response = await API.put(`/api/maintenance/gsm-believes/${this.editingId}`, payload)
         const updated = response.data
         const sourceCode = this.getSourceCode(updated.source_id)
+        const gameSystemCode = selectedSystem ? selectedSystem.code : updated.game_system
+        const gameSystemId = selectedSystem ? selectedSystem.id : (updated.game_system_id ?? null)
 
         const idx = this.believes.findIndex(b => b.id === this.editingId)
         if (idx !== -1) {
-          this.believes.splice(idx, 1, { ...updated, source_code: sourceCode })
+          this.believes.splice(idx, 1, { ...updated, source_code: sourceCode, game_system: gameSystemCode, game_system_id: gameSystemId })
         }
 
         this.cancelEdit()

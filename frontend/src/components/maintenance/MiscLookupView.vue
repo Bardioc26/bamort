@@ -34,7 +34,7 @@
               <td>{{ item.value }}</td>
               <td>{{ sourceCodeFor(item.source_id) }}</td>
               <td>{{ item.page_number || '-' }}</td>
-              <td>{{ item.game_system || '-' }}</td>
+              <td>{{ systemCodeFor(item.game_system_id, item.game_system) || '-' }}</td>
               <td><button @click="startEdit(item)">{{ $t('misc.edit') }}</button></td>
             </tr>
             <tr v-else>
@@ -60,6 +60,12 @@
                     </select>
                     <label class="inline-label">{{ $t('misc.page') }}</label>
                     <input v-model.number="editedItem.page_number" type="number" min="0" />
+                  </div>
+                  <div class="edit-row">
+                    <label>{{ $t('misc.system') }}</label>
+                    <select v-model.number="selectedSystemId">
+                      <option v-for="sys in systemOptions" :key="sys.id" :value="sys.id">{{ sys.label }}</option>
+                    </select>
                   </div>
                   <div class="edit-actions">
                     <button class="btn-primary" :disabled="isSaving" @click="saveEdit">
@@ -122,6 +128,7 @@ export default {
       sources: [],
       editingId: null,
       editedItem: null,
+      selectedSystemId: null,
       isLoading: false,
       isSaving: false,
       error: '',
@@ -153,6 +160,12 @@ export default {
       const set = new Set(this.keyOptions)
       if (this.editedItem?.key) set.add(String(this.editedItem.key))
       return Array.from(set.values()).sort()
+    },
+    systemOptions() {
+      return this.gameSystems.map(gs => ({
+        id: gs.id,
+        label: gs.code ? `${gs.code} - ${gs.name || ''}`.trim() : gs.name || gs.id,
+      }))
     },
     sourceMap() {
       const map = new Map()
@@ -219,6 +232,14 @@ export default {
         game_system: this.currentGameSystem.name,
       }
     },
+    buildParamsForSystemId(systemId) {
+      const sys = this.gameSystems.find(s => s.id === systemId) || this.currentGameSystem
+      if (!sys) return {}
+      return {
+        game_system_id: sys.id,
+        game_system: sys.name,
+      }
+    },
     normalizeSystem(gs) {
       return {
         id: gs.id ?? gs.ID,
@@ -233,13 +254,20 @@ export default {
       const code = this.sourceMap.get(id)
       return code || id
     },
+    systemCodeFor(systemId, fallback = '') {
+      if (!systemId) return fallback
+      const sys = this.gameSystems.find(gs => gs.id === systemId)
+      return sys ? sys.code : fallback
+    },
     startEdit(item) {
       this.editingId = item.id
       this.editedItem = { ...item }
+      this.selectedSystemId = item.game_system_id ?? this.currentGameSystem?.id ?? null
     },
     cancelEdit() {
       this.editingId = null
       this.editedItem = null
+      this.selectedSystemId = null
     },
     async saveEdit() {
       if (!this.editedItem) return
@@ -251,7 +279,7 @@ export default {
       }
       this.isSaving = true
       try {
-        const params = this.buildGameSystemParams()
+        const params = this.buildParamsForSystemId(this.selectedSystemId)
         const resp = await API.put(`/api/maintenance/gsm-misc/${this.editingId}`, payload, { params })
         const idx = this.items.findIndex(i => i.id === this.editingId)
         if (idx !== -1) this.items.splice(idx, 1, resp.data)

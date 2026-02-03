@@ -4,6 +4,14 @@
     <div class="search-box">
       <input v-model="searchTerm" type="text" :placeholder="$t('search')" />
     </div>
+    <div class="search-box">
+      <select v-model.number="selectedSystemId" @change="handleGameSystemChange">
+        <option value="">{{ $t('gamesystem.title') }}</option>
+        <option v-for="system in systemOptions" :key="system.id" :value="system.id">
+          {{ system.label }}
+        </option>
+      </select>
+    </div>
   </div>
 
   <div v-if="error" class="error-box">{{ error }}</div>
@@ -74,6 +82,15 @@
                     <label class="inline-label">{{ $t('litsource.core') }}</label>
                     <input type="checkbox" v-model="editedItem.is_core" />
                   </div>
+                  <div class="edit-row">
+                    <label>{{ $t('gamesystem.title') }}</label>
+                    <select v-model.number="selectedSystemId">
+                      <option value="">-</option>
+                      <option v-for="system in systemOptions" :key="system.id" :value="system.id">
+                        {{ system.label }}
+                      </option>
+                    </select>
+                  </div>
                   <div class="edit-actions">
                     <button class="btn-primary" :disabled="isSaving" @click="saveEdit">
                       <span v-if="!isSaving">{{ $t('litsource.save') }}</span>
@@ -131,6 +148,7 @@ export default {
     return {
       gameSystems: [],
       currentGameSystem: null,
+      selectedSystemId: null,
       sources: [],
       editingId: null,
       editedItem: null,
@@ -154,6 +172,12 @@ export default {
         : this.sources
       return [...list].sort((a, b) => (a.code || '').localeCompare(b.code || ''))
     },
+    systemOptions() {
+      return this.gameSystems.map(gs => ({
+        id: gs.id,
+        label: gs.name ? `${gs.code} (${gs.name})` : gs.code,
+      }))
+    },
   },
   methods: {
     async initialize() {
@@ -170,6 +194,7 @@ export default {
         this.gameSystems = systems
         const active = systems.find(s => s.is_active)
         this.currentGameSystem = active || systems[0] || null
+        this.selectedSystemId = this.currentGameSystem ? this.currentGameSystem.id : null
       } catch (err) {
         console.error('Failed to load game systems:', err)
         this.error = err.response?.data?.error || err.message
@@ -179,7 +204,7 @@ export default {
       this.isLoading = true
       this.error = ''
       try {
-        const params = this.buildGameSystemParams()
+        const params = this.buildGameSystemParams(this.currentGameSystem)
         const resp = await API.get('/api/maintenance/gsm-lit-sources', { params })
         this.sources = resp.data?.sources || []
       } catch (err) {
@@ -189,11 +214,12 @@ export default {
         this.isLoading = false
       }
     },
-    buildGameSystemParams() {
-      if (!this.currentGameSystem) return {}
+    buildGameSystemParams(system) {
+      const target = system || this.currentGameSystem
+      if (!target) return {}
       return {
-        game_system_id: this.currentGameSystem.id,
-        game_system: this.currentGameSystem.name,
+        game_system_id: target.id,
+        game_system: target.name,
       }
     },
     normalizeSystem(gs) {
@@ -208,13 +234,35 @@ export default {
     startEdit(src) {
       this.editingId = src.id
       this.editedItem = { ...src }
+      this.selectedSystemId = src.game_system_id
+        || this.findSystemIdByCode(src.game_system)
+        || this.currentGameSystem?.id
+        || null
     },
     cancelEdit() {
       this.editingId = null
       this.editedItem = null
+      this.selectedSystemId = this.currentGameSystem ? this.currentGameSystem.id : null
+    },
+    handleGameSystemChange() {
+      const target = this.findSystemById(this.selectedSystemId)
+      this.currentGameSystem = target || this.currentGameSystem
+      if (this.currentGameSystem) {
+        this.loadSources()
+      }
+    },
+    findSystemById(id) {
+      if (id === null || id === undefined) return null
+      return this.gameSystems.find(gs => gs.id === id) || null
+    },
+    findSystemIdByCode(code) {
+      if (!code) return null
+      const match = this.gameSystems.find(gs => gs.code === code)
+      return match ? match.id : null
     },
     async saveEdit() {
       if (!this.editedItem) return
+      const targetSystem = this.findSystemById(this.selectedSystemId) || this.currentGameSystem
       const payload = {
         name: this.editedItem.name || '',
         full_name: this.editedItem.full_name || '',
@@ -224,10 +272,12 @@ export default {
         description: this.editedItem.description || '',
         is_active: !!this.editedItem.is_active,
         is_core: !!this.editedItem.is_core,
+        game_system_id: targetSystem ? targetSystem.id : null,
+        game_system: targetSystem ? targetSystem.code : '',
       }
       this.isSaving = true
       try {
-        const params = this.buildGameSystemParams()
+        const params = this.buildGameSystemParams(targetSystem)
         const resp = await API.put(`/api/maintenance/gsm-lit-sources/${this.editingId}`, payload, { params })
         const idx = this.sources.findIndex(s => s.id === this.editingId)
         if (idx !== -1) this.sources.splice(idx, 1, resp.data)

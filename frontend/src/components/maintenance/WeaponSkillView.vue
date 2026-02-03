@@ -55,7 +55,7 @@
                   <td>{{ dtaItem.initialwert || '0' }}</td>
                   <td>{{ dtaItem.beschreibung || '-' }}</td>
                   <td>{{ formatQuelle(dtaItem) }}</td>
-                  <td>{{ dtaItem.system || 'midgard' }}</td>
+                  <td>{{ getSystemCodeById(dtaItem.game_system_id, dtaItem.system || 'midgard') }}</td>
                   <td>
                     <button @click="startEdit(index)">Edit</button>
                   </td>
@@ -109,7 +109,12 @@
                         </div>
                         <div class="edit-field">
                           <label>{{ $t('weaponskill.system') }}:</label>
-                          <input v-model="editedItem.system" style="width:100px;" />
+                          <select v-model.number="selectedSystemId" style="width:140px;">
+                            <option value="">-</option>
+                            <option v-for="system in systemOptions" :key="system.id" :value="system.id">
+                              {{ system.label }}
+                            </option>
+                          </select>
                         </div>
                       </div>
 
@@ -197,11 +202,16 @@ export default {
       filterQuelle: '',
       enhancedWeaponSkills: [],
       availableSources: [],
-      availableDifficultiesData: []
+      availableDifficultiesData: [],
+      gameSystems: [],
+      selectedSystemId: null
     }
   },
   async created() {
-    await this.loadEnhancedWeaponSkills()
+    await Promise.all([
+      this.loadGameSystems(),
+      this.loadEnhancedWeaponSkills()
+    ])
   },
   computed: {
     availableDifficulties() {
@@ -259,9 +269,30 @@ export default {
       })
 
       return filtered
+    },
+    systemOptions() {
+      return this.gameSystems.map(gs => ({
+        id: gs.id,
+        label: gs.name ? `${gs.code} (${gs.name})` : gs.code
+      }))
     }
   },
   methods: {
+    async loadGameSystems() {
+      try {
+        const resp = await API.get('/api/maintenance/game-systems')
+        this.gameSystems = (resp.data?.game_systems || []).map(this.normalizeSystem)
+      } catch (error) {
+        console.error('Failed to load game systems:', error)
+      }
+    },
+    normalizeSystem(gs) {
+      return {
+        id: gs.id ?? gs.ID,
+        code: gs.code ?? gs.Code,
+        name: gs.name ?? gs.Name,
+      }
+    },
     async loadEnhancedWeaponSkills() {
       try {
         const response = await API.get('/api/maintenance/weaponskills-enhanced')
@@ -278,19 +309,23 @@ export default {
         ...weaponSkill,
         sourceCode: this.getSourceCode(weaponSkill.source_id)
       }
+      this.selectedSystemId = weaponSkill.game_system_id ?? this.findSystemIdByCode(weaponSkill.system)
       this.editingIndex = index
     },
     async saveEdit(index) {
       try {
         // Find source ID from code
         const source = this.availableSources.find(s => s.code === this.editedItem.sourceCode)
+        const selectedSystem = this.gameSystems.find(gs => gs.id === this.selectedSystemId)
         
         const updateData = {
           ...this.editedItem,
           source_id: source ? source.id : null,
           page_number: this.editedItem.page_number || 0,
           difficulty: this.editedItem.difficulty,
-          category: 'Waffen' // Weapon skills always use 'Waffen' category
+          category: 'Waffen', // Weapon skills always use 'Waffen' category
+          system: selectedSystem ? selectedSystem.code : (this.editedItem.system || ''),
+          game_system_id: selectedSystem ? selectedSystem.id : (this.editedItem.game_system_id ?? null)
         }
         
         const response = await API.put(
@@ -303,6 +338,7 @@ export default {
 
         this.editingIndex = -1
         this.editedItem = null
+        this.selectedSystemId = null
       } catch (error) {
         console.error('Failed to save weapon skill:', error)
         alert('Failed to save weapon skill: ' + (error.response?.data?.error || error.message))
@@ -311,6 +347,12 @@ export default {
     cancelEdit() {
       this.editingIndex = -1
       this.editedItem = null
+      this.selectedSystemId = null
+    },
+    findSystemIdByCode(code) {
+      if (!code) return null
+      const match = this.gameSystems.find(gs => gs.code === code)
+      return match ? match.id : null
     },
     sortBy(field) {
       if (this.sortField === field) {
@@ -339,6 +381,11 @@ export default {
       if (!sourceId || !this.availableSources.length) return ''
       const source = this.availableSources.find(s => s.id === sourceId)
       return source ? source.code : ''
+    },
+    getSystemCodeById(systemId, fallback = '') {
+      if (!systemId) return fallback
+      const sys = this.gameSystems.find(gs => gs.id === systemId)
+      return sys ? sys.code : fallback
     },
     clearFilters() {
       this.searchTerm = ''

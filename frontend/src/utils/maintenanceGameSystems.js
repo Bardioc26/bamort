@@ -22,8 +22,8 @@ export const buildSystemOptions = (gameSystems = [], labelBuilder = defaultSyste
     label: labelBuilder(system),
   }))
 
-export const systemOptionsFor = (gameSystems = [], labelBuilder = defaultSystemLabel) =>
-  buildSystemOptions(gameSystems, labelBuilder)
+// Alias retained for existing component imports
+export const systemOptionsFor = buildSystemOptions
 
 export const findSystemById = (gameSystems = [], id) => {
   if (id === null || id === undefined) return null
@@ -50,8 +50,8 @@ export const getSystemCodeById = (gameSystems = [], systemId, fallback = '') => 
   return sys ? sys.code || fallback : fallback
 }
 
-export const systemCodeFor = (gameSystems = [], systemId, fallback = '') =>
-  getSystemCodeById(gameSystems, systemId, fallback)
+// Alias retained for existing component imports
+export const systemCodeFor = getSystemCodeById
 
 export const getSourceCode = (sources = [], sourceId) => {
   if (!sourceId) return ''

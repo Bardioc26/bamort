@@ -159,7 +159,7 @@ import {
   getSourceCode,
   getSystemCodeById,
   loadGameSystems as fetchGameSystems,
-  systemOptionsFor,
+  buildSystemOptions,
 } from '../../utils/maintenanceGameSystems'
 
 export default {
@@ -203,7 +203,7 @@ export default {
       return [...filtered].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
     },
     systemOptions() {
-      return systemOptionsFor(this.gameSystems)
+      return buildSystemOptions(this.gameSystems)
     }
   },
   methods: {

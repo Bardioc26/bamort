@@ -122,7 +122,7 @@ import {
   findSystemById,
   loadGameSystems as fetchGameSystems,
   systemCodeFor as resolveSystemCode,
-  systemOptionsFor,
+  buildSystemOptions,
 } from '../../utils/maintenanceGameSystems'
 
 export default {
@@ -175,7 +175,7 @@ export default {
         if (code && name) return `${code} - ${name}`.trim()
         return code || name || String(system.id ?? '')
       }
-      return systemOptionsFor(this.gameSystems, labelBuilder)
+      return buildSystemOptions(this.gameSystems, labelBuilder)
     },
     sourceMap() {
       const map = new Map()

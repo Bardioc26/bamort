@@ -364,7 +364,7 @@ import {
   getSourceCode,
   getSystemCodeById,
   loadGameSystems as fetchGameSystems,
-  systemOptionsFor,
+  buildSystemOptions,
 } from '../../utils/maintenanceGameSystems'
 export default {
   name: "SpellView",
@@ -521,7 +521,7 @@ export default {
       });
     },
     systemOptions() {
-      return systemOptionsFor(this.gameSystems)
+      return buildSystemOptions(this.gameSystems)
     }
   },
   methods: {

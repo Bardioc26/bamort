@@ -37,6 +37,23 @@
       <div class="character-info">
         <div class="info-section">
           <p>
+            <strong>{{ $t('char') }}:</strong>
+            <span 
+              v-if="editingProp !== 'name'" 
+              @dblclick="startEditProp('name', character.name)"
+              class="editable-prop"
+            >{{ character.name || '-' }}</span>
+            <input 
+              v-else 
+              v-model="editPropValue" 
+              @blur="saveProp('name')" 
+              @keyup.enter="saveProp('name')" 
+              @keyup.esc="cancelEditProp" 
+              ref="propInput" 
+              class="prop-input" 
+            />
+          </p>
+          <p>
             <span 
               v-if="editingProp !== 'typ'" 
               @dblclick="startEditProp('typ', character.typ)"

@@ -557,6 +557,9 @@ export default {
       lpRollTooltip: 'Roll LP: 1d3 + 7 + (Ko/10)',
       apRollTooltip: 'Roll AP: 3d6 + modifier based on class',
       bRollTooltip: 'Roll B: 1d6 + modifier based on race'
+    },
+    datasheet: {
+      editHelp: 'Click twice on a field to edit it.'
     }
   },
   audit: {

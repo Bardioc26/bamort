@@ -36,6 +36,14 @@
       <!-- Character Information -->
       <div class="character-info">
         <div class="info-section">
+          <label for="name"><span
+          class="help-icon"
+          :title="$t('characters.datasheet.editHelp')"
+          role="img"
+          :aria-label="$t('characters.datasheet.editHelp')"
+          >
+          ?
+        </span></label>
           <p>
             <strong>{{ $t('char') }}:</strong>
             <span 

@@ -561,6 +561,9 @@ export default {
       lpRollTooltip: 'LP würfeln: 1d3 + 7 + (Ko/10)', 
       apRollTooltip: 'AP würfeln: 3d6 + Modifikator je nach Klasse',
       bRollTooltip: 'B würfeln: 1d6 + Modifikator je nach Rasse'
+    },
+    datasheet: {
+      editHelp: 'Doppelklicken auf ein Feld, um es zu bearbeiten.'
     }
   },
   audit: {

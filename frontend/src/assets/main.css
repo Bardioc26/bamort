@@ -4403,3 +4403,23 @@ a:focus {
     max-height: 150px;
   }
 }
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  border: 1px solid #999;
+  border-radius: 50%;
+  font-size: 12px;
+  line-height: 1;
+  /*cursor: help;*/
+  background: #f5f5f5;
+  color: #555;
+}
+
+.help-icon:hover {
+  background: #e0e0e0;
+  color: #222;
+}

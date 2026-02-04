@@ -1,6 +1,7 @@
 <template>
   <div class="header-section">
     <h2>{{ $t('maintenance') }} - {{ $t('skillimprovement.title') }}</h2>
+    <button class="btn-primary" @click="startCreate">{{ $t('newEntry') }}</button>
   </div>
 
   <div v-if="error" class="error-box">{{ error }}</div>
@@ -22,6 +23,42 @@
           <tr v-if="isLoading">
             <td colspan="6">{{ $t('common.loading') }}</td>
           </tr>
+          <tr v-if="creatingNew">
+            <td>New</td>
+            <td colspan="5">
+              <div class="edit-form">
+                <div class="edit-row">
+                  <label>{{ $t('skillimprovement.level') }}</label>
+                  <input v-model.number="newItem.current_level" type="number" />
+                  <label class="inline-label">{{ $t('skillimprovement.te') }}</label>
+                  <input v-model.number="newItem.te_required" type="number" />
+                </div>
+                <div class="edit-row">
+                  <label>{{ $t('skillimprovement.category') }}</label>
+                  <select v-model.number="newItem.category_id">
+                    <option v-for="cat in categoryOptions" :key="cat.id" :value="cat.id">
+                      {{ cat.label }}
+                    </option>
+                  </select>
+                  <label class="inline-label">{{ $t('skillimprovement.difficulty') }}</label>
+                  <select v-model.number="newItem.difficulty_id">
+                    <option v-for="diff in difficultyOptions" :key="diff.id" :value="diff.id">
+                      {{ diff.label }}
+                    </option>
+                  </select>
+                </div>
+                <div class="edit-actions">
+                  <button class="btn-primary btn-save" :disabled="isSaving" @click="saveCreate">
+                    <span v-if="!isSaving">{{ $t('common.save') }}</span>
+                    <span v-else>{{ $t('common.saving') }}</span>
+                  </button>
+                  <button class="btn-cancel" :disabled="isSaving" @click="cancelCreate">
+                    {{ $t('common.cancel') }}
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
           <template v-for="cost in costs" :key="cost.id">
             <tr v-if="editingId !== cost.id">
               <td>{{ cost.id }}</td>
@@ -29,7 +66,7 @@
               <td>{{ cost.te_required }}</td>
               <td>{{ displayCategory(cost) }}</td>
               <td>{{ displayDifficulty(cost) }}</td>
-              <td><button @click="startEdit(cost)">{{ $t('skillimprovement.edit') }}</button></td>
+              <td><button @click="startEdit(cost)">{{ $t('common.edit') }}</button></td>
             </tr>
             <tr v-else>
               <td>{{ cost.id }}</td>
@@ -56,12 +93,12 @@
                     </select>
                   </div>
                   <div class="edit-actions">
-                    <button class="btn-primary" :disabled="isSaving" @click="saveEdit">
-                      <span v-if="!isSaving">{{ $t('skillimprovement.save') }}</span>
-                      <span v-else>{{ $t('skillimprovement.saving') }}</span>
+                    <button class="btn-primary btn-save" :disabled="isSaving" @click="saveEdit">
+                      <span v-if="!isSaving">{{ $t('common.save') }}</span>
+                      <span v-else>{{ $t('common.saving') }}</span>
                     </button>
                     <button class="btn-cancel" :disabled="isSaving" @click="cancelEdit">
-                      {{ $t('skillimprovement.cancel') }}
+                      {{ $t('common.cancel') }}
                     </button>
                   </div>
                 </div>
@@ -113,6 +150,8 @@ export default {
       costs: [],
       editingId: null,
       editedItem: null,
+      creatingNew: false,
+      newItem: null,
       isLoading: false,
       isSaving: false,
       error: '',
@@ -177,6 +216,22 @@ export default {
       this.editingId = null
       this.editedItem = null
     },
+    startCreate() {
+      this.cancelEdit()
+      const defaultCategory = this.categoryOptions[0]?.id ?? null
+      const defaultDifficulty = this.difficultyOptions[0]?.id ?? null
+      this.newItem = {
+        current_level: 0,
+        te_required: 0,
+        category_id: defaultCategory,
+        difficulty_id: defaultDifficulty,
+      }
+      this.creatingNew = true
+    },
+    cancelCreate() {
+      this.creatingNew = false
+      this.newItem = null
+    },
     async saveEdit() {
       if (!this.editedItem) return
       const payload = {
@@ -193,6 +248,26 @@ export default {
         this.cancelEdit()
       } catch (err) {
         console.error('Failed to save cost:', err)
+        this.error = err.response?.data?.error || err.message
+      } finally {
+        this.isSaving = false
+      }
+    },
+    async saveCreate() {
+      if (!this.newItem) return
+      const payload = {
+        current_level: this.newItem.current_level,
+        te_required: this.newItem.te_required,
+        category_id: this.newItem.category_id,
+        difficulty_id: this.newItem.difficulty_id,
+      }
+      this.isSaving = true
+      try {
+        const resp = await API.post('/api/maintenance/skill-improvement-cost2', payload)
+        this.costs.push(resp.data)
+        this.cancelCreate()
+      } catch (err) {
+        console.error('Failed to create cost:', err)
         this.error = err.response?.data?.error || err.message
       } finally {
         this.isSaving = false

@@ -3,6 +3,7 @@
     <h2>{{ $t('maintenance') }} - {{ $t('gamesystem.title') }}</h2>
     <div class="search-box">
       <input v-model="searchTerm" type="text" :placeholder="$t('search')" />
+      <button class="btn-primary" @click="startCreate">{{ $t('newEntry') }}</button>
     </div>
   </div>
 
@@ -26,6 +27,39 @@
             <td colspan="6">{{ $t('common.loading') }}</td>
           </tr>
 
+          <tr v-if="creatingNew">
+            <td>New</td>
+            <td colspan="5">
+              <div class="edit-form">
+                <div class="edit-row">
+                  <label>{{ $t('gamesystem.code') }}</label>
+                  <input v-model="newItem.code" />
+                </div>
+                <div class="edit-row">
+                  <label>{{ $t('gamesystem.name') }}</label>
+                  <input v-model="newItem.name" />
+                </div>
+                <div class="edit-row">
+                  <label>{{ $t('gamesystem.description') }}</label>
+                  <input v-model="newItem.description" />
+                </div>
+                <div class="edit-row">
+                  <label>{{ $t('gamesystem.active') }}</label>
+                  <input type="checkbox" v-model="newItem.is_active" />
+                </div>
+                <div class="edit-actions">
+                  <button class="btn-primary btn-save" :disabled="isSaving" @click="saveCreate">
+                    <span v-if="!isSaving">{{ $t('common.save') }}</span>
+                    <span v-else>{{ $t('common.saving') }}</span>
+                  </button>
+                  <button class="btn-cancel" :disabled="isSaving" @click="cancelCreate">
+                    {{ $t('common.cancel') }}
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+
           <template v-for="gs in filteredSystems" :key="gs.id">
             <tr v-if="editingId !== gs.id">
               <td>{{ gs.id }}</td>
@@ -33,7 +67,7 @@
               <td>{{ gs.name }}</td>
               <td>{{ gs.description || '-' }}</td>
               <td><input type="checkbox" :checked="gs.is_active" disabled /></td>
-              <td><button @click="startEdit(gs)">{{ $t('gamesystem.edit') }}</button></td>
+              <td><button @click="startEdit(gs)">{{ $t('common.edit') }}</button></td>
             </tr>
             <tr v-else>
               <td>{{ gs.id }}</td>
@@ -53,12 +87,12 @@
                     <input type="checkbox" v-model="editedItem.is_active" />
                   </div>
                   <div class="edit-actions">
-                    <button class="btn-primary" :disabled="isSaving" @click="saveEdit">
-                      <span v-if="!isSaving">{{ $t('gamesystem.save') }}</span>
-                      <span v-else>{{ $t('gamesystem.saving') }}</span>
+                    <button class="btn-primary btn-save" :disabled="isSaving" @click="saveEdit">
+                      <span v-if="!isSaving">{{ $t('common.save') }}</span>
+                      <span v-else>{{ $t('common.saving') }}</span>
                     </button>
                     <button class="btn-cancel" :disabled="isSaving" @click="cancelEdit">
-                      {{ $t('gamesystem.cancel') }}
+                      {{ $t('common.cancel') }}
                     </button>
                   </div>
                 </div>
@@ -107,6 +141,8 @@ export default {
       systems: [],
       editingId: null,
       editedItem: null,
+      creatingNew: false,
+      newItem: null,
       isLoading: false,
       isSaving: false,
       error: '',
@@ -149,6 +185,20 @@ export default {
       this.editingId = null
       this.editedItem = null
     },
+    startCreate() {
+      this.cancelEdit()
+      this.newItem = {
+        code: '',
+        name: '',
+        description: '',
+        is_active: true,
+      }
+      this.creatingNew = true
+    },
+    cancelCreate() {
+      this.creatingNew = false
+      this.newItem = null
+    },
     async saveEdit() {
       if (!this.editedItem) return
       const payload = {
@@ -164,6 +214,32 @@ export default {
         this.cancelEdit()
       } catch (err) {
         console.error('Failed to save game system:', err)
+        this.error = err.response?.data?.error || err.message
+      } finally {
+        this.isSaving = false
+      }
+    },
+    async saveCreate() {
+      if (!this.newItem) return
+      const code = (this.newItem.code || '').trim()
+      const name = (this.newItem.name || '').trim()
+      if (!code || !name) {
+        alert(this.$t('gamesystem.code') + ' / ' + this.$t('gamesystem.name'))
+        return
+      }
+      const payload = {
+        code,
+        name,
+        description: this.newItem.description || '',
+        is_active: !!this.newItem.is_active,
+      }
+      this.isSaving = true
+      try {
+        const resp = await API.post('/api/maintenance/game-systems', payload)
+        this.systems.push(resp.data)
+        this.cancelCreate()
+      } catch (err) {
+        console.error('Failed to create game system:', err)
         this.error = err.response?.data?.error || err.message
       } finally {
         this.isSaving = false

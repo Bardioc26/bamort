@@ -8,6 +8,7 @@
           v-model="searchTerm"
           :placeholder="`${$t('search')} ${$t('Equipment')}...`"
         />
+        <button @click="startCreate" class="btn-primary">{{ $t('newEntry') }}</button>
       </div>
     </div>
 
@@ -52,6 +53,68 @@
               </tr>
             </thead>
             <tbody>
+              <tr v-if="creatingNew">
+                <td>New</td>
+                <td colspan="8">
+                  <div class="edit-form">
+                    <div class="edit-row">
+                      <div class="edit-field">
+                        <label>{{ $t('equipment.name') }}:</label>
+                        <input v-model="newItem.name" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('equipment.gewicht') }}:</label>
+                        <input v-model.number="newItem.gewicht" type="number" style="width:80px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('equipment.wert') }}:</label>
+                        <input v-model="newItem.wert" style="width:100px;" />
+                      </div>
+                    </div>
+
+                    <div class="edit-row">
+                      <div class="edit-field full-width">
+                        <label>{{ $t('equipment.description') }}:</label>
+                        <input v-model="newItem.beschreibung" />
+                      </div>
+                    </div>
+
+                    <div class="edit-row">
+                      <div class="edit-field">
+                        <label>{{ $t('equipment.quelle') }}:</label>
+                        <select v-model="newItem.sourceCode" style="width:100px;">
+                          <option value="">-</option>
+                          <option v-for="source in availableSources" :key="source.code" :value="source.code">
+                            {{ source.code }}
+                          </option>
+                        </select>
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('equipment.page') || 'Page' }}:</label>
+                        <input v-model.number="newItem.page_number" type="number" style="width:60px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('equipment.personal_item') }}:</label>
+                        <input type="checkbox" v-model="newItem.personal_item" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('equipment.system') }}:</label>
+                        <select v-model.number="createSelectedSystemId" style="width:140px;">
+                          <option value="">-</option>
+                          <option v-for="system in systemOptions" :key="system.id" :value="system.id">
+                            {{ system.label }}
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="edit-actions">
+                      <button @click="saveCreate" class="btn-save">{{ $t('common.save') }}</button>
+                      <button @click="cancelCreate" class="btn-cancel">{{ $t('common.cancel') }}</button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
               <template v-for="(dtaItem, index) in filteredAndSortedEquipments" :key="dtaItem.id">
                 <tr v-if="editingIndex !== index">
                   <td>{{ dtaItem.id || '' }}</td>
@@ -64,7 +127,7 @@
                   <td><input type="checkbox" :checked="dtaItem.personal_item" disabled /></td>
                   <td>{{ getSystemCodeById(dtaItem.game_system_id, dtaItem.system || 'midgard') }}</td>
                   <td>
-                    <button @click="startEdit(index)">Edit</button>
+                    <button @click="startEdit(index)">{{ $t('common.edit') }}</button>
                   </td>
                 </tr>
                 <!-- Edit Mode -->
@@ -125,8 +188,8 @@
                       </div>
 
                       <div class="edit-actions">
-                        <button @click="saveEdit(index)" class="btn-save">Save</button>
-                        <button @click="cancelEdit" class="btn-cancel">Cancel</button>
+                        <button @click="saveEdit(index)" class="btn-save">{{ $t('common.save') }}</button>
+                        <button @click="cancelEdit" class="btn-cancel">{{ $t('common.cancel') }}</button>
                       </div>
                     </div>
                   </td>
@@ -216,7 +279,10 @@ export default {
       enhancedEquipment: [],
       availableSources: [],
       gameSystems: [],
-      selectedSystemId: null
+      selectedSystemId: null,
+      creatingNew: false,
+      newItem: null,
+      createSelectedSystemId: null
     }
   },
   async created() {
@@ -351,6 +417,57 @@ export default {
       this.editingIndex = -1;
       this.editedItem = null;
       this.selectedSystemId = null;
+    },
+    startCreate() {
+      this.cancelEdit()
+      const defaultSystem = this.gameSystems.find(gs => gs.is_active) || this.gameSystems[0] || null
+      this.createSelectedSystemId = defaultSystem ? defaultSystem.id : null
+      this.newItem = {
+        name: '',
+        gewicht: 0,
+        wert: '',
+        beschreibung: '',
+        sourceCode: '',
+        page_number: 0,
+        personal_item: false,
+        system: defaultSystem ? defaultSystem.code : ''
+      }
+      this.creatingNew = true
+    },
+    cancelCreate() {
+      this.creatingNew = false
+      this.newItem = null
+      this.createSelectedSystemId = null
+    },
+    async saveCreate() {
+      if (!this.newItem) return
+      try {
+        const source = this.availableSources.find(s => s.code === this.newItem.sourceCode)
+        const selectedSystem = this.gameSystems.find(gs => gs.id === this.createSelectedSystemId)
+
+        const createData = {
+          name: this.newItem.name,
+          gewicht: this.newItem.gewicht ?? 0,
+          wert: this.newItem.wert || '',
+          beschreibung: this.newItem.beschreibung || '',
+          source_id: source ? source.id : null,
+          page_number: this.newItem.page_number || 0,
+          personal_item: !!this.newItem.personal_item,
+          system: selectedSystem ? selectedSystem.code : (this.newItem.system || ''),
+          game_system_id: selectedSystem ? selectedSystem.id : null
+        }
+
+        const response = await API.post(
+          '/api/maintenance/equipment-enhanced',
+          createData
+        )
+
+        this.enhancedEquipment.push(response.data)
+        this.cancelCreate()
+      } catch (error) {
+        console.error('Failed to create equipment:', error)
+        alert('Failed to create equipment: ' + (error.response?.data?.error || error.message))
+      }
     },
     findSystemIdByCode(code) {
       return findSystemIdByCode(this.gameSystems, code)

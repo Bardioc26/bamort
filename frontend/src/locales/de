@@ -5,6 +5,9 @@ export default {
     previous: 'Zurück',
     next: 'Weiter',
     back: 'Zurück',
+    save: 'Speichern',
+    saving: 'Speichern...',
+    edit: 'Bearbeiten',
   },
   auth: {
     login: 'Anmelden',
@@ -355,6 +358,7 @@ export default {
     cancel: 'Abbrechen'
   },
   search:'Suche',
+  newEntry:'Neuer Eintrag',
   Skill:'Fertigkeit',
   newSkill:'Neue Fertigkeit',
   createSkill:'Fertigkeit erstellen',

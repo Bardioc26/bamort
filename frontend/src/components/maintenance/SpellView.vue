@@ -8,6 +8,7 @@
         v-model="searchTerm"
         :placeholder="`${$t('search')} ${$t('Spell')}...`"
       />
+      <button @click="startCreate" class="btn-primary">{{ $t('newEntry') }}</button>
     </div>
   </div>
   
@@ -39,6 +40,32 @@
       {{ $t('spell.import') || 'Import Spells' }}
     </button>
     <div v-if="importResult" class="import-result" :class="importResult.success ? 'success' : 'error'">
+      async saveCreate() {
+        if (!this.newItem) return
+        try {
+          const source = this.availableSources.find(s => s.code === this.newItem.sourceCode)
+          const selectedSystem = this.gameSystems.find(gs => gs.id === this.createSelectedSystemId)
+
+          const createData = {
+            ...this.newItem,
+            source_id: source ? source.id : null,
+            page_number: this.newItem.page_number || 0,
+            system: selectedSystem ? selectedSystem.code : (this.newItem.system || ''),
+            game_system_id: selectedSystem ? selectedSystem.id : null
+          }
+
+          const response = await API.post(
+            '/api/maintenance/spells-enhanced',
+            createData
+          )
+
+          this.enhancedSpells.push(response.data)
+          this.cancelCreate()
+        } catch (error) {
+          console.error('Failed to create spell:', error)
+          alert('Failed to create spell: ' + (error.response?.data?.error || error.message))
+        }
+      },
       {{ importResult.message }}
       <span v-if="importResult.total_spells"> ({{ importResult.total_spells }} spells total)</span>
     </div>
@@ -121,6 +148,102 @@
               </tr>
             </thead>
             <tbody>
+              <tr v-if="creatingNew">
+                <td>New</td>
+                <td colspan="14">
+                  <div class="edit-form">
+                    <div class="edit-row">
+                      <div class="edit-field">
+                        <label>{{ $t('spell.name') }}:</label>
+                        <input v-model="newItem.name" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('spell.category') }}:</label>
+                        <select v-model="newItem.category" style="width:120px;">
+                          <option v-for="category in mdata['spellcategories']" :key="category" :value="category">
+                            {{ category }}
+                          </option>
+                        </select>
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('spell.level') }}:</label>
+                        <input v-model.number="newItem.level" type="number" style="width:60px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('spell.apverbrauch') }}:</label>
+                        <input v-model="newItem.ap" style="width:60px;" />
+                      </div>
+                    </div>
+
+                    <div class="edit-row">
+                      <div class="edit-field">
+                        <label>{{ $t('spell.zauberdauer') }}:</label>
+                        <input v-model="newItem.zauberdauer" style="width:120px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('spell.reichweite') }}:</label>
+                        <input v-model="newItem.reichweite" style="width:120px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('spell.wirkungsdauer') }}:</label>
+                        <input v-model="newItem.wirkungsdauer" style="width:120px;" />
+                      </div>
+                    </div>
+
+                    <div class="edit-row">
+                      <div class="edit-field">
+                        <label>{{ $t('spell.wirkungsziel') }}:</label>
+                        <input v-model="newItem.wirkungsziel" style="width:150px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('spell.wirkungsbereich') }}:</label>
+                        <input v-model="newItem.wirkungsbereich" style="width:150px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('spell.ursprung') }}:</label>
+                        <input v-model="newItem.ursprung" style="width:120px;" />
+                      </div>
+                    </div>
+
+                    <div class="edit-row">
+                      <div class="edit-field full-width">
+                        <label>{{ $t('spell.description') }}:</label>
+                        <input v-model="newItem.beschreibung" />
+                      </div>
+                    </div>
+
+                    <div class="edit-row">
+                      <div class="edit-field">
+                        <label>{{ $t('spell.quelle') }}:</label>
+                        <select v-model="newItem.sourceCode" style="width:100px;">
+                          <option value="">-</option>
+                          <option v-for="source in availableSources" :key="source.code" :value="source.code">
+                            {{ source.code }}
+                          </option>
+                        </select>
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('spell.page') || 'Page' }}:</label>
+                        <input v-model.number="newItem.page_number" type="number" style="width:60px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('spell.system') }}:</label>
+                        <select v-model.number="createSelectedSystemId" style="width:140px;">
+                          <option value="">-</option>
+                          <option v-for="system in systemOptions" :key="system.id" :value="system.id">
+                            {{ system.label }}
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="edit-actions">
+                      <button @click="saveCreate" class="btn-save">{{ $t('common.save') }}</button>
+                      <button @click="cancelCreate" class="btn-cancel">{{ $t('common.cancel') }}</button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
               <template v-for="(dtaItem, index) in filteredAndSortedSpells" :key="dtaItem.id">
                 <tr v-if="editingIndex !== index">
                   <td>{{ dtaItem.id || '' }}</td>
@@ -138,7 +261,7 @@
                   <td>{{ formatQuelle(dtaItem) }}</td>
                   <td>{{ getSystemCodeById(dtaItem.game_system_id, dtaItem.system || 'midgard') }}</td>
                   <td>
-                    <button @click="startEdit(index)">Edit</button>
+                    <button @click="startEdit(index)">{{ $t('common.edit') }}</button>
                   </td>
                 </tr>
                 <!-- Edit Mode -->
@@ -233,8 +356,8 @@
                       </div>
 
                       <div class="edit-actions">
-                        <button @click="saveEdit(index)" class="btn-save">Save</button>
-                        <button @click="cancelEdit" class="btn-cancel">Cancel</button>
+                        <button @click="saveEdit(index)" class="btn-save">{{ $t('common.save') }}</button>
+                        <button @click="cancelEdit" class="btn-cancel">{{ $t('common.cancel') }}</button>
                       </div>
                     </div>
                   </td>
@@ -397,7 +520,10 @@ export default {
       enhancedSpells: [],
       availableSources: [],
       gameSystems: [],
-      selectedSystemId: null
+      selectedSystemId: null,
+      creatingNew: false,
+      newItem: null,
+      createSelectedSystemId: null
     }
   },
   async created() {
@@ -592,6 +718,33 @@ export default {
       this.editedItem = null;
       this.selectedSystemId = null;
     },
+    startCreate() {
+      this.cancelEdit()
+      const defaultSystem = this.gameSystems.find(gs => gs.is_active) || this.gameSystems[0] || null
+      this.createSelectedSystemId = defaultSystem ? defaultSystem.id : null
+      this.newItem = {
+        name: '',
+        category: this.mdata.spellcategories?.[0] || '',
+        level: 0,
+        ap: '',
+        zauberdauer: '',
+        reichweite: '',
+        wirkungsziel: '',
+        wirkungsbereich: '',
+        wirkungsdauer: '',
+        ursprung: '',
+        beschreibung: '',
+        sourceCode: '',
+        page_number: 0,
+        system: defaultSystem ? defaultSystem.code : ''
+      }
+      this.creatingNew = true
+    },
+    cancelCreate() {
+      this.creatingNew = false
+      this.newItem = null
+      this.createSelectedSystemId = null
+    },
     findSystemIdByCode(code) {
       return findSystemIdByCode(this.gameSystems, code)
     },
@@ -605,25 +758,51 @@ export default {
     },
     async handleSpellUpdate({ index, spell }) {
       try {
-          const response = await API.put(
-            `/api/maintenance/spells/${spell.id}`, spell,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}` ,
-                'Content-Type': 'application/json'
-              }
+        const response = await API.put(
+          `/api/maintenance/spells/${spell.id}`, spell,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}` ,
+              'Content-Type': 'application/json'
             }
-          )
-          if (!response.statusText== "OK") throw new Error('Update failed');
-          const updatedSkill = response.data;
-          // Update the spell in mdata
-          this.mdata.spells = this.mdata.spells.map(s =>
-            s.id === updatedSkill.id ? updatedSkill : s
-          );
-        } catch (error) {
-          console.error('Failed to update spell:', error);
+          }
+        )
+        if (!response.statusText== "OK") throw new Error('Update failed');
+        const updatedSkill = response.data;
+        // Update the spell in mdata
+        this.mdata.spells = this.mdata.spells.map(s =>
+          s.id === updatedSkill.id ? updatedSkill : s
+        );
+      } catch (error) {
+        console.error('Failed to update spell:', error);
+      }
+    },
+    async saveCreate() {
+      if (!this.newItem) return
+      try {
+        const source = this.availableSources.find(s => s.code === this.newItem.sourceCode)
+        const selectedSystem = this.gameSystems.find(gs => gs.id === this.createSelectedSystemId)
+
+        const createData = {
+          ...this.newItem,
+          source_id: source ? source.id : null,
+          page_number: this.newItem.page_number || 0,
+          system: selectedSystem ? selectedSystem.code : (this.newItem.system || ''),
+          game_system_id: selectedSystem ? selectedSystem.id : null
         }
-      },
+
+        const response = await API.post(
+          '/api/maintenance/spells-enhanced',
+          createData
+        )
+
+        this.enhancedSpells.push(response.data)
+        this.cancelCreate()
+      } catch (error) {
+        console.error('Failed to create spell:', error)
+        alert('Failed to create spell: ' + (error.response?.data?.error || error.message))
+      }
+    },
     handleFileSelect(event) {
       const file = event.target.files[0];
       if (file && file.type === 'text/csv') {

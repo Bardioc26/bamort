@@ -1,10 +1,13 @@
 export default {
    common: {
-    loading: 'Laden...',
-    cancel: 'Abbrechen',
-    previous: 'Zurück',
-    next: 'Weiter',
-    back: 'Back'
+    loading: 'Loading...',
+    cancel: 'Cancel',
+    previous: 'Previous',
+    next: 'Next',
+    back: 'Back',
+    save: 'Save',
+    saving: 'Saving...',
+    edit: 'Edit',
   },
   auth: {
     login: 'Login',
@@ -351,6 +354,7 @@ export default {
     cancel: 'Cancel'
   },
   search:'Suche',
+  newEntry:'New Entry',
   Skill:'Fertigkeit',
   newSkill:'New Skill',
   createSkill:'Create Skill',

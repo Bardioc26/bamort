@@ -12,6 +12,7 @@
         </option>
       </select>
     </div>
+    <button class="btn-primary" @click="startCreate">{{ $t('newEntry') }}</button>
   </div>
 
   <div v-if="error" class="error-box">{{ error }}</div>
@@ -38,6 +39,60 @@
             <td colspan="10">{{ $t('common.loading') }}</td>
           </tr>
 
+          <tr v-if="creatingNew">
+            <td>New</td>
+            <td colspan="9">
+              <div class="edit-form">
+                <div class="edit-row">
+                  <label>{{ $t('litsource.code') }}</label>
+                  <input v-model="newItem.code" />
+                  <label class="inline-label">{{ $t('litsource.name') }}</label>
+                  <input v-model="newItem.name" />
+                </div>
+                <div class="edit-row">
+                  <label>{{ $t('litsource.fullName') }}</label>
+                  <input v-model="newItem.full_name" />
+                </div>
+                <div class="edit-row">
+                  <label>{{ $t('litsource.edition') }}</label>
+                  <input v-model="newItem.edition" />
+                  <label class="inline-label">{{ $t('litsource.publisher') }}</label>
+                  <input v-model="newItem.publisher" />
+                  <label class="inline-label">{{ $t('litsource.year') }}</label>
+                  <input v-model.number="newItem.publish_year" type="number" />
+                </div>
+                <div class="edit-row">
+                  <label>{{ $t('litsource.description') }}</label>
+                  <input v-model="newItem.description" />
+                </div>
+                <div class="edit-row">
+                  <label>{{ $t('litsource.active') }}</label>
+                  <input type="checkbox" v-model="newItem.is_active" />
+                  <label class="inline-label">{{ $t('litsource.core') }}</label>
+                  <input type="checkbox" v-model="newItem.is_core" />
+                </div>
+                <div class="edit-row">
+                  <label>{{ $t('gamesystem.title') }}</label>
+                  <select v-model.number="createSelectedSystemId">
+                    <option value="">-</option>
+                    <option v-for="system in systemOptions" :key="system.id" :value="system.id">
+                      {{ system.label }}
+                    </option>
+                  </select>
+                </div>
+                <div class="edit-actions">
+                  <button class="btn-primary btn-save" :disabled="isSaving" @click="saveCreate">
+                    <span v-if="!isSaving">{{ $t('common.save') }}</span>
+                    <span v-else>{{ $t('common.saving') }}</span>
+                  </button>
+                  <button class="btn-cancel" :disabled="isSaving" @click="cancelCreate">
+                    {{ $t('common.cancel') }}
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+
           <template v-for="src in filteredSources" :key="src.id">
             <tr v-if="editingId !== src.id">
               <td>{{ src.id }}</td>
@@ -49,7 +104,7 @@
               <td>{{ src.publish_year }}</td>
               <td><input type="checkbox" :checked="src.is_active" disabled /></td>
               <td><input type="checkbox" :checked="src.is_core" disabled /></td>
-              <td><button @click="startEdit(src)">{{ $t('litsource.edit') }}</button></td>
+              <td><button @click="startEdit(src)">{{ $t('common.edit') }}</button></td>
             </tr>
             <tr v-else>
               <td>{{ src.id }}</td>
@@ -92,12 +147,12 @@
                     </select>
                   </div>
                   <div class="edit-actions">
-                    <button class="btn-primary" :disabled="isSaving" @click="saveEdit">
-                      <span v-if="!isSaving">{{ $t('litsource.save') }}</span>
-                      <span v-else>{{ $t('litsource.saving') }}</span>
+                    <button class="btn-primary btn-save" :disabled="isSaving" @click="saveEdit">
+                      <span v-if="!isSaving">{{ $t('common.save') }}</span>
+                      <span v-else>{{ $t('common.saving') }}</span>
                     </button>
                     <button class="btn-cancel" :disabled="isSaving" @click="cancelEdit">
-                      {{ $t('litsource.cancel') }}
+                      {{ $t('common.cancel') }}
                     </button>
                   </div>
                 </div>
@@ -159,6 +214,9 @@ export default {
       sources: [],
       editingId: null,
       editedItem: null,
+      creatingNew: false,
+      newItem: null,
+      createSelectedSystemId: null,
       isLoading: false,
       isSaving: false,
       error: '',
@@ -237,6 +295,28 @@ export default {
         this.loadSources()
       }
     },
+    startCreate() {
+      this.cancelEdit()
+      const defaultSystem = this.currentGameSystem || this.gameSystems.find(s => s.is_active) || this.gameSystems[0] || null
+      this.createSelectedSystemId = defaultSystem ? defaultSystem.id : null
+      this.newItem = {
+        code: '',
+        name: '',
+        full_name: '',
+        edition: '',
+        publisher: '',
+        publish_year: 0,
+        description: '',
+        is_active: true,
+        is_core: false,
+      }
+      this.creatingNew = true
+    },
+    cancelCreate() {
+      this.creatingNew = false
+      this.newItem = null
+      this.createSelectedSystemId = this.currentGameSystem ? this.currentGameSystem.id : null
+    },
     findSystemById(id) {
       return findSystemById(this.gameSystems, id)
     },
@@ -267,6 +347,35 @@ export default {
         this.cancelEdit()
       } catch (err) {
         console.error('Failed to save source:', err)
+        this.error = err.response?.data?.error || err.message
+      } finally {
+        this.isSaving = false
+      }
+    },
+    async saveCreate() {
+      if (!this.newItem) return
+      const targetSystem = this.findSystemById(this.createSelectedSystemId) || this.currentGameSystem
+      const payload = {
+        code: this.newItem.code || '',
+        name: this.newItem.name || '',
+        full_name: this.newItem.full_name || '',
+        edition: this.newItem.edition || '',
+        publisher: this.newItem.publisher || '',
+        publish_year: this.newItem.publish_year || 0,
+        description: this.newItem.description || '',
+        is_active: !!this.newItem.is_active,
+        is_core: !!this.newItem.is_core,
+        game_system_id: targetSystem ? targetSystem.id : null,
+        game_system: targetSystem ? targetSystem.code : '',
+      }
+      this.isSaving = true
+      try {
+        const params = buildGameSystemParams(targetSystem)
+        const resp = await API.post('/api/maintenance/gsm-lit-sources', payload, { params })
+        this.sources.push(resp.data)
+        this.cancelCreate()
+      } catch (err) {
+        console.error('Failed to create source:', err)
         this.error = err.response?.data?.error || err.message
       } finally {
         this.isSaving = false

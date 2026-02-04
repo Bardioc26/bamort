@@ -549,7 +549,7 @@ export default {
   color: #666;
   margin-top: 15px;
 }
-
+/*
 .help-icon {
   display: inline-flex;
   align-items: center;
@@ -561,7 +561,6 @@ export default {
   border-radius: 50%;
   font-size: 12px;
   line-height: 1;
-  /*cursor: help;*/
   background: #f5f5f5;
   color: #555;
 }
@@ -570,4 +569,5 @@ export default {
   background: #e0e0e0;
   color: #222;
 }
+*/
 </style>

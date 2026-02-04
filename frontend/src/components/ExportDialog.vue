@@ -36,12 +36,12 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button @click="closeDialog" class="btn-cancel" :disabled="isExporting">
-          {{ $t('export.cancel') }}
-        </button>
-        <button @click="performExport" class="btn-export" :disabled="!canExport || isExporting">
+        <button @click="performExport" class="btn-primary btn-save" :disabled="!canExport || isExporting">
           <span v-if="!isExporting">{{ $t('export.export') }}</span>
           <span v-else>{{ $t('export.exporting') }}</span>
+        </button>
+        <button @click="closeDialog" class="btn-cancel" :disabled="isExporting">
+          {{ $t('common.cancel') }}
         </button>
       </div>
     </div>

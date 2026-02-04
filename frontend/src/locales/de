@@ -5,6 +5,9 @@ export default {
     previous: 'Zurück',
     next: 'Weiter',
     back: 'Zurück',
+    save: 'Speichern',
+    saving: 'Speichern...',
+    edit: 'Bearbeiten',
   },
   auth: {
     login: 'Anmelden',
@@ -20,6 +23,19 @@ export default {
     loginHere: 'Hier anmelden',
     dontHaveAccount: 'Noch kein Konto?',
     registerHere: 'Hier registrieren'
+  },
+  forgotPassword: {
+    title: 'Passwort zurücksetzen',
+    description: 'Geben Sie Ihre E-Mail-Adresse ein, um einen Reset-Link zu erhalten.',
+    emailLabel: 'E-Mail-Adresse',
+    emailPlaceholder: 'ihre{\'@\'}email.de',
+    submit: 'Reset-Link senden',
+    submitting: 'Wird gesendet...',
+    successTitle: 'E-Mail gesendet!',
+    successInfo: 'Falls ein Account mit dieser E-Mail-Adresse existiert, wurde ein Reset-Link gesendet.',
+    successHint: 'Prüfen Sie Ihre E-Mails und folgen Sie dem Link.',
+    error: 'Fehler beim Senden der E-Mail. Versuchen Sie es später erneut.',
+    backToLogin: 'Zurück zum Login'
   },
   import: {
     title: 'Daten importieren',
@@ -355,6 +371,7 @@ export default {
     cancel: 'Abbrechen'
   },
   search:'Suche',
+  newEntry:'Neuer Eintrag',
   Skill:'Fertigkeit',
   newSkill:'Neue Fertigkeit',
   createSkill:'Fertigkeit erstellen',
@@ -544,6 +561,9 @@ export default {
       lpRollTooltip: 'LP würfeln: 1d3 + 7 + (Ko/10)', 
       apRollTooltip: 'AP würfeln: 3d6 + Modifikator je nach Klasse',
       bRollTooltip: 'B würfeln: 1d6 + Modifikator je nach Rasse'
+    },
+    datasheet: {
+      editHelp: 'Doppelklicken auf ein Feld, um es zu bearbeiten.'
     }
   },
   audit: {

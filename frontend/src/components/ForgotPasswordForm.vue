@@ -1,57 +1,56 @@
 <template>
-  <div class="fullwidth-page" style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
-    <div class="card" style="max-width: 400px; width: 100%; margin: 20px;">
+  <div class="fullwidth-page reset-wrapper">
+    <div class="card reset-card">
       <div class="page-header">
-        <h2>Passwort zurücksetzen</h2>
-        <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
-          Geben Sie Ihre E-Mail-Adresse ein, um einen Reset-Link zu erhalten.
+        <h2>{{ $t('forgotPassword.title') }}</h2>
+        <p class="reset-description">
+          {{ $t('forgotPassword.description') }}
         </p>
       </div>
-      
+
       <form @submit.prevent="requestReset" v-if="!submitted">
         <div class="form-group">
-          <label for="email">E-Mail-Adresse</label>
+          <label for="email">{{ $t('forgotPassword.emailLabel') }}</label>
           <input
             v-model="email"
             type="email"
             id="email"
             name="email"
             class="form-control"
-            placeholder="ihre@email.de"
+            :placeholder="$t('forgotPassword.emailPlaceholder')"
             required
           />
         </div>
-        
+
         <button 
           type="submit" 
-          class="btn btn-primary" 
-          style="width: 100%; margin-top: 10px;"
+          class="btn btn-primary reset-button"
           :disabled="isLoading"
         >
-          <span v-if="isLoading">Wird gesendet...</span>
-          <span v-else>Reset-Link senden</span>
+          <span v-if="isLoading">{{ $t('forgotPassword.submitting') }}</span>
+          <span v-else>{{ $t('forgotPassword.submit') }}</span>
         </button>
       </form>
-      
-      <div v-if="submitted" class="badge badge-success" style="width: 100%; margin-top: 15px; text-align: center; display: block;">
-        <p style="margin: 10px 0;">
-          <strong>E-Mail gesendet!</strong>
+
+      <div v-if="submitted" class="badge badge-success reset-badge">
+        <p class="reset-success-title">
+          <strong>{{ $t('forgotPassword.successTitle') }}</strong>
         </p>
-        <p style="font-size: 0.9em; margin: 5px 0;">
-          Falls ein Account mit dieser E-Mail-Adresse existiert, wurde ein Reset-Link gesendet.
+        <p class="reset-success-text">
+          {{ $t('forgotPassword.successInfo') }}
         </p>
-        <p style="font-size: 0.8em; margin: 5px 0; opacity: 0.8;">
-          Prüfen Sie Ihre E-Mails und folgen Sie dem Link.
+        <p class="reset-success-hint">
+          {{ $t('forgotPassword.successHint') }}
         </p>
       </div>
-      
-      <div v-if="error" class="badge badge-danger" style="width: 100%; margin-top: 15px; text-align: center; display: block;">
+
+      <div v-if="error" class="badge badge-danger reset-badge">
         {{ error }}
       </div>
-      
-      <div style="text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #dee2e6;">
+
+      <div class="reset-footer">
         <router-link to="/" class="btn btn-secondary">
-          Zurück zum Login
+          {{ $t('forgotPassword.backToLogin') }}
         </router-link>
       </div>
     </div>
@@ -86,7 +85,7 @@ export default {
         console.log('Password reset email requested for:', this.email)
       } catch (err) {
         console.error('Password reset request error:', err)
-        this.error = err.response?.data?.error || 'Fehler beim Senden der E-Mail. Versuchen Sie es später erneut.'
+        this.error = err.response?.data?.error || this.$t('forgotPassword.error')
       } finally {
         this.isLoading = false
       }
@@ -95,6 +94,57 @@ export default {
 }
 </script>
 
-<style>
-/* All common styles moved to main.css */
+<style scoped>
+.reset-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.reset-card {
+  max-width: 400px;
+  width: 100%;
+  margin: 20px;
+}
+
+.reset-description {
+  color: #666;
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.reset-button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.reset-badge {
+  width: 100%;
+  margin-top: 15px;
+  text-align: center;
+  display: block;
+}
+
+.reset-success-title {
+  margin: 10px 0;
+}
+
+.reset-success-text {
+  font-size: 0.9em;
+  margin: 5px 0;
+}
+
+.reset-success-hint {
+  font-size: 0.8em;
+  margin: 5px 0;
+  opacity: 0.8;
+}
+
+.reset-footer {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #dee2e6;
+}
 </style>

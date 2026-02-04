@@ -209,8 +209,8 @@
                   </div>
 
                   <div class="edit-actions">
-                    <button @click="saveCreate" class="btn-save">{{ $t('createSkill') }}</button>
-                    <button @click="cancelCreate" class="btn-cancel">Cancel</button>
+                    <button @click="saveCreate" class="btn-save">{{ $t('common.save') }}</button>
+                    <button @click="cancelCreate" class="btn-cancel">{{ $t('common.cancel') }}</button>
                   </div>
                 </div>
               </td>
@@ -232,7 +232,7 @@
                 <td>{{ formatQuelle(dtaItem) }}</td>
                 <td>{{ getSystemCodeById(dtaItem.game_system_id, dtaItem.game_system || 'midgard') }}</td>
                 <td>
-                  <button @click="startEdit(index)">Edit</button>
+                  <button @click="startEdit(index)">{{ $t('common.edit') }}</button>
                 </td>
               </tr>
               
@@ -340,8 +340,8 @@
                     </div>
 
                     <div class="edit-actions">
-                      <button @click="saveEdit(index)" class="btn-save">Save</button>
-                      <button @click="cancelEdit" class="btn-cancel">Cancel</button>
+                      <button @click="saveEdit(index)" class="btn-save">{{ $t('common.save') }}</button>
+                      <button @click="cancelEdit" class="btn-cancel">{{ $t('common.cancel') }}</button>
                     </div>
                   </div>
                 </td>

@@ -1,10 +1,13 @@
 export default {
    common: {
-    loading: 'Laden...',
-    cancel: 'Abbrechen',
-    previous: 'Zurück',
-    next: 'Weiter',
-    back: 'Back'
+    loading: 'Loading...',
+    cancel: 'Cancel',
+    previous: 'Previous',
+    next: 'Next',
+    back: 'Back',
+    save: 'Save',
+    saving: 'Saving...',
+    edit: 'Edit',
   },
   auth: {
     login: 'Login',
@@ -20,6 +23,19 @@ export default {
     loginHere: 'Login here',
     dontHaveAccount: "Don't have an account?",
     registerHere: 'Register here'
+  },
+  forgotPassword: {
+    title: 'Reset password',
+    description: 'Enter your email address to receive a reset link.',
+    emailLabel: 'Email address',
+    emailPlaceholder: 'your{\'@\'}email.com',
+    submit: 'Send reset link',
+    submitting: 'Sending...',
+    successTitle: 'Email sent!',
+    successInfo: 'If an account exists for this email, a reset link has been sent.',
+    successHint: 'Check your inbox and follow the link.',
+    error: 'Error sending email. Please try again later.',
+    backToLogin: 'Back to login'
   },
   import: {
     title: 'Import Data',
@@ -351,6 +367,7 @@ export default {
     cancel: 'Cancel'
   },
   search:'Suche',
+  newEntry:'New Entry',
   Skill:'Fertigkeit',
   newSkill:'New Skill',
   createSkill:'Create Skill',
@@ -540,6 +557,9 @@ export default {
       lpRollTooltip: 'Roll LP: 1d3 + 7 + (Ko/10)',
       apRollTooltip: 'Roll AP: 3d6 + modifier based on class',
       bRollTooltip: 'Roll B: 1d6 + modifier based on race'
+    },
+    datasheet: {
+      editHelp: 'Click twice on a field to edit it.'
     }
   },
   audit: {

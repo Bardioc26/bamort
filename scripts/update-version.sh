@@ -1,119 +1,171 @@
 #!/bin/bash
-# Script to update version number across the project
+# Script to update, commit, and tag versions across the project
 
 set -e
 
-if [ -z "$1" ]; then
-    echo "Usage: $0 <backend_version> [frontend_version] [auto]"
-    echo "Example: $0 0.1.31              # Sets both to 0.1.31"
-    echo "Example: $0 0.1.31 0.2.0        # Sets different versions"
-    echo "Example: $0 0.1.31 auto         # Sets both to 0.1.31 and auto-commits"
-    echo "Example: $0 0.1.31 0.2.0 auto   # Sets different versions and auto-commits"
-    exit 1
-fi
-
-# Parse arguments
-BACKEND_VERSION="$1"
-AUTO_COMMIT=false
-
-# Check if second argument is "auto"
-if [ "$2" = "auto" ]; then
-    FRONTEND_VERSION="$1"
-    AUTO_COMMIT=true
-elif [ -z "$2" ]; then
-    FRONTEND_VERSION="$1"
-elif [ "$3" = "auto" ]; then
-    FRONTEND_VERSION="$2"
-    AUTO_COMMIT=true
-else
-    FRONTEND_VERSION="$2"
-fi
-
-
-if [ "$BACKEND_VERSION" = "$FRONTEND_VERSION" ]; then
-    echo "Updating both backend and frontend to version $BACKEND_VERSION..."
-else
-    echo "Updating backend to $BACKEND_VERSION and frontend to $FRONTEND_VERSION..."
-fi
-
-# Update backend version
-BACKEND_VERSION_FILE="backend/config/version.go"
-if [ -f "$BACKEND_VERSION_FILE" ]; then
-    sed -i "s/const Version = \"[^\"]*\"/const Version = \"$BACKEND_VERSION\"/" "$BACKEND_VERSION_FILE"
-    echo "✓ Updated $BACKEND_VERSION_FILE to $BACKEND_VERSION"
-else
-    echo "⚠ Warning: $BACKEND_VERSION_FILE not found"
-fi
-
-# Update frontend version
+BACKEND_VERSION_FILE="backend/appsystem/version.go"
 FRONTEND_VERSION_FILE="frontend/src/version.js"
-if [ -f "$FRONTEND_VERSION_FILE" ]; then
-    sed -i "s/export const VERSION = '[^']*'/export const VERSION = '$FRONTEND_VERSION'/" "$FRONTEND_VERSION_FILE"
-    echo "✓ Updated $FRONTEND_VERSION_FILE to $FRONTEND_VERSION"
-else
-    echo "⚠ Warning: $FRONTEND_VERSION_FILE not found"
-fi
-
-# Update frontend package.json version
 FRONTEND_PACKAGE="frontend/package.json"
-if [ -f "$FRONTEND_PACKAGE" ]; then
-    sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$FRONTEND_VERSION\"/" "$FRONTEND_PACKAGE"
-    echo "✓ Updated $FRONTEND_PACKAGE to $FRONTEND_VERSION"
-else
-    echo "⚠ Warning: $FRONTEND_PACKAGE not found"
-fi
-
-# Update VERSION.md files
 BACKEND_VERSION_MD="backend/VERSION.md"
-if [ -f "$BACKEND_VERSION_MD" ]; then
-    sed -i "s/## Current Version: .*/## Current Version: $BACKEND_VERSION/" "$BACKEND_VERSION_MD"
-    echo "✓ Updated $BACKEND_VERSION_MD to $BACKEND_VERSION"
-fi
-
 FRONTEND_VERSION_MD="frontend/VERSION.md"
-if [ -f "$FRONTEND_VERSION_MD" ]; then
-    sed -i "s/## Current Version: .*/## Current Version: $FRONTEND_VERSION/" "$FRONTEND_VERSION_MD"
-    echo "✓ Updated $FRONTEND_VERSION_MD to $FRONTEND_VERSION"
+
+usage() {
+    echo "Usage: $0 [-b backend_version] [-f frontend_version] [-c] [-t]"
+    echo "  -b <version>   Update backend version"
+    echo "  -f <version>   Update frontend version"
+    echo "  -c             Commit using versions from files"
+    echo "  -t             Tag using versions from files"
+    echo "Examples:"
+    echo "  $0 -b 0.1.31 -f 0.2.0" 
+    echo "  $0 -b 0.1.31 -c -t"
+    echo "  $0 -c -t"
+    echo "So you can set the version at any time, commit later without worrying about commit messages and tag later when merged into main."
+    exit 1
+}
+
+read_backend_version() {
+    if [ ! -f "$BACKEND_VERSION_FILE" ]; then
+        echo ""; return
+    fi
+    sed -n 's/.*const Version = "\(.*\)".*/\1/p' "$BACKEND_VERSION_FILE" | head -n1
+}
+
+read_frontend_version() {
+    if [ ! -f "$FRONTEND_VERSION_FILE" ]; then
+        echo ""; return
+    fi
+    sed -n "s/.*export const VERSION = '\(.*\)'.*/\1/p" "$FRONTEND_VERSION_FILE" | head -n1
+}
+
+BACKEND_VERSION_ARG=""
+FRONTEND_VERSION_ARG=""
+DO_COMMIT=false
+DO_TAG=false
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -b)
+            [ -z "$2" ] && usage
+            BACKEND_VERSION_ARG="$2"
+            shift 2
+            ;;
+        -f)
+            [ -z "$2" ] && usage
+            FRONTEND_VERSION_ARG="$2"
+            shift 2
+            ;;
+        -c)
+            DO_COMMIT=true
+            shift
+            ;;
+        -t)
+            DO_TAG=true
+            shift
+            ;;
+        -h|--help)
+            usage
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+if [ -z "$BACKEND_VERSION_ARG" ] && [ -z "$FRONTEND_VERSION_ARG" ] && [ "$DO_COMMIT" = false ] && [ "$DO_TAG" = false ]; then
+    usage
 fi
 
-echo ""
-echo "✅ Version update complete!"
-echo "   Backend:  $BACKEND_VERSION"
-echo "   Frontend: $FRONTEND_VERSION"
-echo ""
+if [ -n "$BACKEND_VERSION_ARG" ]; then
+    if [ -f "$BACKEND_VERSION_FILE" ]; then
+        sed -i "s/const Version = \"[^\"]*\"/const Version = \"$BACKEND_VERSION_ARG\"/" "$BACKEND_VERSION_FILE"
+        echo "✓ Updated $BACKEND_VERSION_FILE to $BACKEND_VERSION_ARG"
+    else
+        echo "⚠ Warning: $BACKEND_VERSION_FILE not found"
+    fi
 
-# Auto-commit if requested
-if [ "$AUTO_COMMIT" = true ]; then
-    echo "Auto-committing changes..."
-    if [ "$BACKEND_VERSION" = "$FRONTEND_VERSION" ]; then
-        git add backend/config/version.go frontend/src/version.js frontend/package.json frontend/VERSION.md
-        git commit -m "Bump version to $BACKEND_VERSION"
-        git tag v$BACKEND_VERSION
-        echo "✓ Committed and tagged as v$BACKEND_VERSION"
-    else
-        git add backend/config/version.go frontend/src/version.js frontend/package.json frontend/VERSION.md
-        git commit -m "Bump backend to $BACKEND_VERSION, frontend to $FRONTEND_VERSION"
-        git tag backend-v$BACKEND_VERSION 
-        git tag frontend-v$FRONTEND_VERSION
-        git tag v$BACKEND_VERSION -m "Backend version $BACKEND_VERSION, Frontend version $FRONTEND_VERSION"
-        echo "✓ Committed and tagged as backend-v$BACKEND_VERSION, frontend-v$FRONTEND_VERSION, v$BACKEND_VERSION"
+    if [ -f "$BACKEND_VERSION_MD" ]; then
+        sed -i "s/## Current Version: .*/## Current Version: $BACKEND_VERSION_ARG/" "$BACKEND_VERSION_MD"
+        echo "✓ Updated $BACKEND_VERSION_MD to $BACKEND_VERSION_ARG"
     fi
-    echo ""
-    echo "Next step:"
-    echo "  Push: git push && git push --tags"
-else
-    echo "Next steps:"
-    echo "1. Review changes: git diff"
-    if [ "$BACKEND_VERSION" = "$FRONTEND_VERSION" ]; then
-        echo "2. Commit changes: git commit -am 'Bump version to $BACKEND_VERSION'"
-        echo "3. Tag release: git tag v$BACKEND_VERSION"
-        git tag v$BACKEND_VERSION
+fi
+
+if [ -n "$FRONTEND_VERSION_ARG" ]; then
+    if [ -f "$FRONTEND_VERSION_FILE" ]; then
+        sed -i "s/export const VERSION = '[^']*'/export const VERSION = '$FRONTEND_VERSION_ARG'/" "$FRONTEND_VERSION_FILE"
+        echo "✓ Updated $FRONTEND_VERSION_FILE to $FRONTEND_VERSION_ARG"
     else
-        echo "2. Commit changes: git commit -am 'Bump backend to $BACKEND_VERSION, frontend to $FRONTEND_VERSION'"
-        echo "3. Tag releases: git tag backend-v$BACKEND_VERSION && git tag frontend-v$FRONTEND_VERSION"
-        git tag backend-v$BACKEND_VERSION 
-        git tag frontend-v$FRONTEND_VERSION
-        git tag v$BACKEND_VERSION -m "Backend version $BACKEND_VERSION, Frontend version $FRONTEND_VERSION"
+        echo "⚠ Warning: $FRONTEND_VERSION_FILE not found"
     fi
-    echo "4. Push: git push && git push --tags"
+
+    if [ -f "$FRONTEND_PACKAGE" ]; then
+        sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$FRONTEND_VERSION_ARG\"/" "$FRONTEND_PACKAGE"
+        echo "✓ Updated $FRONTEND_PACKAGE to $FRONTEND_VERSION_ARG"
+    else
+        echo "⚠ Warning: $FRONTEND_PACKAGE not found"
+    fi
+
+    if [ -f "$FRONTEND_VERSION_MD" ]; then
+        sed -i "s/## Current Version: .*/## Current Version: $FRONTEND_VERSION_ARG/" "$FRONTEND_VERSION_MD"
+        echo "✓ Updated $FRONTEND_VERSION_MD to $FRONTEND_VERSION_ARG"
+    fi
+fi
+
+BACKEND_VERSION_CURRENT=$(read_backend_version)
+FRONTEND_VERSION_CURRENT=$(read_frontend_version)
+
+if [ "$DO_COMMIT" = true ]; then
+    if [ -z "$BACKEND_VERSION_CURRENT" ] && [ -z "$FRONTEND_VERSION_CURRENT" ]; then
+        echo "❌ Cannot commit: version files missing" >&2
+        exit 1
+    fi
+
+    FILES_TO_ADD=()
+    [ -f "$BACKEND_VERSION_FILE" ] && FILES_TO_ADD+=("$BACKEND_VERSION_FILE")
+    [ -f "$BACKEND_VERSION_MD" ] && FILES_TO_ADD+=("$BACKEND_VERSION_MD")
+    [ -f "$FRONTEND_VERSION_FILE" ] && FILES_TO_ADD+=("$FRONTEND_VERSION_FILE")
+    [ -f "$FRONTEND_PACKAGE" ] && FILES_TO_ADD+=("$FRONTEND_PACKAGE")
+    [ -f "$FRONTEND_VERSION_MD" ] && FILES_TO_ADD+=("$FRONTEND_VERSION_MD")
+
+    if [ ${#FILES_TO_ADD[@]} -eq 0 ]; then
+        echo "❌ Cannot commit: no files to add" >&2
+        exit 1
+    fi
+
+    git add "${FILES_TO_ADD[@]}"
+
+    if [ -n "$BACKEND_VERSION_CURRENT" ] && [ -n "$FRONTEND_VERSION_CURRENT" ]; then
+        if [ "$BACKEND_VERSION_CURRENT" = "$FRONTEND_VERSION_CURRENT" ]; then
+            COMMIT_MSG="Bump version to $BACKEND_VERSION_CURRENT"
+        else
+            COMMIT_MSG="Bump backend to $BACKEND_VERSION_CURRENT, frontend to $FRONTEND_VERSION_CURRENT"
+        fi
+    elif [ -n "$BACKEND_VERSION_CURRENT" ]; then
+        COMMIT_MSG="Bump backend to $BACKEND_VERSION_CURRENT"
+    else
+        COMMIT_MSG="Bump frontend to $FRONTEND_VERSION_CURRENT"
+    fi
+
+    git commit -m "$COMMIT_MSG"
+    echo "✓ Committed: $COMMIT_MSG"
+fi
+
+if [ "$DO_TAG" = true ]; then
+    if [ -z "$BACKEND_VERSION_CURRENT" ] && [ -z "$FRONTEND_VERSION_CURRENT" ]; then
+        echo "❌ Cannot tag: version files missing" >&2
+        exit 1
+    fi
+
+    if [ -n "$BACKEND_VERSION_CURRENT" ] && [ -n "$FRONTEND_VERSION_CURRENT" ] && [ "$BACKEND_VERSION_CURRENT" = "$FRONTEND_VERSION_CURRENT" ]; then
+        git tag "v$BACKEND_VERSION_CURRENT"
+        echo "✓ Tagged v$BACKEND_VERSION_CURRENT"
+    else
+        if [ -n "$BACKEND_VERSION_CURRENT" ]; then
+            git tag "backend-v$BACKEND_VERSION_CURRENT"
+            echo "✓ Tagged backend-v$BACKEND_VERSION_CURRENT"
+        fi
+        if [ -n "$FRONTEND_VERSION_CURRENT" ]; then
+            git tag "frontend-v$FRONTEND_VERSION_CURRENT"
+            echo "✓ Tagged frontend-v$FRONTEND_VERSION_CURRENT"
+        fi
+    fi
 fi

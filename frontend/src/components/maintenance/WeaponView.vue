@@ -8,6 +8,7 @@
           v-model="searchTerm"
           :placeholder="`${$t('search')} ${$t('Weapons')}...`"
         />
+        <button @click="startCreate" class="btn-primary">{{ $t('newEntry') }}</button>
       </div>
     </div>
 
@@ -82,6 +83,110 @@
               </tr>
             </thead>
             <tbody>
+              <tr v-if="creatingNew">
+                <td>New</td>
+                <td colspan="11">
+                  <div class="edit-form">
+                    <div class="edit-row">
+                      <div class="edit-field">
+                        <label>{{ $t('weapon.name') }}:</label>
+                        <input v-model="newItem.name" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('weapon.skillrequired') || 'Skill Required' }}:</label>
+                        <input v-model="newItem.skill_required" style="width:150px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('weapon.weight') }}:</label>
+                        <input v-model.number="newItem.gewicht" type="number" style="width:80px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('weapon.value') }}:</label>
+                        <input v-model="newItem.wert" style="width:100px;" />
+                      </div>
+                    </div>
+
+                    <div class="edit-row">
+                      <div class="edit-field">
+                        <label>{{ $t('weapon.damage') }}:</label>
+                        <input v-model="newItem.damage" style="width:100px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('weapon.rangenear') || 'Range Near' }}:</label>
+                        <input v-model.number="newItem.range_near" type="number" style="width:80px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('weapon.rangemiddle') || 'Range Middle' }}:</label>
+                        <input v-model.number="newItem.range_middle" type="number" style="width:80px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('weapon.rangefar') || 'Range Far' }}:</label>
+                        <input v-model.number="newItem.range_far" type="number" style="width:80px;" />
+                      </div>
+                    </div>
+
+                    <div class="edit-row">
+                      <div class="edit-field">
+                        <label>{{ $t('weapon.bonusskill') || 'Bonus' }}:</label>
+                        <select v-model="newItem.bonuseigenschaft" style="width:80px;">
+                          <option value="">-</option>
+                          <option value="St">St</option>
+                          <option value="Gs">Gs</option>
+                          <option value="Gw">Gw</option>
+                          <option value="Ko">Ko</option>
+                          <option value="In">In</option>
+                          <option value="Zt">Zt</option>
+                          <option value="Au">Au</option>
+                          <option value="pA">pA</option>
+                          <option value="Wk">Wk</option>
+                          <option value="B">B</option>
+                        </select>
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('weapon.personal_item') }}:</label>
+                        <input type="checkbox" v-model="newItem.personal_item" />
+                      </div>
+                    </div>
+
+                    <div class="edit-row">
+                      <div class="edit-field full-width">
+                        <label>{{ $t('weapon.description') }}:</label>
+                        <input v-model="newItem.beschreibung" />
+                      </div>
+                    </div>
+
+                    <div class="edit-row">
+                      <div class="edit-field">
+                        <label>{{ $t('weapon.quelle') }}:</label>
+                        <select v-model="newItem.sourceCode" style="width:100px;">
+                          <option value="">-</option>
+                          <option v-for="source in availableSources" :key="source.code" :value="source.code">
+                            {{ source.code }}
+                          </option>
+                        </select>
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('weapon.page') || 'Page' }}:</label>
+                        <input v-model.number="newItem.page_number" type="number" style="width:60px;" />
+                      </div>
+                      <div class="edit-field">
+                        <label>{{ $t('weapon.system') }}:</label>
+                        <select v-model.number="createSelectedSystemId" style="width:140px;">
+                          <option value="">-</option>
+                          <option v-for="system in systemOptions" :key="system.id" :value="system.id">
+                            {{ system.label }}
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="edit-actions">
+                      <button @click="saveCreate" class="btn-save">{{ $t('common.save') }}</button>
+                      <button @click="cancelCreate" class="btn-cancel">{{ $t('common.cancel') }}</button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
               <template v-for="(dtaItem, index) in filteredAndSortedWeaponss" :key="dtaItem.id">
                 <tr v-if="editingIndex !== index">
                   <td>{{ dtaItem.id || '' }}</td>
@@ -98,7 +203,7 @@
                   <td><input type="checkbox" :checked="dtaItem.personal_item" disabled /></td>
                   <td>{{ getSystemCodeById(dtaItem.game_system_id, dtaItem.system || 'midgard') }}</td>
                   <td>
-                    <button @click="startEdit(index)">Edit</button>
+                    <button @click="startEdit(index)">{{ $t('common.edit') }}</button>
                   </td>
                 </tr>
                 <!-- Edit Mode -->
@@ -201,8 +306,8 @@
                       </div>
 
                       <div class="edit-actions">
-                        <button @click="saveEdit(index)" class="btn-save">Save</button>
-                        <button @click="cancelEdit" class="btn-cancel">Cancel</button>
+                        <button @click="saveEdit(index)" class="btn-save">{{ $t('common.save') }}</button>
+                        <button @click="cancelEdit" class="btn-cancel">{{ $t('common.cancel') }}</button>
                       </div>
                     </div>
                   </td>
@@ -296,7 +401,10 @@ export default {
       enhancedWeapons: [],
       availableSources: [],
       gameSystems: [],
-      selectedSystemId: null
+      selectedSystemId: null,
+      creatingNew: false,
+      newItem: null,
+      createSelectedSystemId: null
     }
   },
   async created() {
@@ -477,6 +585,59 @@ export default {
       this.editingIndex = -1
       this.editedItem = null
       this.selectedSystemId = null
+    },
+    startCreate() {
+      this.cancelEdit()
+      const defaultSystem = this.gameSystems.find(gs => gs.is_active) || this.gameSystems[0] || null
+      this.createSelectedSystemId = defaultSystem ? defaultSystem.id : null
+      this.newItem = {
+        name: '',
+        skill_required: '',
+        gewicht: 0,
+        wert: '',
+        damage: '',
+        range_near: 0,
+        range_middle: 0,
+        range_far: 0,
+        beschreibung: '',
+        bonuseigenschaft: '',
+        personal_item: false,
+        sourceCode: '',
+        page_number: 0,
+        system: defaultSystem ? defaultSystem.code : ''
+      }
+      this.creatingNew = true
+    },
+    cancelCreate() {
+      this.creatingNew = false
+      this.newItem = null
+      this.createSelectedSystemId = null
+    },
+    async saveCreate() {
+      if (!this.newItem) return
+      try {
+        const source = this.availableSources.find(s => s.code === this.newItem.sourceCode)
+        const selectedSystem = this.gameSystems.find(gs => gs.id === this.createSelectedSystemId)
+
+        const createData = {
+          ...this.newItem,
+          source_id: source ? source.id : null,
+          page_number: this.newItem.page_number || 0,
+          system: selectedSystem ? selectedSystem.code : (this.newItem.system || ''),
+          game_system_id: selectedSystem ? selectedSystem.id : null
+        }
+
+        const response = await API.post(
+          '/api/maintenance/weapons-enhanced',
+          createData
+        )
+
+        this.enhancedWeapons.push(response.data)
+        this.cancelCreate()
+      } catch (error) {
+        console.error('Failed to create weapon:', error)
+        alert('Failed to create weapon: ' + (error.response?.data?.error || error.message))
+      }
     },
     findSystemIdByCode(code) {
       return findSystemIdByCode(this.gameSystems, code)

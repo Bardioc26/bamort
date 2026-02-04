@@ -7,6 +7,7 @@
         type="text"
         :placeholder="$t('search')"
       />
+      <button class="btn-primary" @click="startCreate">{{ $t('newEntry') }}</button>
     </div>
   </div>
 
@@ -31,6 +32,65 @@
             <td colspan="7">{{ $t('common.loading') }}</td>
           </tr>
 
+          <tr v-if="creatingNew">
+            <td>New</td>
+            <td colspan="6">
+              <div class="edit-form">
+                <div class="edit-row">
+                  <label>{{ $t('believe.name') }}</label>
+                  <input v-model="newItem.name" />
+                </div>
+
+                <div class="edit-row">
+                  <label>{{ $t('believe.description') }}</label>
+                  <input v-model="newItem.beschreibung" />
+                </div>
+
+                <div class="edit-row">
+                  <label>{{ $t('believe.source') }}</label>
+                  <select v-model="newItem.sourceCode">
+                    <option value="">-</option>
+                    <option v-for="source in sources" :key="source.id" :value="source.code">
+                      {{ source.code }}
+                    </option>
+                  </select>
+
+                  <label class="inline-label">{{ $t('believe.page') }}</label>
+                  <input v-model.number="newItem.page_number" type="number" min="0" />
+                </div>
+
+                <div class="edit-row">
+                  <label>{{ $t('believe.system') }}</label>
+                  <select v-model.number="createSelectedSystemId">
+                    <option value="">-</option>
+                    <option v-for="system in systemOptions" :key="system.id" :value="system.id">
+                      {{ system.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="edit-actions">
+                  <button
+                    class="btn-primary btn-save"
+
+                    :disabled="isSaving"
+                    @click="saveCreate"
+                  >
+                    <span v-if="!isSaving">{{ $t('common.save') }}</span>
+                    <span v-else>{{ $t('common.saving') }}</span>
+                  </button>
+                  <button
+                    class="btn-cancel"
+                    :disabled="isSaving"
+                    @click="cancelCreate"
+                  >
+                    {{ $t('common.cancel') }}
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+
           <template v-for="believe in filteredBelieves" :key="believe.id">
             <tr v-if="editingId !== believe.id">
               <td>{{ believe.id }}</td>
@@ -40,7 +100,7 @@
               <td>{{ believe.page_number || '-' }}</td>
               <td>{{ getSystemCodeById(believe.game_system_id, believe.game_system) || '-' }}</td>
               <td>
-                <button @click="startEdit(believe)">{{ $t('believe.edit') }}</button>
+                <button @click="startEdit(believe)">{{ $t('common.edit') }}</button>
               </td>
             </tr>
             <tr v-else>
@@ -82,19 +142,19 @@
 
                   <div class="edit-actions">
                     <button
-                      class="btn-primary"
+                      class="btn-primary btn-save"
                       :disabled="isSaving"
                       @click="saveEdit"
                     >
-                      <span v-if="!isSaving">{{ $t('believe.save') }}</span>
-                      <span v-else>{{ $t('believe.saving') }}</span>
+                      <span v-if="!isSaving">{{ $t('common.save') }}</span>
+                      <span v-else>{{ $t('common.saving') }}</span>
                     </button>
                     <button
                       class="btn-cancel"
                       :disabled="isSaving"
                       @click="cancelEdit"
                     >
-                      {{ $t('believe.cancel') }}
+                      {{ $t('common.cancel') }}
                     </button>
                   </div>
                 </div>
@@ -179,6 +239,9 @@ export default {
       editedItem: null,
       gameSystems: [],
       selectedSystemId: null,
+      creatingNew: false,
+      newItem: null,
+      createSelectedSystemId: null,
       isLoading: false,
       isSaving: false,
       error: '',
@@ -251,6 +314,23 @@ export default {
     findSystemIdByCode(code) {
       return findSystemIdByCode(this.gameSystems, code)
     },
+    startCreate() {
+      this.cancelEdit()
+      const defaultSystem = this.gameSystems.find(gs => gs.is_active) || this.gameSystems[0] || null
+      this.createSelectedSystemId = defaultSystem ? defaultSystem.id : null
+      this.newItem = {
+        name: '',
+        beschreibung: '',
+        sourceCode: '',
+        page_number: 0
+      }
+      this.creatingNew = true
+    },
+    cancelCreate() {
+      this.creatingNew = false
+      this.newItem = null
+      this.createSelectedSystemId = null
+    },
     async saveEdit() {
       if (!this.editedItem || !this.editingId) {
         return
@@ -290,6 +370,45 @@ export default {
         this.cancelEdit()
       } catch (err) {
         console.error('Failed to save believe:', err)
+        this.error = err.response?.data?.error || err.message
+      } finally {
+        this.isSaving = false
+      }
+    },
+    async saveCreate() {
+      if (!this.newItem) return
+
+      const trimmedName = (this.newItem.name || '').trim()
+      if (!trimmedName) {
+        alert(this.$t('believe.nameRequired'))
+        return
+      }
+
+      const selectedSource = this.sources.find(src => src.code === this.newItem.sourceCode)
+      const selectedSystem = this.gameSystems.find(gs => gs.id === this.createSelectedSystemId)
+
+      const payload = {
+        name: trimmedName,
+        beschreibung: this.newItem.beschreibung || '',
+        source_id: selectedSource ? selectedSource.id : null,
+        page_number: this.newItem.page_number || 0,
+        game_system_id: selectedSystem ? selectedSystem.id : null,
+        game_system: selectedSystem ? selectedSystem.code : '',
+      }
+
+      this.isSaving = true
+      try {
+        const response = await API.post('/api/maintenance/gsm-believes', payload)
+        const created = response.data
+        this.believes.push({
+          ...created,
+          source_code: this.getSourceCode(created.source_id),
+          game_system: selectedSystem ? selectedSystem.code : created.game_system,
+          game_system_id: selectedSystem ? selectedSystem.id : (created.game_system_id ?? null)
+        })
+        this.cancelCreate()
+      } catch (err) {
+        console.error('Failed to create believe:', err)
         this.error = err.response?.data?.error || err.message
       } finally {
         this.isSaving = false

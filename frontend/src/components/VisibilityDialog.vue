@@ -111,12 +111,12 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button @click="closeDialog" class="btn-cancel" :disabled="isUpdating">
-          {{ $t('visibility.cancel') }}
+        <button @click="updateVisibilityAndShares" class="btn-primary btn-save" :disabled="isUpdating">
+          <span v-if="!isUpdating">{{ $t('common.save') }}</span>
+          <span v-else>{{ $t('common.saving') }}</span>
         </button>
-        <button @click="updateVisibilityAndShares" class="btn-primary" :disabled="isUpdating">
-          <span v-if="!isUpdating">{{ $t('visibility.save') }}</span>
-          <span v-else>{{ $t('visibility.saving') }}</span>
+        <button @click="closeDialog" class="btn-cancel" :disabled="isUpdating">
+          {{ $t('common.cancel') }}
         </button>
       </div>
     </div>

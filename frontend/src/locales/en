@@ -24,6 +24,19 @@ export default {
     dontHaveAccount: "Don't have an account?",
     registerHere: 'Register here'
   },
+  forgotPassword: {
+    title: 'Reset password',
+    description: 'Enter your email address to receive a reset link.',
+    emailLabel: 'Email address',
+    emailPlaceholder: 'your{\'@\'}email.com',
+    submit: 'Send reset link',
+    submitting: 'Sending...',
+    successTitle: 'Email sent!',
+    successInfo: 'If an account exists for this email, a reset link has been sent.',
+    successHint: 'Check your inbox and follow the link.',
+    error: 'Error sending email. Please try again later.',
+    backToLogin: 'Back to login'
+  },
   import: {
     title: 'Import Data',
     description: 'Upload character data from VTT or CSV files.',

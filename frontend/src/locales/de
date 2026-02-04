@@ -24,6 +24,19 @@ export default {
     dontHaveAccount: 'Noch kein Konto?',
     registerHere: 'Hier registrieren'
   },
+  forgotPassword: {
+    title: 'Passwort zurücksetzen',
+    description: 'Geben Sie Ihre E-Mail-Adresse ein, um einen Reset-Link zu erhalten.',
+    emailLabel: 'E-Mail-Adresse',
+    emailPlaceholder: 'ihre{\'@\'}email.de',
+    submit: 'Reset-Link senden',
+    submitting: 'Wird gesendet...',
+    successTitle: 'E-Mail gesendet!',
+    successInfo: 'Falls ein Account mit dieser E-Mail-Adresse existiert, wurde ein Reset-Link gesendet.',
+    successHint: 'Prüfen Sie Ihre E-Mails und folgen Sie dem Link.',
+    error: 'Fehler beim Senden der E-Mail. Versuchen Sie es später erneut.',
+    backToLogin: 'Zurück zum Login'
+  },
   import: {
     title: 'Daten importieren',
     description: 'Laden Sie Charakterdaten aus VTT- oder CSV-Dateien hoch.',

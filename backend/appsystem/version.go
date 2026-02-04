@@ -5,7 +5,7 @@ import (
 )
 
 // Version is the application version
-const Version = "0.2.2"
+const Version = "0.2.3"
 
 var (
 	// GitCommit will be set by build flags or detected at runtime

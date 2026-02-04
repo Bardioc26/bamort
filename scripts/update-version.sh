@@ -37,7 +37,7 @@ else
 fi
 
 # Update backend version
-BACKEND_VERSION_FILE="backend/config/version.go"
+BACKEND_VERSION_FILE="backend/appsystem/version.go"
 if [ -f "$BACKEND_VERSION_FILE" ]; then
     sed -i "s/const Version = \"[^\"]*\"/const Version = \"$BACKEND_VERSION\"/" "$BACKEND_VERSION_FILE"
     echo "✓ Updated $BACKEND_VERSION_FILE to $BACKEND_VERSION"
@@ -86,7 +86,7 @@ echo ""
 if [ "$AUTO_COMMIT" = true ]; then
     echo "Auto-committing changes..."
     if [ "$BACKEND_VERSION" = "$FRONTEND_VERSION" ]; then
-        git add backend/config/version.go frontend/src/version.js frontend/package.json frontend/VERSION.md
+        git add backend/appsystem/version.go frontend/src/version.js frontend/package.json frontend/VERSION.md
         git commit -m "Bump version to $BACKEND_VERSION"
         git tag v$BACKEND_VERSION
         echo "✓ Committed and tagged as v$BACKEND_VERSION"

@@ -10,14 +10,16 @@ BACKEND_VERSION_MD="backend/VERSION.md"
 FRONTEND_VERSION_MD="frontend/VERSION.md"
 
 usage() {
-    echo "Usage: $0 [-b backend_version] [-f frontend_version] [-c] [-t]"
+    echo "Usage: $0 [-b backend_version] [-f frontend_version] [-n] [-c] [-t]"
     echo "  -b <version>   Update backend version"
     echo "  -f <version>   Update frontend version"
+    echo "  -n             Bump patch version based on current files"
     echo "  -c             Commit using versions from files"
     echo "  -t             Tag using versions from files"
     echo "Examples:"
     echo "  $0 -b 0.1.31 -f 0.2.0" 
     echo "  $0 -b 0.1.31 -c -t"
+    echo "  $0 -n -c"
     echo "  $0 -c -t"
     echo "So you can set the version at any time, commit later without worrying about commit messages and tag later when merged into main."
     exit 1
@@ -37,10 +39,23 @@ read_frontend_version() {
     sed -n "s/.*export const VERSION = '\(.*\)'.*/\1/p" "$FRONTEND_VERSION_FILE" | head -n1
 }
 
+bump_patch() {
+    local ver="$1"
+
+    if [[ "$ver" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+        local major="${BASH_REMATCH[1]}"
+        local minor="${BASH_REMATCH[2]}"
+        local patch="${BASH_REMATCH[3]}"
+        patch=$((patch + 1))
+        echo "${major}.${minor}.${patch}"
+    fi
+}
+
 BACKEND_VERSION_ARG=""
 FRONTEND_VERSION_ARG=""
 DO_COMMIT=false
 DO_TAG=false
+BUMP_PATCH=false
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -62,6 +77,10 @@ while [ $# -gt 0 ]; do
             DO_TAG=true
             shift
             ;;
+        -n)
+            BUMP_PATCH=true
+            shift
+            ;;
         -h|--help)
             usage
             ;;
@@ -71,8 +90,38 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-if [ -z "$BACKEND_VERSION_ARG" ] && [ -z "$FRONTEND_VERSION_ARG" ] && [ "$DO_COMMIT" = false ] && [ "$DO_TAG" = false ]; then
+if [ -z "$BACKEND_VERSION_ARG" ] && [ -z "$FRONTEND_VERSION_ARG" ] && [ "$DO_COMMIT" = false ] && [ "$DO_TAG" = false ] && [ "$BUMP_PATCH" = false ]; then
     usage
+fi
+
+if [ "$BUMP_PATCH" = true ]; then
+    BACKEND_VERSION_CURRENT=$(read_backend_version)
+    FRONTEND_VERSION_CURRENT=$(read_frontend_version)
+
+    if [ -z "$BACKEND_VERSION_CURRENT" ] && [ -z "$FRONTEND_VERSION_CURRENT" ]; then
+        echo "❌ Cannot bump: version files missing" >&2
+        exit 1
+    fi
+
+    if [ -z "$BACKEND_VERSION_ARG" ] && [ -n "$BACKEND_VERSION_CURRENT" ]; then
+        NEXT_BACKEND_VERSION=$(bump_patch "$BACKEND_VERSION_CURRENT")
+        if [ -z "$NEXT_BACKEND_VERSION" ]; then
+            echo "❌ Cannot bump backend: invalid version format '$BACKEND_VERSION_CURRENT'" >&2
+            exit 1
+        fi
+        BACKEND_VERSION_ARG="$NEXT_BACKEND_VERSION"
+        echo "✓ Bumping backend version to $BACKEND_VERSION_ARG"
+    fi
+
+    if [ -z "$FRONTEND_VERSION_ARG" ] && [ -n "$FRONTEND_VERSION_CURRENT" ]; then
+        NEXT_FRONTEND_VERSION=$(bump_patch "$FRONTEND_VERSION_CURRENT")
+        if [ -z "$NEXT_FRONTEND_VERSION" ]; then
+            echo "❌ Cannot bump frontend: invalid version format '$FRONTEND_VERSION_CURRENT'" >&2
+            exit 1
+        fi
+        FRONTEND_VERSION_ARG="$NEXT_FRONTEND_VERSION"
+        echo "✓ Bumping frontend version to $FRONTEND_VERSION_ARG"
+    fi
 fi
 
 if [ -n "$BACKEND_VERSION_ARG" ]; then

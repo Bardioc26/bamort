@@ -1,0 +1,35 @@
+# Plan a new Feature
+make a plan for implementing a new feature. Take the following things into account:
+- the feature is to inport an export data.
+- the data is all about character data
+    - descriptiv data
+        - male, female
+        - character class
+        - size, age, social class, ...
+        - ...
+    - stats
+        - St, Gw, In,...
+        - ...
+    - skills
+    - spell
+    - equipment
+        - weapons
+        - containers
+        - transportation equipment
+        - ...    
+    - character history
+        - learned skill and spells (date, costs, level)
+        - gained expirience points or gold(date ,amount)
+        - ...
+- the import data can come from different systems and contain da data in different formats
+- the import source may require tailored conversion into the common internal format (we refer to it as BMRT-Format)
+- if all information is transformed into the BMRT-Format we want to check if the Skills, Spells, Equipment and other things are available in the Masterdata of the game system set by the import data.
+    - link items with exisiting master data
+    - add new items to masterdata 
+    - OR mark item as personal Item (players house rules)
+- later I want to add new formats 
+    - new formats should be plugable. 
+        - At best by droping a file into the right folder
+        - Or by adding the new package and registering it on one location
+- the export of the data must create ecactly the same output as we had in the input file
+

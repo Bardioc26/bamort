@@ -1,6 +1,6 @@
 # Plan: Pluggable Character Import/Export with Microservice Adapters
 
-This plan extends the existing `importero` package into a full-featured, extensible import/export system using Docker-based adapter microservices. The canonical `CharacterImport` format becomes the system-wide interchange format (BMRT-Format), and new external formats (starting with Foundry VTT) are handled by isolated adapter services. New master data is automatically flagged as personal items (house rules).
+This plan creates a new `import` package as a full-featured, extensible import/export system using Docker-based adapter microservices. The canonical `CharacterImport` format (from importero) becomes the system-wide interchange format (BMRT-Format), and new external formats (starting with Foundry VTT) are handled by isolated adapter services. New master data is automatically flagged as personal items (house rules).
 
 **Key Decisions**:
 - Microservice architecture for adapters (Docker containers)
@@ -8,16 +8,51 @@ This plan extends the existing `importero` package into a full-featured, extensi
 - Foundry VTT JSON as first format
 - Backend-only implementation (no Vue components)
 - Keep [transfero/](transfero/) untouched (BaMoRT-to-BaMoRT transfers)
-- Extend [importero/](importero/) as the adapter orchestration layer
+- Keep [importero/](importero/) untouched (legacy VTT/CSV imports)
+- Create new [import/](import/) package as the adapter orchestration layer
 
 ## 1. Core Infrastructure (Backend)
 
+### 1.0 Package Architecture Overview
+
+**Three Separate Concerns**:
+- **`transfero/`** - BaMoRT-to-BaMoRT lossless transfer (existing, untouched)
+- **`importero/`** - Legacy format handlers (VTT JSON, CSV) with direct imports (existing, untouched)
+- **`import/`** - NEW microservice adapter orchestration layer
+
+**Why Keep importero Separate**:
+- importero has working VTT/CSV imports that users depend on
+- importero converts directly to models.Char without adapter layer
+- import/ package uses importero.CharacterImport as the canonical format
+- No code duplication: import/ references importero types but doesn't modify them
+
+**Data Flow**:
+```
+External Format (Foundry VTT)
+  ↓
+Adapter Microservice
+  ↓
+importero.CharacterImport (BMRT-Format)
+  ↓
+import/ package handlers (validation, reconciliation)
+  ↓
+models.Char
+```
+
+**Benefits of New Package**:
+- ✅ Zero risk to existing importero functionality
+- ✅ Clear separation between direct imports (importero) and microservice imports (import)
+- ✅ Future flexibility: can migrate importero to use adapters later if desired
+- ✅ Clean API: `/api/import/*` vs `/api/importer/*` (different purposes)
+- ✅ Independent testing and deployment
+- ✅ Reuses proven CharacterImport format without modification
+
 ### 1.1 Formalize BMRT-Format
-- Document [importero/model.go](importero/model.go) `CharacterImport` as the canonical interchange format
-- Add JSON schema validation using `github.com/xeipuuv/gojsonschema`
-- Add `BmrtVersion` field to `CharacterImport` (start at "1.0")
+- Use [importero/model.go](importero/model.go) `CharacterImport` as the canonical interchange format (read-only)
+- Create [import/bmrt.go](import/bmrt.go) with JSON schema validation using `github.com/xeipuuv/gojsonschema`
+- Add `BmrtVersion` field to new wrapper struct (start at "1.0")
 - Add `SourceMetadata` struct to track original format, adapter ID, import timestamp
-- Update existing VTT adapter to populate these fields
+- Reference `importero.CharacterImport` internally but don't modify importero package
 
 ### 1.2 Database Migrations
 Add new tables to [models/model_character.go](models/model_character.go):
@@ -51,8 +86,17 @@ type MasterDataImport struct {
 Add to [models/database.go](models/database.go) `MigrateStructure()` function
 Add to [models/model_character.go](models/model_character.go) migration function
 
+**Module Registration**:
+Add to [cmd/main.go](cmd/main.go):
+```go
+import "bamort/import"
+
+// In main() after other RegisterRoutes calls:
+import.RegisterRoutes(protected)
+```
+
 ### 1.3 Adapter Service Registry
-Create [importero/registry.go](importero/registry.go):
+Create [import/registry.go](import/registry.go):
 
 ```go
 type AdapterMetadata struct {
@@ -75,13 +119,13 @@ func (r *AdapterRegistry) Import(adapterID string, data []byte) (*CharacterImpor
 func (r *AdapterRegistry) Export(adapterID string, char *CharacterImport) ([]byte, error)
 ```
 
-Load adapters from config on startup ([importero/routes.go](importero/routes.go)):
+Load adapters from config on startup ([import/routes.go](import/routes.go)):
 - Environment variable `IMPORT_ADAPTERS` (JSON array of adapter configs)
 - Ping each adapter's `/metadata` endpoint to register
 - Cache metadata in memory
 
 ### 1.4 Format Detection
-Create [importero/detector.go](importero/detector.go):
+Create [import/detector.go](import/detector.go):
 
 ```go
 func DetectFormat(data []byte, filename string) (adapterID string, confidence float64, err error) {
@@ -92,7 +136,7 @@ func DetectFormat(data []byte, filename string) (adapterID string, confidence fl
 ```
 
 ### 1.5 Validation Framework
-Create [importero/validator.go](importero/validator.go):
+Create [import/validator.go](import/validator.go):
 
 ```go
 type ValidationResult struct {
@@ -115,7 +159,7 @@ Register system-specific rules by `GameSystem` field
 Never block import on warnings (log only)
 
 ### 1.6 Master Data Reconciliation
-Enhance [importero/importer.go](importero/importer.go) existing `CheckSkill()`, `CheckSpell()` functions:
+Create [import/reconciler.go](import/reconciler.go) with new reconciliation functions (similar to importero's approach but independent):
 
 ```go
 func ReconcileSkill(skill Fertigkeit, importHistoryID uint) (*models.Skill, string, error) {
@@ -131,13 +175,11 @@ Chain user's `UserID` to created items via `CreatedByUserID` (add field to GSM m
 
 ## 2. API Endpoints (Backend)
 
-Add to [importero/routes.go](importero/routes.go):
+Create [import/routes.go](import/routes.go):
 
 ```go
 func RegisterRoutes(r *gin.RouterGroup) {
-    importer := r.Group("/importer")
-    
-    // Existing endpoints remain
+    importer := r.Group("/import")
     
     // NEW endpoints:
     importer.POST("/detect", DetectHandler)           // Upload file, returns detected format
@@ -149,7 +191,7 @@ func RegisterRoutes(r *gin.RouterGroup) {
 }
 ```
 
-**Handler Implementations** in [importero/handlers.go](importero/handlers.go):
+**Handler Implementations** in [import/handlers.go](import/handlers.go):
 
 **DetectHandler**:
 - Accept multipart file upload
@@ -243,7 +285,8 @@ package main
 
 import (
     "github.com/gin-gonic/gin"
-    "bamort/importero"  // Import BMRT-Format types
+    "bamort/importero"  // Import CharacterImport type
+    "bamort/import"     // Import BMRT wrapper and registry
 )
 
 type FoundryCharacter struct {
@@ -276,7 +319,7 @@ func importChar(c *gin.Context) {
     var foundry FoundryCharacter
     c.BindJSON(&foundry)
     
-    // Convert to importero.CharacterImport
+    // Convert to importero.CharacterImport (BMRT-Format)
     bmrt := toBMRT(foundry)
     c.JSON(200, bmrt)
 }
@@ -325,17 +368,17 @@ bamort-backend-dev:
 ## 5. Testing Strategy
 
 ### 5.1 Unit Tests
-Create [importero/registry_test.go](importero/registry_test.go):
+Create [import/registry_test.go](import/registry_test.go):
 - Test adapter registration
 - Test detection with multiple adapters
 - Mock HTTP responses using `httptest`
 
-Create [importero/validator_test.go](importero/validator_test.go):
+Create [import/validator_test.go](import/validator_test.go):
 - Test each validation rule
 - Test warning vs error distinction
 
 ### 5.2 Integration Tests
-Create [importero/import_integration_test.go](importero/import_integration_test.go):
+Create [import/integration_test.go](import/integration_test.go):
 - Use `testutils.SetupTestDB()`
 - Test full import flow with mock adapter
 - Verify `ImportHistory` created
@@ -358,9 +401,27 @@ Create [backend/api/import_e2e_test.go](backend/api/import_e2e_test.go):
 
 ## 6. Documentation
 
+### 6.0 New Package Structure
+The new `import/` package will contain:
+```
+backend/import/
+  ├── routes.go          # Route registration
+  ├── handlers.go        # HTTP handlers
+  ├── registry.go        # Adapter registry
+  ├── detector.go        # Format detection
+  ├── validator.go       # Validation framework
+  ├── reconciler.go      # Master data reconciliation
+  ├── bmrt.go           # BMRT wrapper with metadata
+  ├── registry_test.go   # Unit tests
+  ├── validator_test.go  # Unit tests
+  ├── integration_test.go # Integration tests
+  └── README.md          # Package documentation
+```
+
 ### 6.1 Update Files
 - [backend/PlanNewFeature.md](backend/PlanNewFeature.md) → Mark as "Implemented, see IMPORT_EXPORT_GUIDE.md"
-- Create `backend/IMPORT_EXPORT_GUIDE.md` with architecture overview
+- Create `backend/import/README.md` with package overview and architecture
+- Create `backend/IMPORT_EXPORT_GUIDE.md` with full system architecture
 - Create `backend/adapters/ADAPTER_DEVELOPMENT.md` with adapter creation guide
 - Update [docker/SERVICES_REFERENCE.md](docker/SERVICES_REFERENCE.md) with adapter services
 
@@ -412,12 +473,12 @@ Generate docs with `swag init`
 1. Start dev environment: `cd docker && ./start-dev.sh`
 2. Verify adapter container running: `docker ps | grep bamort-adapter-foundry`
 3. Check adapter metadata: `curl http://localhost:8181/metadata`
-4. Run backend tests: `cd backend && go test ./importero/... -v`
+4. Run backend tests: `cd backend && go test ./import/... -v`
 5. Run adapter tests: `go test ./adapters/foundry/... -v`
-6. Upload test character: `curl -F "file=@testdata/foundry_sample.json" http://localhost:8180/api/importer/import -H "Authorization: Bearer <token>"`
+6. Upload test character: `curl -F "file=@testdata/foundry_sample.json" http://localhost:8180/api/import/import -H "Authorization: Bearer <token>"`
 7. Verify character created in database via phpMyAdmin
 8. Check `ImportHistory` table populated
-9. Export character: `curl http://localhost:8180/api/importer/export/1 -H "Authorization: Bearer <token>" -o exported.json`
+9. Export character: `curl http://localhost:8180/api/import/export/1 -H "Authorization: Bearer <token>" -o exported.json`
 10. Compare original vs exported (structural equivalence)
 
 ### Database Verification
@@ -433,17 +494,20 @@ SELECT * FROM skills WHERE personal_item = true;
 - **Master Data Handling**: Auto-flag as personal items (no approval workflow) to avoid blocking imports
 - **Format Priority**: Foundry VTT first, enables testing of full architecture before adding more formats
 - **Frontend Scope**: Backend-only to establish stable API before UI/UX work
-- **BMRT-Format**: Use existing `CharacterImport` rather than create new structure, reduces refactoring
-- **transfero Separation**: Keep untouched, serves different purpose (BaMoRT-to-BaMoRT lossless transfer)
+- **BMRT-Format**: Use existing `CharacterImport` from importero as base format, reduces refactoring
+- **Package Separation**: Keep both transfero and importero untouched, create new import package for microservice architecture
+- **importero vs import**: importero handles legacy VTT/CSV formats directly, import handles microservice adapters
 
 ## Implementation Phases
 
 ### Phase 1: Core Infrastructure (Week 1-2)
-- Database migrations
-- Adapter registry
-- Format detection
+- Create new `import/` package structure
+- Database migrations (ImportHistory, MasterDataImport tables)
+- Adapter registry with HTTP client
+- Format detection logic
 - Validation framework
-- Master data reconciliation updates
+- Master data reconciliation (new functions, not modifying importero)
+- Module registration in cmd/main.go
 
 ### Phase 2: API Endpoints (Week 2-3)
 - Implement all handlers
@@ -471,7 +535,9 @@ SELECT * FROM skills WHERE personal_item = true;
 
 ## Success Criteria
 
-- [ ] Foundry VTT characters import successfully
+- [ ] New `import/` package created with all modules
+- [ ] importero and transfero packages remain untouched (backwards compatibility)
+- [ ] Foundry VTT characters import successfully via microservice adapter
 - [ ] Round-trip export produces valid Foundry JSON
 - [ ] Personal items flagged automatically
 - [ ] ImportHistory tracks all imports
@@ -481,3 +547,4 @@ SELECT * FROM skills WHERE personal_item = true;
 - [ ] Adding new adapter requires no backend changes
 - [ ] Zero data loss on import/export cycle
 - [ ] Performance: <5s for typical character import
+- [ ] Legacy VTT/CSV imports via importero continue to work

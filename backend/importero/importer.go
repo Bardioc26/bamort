@@ -1,4 +1,4 @@
-package importer
+package importero
 
 import (
 	"bamort/models"

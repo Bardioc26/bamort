@@ -60,7 +60,7 @@ func migrateAllStructures(db *gorm.DB) error {
 		return fmt.Errorf("failed to migrate gsmaster structures: %w", err)
 	}
 
-	/*if err := importer.MigrateStructure(db); err != nil {
+	/*if err := importero.MigrateStructure(db); err != nil {
 		return fmt.Errorf("failed to migrate importer structures: %w", err)
 	}*/
 

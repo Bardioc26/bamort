@@ -1,4 +1,4 @@
-package transfer
+package transfero
 
 import (
 	"bamort/database"

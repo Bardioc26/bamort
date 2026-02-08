@@ -7,12 +7,12 @@ import (
 	"bamort/database"
 	"bamort/equipment"
 	"bamort/gsmaster"
-	"bamort/importer"
+	"bamort/importero"
 	"bamort/logger"
 	"bamort/maintenance"
 	"bamort/pdfrender"
 	"bamort/router"
-	"bamort/transfer"
+	"bamort/transfero"
 	"bamort/user"
 
 	"github.com/gin-gonic/gin"
@@ -90,9 +90,9 @@ func main() {
 	character.RegisterRoutes(protected)
 	equipment.RegisterRoutes(protected)
 	maintenance.RegisterRoutes(protected)
-	importer.RegisterRoutes(protected)
+	importero.RegisterRoutes(protected)
 	pdfrender.RegisterRoutes(protected)
-	transfer.RegisterRoutes(protected)
+	transfero.RegisterRoutes(protected)
 	appsystem.RegisterRoutes(protected)
 
 	// Register public routes (no authentication)

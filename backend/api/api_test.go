@@ -63,7 +63,7 @@ func TestSetupCheck(t *testing.T) {
 
 	err = models.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating gsmaster tables")
-	//err = importer.MigrateStructure()
+	//err = importero.MigrateStructure()
 	assert.NoError(t, err, "No error expected when migrating importer tables")
 }
 

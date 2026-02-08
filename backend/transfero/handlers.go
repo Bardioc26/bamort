@@ -1,4 +1,4 @@
-package transfer
+package transfero
 
 import (
 	"bamort/config"
@@ -9,6 +9,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+func dummyproc(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "This endpoint is a placeholder for future VTT import functionality."})
+}
 
 // ExportCharacterHandler handles character export requests
 func ExportCharacterHandler(c *gin.Context) {

@@ -19,19 +19,23 @@ type DetectionCache struct {
 
 // Detector handles smart format detection with optimizations
 type Detector struct {
-	registry *AdapterRegistry
-	cache    map[string]*DetectionCache
-	cacheMu  sync.RWMutex
-	cacheTTL time.Duration
+	registry         *AdapterRegistry
+	cache            map[string]*DetectionCache
+	cacheMu          sync.RWMutex
+	cacheTTL         time.Duration
+	stopCacheCleanup chan struct{}
 }
 
 // NewDetector creates a new detector
 func NewDetector(registry *AdapterRegistry) *Detector {
-	return &Detector{
-		registry: registry,
-		cache:    make(map[string]*DetectionCache),
-		cacheTTL: 5 * time.Minute, // Default TTL
+	d := &Detector{
+		registry:         registry,
+		cache:            make(map[string]*DetectionCache),
+		cacheTTL:         5 * time.Minute, // Default TTL
+		stopCacheCleanup: make(chan struct{}),
 	}
+	d.startCacheCleanup()
+	return d
 }
 
 // DetectFormat implements smart format detection with short-circuit optimization
@@ -162,4 +166,38 @@ func getFileExtension(filename string) string {
 	}
 
 	return strings.ToLower(filename[lastDot:])
+}
+
+// startCacheCleanup starts a background goroutine to periodically clean expired cache entries
+func (d *Detector) startCacheCleanup() {
+	ticker := time.NewTicker(10 * time.Minute) // Cleanup every 10 minutes
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				d.cleanupExpiredEntries()
+			case <-d.stopCacheCleanup:
+				ticker.Stop()
+				return
+			}
+		}
+	}()
+}
+
+// StopCacheCleanup stops the background cache cleanup goroutine
+func (d *Detector) StopCacheCleanup() {
+	close(d.stopCacheCleanup)
+}
+
+// cleanupExpiredEntries removes expired entries from the cache
+func (d *Detector) cleanupExpiredEntries() {
+	d.cacheMu.Lock()
+	defer d.cacheMu.Unlock()
+
+	now := time.Now()
+	for signature, entry := range d.cache {
+		if now.Sub(entry.cachedAt) > d.cacheTTL {
+			delete(d.cache, signature)
+		}
+	}
 }

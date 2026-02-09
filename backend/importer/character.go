@@ -1,5 +1,10 @@
 package importer
 
+import (
+	"bamort/models"
+	"fmt"
+)
+
 // This file contains the character import data structures.
 // These were copied from the deprecated importero package to break dependencies.
 
@@ -192,4 +197,85 @@ type CharacterImport struct {
 	Waffenfertigkeiten []Waffenfertigkeit `json:"waffenfertigkeiten"`
 	Spezialisierung    []string           `json:"spezialisierung"`
 	Image              string             `json:"image,omitempty"`
+}
+
+// ConvertCharToImport converts a models.Char to CharacterImport format
+// This is used for the export functionality
+func ConvertCharToImport(char *models.Char) (*CharacterImport, error) {
+	if char == nil {
+		return nil, fmt.Errorf("character is nil")
+	}
+
+	// TODO: Implement full conversion from models.Char to CharacterImport
+	// For now, return a basic structure
+	charImport := &CharacterImport{
+		ID:   fmt.Sprintf("%d", char.ID),
+		Name: char.Name,
+		Typ:  char.Typ,
+		Grad: char.Grad,
+
+		// Basic attributes - TODO: Convert from char.Eigenschaften slice
+		Eigenschaften: Eigenschaften{},
+
+		// Life points
+		Lp: Lp{
+			Max:   char.Lp.Max,
+			Value: char.Lp.Value,
+		},
+
+		// Action points
+		Ap: Ap{
+			Max:   char.Ap.Max,
+			Value: char.Ap.Value,
+		},
+
+		// Movement
+		B: B{
+			Max:   char.B.Max,
+			Value: char.B.Value,
+		},
+
+		// Experience
+		Erfahrungsschatz: Erfahrungsschatz{
+			Value: char.Erfahrungsschatz.EP,
+		},
+
+		// Bennies
+		Bennies: Bennies{
+			Gg: char.Bennies.Gg,
+			Sg: char.Bennies.Sg,
+		},
+
+		// Physical attributes
+		Alter:   char.Alter,
+		Groesse: char.Groesse,
+		Gewicht: char.Gewicht,
+		Hand:    char.Hand,
+		Glaube:  char.Glaube,
+		Rasse:   char.Rasse,
+		Anrede:  char.Anrede,
+
+		// Appearance
+		Merkmale: Merkmale{
+			Augenfarbe: char.Merkmale.Augenfarbe,
+			Haarfarbe:  char.Merkmale.Haarfarbe,
+			Sonstige:   char.Merkmale.Sonstige,
+		},
+
+		Gestalt: Gestalt{
+			Breite:  char.Merkmale.Breite,
+			Groesse: char.Merkmale.Groesse,
+		},
+
+		// TODO: Load related data from database
+		// - Fertigkeiten (skills)
+		// - Zauber (spells)
+		// - Waffenfertigkeiten (weapon skills)
+		// - Ausruestung (equipment)
+		// - Waffen (weapons)
+		// - Behaeltnisse (containers)
+		// - Transportmittel (transportation)
+	}
+
+	return charImport, nil
 }

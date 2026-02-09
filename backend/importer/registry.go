@@ -36,9 +36,10 @@ func (m *AdapterMetadata) SupportsCapability(capability string) bool {
 
 // AdapterRegistry manages registered adapter services
 type AdapterRegistry struct {
-	adapters map[string]*AdapterMetadata
-	mu       sync.RWMutex
-	client   *http.Client
+	adapters          map[string]*AdapterMetadata
+	mu                sync.RWMutex
+	client            *http.Client
+	stopHealthChecker chan struct{}
 }
 
 // NewAdapterRegistry creates a new adapter registry
@@ -51,6 +52,7 @@ func NewAdapterRegistry() *AdapterRegistry {
 				return http.ErrUseLastResponse // Disable redirects for security
 			},
 		},
+		stopHealthChecker: make(chan struct{}),
 	}
 }
 
@@ -70,6 +72,28 @@ func (r *AdapterRegistry) Register(meta AdapterMetadata) error {
 	// Register/update the adapter
 	r.adapters[meta.ID] = &meta
 	return nil
+}
+
+// StartBackgroundHealthChecker starts a background goroutine that periodically checks adapter health
+// Runs every 30 seconds as specified in the plan
+func (r *AdapterRegistry) StartBackgroundHealthChecker() {
+	ticker := time.NewTicker(30 * time.Second)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				_ = r.HealthCheck() // Ignore errors, they're logged in adapter metadata
+			case <-r.stopHealthChecker:
+				ticker.Stop()
+				return
+			}
+		}
+	}()
+}
+
+// StopBackgroundHealthChecker stops the background health checker
+func (r *AdapterRegistry) StopBackgroundHealthChecker() {
+	close(r.stopHealthChecker)
 }
 
 // Get retrieves an adapter by ID

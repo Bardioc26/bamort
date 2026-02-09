@@ -90,6 +90,19 @@ func main() {
 		logger.Info("PDF-Templates erfolgreich initialisiert")
 	}
 
+	// Initialize import/export adapter registry
+	logger.Debug("Initialisiere Adapter-Registry...")
+	adapterRegistry := importer.NewAdapterRegistry()
+	importer.InitializeRegistry(adapterRegistry)
+
+	// Register adapters from config (if any)
+	// TODO: Load adapters from environment variable IMPORT_ADAPTERS
+	// For now, registry is empty and adapters can be registered manually
+
+	// Start background health checker (runs every 30s)
+	adapterRegistry.StartBackgroundHealthChecker()
+	logger.Info("Adapter-Registry erfolgreich initialisiert und Health-Checker gestartet")
+
 	r := gin.Default()
 	router.SetupGin(r)
 
@@ -103,6 +116,7 @@ func main() {
 	equipment.RegisterRoutes(protected)
 	maintenance.RegisterRoutes(protected)
 	importero.RegisterRoutes(protected)
+	importer.RegisterRoutes(protected) // New pluggable import/export system
 	pdfrender.RegisterRoutes(protected)
 	transfero.RegisterRoutes(protected)
 	appsystem.RegisterRoutes(protected)

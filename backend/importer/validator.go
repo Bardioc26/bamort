@@ -174,6 +174,7 @@ func (r *StatsRangeRule) Validate(char *BMRTCharacter) ValidationResult {
 
 // ReferentialIntegrityRule validates that referenced items exist
 // This is a placeholder - full implementation would check against game system master data
+// TODO: Implement actual referential checks against game system data
 type ReferentialIntegrityRule struct{}
 
 func (r *ReferentialIntegrityRule) Validate(char *BMRTCharacter) ValidationResult {

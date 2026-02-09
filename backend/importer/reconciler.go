@@ -35,6 +35,7 @@ func ReconcileSkillWithHistory(skill Fertigkeit, importHistoryID uint, gameSyste
 	}
 
 	// Create new personal item
+	// TODO: consider not to add this to the master data if it's not an exact match. check if we can support items that do not live in masterdata at all (e.g. by setting a flag and filtering them out in the UI)
 	newSkill := &models.Skill{
 		Name:             skill.Name,
 		GameSystem:       gs.Name,
@@ -84,6 +85,7 @@ func ReconcileWeaponSkillWithHistory(ws Waffenfertigkeit, importHistoryID uint, 
 	}
 
 	// Create new personal item
+	// TODO: consider not to add this to the master data if it's not an exact match. check if we can support items that do not live in masterdata at all (e.g. by setting a flag and filtering them out in the UI)
 	newWS := &models.WeaponSkill{
 		Skill: models.Skill{
 			Name:         ws.Name,
@@ -132,6 +134,7 @@ func ReconcileSpellWithHistory(spell Zauber, importHistoryID uint, gameSystem st
 	}
 
 	// Create new personal item
+	// TODO: consider not to add this to the master data if it's not an exact match. check if we can support items that do not live in masterdata at all (e.g. by setting a flag and filtering them out in the UI)
 	newSpell := &models.Spell{
 		Name:         spell.Name,
 		GameSystem:   gs.Name,
@@ -178,6 +181,7 @@ func ReconcileWeaponWithHistory(weapon Waffe, importHistoryID uint, gameSystem s
 	}
 
 	// Create new personal item
+	// TODO: consider not to add this to the master data if it's not an exact match. check if we can support items that do not live in masterdata at all (e.g. by setting a flag and filtering them out in the UI)
 	newWeapon := &models.Weapon{
 		Equipment: models.Equipment{
 			Name:         weapon.Name,
@@ -227,6 +231,7 @@ func ReconcileEquipmentWithHistory(equip Ausruestung, importHistoryID uint, game
 	}
 
 	// Create new personal item
+	// TODO: consider not to add this to the master data if it's not an exact match. check if we can support items that do not live in masterdata at all (e.g. by setting a flag and filtering them out in the UI)
 	newEquip := &models.Equipment{
 		Name:         equip.Name,
 		GameSystem:   gs.Name,
@@ -274,6 +279,7 @@ func ReconcileContainerWithHistory(container Behaeltniss, importHistoryID uint, 
 	}
 
 	// Create new personal item
+	// TODO: consider not to add this to the master data if it's not an exact match. check if we can support items that do not live in masterdata at all (e.g. by setting a flag and filtering them out in the UI)
 	newContainer := &models.Container{
 		Equipment: models.Equipment{
 			Name:         container.Name,

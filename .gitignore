@@ -27,3 +27,4 @@ go.work.sum
 *.bk
 
 export_chart/*
+backend/adapters/moam/tmp/adapter-moam

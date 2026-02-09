@@ -1,0 +1,48 @@
+# Builder stage - compile the Go application
+FROM golang:1.25-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache git
+
+# Set working directory
+WORKDIR /app
+
+# Copy entire backend directory to preserve module structure
+COPY backend/ .
+
+# Build the adapter (from adapters/moam directory)
+WORKDIR /app/adapters/moam
+RUN go mod download
+RUN go build -o adapter-moam .
+
+# Runtime stage - minimal image with just the binary
+FROM alpine:latest
+
+# Install ca-certificates for HTTPS support and wget for health checks
+RUN apk --no-cache add ca-certificates wget
+
+# Create non-root user for security
+RUN addgroup -g 1000 adapter && \
+    adduser -D -u 1000 -G adapter adapter
+
+# Set working directory
+WORKDIR /home/adapter
+
+# Copy binary from builder
+COPY --from=builder /app/adapters/moam/adapter-moam .
+
+# Change ownership of the binary
+RUN chown adapter:adapter adapter-moam
+
+# Switch to non-root user
+USER adapter
+
+# Expose port
+EXPOSE 8181
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8181/health || exit 1
+
+# Run the adapter
+CMD ["./adapter-moam"]

@@ -1,0 +1,26 @@
+# Development Dockerfile with live-reload using Air
+FROM golang:1.25-alpine
+
+# Install git for go mod and wget for health checks
+RUN apk add --no-cache git wget
+
+# Install Air for live reload
+RUN go install github.com/air-verse/air@latest
+
+# Set working directory
+WORKDIR /app
+
+# Copy backend code
+COPY backend/ .
+
+# Set working directory to adapter
+WORKDIR /app/adapters/moam
+
+# Download dependencies
+RUN go mod download
+
+# Expose port
+EXPOSE 8181
+
+# Air configuration will be passed via command or .air.toml
+CMD ["air", "-c", ".air.toml"]

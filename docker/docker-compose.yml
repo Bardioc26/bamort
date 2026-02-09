@@ -13,13 +13,34 @@ services:
       - DATABASE_URL=${MARIADB_USER:-bamort}:${MARIADB_PASSWORD:-secure_user_password}@tcp(mariadb:3306)/${MARIADB_DATABASE:-bamort}?charset=utf8mb4&parseTime=True&loc=Local
       - BASE_URL=${BASE_URL:-https://bamort.trokan.de}
       - API_PORT=${API_PORT:-8180}
+      - IMPORT_ADAPTERS=[{"id":"moam-vtt-v1","base_url":"http://adapter-moam:8181"}]
     depends_on:
       mariadb:
+        condition: service_healthy
+      adapter-moam:
         condition: service_healthy
     working_dir: /app
     volumes:
       - ./templates:/app/templates
     restart: unless-stopped
+
+  adapter-moam:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.adapter-moam
+    container_name: bamort-adapter-moam
+    ports:
+      - "8183:8181"
+    environment:
+      - PORT=8181
+      - GIN_MODE=release
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8181/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
 
   frontend:
     build:

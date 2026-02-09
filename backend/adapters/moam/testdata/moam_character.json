@@ -1,0 +1,139 @@
+{
+  "id": "moam-character-test-001",
+  "name": "Test Character",
+  "grad": 1,
+  "erfahrungsschatz": {
+    "value": 100
+  },
+  "spezialisierung": ["Langschwert"],
+  "anrede": "er",
+  "rasse": "Mensch",
+  "typ": "Krieger",
+  "groesse": 180,
+  "gewicht": 75,
+  "gestalt": {
+    "groesse": "mittel",
+    "breite": "normal"
+  },
+  "stand": "Bürger",
+  "alter": 25,
+  "glaube": "keine",
+  "lp": {
+    "value": 12,
+    "max": 12
+  },
+  "ap": {
+    "value": 20,
+    "max": 20
+  },
+  "b": {
+    "max": 15,
+    "value": 15
+  },
+  "hand": "rechts",
+  "merkmale": {
+    "haarfarbe": "braun",
+    "augenfarbe": "blau",
+    "sonstige": "Narbe über linkem Auge"
+  },
+  "eigenschaften": {
+    "st": 80,
+    "gs": 75,
+    "gw": 70,
+    "ko": 85,
+    "in": 65,
+    "zt": 60,
+    "pa": 55,
+    "au": 70,
+    "wk": 60
+  },
+  "bennies": {
+    "sg": 0,
+    "gg": 0,
+    "gp": 0
+  },
+  "fertigkeiten": [
+    {
+      "id": "moam-ability-horen",
+      "name": "Hören",
+      "fertigkeitswert": 6,
+      "quelle": "KOD5 99"
+    },
+    {
+      "id": "moam-ability-test-1",
+      "name": "Athletik",
+      "fertigkeitswert": 9,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": "",
+      "quelle": "KOD5 104"
+    }
+  ],
+  "waffenfertigkeiten": [
+    {
+      "id": "moam-ability-test-wf-1",
+      "name": "Einhandschlagwaffen",
+      "fertigkeitswert": 8,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": "",
+      "quelle": "KOD5 136"
+    }
+  ],
+  "zauber": [],
+  "waffen": [
+    {
+      "id": "moam-weapon-test-1",
+      "name": "Langschwert",
+      "nameFuerSpezialisierung": "Langschwert",
+      "beschreibung": "",
+      "gewicht": 1.5,
+      "wert": 50.0,
+      "anb": 0,
+      "schb": 1,
+      "abwb": 0,
+      "anzahl": 1,
+      "beinhaltet_in": "",
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    }
+  ],
+  "ausruestung": [
+    {
+      "id": "moam-armor-test-1",
+      "name": "Lederrüstung",
+      "beschreibung": "",
+      "gewicht": 13.0,
+      "wert": 30.0,
+      "bonus": 1,
+      "anzahl": 1,
+      "beinhaltet_in": "",
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    }
+  ],
+  "behaeltnisse": [
+    {
+      "id": "moam-container-test-1",
+      "name": "Rucksack",
+      "beschreibung": "für 20 kg",
+      "gewicht": 0.5,
+      "wert": 5.0,
+      "volumen": 20.0,
+      "tragkraft": 20.0,
+      "beinhaltet_in": "",
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    }
+  ],
+  "transportmittel": []
+}

@@ -3,9 +3,9 @@
 This plan creates a new `import` package as a full-featured, extensible import/export system using Docker-based adapter microservices. The canonical `CharacterImport` format (from importero) becomes the system-wide interchange format (BMRT-Format), and new external formats (starting with Foundry VTT) are handled by isolated adapter services. New master data is automatically flagged as personal items (house rules).
 
 **Revision Notes**:
-- This plan uses a NEW `import/` package (not extending importero)
+- This plan uses a NEW `importer/` package (not extending importero)
 - Incorporates comprehensive technical review feedback (security, transactions, health management)
-- All references to "importero as orchestration layer" are legacy - `import/` is the orchestration layer
+- All references to "importero as orchestration layer" are legacy - `importer/` is the orchestration layer
 
 **Key Decisions**:
 - Microservice architecture for adapters (Docker containers)
@@ -14,7 +14,7 @@ This plan creates a new `import` package as a full-featured, extensible import/e
 - Backend-only implementation (no Vue components)
 - Keep [transfero/](transfero/) untouched (BaMoRT-to-BaMoRT transfers)
 - Keep [importero/](importero/) untouched (legacy VTT/CSV imports)
-- Create new [import/](import/) package as the adapter orchestration layer
+- Create new [importer/](importer/) package as the adapter orchestration layer
 
 **Development Methodology**:
 - **Test Driven Development (TDD)**: Write failing tests first, then implement code to pass them
@@ -27,13 +27,13 @@ This plan creates a new `import` package as a full-featured, extensible import/e
 **Three Separate Concerns**:
 - **`transfero/`** - BaMoRT-to-BaMoRT lossless transfer (existing, untouched)
 - **`importero/`** - Legacy format handlers (VTT JSON, CSV) with direct imports (existing, untouched)
-- **`import/`** - NEW microservice adapter orchestration layer
+- **`importer/`** - NEW microservice adapter orchestration layer
 
 **Why Keep importero Separate**:
 - importero has working VTT/CSV imports that users depend on
 - importero converts directly to models.Char without adapter layer
-- import/ package uses importero.CharacterImport as the canonical format
-- No code duplication: import/ references importero types but doesn't modify them
+- importer/ package uses importero.CharacterImport as the canonical format
+- No code duplication: importer/ references importero types but doesn't modify them
 
 **Data Flow**:
 ```
@@ -43,7 +43,7 @@ Adapter Microservice
   ↓
 importero.CharacterImport (BMRT-Format)
   ↓
-import/ package handlers (validation, reconciliation)
+importer/ package handlers (validation, reconciliation)
   ↓
 models.Char
 ```
@@ -58,7 +58,7 @@ models.Char
 
 ### 1.1 Formalize BMRT-Format
 - Use [importero/model.go](importero/model.go) `CharacterImport` as the canonical interchange format (read-only)
-- Create [import/bmrt.go](import/bmrt.go) with JSON schema validation using `github.com/xeipuuv/gojsonschema`
+- Create [importer/bmrt.go](importer/bmrt.go) with JSON schema validation using `github.com/xeipuuv/gojsonschema`
 - Add `BmrtVersion` field to new wrapper struct (start at "1.0")
 - Add `SourceMetadata` struct to track original format, adapter ID, import timestamp
 - Reference `importero.CharacterImport` internally but don't modify importero package
@@ -113,7 +113,7 @@ import.RegisterRoutes(protected)
 ```
 
 ### 1.3 Adapter Service Registry
-Create [import/registry.go](import/registry.go):
+Create [importer/registry.go](importer/registry.go):
 
 ```go
 type AdapterMetadata struct {
@@ -142,7 +142,7 @@ func (r *AdapterRegistry) HealthCheck() error // Background health checker
 func (r *AdapterRegistry) GetHealthy() []*AdapterMetadata // Only healthy adapters
 ```
 
-Load adapters from config on startup ([import/routes.go](import/routes.go)):
+Load adapters from config on startup ([importer/routes.go](importer/routes.go)):
 - Environment variable `IMPORT_ADAPTERS` (JSON array of adapter configs)
 - Whitelist adapter base URLs for security (prevent SSRF)
 - Ping each adapter's `/metadata` endpoint to register
@@ -157,7 +157,7 @@ Load adapters from config on startup ([import/routes.go](import/routes.go)):
 - 3 retry attempts with exponential backoff
 
 ### 1.4 Format Detection
-Create [import/detector.go](import/detector.go):
+Create [importer/detector.go](importer/detector.go):
 
 ```go
 func DetectFormat(data []byte, filename string) (adapterID string, confidence float64, err error) {
@@ -180,7 +180,7 @@ type DetectionCache struct {
 ```
 
 ### 1.5 Validation Framework
-Create [import/validator.go](import/validator.go):
+Create [importer/validator.go](importer/validator.go):
 
 ```go
 type ValidationResult struct {
@@ -221,7 +221,7 @@ Register system-specific rules by `GameSystem` field
 Never block import on warnings (log only)
 
 ### 1.6 Master Data Reconciliation
-Create [import/reconciler.go](import/reconciler.go) with new reconciliation functions (similar to importero's approach but independent):
+Create [importer/reconciler.go](importer/reconciler.go) with new reconciliation functions (similar to importero's approach but independent):
 
 ```go
 func ReconcileSkill(skill Fertigkeit, importHistoryID uint) (*models.Skill, string, error) {
@@ -258,9 +258,235 @@ func ImportCharacter(char *importero.CharacterImport, userID uint, adapterID str
 }
 ```
 
+### 1.7 Security Middleware
+Create [importer/security.go](importer/security.go):
+
+**Rate Limiting Middleware**:
+```go
+import (
+    "sync"
+    "time"
+    "github.com/gin-gonic/gin"
+)
+
+type RateLimiter struct {
+    requests map[uint][]time.Time  // userID -> request timestamps
+    mu       sync.RWMutex
+    limit    int                    // requests per window
+    window   time.Duration          // time window
+}
+
+func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
+    return &RateLimiter{
+        requests: make(map[uint][]time.Time),
+        limit:    limit,
+        window:   window,
+    }
+}
+
+func (rl *RateLimiter) Middleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        userID := getUserID(c) // Extract from JWT token
+        
+        rl.mu.Lock()
+        defer rl.mu.Unlock()
+        
+        now := time.Now()
+        cutoff := now.Add(-rl.window)
+        
+        // Remove expired timestamps
+        timestamps := rl.requests[userID]
+        valid := make([]time.Time, 0)
+        for _, t := range timestamps {
+            if t.After(cutoff) {
+                valid = append(valid, t)
+            }
+        }
+        
+        // Check limit
+        if len(valid) >= rl.limit {
+            c.JSON(429, gin.H{
+                "error": "Rate limit exceeded",
+                "retry_after": rl.window.Seconds(),
+            })
+            c.Abort()
+            return
+        }
+        
+        // Add current request
+        valid = append(valid, now)
+        rl.requests[userID] = valid
+        
+        c.Next()
+    }
+}
+```
+
+**Input Validation Middleware**:
+```go
+import (
+    "bytes"
+    "encoding/json"
+    "io"
+)
+
+// ValidateFileSizeMiddleware limits upload file size
+func ValidateFileSizeMiddleware(maxSize int64) gin.HandlerFunc {
+    return func(c *gin.Context) {
+        c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxSize)
+        c.Next()
+    }
+}
+
+// ValidateJSONDepth prevents deeply nested JSON attacks
+func ValidateJSONDepth(data []byte, maxDepth int) error {
+    var depth int
+    decoder := json.NewDecoder(bytes.NewReader(data))
+    decoder.UseNumber() // Prevent float precision issues
+    
+    for {
+        token, err := decoder.Token()
+        if err == io.EOF {
+            break
+        }
+        if err != nil {
+            return err
+        }
+        
+        switch token {
+        case json.Delim('{'), json.Delim('['):
+            depth++
+            if depth > maxDepth {
+                return fmt.Errorf("JSON depth exceeds maximum of %d levels", maxDepth)
+            }
+        case json.Delim('}'), json.Delim(']'):
+            depth--
+        }
+    }
+    
+    return nil
+}
+```
+
+**SSRF Protection**:
+```go
+import (
+    "net/url"
+    "strings"
+)
+
+type SSRFProtection struct {
+    allowedHosts []string  // Whitelist of adapter hosts
+}
+
+func NewSSRFProtection(allowedHosts []string) *SSRFProtection {
+    return &SSRFProtection{allowedHosts: allowedHosts}
+}
+
+func (s *SSRFProtection) ValidateURL(rawURL string) error {
+    parsed, err := url.Parse(rawURL)
+    if err != nil {
+        return fmt.Errorf("invalid URL: %w", err)
+    }
+    
+    // Block redirects to internal networks
+    if isInternalIP(parsed.Host) {
+        return fmt.Errorf("internal network access forbidden")
+    }
+    
+    // Check whitelist
+    allowed := false
+    for _, host := range s.allowedHosts {
+        if strings.HasPrefix(parsed.Host, host) {
+            allowed = true
+            break
+        }
+    }
+    
+    if !allowed {
+        return fmt.Errorf("host %s not in whitelist", parsed.Host)
+    }
+    
+    return nil
+}
+
+func isInternalIP(host string) bool {
+    // Remove port if present
+    if idx := strings.LastIndex(host, ":"); idx != -1 {
+        host = host[:idx]
+    }
+    
+    internal := []string{
+        "localhost",
+        "127.",
+        "10.",
+        "172.16.", "172.17.", "172.18.", "172.19.", 
+        "172.20.", "172.21.", "172.22.", "172.23.",
+        "172.24.", "172.25.", "172.26.", "172.27.",
+        "172.28.", "172.29.", "172.30.", "172.31.",
+        "192.168.",
+        "169.254.", // Link-local
+    }
+    
+    for _, prefix := range internal {
+        if strings.HasPrefix(host, prefix) {
+            return true
+        }
+    }
+    
+    return false
+}
+```
+
+**HTTP Client with Security Settings**:
+```go
+import (
+    "net/http"
+    "time"
+)
+
+func NewSecureHTTPClient(timeout time.Duration) *http.Client {
+    return &http.Client{
+        Timeout: timeout,
+        CheckRedirect: func(req *http.Request, via []*http.Request) error {
+            return http.ErrUseLastResponse // Disable redirects
+        },
+        Transport: &http.Transport{
+            MaxIdleConns:        10,
+            MaxIdleConnsPerHost: 2,
+            IdleConnTimeout:     30 * time.Second,
+            DisableKeepAlives:   false,
+            DisableCompression:  false,
+        },
+    }
+}
+```
+
+**Usage in Routes**:
+```go
+func RegisterRoutes(r *gin.RouterGroup) {
+    // Rate limiters
+    detectLimiter := NewRateLimiter(10, time.Minute)      // 10/min
+    importLimiter := NewRateLimiter(5, time.Minute)       // 5/min
+    exportLimiter := NewRateLimiter(20, time.Minute)      // 20/min
+    
+    // File size limit (10MB)
+    maxFileSize := int64(10 << 20)
+    
+    importer := r.Group("/import")
+    importer.Use(ValidateFileSizeMiddleware(maxFileSize))
+    
+    importer.POST("/detect", detectLimiter.Middleware(), DetectHandler)
+    importer.POST("/import", importLimiter.Middleware(), ImportHandler)
+    importer.POST("/export/:id", exportLimiter.Middleware(), ExportHandler)
+    importer.GET("/adapters", ListAdaptersHandler)
+    importer.GET("/history", ImportHistoryHandler)
+}
+```
+
 ## 2. API Endpoints (Backend)
 
-Create [import/routes.go](import/routes.go):
+Create [importer/routes.go](importer/routes.go):
 
 ```go
 func RegisterRoutes(r *gin.RouterGroup) {
@@ -288,7 +514,7 @@ type ImportResult struct {
 }
 ```
 
-**Handler Implementations** in [import/handlers.go](import/handlers.go):
+**Handler Implementations** in [importer/handlers.go](importer/handlers.go):
 
 **DetectHandler**:
 - Accept multipart file upload
@@ -502,9 +728,9 @@ func exportChar(c *gin.Context) {
 - Map Foundry features → BMRT skills
 - Preserve unmapped fields in `CharacterImport.Extensions["foundry"]`
 
-**Extensions Field** (add to importero.CharacterImport via wrapper in import/bmrt.go):
+**Extensions Field** (add to importero.CharacterImport via wrapper in importer/bmrt.go):
 ```go
-// Wrapper in import/bmrt.go
+// Wrapper in importer/bmrt.go
 type BMRTCharacter struct {
     importero.CharacterImport
     BmrtVersion string                         `json:"bmrt_version"`
@@ -552,17 +778,17 @@ bamort-backend-dev:
 ## 5. Testing Strategy
 
 ### 5.1 Unit Tests
-Create [import/registry_test.go](import/registry_test.go):
+Create [importer/registry_test.go](importer/registry_test.go):
 - Test adapter registration
 - Test detection with multiple adapters
 - Mock HTTP responses using `httptest`
 
-Create [import/validator_test.go](import/validator_test.go):
+Create [importer/validator_test.go](importer/validator_test.go):
 - Test each validation rule
 - Test warning vs error distinction
 
 ### 5.2 Integration Tests
-Create [import/integration_test.go](import/integration_test.go):
+Create [importer/integration_test.go](importer/integration_test.go):
 - Use `testutils.SetupTestDB()`
 - Test full import flow with mock adapter
 - Verify `ImportHistory` created
@@ -586,9 +812,9 @@ Create [backend/api/import_e2e_test.go](backend/api/import_e2e_test.go):
 ## 6. Documentation
 
 ### 6.0 New Package Structure
-The new `import/` package will contain:
+The new `importer/` package will contain:
 ```
-backend/import/
+backend/importer/
   ├── routes.go          # Route registration
   ├── handlers.go        # HTTP handlers
   ├── registry.go        # Adapter registry
@@ -604,7 +830,7 @@ backend/import/
 
 ### 6.1 Update Files
 - [backend/PlanNewFeature.md](backend/PlanNewFeature.md) → Mark as "Implemented, see IMPORT_EXPORT_GUIDE.md"
-- Create `backend/import/README.md` with package overview and architecture
+- Create `backend/importer/README.md` with package overview and architecture
 - Create `backend/IMPORT_EXPORT_GUIDE.md` with full system architecture
 - Create `backend/adapters/ADAPTER_DEVELOPMENT.md` with adapter creation guide
 - Update [docker/SERVICES_REFERENCE.md](docker/SERVICES_REFERENCE.md) with adapter services
@@ -627,7 +853,7 @@ Generate docs with `swag init`
 - JSON validation: max depth 100 levels
 - HTTP client security:
   - Disable redirects
-  - Short timeouts (2s detect, 30s import/export)
+  - Short timeouts (2s detect, 30s importer/export)
   - Connection pooling with limits
 
 ### 7.2 Monitoring
@@ -668,7 +894,7 @@ Generate docs with `swag init`
 1. Start dev environment: `cd docker && ./start-dev.sh`
 2. Verify adapter container running: `docker ps | grep bamort-adapter-foundry`
 3. Check adapter metadata: `curl http://localhost:8181/metadata`
-4. Run backend tests: `cd backend && go test ./import/... -v`
+4. Run backend tests: `cd backend && go test ./importer/... -v`
 5. Run adapter tests: `go test ./adapters/foundry/... -v`
 6. Upload test character: `curl -F "file=@testdata/foundry_sample.json" http://localhost:8180/api/import/import -H "Authorization: Bearer <token>"`
 7. Verify character created in database via phpMyAdmin
@@ -750,7 +976,7 @@ For each component:
 ### Phase 1: Core Infrastructure (Week 1-2)
 **TDD Workflow**: Write tests for each component before implementation
 
-- Create new `import/` package structure
+- Create new `importer/` package structure
 - Database migrations (ImportHistory, MasterDataImport tables + Char provenance fields)
 - Adapter registry with HTTP client (health checks, version negotiation)
 - Smart format detection with short-circuit optimization
@@ -799,7 +1025,7 @@ For each component:
 ## Success Criteria
 
 ### Functional Requirements
-- [ ] New `import/` package created with all modules
+- [ ] New `importer/` package created with all modules
 - [ ] importero and transfero packages remain untouched (backwards compatibility)
 - [ ] Foundry VTT characters import successfully via microservice adapter
 - [ ] Round-trip export produces valid Foundry JSON
@@ -883,6 +1109,6 @@ This plan has been validated against production requirements and incorporates:
 
 ### Implementation Risk: **LOW**
 - 70% of infrastructure exists (models, database, test framework)
-- New `import/` package is isolated (no regression risk)
+- New `importer/` package is isolated (no regression risk)
 - Microservice isolation contains adapter failures
 - Comprehensive testing strategy defined

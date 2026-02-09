@@ -61,6 +61,7 @@ type Skill struct {
 	InnateSkill      bool   `json:"innateskill"`
 	Category         string `json:"category"`
 	Difficulty       string `json:"difficulty"`
+	PersonalItem     bool   `gorm:"default:false" json:"personal_item"` // House rule / custom item
 }
 
 type WeaponSkill struct {
@@ -88,6 +89,7 @@ type Spell struct {
 	Ursprung         string `json:"ursprung"`
 	Category         string `gorm:"default:normal" json:"category"` // spell_school
 	LearningCategory string `gorm:"type:varchar(25);index" json:"learning_category"`
+	PersonalItem     bool   `gorm:"default:false" json:"personal_item"` // House rule / custom item
 }
 
 type Equipment struct {

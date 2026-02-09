@@ -7,6 +7,7 @@ import (
 	"bamort/database"
 	"bamort/equipment"
 	"bamort/gsmaster"
+	"bamort/importer"
 	"bamort/importero"
 	"bamort/logger"
 	"bamort/maintenance"
@@ -59,6 +60,17 @@ func main() {
 	logger.Debug("Verbinde mit Datenbank...")
 	database.ConnectDatabase()
 	logger.Info("Datenbankverbindung erfolgreich")
+
+	// Run database migrations
+	logger.Debug("Führe Datenbank-Migrationen aus...")
+	if err := database.MigrateStructure(); err != nil {
+		logger.Error("Fehler bei Datenbank-Migrationen: %s", err.Error())
+	}
+	if err := importer.MigrateStructure(database.DB); err != nil {
+		logger.Error("Fehler bei Importer-Migrationen: %s", err.Error())
+	} else {
+		logger.Info("Datenbank-Migrationen erfolgreich")
+	}
 
 	/*
 		// Populate initial misc lookup data

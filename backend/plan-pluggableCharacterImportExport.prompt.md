@@ -1,6 +1,6 @@
 # Plan: Pluggable Character Import/Export with Microservice Adapters
 
-This plan creates a new `import` package as a full-featured, extensible import/export system using Docker-based adapter microservices. The canonical `CharacterImport` format (from importero) becomes the system-wide interchange format (BMRT-Format), and new external formats (starting with Foundry VTT) are handled by isolated adapter services. New master data is automatically flagged as personal items (house rules).
+This plan creates a new `import` package as a full-featured, extensible import/export system using Docker-based adapter microservices. The canonical `CharacterImport` format (from importero) becomes the system-wide interchange format (BMRT-Format), and new external formats (starting with Moam VTT) are handled by isolated adapter services. New master data is automatically flagged as personal items (house rules).
 
 **Revision Notes**:
 - This plan uses a NEW `importer/` package (not extending importero)
@@ -10,7 +10,7 @@ This plan creates a new `import` package as a full-featured, extensible import/e
 **Key Decisions**:
 - Microservice architecture for adapters (Docker containers)
 - Auto-flag imported master data as personal items
-- Foundry VTT JSON as first format
+- Moam VTT JSON as first format
 - Backend-only implementation (no Vue components)
 - Keep [transfero/](transfero/) untouched (BaMoRT-to-BaMoRT transfers)
 - Keep [importero/](importero/) untouched (legacy VTT/CSV imports)
@@ -37,7 +37,7 @@ This plan creates a new `import` package as a full-featured, extensible import/e
 
 **Data Flow**:
 ```
-External Format (Foundry VTT)
+External Format (Moam VTT)
   ↓
 Adapter Microservice
   ↓
@@ -71,8 +71,8 @@ type ImportHistory struct {
     ID              uint   `gorm:"primaryKey"`
     UserID          uint   `gorm:"not null;index"`
     CharacterID     uint   `gorm:"index"`
-    AdapterID       string `gorm:"type:varchar(100);not null"` // "foundry-vtt-v1"
-    SourceFormat    string `gorm:"type:varchar(50)"`           // "foundry-vtt"
+    AdapterID       string `gorm:"type:varchar(100);not null"` // "moam-vtt-v1"
+    SourceFormat    string `gorm:"type:varchar(50)"`           // "moam-vtt"
     SourceFilename  string
     SourceSnapshot  []byte `gorm:"type:MEDIUMBLOB"`            // Original file (gzip compressed)
     MappingSnapshot []byte `gorm:"type:JSON"`                  // Adapter->BMRT mappings
@@ -117,12 +117,12 @@ Create [importer/registry.go](importer/registry.go):
 
 ```go
 type AdapterMetadata struct {
-    ID                  string   // "foundry-vtt-v1"
-    Name                string   // "Foundry VTT Character"
+    ID                  string   // "moam-vtt-v1"
+    Name                string   // "Moam VTT Character"
     Version             string   // "1.0"
     BmrtVersions        []string // ["1.0"] - supported BMRT versions
     SupportedExtensions []string // [".json"]
-    BaseURL             string   // "http://adapter-foundry:8181"
+    BaseURL             string   // "http://adapter-moam:8181"
     Capabilities        []string // ["import", "export", "detect"]
     Healthy             bool     // Runtime health status
     LastCheckedAt       time.Time
@@ -579,8 +579,8 @@ All adapter services must implement:
 **GET `/metadata`**
 ```json
 {
-  "id": "foundry-vtt-v1",
-  "name": "Foundry VTT Character",
+  "id": "moam-vtt-v1",
+  "name": "Moam VTT Character",
   "version": "1.0",
   "bmrt_versions": ["1.0"],
   "supported_extensions": [".json"],
@@ -609,24 +609,24 @@ All adapter services must implement:
 All adapter calls have 30-second timeout
 Retry logic: 3 attempts with exponential backoff
 
-## 4. Foundry VTT Adapter Service (First Implementation)
+## 4. Moam VTT Adapter Service (First Implementation)
 
 ### 4.1 Docker Service
-Create `docker/Dockerfile.adapter-foundry`:
+Create `docker/Dockerfile.adapter-moam`:
 ```dockerfile
 FROM golang:1.25-alpine AS builder
 WORKDIR /app
-COPY backend/adapters/foundry/ .
-RUN go build -o adapter-foundry .
+COPY backend/adapters/moam/ .
+RUN go build -o adapter-moam .
 
 FROM alpine:latest
-COPY --from=builder /app/adapter-foundry /adapter-foundry
+COPY --from=builder /app/adapter-moam /adapter-moam
 EXPOSE 8181
-CMD ["/adapter-foundry"]
+CMD ["/adapter-moam"]
 ```
 
 ### 4.2 Service Code
-Create [backend/adapters/foundry/main.go](backend/adapters/foundry/main.go):
+Create [backend/adapters/moam/main.go](backend/adapters/moam/main.go):
 
 ```go
 package main
@@ -637,20 +637,20 @@ import (
     "bamort/import"     // Import BMRT wrapper and registry
 )
 
-type FoundryCharacter struct {
+type MoamCharacter struct {
     Name   string `json:"name"`
     System struct {
         Abilities map[string]struct {
             Value int `json:"value"`
         } `json:"abilities"`
-        // ... Foundry schema
+        // ... Moam schema
     } `json:"system"`
 }
 
 func metadata(c *gin.Context) {
     c.JSON(200, gin.H{
-        "id": "foundry-vtt-v1",
-        "name": "Foundry VTT Character",
+        "id": "moam-vtt-v1",
+        "name": "Moam VTT Character",
         "version": "1.0",
         "supported_extensions": []string{".json"},
         "capabilities": []string{"import", "export", "detect"},
@@ -664,15 +664,15 @@ func detect(c *gin.Context) {
         return
     }
     
-    // Parse JSON, check for Foundry-specific fields
-    var foundry FoundryCharacter
-    if err := json.Unmarshal(data, &foundry); err != nil {
+    // Parse JSON, check for Moam-specific fields
+    var moam MoamCharacter
+    if err := json.Unmarshal(data, &moam); err != nil {
         c.JSON(200, gin.H{"confidence": 0.0})
         return
     }
     
-    confidence := calculateConfidence(foundry)
-    c.JSON(200, gin.H{"confidence": confidence, "version": detectVersion(foundry)})
+    confidence := calculateConfidence(moam)
+    c.JSON(200, gin.H{"confidence": confidence, "version": detectVersion(moam)})
 }
 
 func importChar(c *gin.Context) {
@@ -682,14 +682,14 @@ func importChar(c *gin.Context) {
         return
     }
     
-    var foundry FoundryCharacter
-    if err := json.Unmarshal(data, &foundry); err != nil {
-        c.JSON(422, gin.H{"error": "invalid Foundry JSON format"})
+    var moam MoamCharacter
+    if err := json.Unmarshal(data, &moam); err != nil {
+        c.JSON(422, gin.H{"error": "invalid Moam JSON format"})
         return
     }
     
     // Convert to importero.CharacterImport (BMRT-Format)
-    bmrt, err := toBMRT(foundry)
+    bmrt, err := toBMRT(moam)
     if err != nil {
         c.JSON(422, gin.H{"error": err.Error()})
         return
@@ -711,22 +711,22 @@ func exportChar(c *gin.Context) {
         return
     }
     
-    // Convert back to Foundry format
-    foundry, err := fromBMRT(bmrt)
+    // Convert back to Moam format
+    moam, err := fromBMRT(bmrt)
     if err != nil {
         c.JSON(422, gin.H{"error": err.Error()})
         return
     }
     
-    c.JSON(200, foundry)
+    c.JSON(200, moam)
 }
 ```
 
 ### 4.3 Conversion Logic
-- Map Foundry abilities → BMRT stats (St, Gw, In...)
-- Map Foundry items → BMRT equipment
-- Map Foundry features → BMRT skills
-- Preserve unmapped fields in `CharacterImport.Extensions["foundry"]`
+- Map Moam abilities → BMRT stats (St, Gw, In...)
+- Map Moam items → BMRT equipment
+- Map Moam features → BMRT skills
+- Preserve unmapped fields in `CharacterImport.Extensions["moam"]`
 
 **Extensions Field** (add to importero.CharacterImport via wrapper in importer/bmrt.go):
 ```go
@@ -745,8 +745,8 @@ type SourceMetadata struct {
 }
 ```
 
-**Foundry Version Detection**:
-- Declare supported Foundry versions: "10.x", "11.x", "12.x"
+**Moam Version Detection**:
+- Declare supported Moam versions: "10.x", "11.x", "12.x"
 - Add version-specific conversion logic
 - Return version info in `/detect` response
 
@@ -754,11 +754,11 @@ type SourceMetadata struct {
 Add to [docker/docker-compose.dev.yml](docker/docker-compose.dev.yml):
 
 ```yaml
-adapter-foundry:
+adapter-moam:
   build:
     context: ../
-    dockerfile: docker/Dockerfile.adapter-foundry
-  container_name: bamort-adapter-foundry-dev
+    dockerfile: docker/Dockerfile.adapter-moam
+  container_name: bamort-adapter-moam-dev
   ports:
     - "8181:8181"
   networks:
@@ -772,7 +772,7 @@ Update backend environment to register adapter:
 ```yaml
 bamort-backend-dev:
   environment:
-    - IMPORT_ADAPTERS=[{"id":"foundry-vtt-v1","base_url":"http://adapter-foundry:8181"}]
+    - IMPORT_ADAPTERS=[{"id":"moam-vtt-v1","base_url":"http://adapter-moam:8181"}]
 ```
 
 ## 5. Testing Strategy
@@ -796,17 +796,17 @@ Create [importer/integration_test.go](importer/integration_test.go):
 - Test character creation
 
 ### 5.3 Adapter Tests
-Create [backend/adapters/foundry/adapter_test.go](backend/adapters/foundry/adapter_test.go):
-- Golden file tests: `testdata/foundry_character.json` → BMRT → compare
-- Round-trip tests: Foundry → BMRT → Foundry (structural equality)
+Create [backend/adapters/moam/adapter_test.go](backend/adapters/moam/adapter_test.go):
+- Golden file tests: `testdata/moam_character.json` → BMRT → compare
+- Round-trip tests: Moam → BMRT → Moam (structural equality)
 - Detection tests with sample files
 
 ### 5.4 End-to-End Tests
 Create [backend/api/import_e2e_test.go](backend/api/import_e2e_test.go):
 - Start real adapter service in Docker
-- Upload Foundry character via API
+- Upload Moam character via API
 - Verify character created
-- Verify export produces valid Foundry JSON
+- Verify export produces valid Moam JSON
 - Use `docker-compose -f docker/docker-compose.test.yml` with test services
 
 ## 6. Documentation
@@ -892,11 +892,11 @@ Generate docs with `swag init`
 
 ### Step-by-Step Testing
 1. Start dev environment: `cd docker && ./start-dev.sh`
-2. Verify adapter container running: `docker ps | grep bamort-adapter-foundry`
+2. Verify adapter container running: `docker ps | grep bamort-adapter-moam`
 3. Check adapter metadata: `curl http://localhost:8181/metadata`
 4. Run backend tests: `cd backend && go test ./importer/... -v`
-5. Run adapter tests: `go test ./adapters/foundry/... -v`
-6. Upload test character: `curl -F "file=@testdata/foundry_sample.json" http://localhost:8180/api/import/import -H "Authorization: Bearer <token>"`
+5. Run adapter tests: `go test ./adapters/moam/... -v`
+6. Upload test character: `curl -F "file=@testdata/moam_sample.json" http://localhost:8180/api/import/import -H "Authorization: Bearer <token>"`
 7. Verify character created in database via phpMyAdmin
 8. Check `ImportHistory` table populated
 9. Export character: `curl http://localhost:8180/api/import/export/1 -H "Authorization: Bearer <token>" -o exported.json`
@@ -913,7 +913,7 @@ SELECT * FROM skills WHERE personal_item = true;
 
 - **Microservice vs Monolith**: Chose microservices for adapters despite added complexity, enables language-agnostic adapters and crash isolation
 - **Master Data Handling**: Auto-flag as personal items (no approval workflow) to avoid blocking imports
-- **Format Priority**: Foundry VTT first, enables testing of full architecture before adding more formats
+- **Format Priority**: Moam VTT first, enables testing of full architecture before adding more formats
 - **Frontend Scope**: Backend-only to establish stable API before UI/UX work
 - **BMRT-Format**: Use existing `CharacterImport` from importero as base format, reduces refactoring
 - **Package Separation**: Keep both transfero and importero untouched, create new import package for microservice architecture
@@ -995,7 +995,7 @@ For each component:
 - Background health checker
 - Detection cache implementation
 
-### Phase 3: Foundry Adapter (Week 3-4)
+### Phase 3: Moam Adapter (Week 3-4)
 - Docker service setup
 - Conversion logic
 - Round-trip testing
@@ -1027,8 +1027,8 @@ For each component:
 ### Functional Requirements
 - [ ] New `importer/` package created with all modules
 - [ ] importero and transfero packages remain untouched (backwards compatibility)
-- [ ] Foundry VTT characters import successfully via microservice adapter
-- [ ] Round-trip export produces valid Foundry JSON
+- [ ] Moam VTT characters import successfully via microservice adapter
+- [ ] Round-trip export produces valid Moam JSON
 - [ ] Personal items flagged automatically
 - [ ] ImportHistory tracks all imports with compressed snapshots
 - [ ] Adapters run in isolated Docker containers

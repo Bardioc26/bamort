@@ -1,21 +1,13 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
+// importerMigrateStructure is a placeholder - actual importer migrations
+// are now handled by the importer package itself via importer.MigrateStructure()
+// which is called from cmd/main.go after models.MigrateStructure()
 func importerMigrateStructure(db ...*gorm.DB) error {
-	// Use provided DB or default to database.DB
-	// var targetDB *gorm.DB
-	// if len(db) > 0 && db[0] != nil {
-	// 	targetDB = db[0]
-	// } else {
-	// 	targetDB = database.DB
-	// }
-
-	/*
-		err := targetDB.AutoMigrate()
-		if err != nil {
-			return err
-		}
-	*/
+	// No longer needed - migrations handled by importer package
 	return nil
 }

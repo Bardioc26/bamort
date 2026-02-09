@@ -38,10 +38,8 @@ func MigrateStructure(db ...*gorm.DB) error {
 	if err != nil {
 		return err
 	}
-	err = importerMigrateStructure(targetDB)
-	if err != nil {
-		return err
-	}
+	// NOTE: importer package migrations are handled separately via importer.MigrateStructure()
+	// This is called from cmd/main.go to avoid import cycles
 	err = learningMigrateStructure(targetDB)
 	if err != nil {
 		return err

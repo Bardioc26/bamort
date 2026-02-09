@@ -4,6 +4,7 @@ import (
 	"bamort/database"
 	"bamort/user"
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -116,6 +117,9 @@ type Char struct {
 	Transportmittel    []EqContainer        `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"transportmittel"`
 	Ausruestung        []EqAusruestung      `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"ausruestung"`
 	Image              string               `json:"image,omitempty"`
+	// Import provenance tracking
+	ImportedFromAdapter *string    `gorm:"type:varchar(100)" json:"imported_from_adapter,omitempty"` // e.g., "foundry-vtt-v1"
+	ImportedAt          *time.Time `json:"imported_at,omitempty"`
 }
 type CharList struct {
 	BamortBase

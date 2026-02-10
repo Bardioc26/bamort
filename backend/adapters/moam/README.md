@@ -8,7 +8,7 @@ The Moam VTT adapter is a microservice that:
 - Detects Moam VTT JSON character files
 - Converts Moam VTT format to BMRT (BaMoRT interchange format)
 - Exports BMRT format back to Moam VTT format
-- Supports Moam game versions: 10.x, 11.x, 12.x
+- Supports Moam game versions: 5.x
 
 ## Architecture
 
@@ -37,7 +37,7 @@ Returns adapter capabilities and version information.
   "version": "1.0",
   "bmrt_versions": ["1.0"],
   "supported_extensions": [".json"],
-  "supported_game_versions": ["10.x", "11.x", "12.x"],
+  "supported_game_versions": ["4.x", "5.x", "6.x"],
   "capabilities": ["import", "export", "detect"]
 }
 ```
@@ -51,7 +51,7 @@ Analyzes JSON data and returns confidence score (0.0 to 1.0).
 ```json
 {
   "confidence": 0.95,
-  "version": "10.x"
+  "version": "5.x"
 }
 ```
 
@@ -199,7 +199,7 @@ The backend's `importer` package:
 
 ### Planned Features
 1. **Extensions Support**: Preserve Moam-specific fields (like `Stand`) in BMRT `Extensions` field
-2. **Version Detection**: Better detection of specific Moam versions (10.x vs 11.x vs 12.x)
+2. **Version Detection**: Better detection of specific Moam versions (5.x vs 4.x vs 6.x)
 3. **Validation**: Deeper validation of Moam-specific business rules
 4. **Error Details**: More detailed error messages with field-level feedback
 

@@ -80,7 +80,7 @@ func metadataHandler(c *gin.Context) {
 		Version:             "1.0",
 		BmrtVersions:        []string{"1.0"},
 		SupportedExtensions: []string{".json"},
-		SupportedVersions:   []string{"10.x", "11.x", "12.x"},
+		SupportedVersions:   []string{"5.x"},
 		Capabilities:        []string{"import", "export", "detect"},
 	}
 
@@ -186,7 +186,7 @@ func detectMoamFormat(data []byte) (float64, string) {
 	if id, ok := raw["id"].(string); ok {
 		if strings.HasPrefix(id, "moam-character-") {
 			confidence += 0.3
-			version = "10.x" // Default version, could be refined
+			version = "5.x" // Default version, could be refined
 		}
 	}
 

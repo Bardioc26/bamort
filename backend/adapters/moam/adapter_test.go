@@ -22,7 +22,7 @@ func TestDetectMoamFormat(t *testing.T) {
 	}
 
 	// Should detect version (can be empty for generic detection)
-	if version != "10.x" && version != "" {
+	if version != "5.x" && version != "" {
 		t.Logf("Detected version: %s", version)
 	}
 }

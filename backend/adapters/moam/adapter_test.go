@@ -2,10 +2,14 @@ package main
 
 import (
 	"bamort/importer"
+	"bytes"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -975,4 +979,261 @@ func TestImageTransfer(t *testing.T) {
 	// Verify image survived round-trip
 	assert.Equal(t, dorinBmrt.Image, convertedMoam.Image, "Image should be preserved in round-trip conversion")
 	assert.NotEmpty(t, convertedMoam.Image, "Round-trip image should not be empty")
+}
+
+// setupRouter creates a test router with all endpoints
+func setupRouter() *gin.Engine {
+	gin.SetMode(gin.TestMode)
+	r := gin.Default()
+	r.GET("/metadata", metadataHandler)
+	r.POST("/detect", detectHandler)
+	r.POST("/import", importHandler)
+	r.POST("/export", exportHandler)
+	r.GET("/health", healthHandler)
+	return r
+}
+
+// TestMetadataEndpoint verifies the /metadata endpoint returns correct adapter information
+func TestMetadataEndpoint(t *testing.T) {
+	router := setupRouter()
+
+	req, _ := http.NewRequest("GET", "/metadata", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code, "Metadata endpoint should return 200 OK")
+
+	var metadata AdapterMetadata
+	err := json.Unmarshal(w.Body.Bytes(), &metadata)
+	assert.NoError(t, err, "Should parse metadata JSON")
+
+	// Verify metadata fields
+	assert.Equal(t, "moam-vtt-v1", metadata.ID, "Adapter ID mismatch")
+	assert.Equal(t, "Moam VTT Character", metadata.Name, "Adapter name mismatch")
+	assert.Equal(t, "1.0", metadata.Version, "Adapter version mismatch")
+	assert.Contains(t, metadata.BmrtVersions, "1.0", "Should support BMRT version 1.0")
+	assert.Contains(t, metadata.SupportedExtensions, ".json", "Should support .json extension")
+	assert.Contains(t, metadata.SupportedVersions, "5.x", "Should support game version 5.x")
+	assert.Contains(t, metadata.Capabilities, "import", "Should have import capability")
+	assert.Contains(t, metadata.Capabilities, "export", "Should have export capability")
+	assert.Contains(t, metadata.Capabilities, "detect", "Should have detect capability")
+	assert.NotEmpty(t, metadata.Description, "Should have description")
+}
+
+// TestHealthEndpoint verifies the /health endpoint returns healthy status
+func TestHealthEndpoint(t *testing.T) {
+	router := setupRouter()
+
+	req, _ := http.NewRequest("GET", "/health", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code, "Health endpoint should return 200 OK")
+
+	var response map[string]string
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err, "Should parse health JSON")
+	assert.Equal(t, "healthy", response["status"], "Status should be 'healthy'")
+}
+
+// TestDetectEndpoint verifies the /detect endpoint correctly identifies MOAM format
+func TestDetectEndpoint(t *testing.T) {
+	router := setupRouter()
+
+	testCases := []struct {
+		name               string
+		filename           string
+		expectedConfidence float64
+		expectedVersion    string
+	}{
+		{
+			name:               "MOAM character template",
+			filename:           "testdata/moam_character.json",
+			expectedConfidence: 0.9,
+			expectedVersion:    "5.x",
+		},
+		{
+			name:               "Dorin Schnellhammer",
+			filename:           "testdata/dorin-schnellhammer.json",
+			expectedConfidence: 0.9,
+			expectedVersion:    "5.x",
+		},
+		{
+			name:               "Nicolo Sikeri",
+			filename:           "testdata/nicolo-sikeri.json",
+			expectedConfidence: 0.9,
+			expectedVersion:    "5.x",
+		},
+		{
+			name:               "Galaxis Kessarius Rufus",
+			filename:           "testdata/galaxis-kessarius-rufus.json",
+			expectedConfidence: 0.9,
+			expectedVersion:    "5.x",
+		},
+		{
+			name:               "Einskaldir",
+			filename:           "testdata/einskaldir.json",
+			expectedConfidence: 0.9,
+			expectedVersion:    "5.x",
+		},
+		{
+			name:               "Vincente",
+			filename:           "testdata/Vincente.json",
+			expectedConfidence: 0.9,
+			expectedVersion:    "5.x",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			data, err := os.ReadFile(tc.filename)
+			assert.NoError(t, err, "Failed to read test file: %s", tc.filename)
+
+			req, _ := http.NewRequest("POST", "/detect", bytes.NewBuffer(data))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, http.StatusOK, w.Code, "Detect endpoint should return 200 OK for %s", tc.name)
+
+			var response DetectResponse
+			err = json.Unmarshal(w.Body.Bytes(), &response)
+			assert.NoError(t, err, "Should parse detect response for %s", tc.name)
+			assert.GreaterOrEqual(t, response.Confidence, tc.expectedConfidence, "Confidence should be >= %.1f for %s", tc.expectedConfidence, tc.name)
+			assert.Equal(t, tc.expectedVersion, response.Version, "Version should be %s for %s", tc.expectedVersion, tc.name)
+		})
+	}
+}
+
+// TestDetectEndpointInvalidJSON verifies /detect handles invalid JSON
+func TestDetectEndpointInvalidJSON(t *testing.T) {
+	router := setupRouter()
+
+	invalidData := []byte(`{invalid json}`)
+	req, _ := http.NewRequest("POST", "/detect", bytes.NewBuffer(invalidData))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code, "Detect should return 200 even for invalid JSON")
+
+	var response DetectResponse
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err, "Should parse detect response")
+	assert.Less(t, response.Confidence, 0.5, "Confidence should be low for invalid JSON")
+}
+
+// TestImportEndpoint verifies the /import endpoint correctly converts MOAM to BMRT
+func TestImportEndpoint(t *testing.T) {
+	router := setupRouter()
+
+	testCases := []struct {
+		name           string
+		filename       string
+		expectedName   string
+		expectedGrad   int
+		expectedRasse  string
+		hasImage       bool
+		hasZauber      bool
+		transportCount int
+	}{
+		{
+			name:           "Dorin Schnellhammer",
+			filename:       "testdata/dorin-schnellhammer.json",
+			expectedName:   "Dorin Schnellhammer",
+			expectedGrad:   16,
+			expectedRasse:  "Zwerg",
+			hasImage:       true,
+			hasZauber:      false,
+			transportCount: 1,
+		},
+		{
+			name:           "Nicolo Sikeri",
+			filename:       "testdata/nicolo-sikeri.json",
+			expectedName:   "Nicolo Sikeri",
+			expectedGrad:   7,
+			expectedRasse:  "Mensch",
+			hasImage:       true,
+			hasZauber:      true,
+			transportCount: 0,
+		},
+		{
+			name:           "Galaxis Kessarius Rufus",
+			filename:       "testdata/galaxis-kessarius-rufus.json",
+			expectedName:   "Galaxis Kessarius Rufus",
+			expectedGrad:   13,
+			expectedRasse:  "Mensch",
+			hasImage:       false,
+			hasZauber:      true,
+			transportCount: 0,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			data, err := os.ReadFile(tc.filename)
+			assert.NoError(t, err, "Failed to read test file: %s", tc.filename)
+
+			req, _ := http.NewRequest("POST", "/import", bytes.NewBuffer(data))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, http.StatusOK, w.Code, "Import endpoint should return 200 OK for %s", tc.name)
+
+			var bmrt importer.CharacterImport
+			err = json.Unmarshal(w.Body.Bytes(), &bmrt)
+			assert.NoError(t, err, "Should parse BMRT response for %s", tc.name)
+
+			// Verify basic character data
+			assert.Equal(t, tc.expectedName, bmrt.Name, "Name mismatch for %s", tc.name)
+			assert.Equal(t, tc.expectedGrad, bmrt.Grad, "Grad mismatch for %s", tc.name)
+			assert.Equal(t, tc.expectedRasse, bmrt.Rasse, "Rasse mismatch for %s", tc.name)
+
+			// Verify image transfer
+			if tc.hasImage {
+				assert.NotEmpty(t, bmrt.Image, "Image should be transferred for %s", tc.name)
+				assert.Contains(t, bmrt.Image, "data:image;base64,", "Image should be base64 for %s", tc.name)
+			} else {
+				assert.Empty(t, bmrt.Image, "Image should be empty for %s", tc.name)
+			}
+
+			// Verify zauber (spells)
+			if tc.hasZauber {
+				assert.Greater(t, len(bmrt.Zauber), 0, "Should have spells for %s", tc.name)
+			} else {
+				assert.Equal(t, 0, len(bmrt.Zauber), "Should have no spells for %s", tc.name)
+			}
+
+			// Verify transportmittel
+			assert.Equal(t, tc.transportCount, len(bmrt.Transportmittel), "Transportmittel count mismatch for %s", tc.name)
+
+			// Verify all slices are initialized (not nil)
+			assert.NotNil(t, bmrt.Fertigkeiten, "Fertigkeiten should not be nil for %s", tc.name)
+			assert.NotNil(t, bmrt.Waffenfertigkeiten, "Waffenfertigkeiten should not be nil for %s", tc.name)
+			assert.NotNil(t, bmrt.Zauber, "Zauber should not be nil for %s", tc.name)
+			assert.NotNil(t, bmrt.Waffen, "Waffen should not be nil for %s", tc.name)
+			assert.NotNil(t, bmrt.Ausruestung, "Ausruestung should not be nil for %s", tc.name)
+			assert.NotNil(t, bmrt.Behaeltnisse, "Behaeltnisse should not be nil for %s", tc.name)
+			assert.NotNil(t, bmrt.Transportmittel, "Transportmittel should not be nil for %s", tc.name)
+		})
+	}
+}
+
+// TestImportEndpointInvalidJSON verifies /import handles invalid JSON
+func TestImportEndpointInvalidJSON(t *testing.T) {
+	router := setupRouter()
+
+	invalidData := []byte(`{invalid json}`)
+	req, _ := http.NewRequest("POST", "/import", bytes.NewBuffer(invalidData))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, w.Code, "Import should return 422 for invalid JSON")
+
+	var response ErrorResponse
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err, "Should parse error response")
+	assert.NotEmpty(t, response.Error, "Error message should be present")
 }

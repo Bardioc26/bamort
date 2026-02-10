@@ -17,8 +17,8 @@ type AdapterMetadata struct {
 	Version             string    `json:"version"`              // e.g., "1.0"
 	BmrtVersions        []string  `json:"bmrt_versions"`        // Supported BMRT versions
 	SupportedExtensions []string  `json:"supported_extensions"` // e.g., [".json"]
-	BaseURL             string    `json:"base_url"`             // e.g., "http://adapter-foundry:8181"
 	Capabilities        []string  `json:"capabilities"`         // e.g., ["import", "export", "detect"]
+	BaseURL             string    `json:"base_url"`             // e.g., "http://adapter-foundry:8181"
 	Healthy             bool      `json:"healthy"`              // Runtime health status
 	LastCheckedAt       time.Time `json:"last_checked_at"`
 	LastError           string    `json:"last_error,omitempty"`

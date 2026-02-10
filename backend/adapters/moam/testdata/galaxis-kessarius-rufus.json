@@ -1,0 +1,848 @@
+{
+  "id": "moam-character-21323",
+  "name": "Galaxis Kessarius Rufus",
+  "grad": 13,
+  "erfahrungsschatz": {
+     "value": 3960
+  },
+  "spezialisierung": [],
+  "anrede": "er",
+  "rasse": "Mensch",
+  "typ": "Thaumaturg",
+  "groesse": 19,
+  "gewicht": 10,
+  "gestalt": {
+    "groesse": "klein",
+    "breite": "breit"
+  },
+  "stand": "Mittelschicht",
+  "alter": 18,
+  "glaube": "Jakchos",
+  "lp": {
+    "value": 19,
+    "max": 19
+  },
+  "ap": {
+    "value": 61,
+    "max": 61
+  },
+  "b": {
+    "max": 28
+  },
+  "hand": "links",
+  "merkmale": {
+    "haarfarbe": "",
+    "augenfarbe": "",
+    "sonstige": ""
+  },
+  "eigenschaften": {
+    "st": 96,
+    "gs": 65,
+    "gw": 62,
+    "ko": 87,
+    "in": 76,
+    "zt": 100,
+    "pa": 100,
+    "au": 76,
+    "wk": 74
+  },
+  "bennies": {
+    "sg": 7,
+    "gg": 0,
+    "gp": 0
+  },
+  "fertigkeiten": [
+    {
+      "id": "moam-ability-horen",
+      "name": "Hören",
+      "fertigkeitswert": 6,
+      "quelle": "KOD5 99"
+    },
+    {
+      "id": "moam-ability-nachtsicht",
+      "name": "Nachtsicht",
+      "fertigkeitswert": 6,
+      "quelle": "KOD5 99"
+    },
+    {
+      "id": "moam-ability-riechen",
+      "name": "Riechen",
+      "fertigkeitswert": 6,
+      "quelle": "KOD5 99"
+    },
+    {
+      "id": "moam-ability-sechster_sinn",
+      "name": "Sechster Sinn",
+      "fertigkeitswert": 6,
+      "quelle": "KOD5 100"
+    },
+    {
+      "id": "moam-ability-sehen",
+      "name": "Sehen",
+      "fertigkeitswert": 6,
+      "quelle": "KOD5 100"
+    },
+    {
+      "id": "moam-ability-wahrnehmung",
+      "name": "Wahrnehmung",
+      "fertigkeitswert": 6,
+      "quelle": "KOD5 98"
+    },
+    {
+      "id": "moam-ability-376923",
+      "name": "Alchimie",
+      "fertigkeitswert": 9,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "KOD5 102"
+    },
+    {
+      "id": "moam-ability-762171",
+      "name": "Beredsamkeit",
+      "fertigkeitswert": 8,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "KOD5 105"
+    },
+    {
+      "id": "moam-ability-762178",
+      "name": "Fallenmechanik",
+      "fertigkeitswert": 8,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "KOD5 110"
+    },
+    {
+      "id": "moam-ability-762180",
+      "name": "Gel\u00e4ndelauf",
+      "fertigkeitswert": 12,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "KOD5 112"
+    },
+    {
+      "id": "moam-ability-762177",
+      "name": "Gesch\u00e4ftssinn",
+      "fertigkeitswert": 10,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "KOD5 113"
+    },
+    {
+      "id": "moam-ability-376922",
+      "name": "Giftmischen",
+      "fertigkeitswert": 7,
+      "bonus": 0,
+      "pp": 1,
+      "beschreibung": null,
+      "quelle": ""
+    },
+    {
+      "id": "moam-ability-762172",
+      "name": "Klettern",
+      "fertigkeitswert": 12,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "KOD5 115"
+    },
+    {
+      "id": "moam-ability-762179",
+      "name": "Laufen",
+      "fertigkeitswert": 8,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "KOD5 116"
+    },
+    {
+      "id": "moam-ability-762169",
+      "name": "Lesen von Zauberschrift",
+      "fertigkeitswert": 8,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "KOD5 117"
+    },
+    {
+      "id": "moam-ability-376924",
+      "name": "Pflanzenkunde",
+      "fertigkeitswert": 9,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "KOD5 120"
+    },
+    {
+      "id": "moam-ability-35333",
+      "name": "Robustheit",
+      "fertigkeitswert": 9,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "KOD5 97"
+    },
+    {
+      "id": "moam-ability-376818",
+      "name": "Schreiben",
+      "fertigkeitswert": 12,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": "Chryseisch",
+      "quelle": "KOD5 124"
+    },
+    {
+      "id": "moam-ability-762176",
+      "name": "Schreiben",
+      "fertigkeitswert": 8,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": "Erainisch",
+      "quelle": "KOD5 124"
+    },
+    {
+      "id": "moam-ability-762173",
+      "name": "Seilkunst",
+      "fertigkeitswert": 12,
+      "bonus": 0,
+      "pp": 1,
+      "beschreibung": null,
+      "quelle": "KOD5 126"
+    },
+    {
+      "id": "moam-ability-376815",
+      "name": "Sprache",
+      "fertigkeitswert": 12,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": "Chryseisch",
+      "quelle": "KOD5 127"
+    },
+    {
+      "id": "moam-ability-376816",
+      "name": "Sprache",
+      "fertigkeitswert": 12,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": "Comentang",
+      "quelle": "KOD5 127"
+    },
+    {
+      "id": "moam-ability-762183",
+      "name": "Sprache",
+      "fertigkeitswert": 8,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": "Erainisch",
+      "quelle": "KOD5 127"
+    },
+    {
+      "id": "moam-ability-762182",
+      "name": "Sprache",
+      "fertigkeitswert": 8,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": "Valianisch",
+      "quelle": "KOD5 127"
+    },
+    {
+      "id": "moam-ability-762181",
+      "name": "Sprache",
+      "fertigkeitswert": 8,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": "Waelska",
+      "quelle": "KOD5 127"
+    },
+    {
+      "id": "moam-ability-762170",
+      "name": "Thaumagraphie",
+      "fertigkeitswert": 8,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 23"
+    },
+    {
+      "id": "moam-ability-762175",
+      "name": "\u00dcberleben",
+      "fertigkeitswert": 8,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": "Wald",
+      "quelle": "KOD5 131"
+    },
+    {
+      "id": "moam-ability-762174",
+      "name": "\u00dcberleben:Gebirge",
+      "fertigkeitswert": 5,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": "Gebirge",
+      "quelle": ""
+    },
+    {
+      "id": "moam-ability-376817",
+      "name": "Zauberkunde",
+      "fertigkeitswert": 8,
+      "bonus": 0,
+      "pp": 1,
+      "beschreibung": null,
+      "quelle": "KOD5 134"
+    }
+  ],
+  "waffenfertigkeiten": [
+    {
+      "id": "moam-ability-762184",
+      "name": "Armbr\u00fcste",
+      "fertigkeitswert": 7,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "KOD5 144"
+    },
+    {
+      "id": "moam-ability-762185",
+      "name": "Blasrohre",
+      "fertigkeitswert": 9,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "KOD5 144"
+    },
+    {
+      "id": "moam-ability-762186",
+      "name": "Stichwaffen",
+      "fertigkeitswert": 6,
+      "bonus": 0,
+      "pp": 0,
+      "beschreibung": null,
+      "quelle": "KOD5 139"
+    }
+  ],
+  "zauber": [
+    {
+      "id": "moam-spell-124479",
+      "name": "Bannen von Zauberwerk (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 55"
+    },
+    {
+      "id": "moam-spell-266056",
+      "name": "Befestigen (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 55"
+    },
+    {
+      "id": "moam-spell-266062",
+      "name": "Bittersalz",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 44"
+    },
+    {
+      "id": "moam-spell-266041",
+      "name": "Feuerfinger (R)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 53"
+    },
+    {
+      "id": "moam-spell-266057",
+      "name": "Feuerlanze (R)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 53"
+    },
+    {
+      "id": "moam-spell-266058",
+      "name": "Flammenklinge (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 57"
+    },
+    {
+      "id": "moam-spell-266047",
+      "name": "Flammenkreis (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 57"
+    },
+    {
+      "id": "moam-spell-266065",
+      "name": "Fliegensalz",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 46"
+    },
+    {
+      "id": "moam-spell-266066",
+      "name": "Funkensalz",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 46"
+    },
+    {
+      "id": "moam-spell-266060",
+      "name": "Haarsalz",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 46"
+    },
+    {
+      "id": "moam-spell-266042",
+      "name": "Handauflegen",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "ARK5 143"
+    },
+    {
+      "id": "moam-spell-266044",
+      "name": "Hauch des Winters (R)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 53"
+    },
+    {
+      "id": "moam-spell-266055",
+      "name": "Heranholen (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 58"
+    },
+    {
+      "id": "moam-spell-266064",
+      "name": "Hitzsalz",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 46"
+    },
+    {
+      "id": "moam-spell-266059",
+      "name": "Jucksalz",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 47"
+    },
+    {
+      "id": "moam-spell-266043",
+      "name": "Kr\u00e4ftigen (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 58"
+    },
+    {
+      "id": "moam-spell-266040",
+      "name": "Lauschen (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 58"
+    },
+    {
+      "id": "moam-spell-266067",
+      "name": "L\u00f6schsalz",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 48"
+    },
+    {
+      "id": "moam-spell-266054",
+      "name": "Rost (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 59"
+    },
+    {
+      "id": "moam-spell-266061",
+      "name": "Schleichsalz",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 49"
+    },
+    {
+      "id": "moam-spell-266037",
+      "name": "Sehen in Dunkelheit (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 60"
+    },
+    {
+      "id": "moam-spell-266039",
+      "name": "Sehen von Verborgenem",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "ARK5 113"
+    },
+    {
+      "id": "moam-spell-266052",
+      "name": "Silberstaub (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 61"
+    },
+    {
+      "id": "moam-spell-266053",
+      "name": "St\u00e4rke (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 61"
+    },
+    {
+      "id": "moam-spell-266048",
+      "name": "Stille (R)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 53"
+    },
+    {
+      "id": "moam-spell-266063",
+      "name": "Stottersalz",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 49"
+    },
+    {
+      "id": "moam-spell-266068",
+      "name": "Trampelsalz",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 50"
+    },
+    {
+      "id": "moam-spell-266049",
+      "name": "Unsichtbarkeit (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 61"
+    },
+    {
+      "id": "moam-spell-266051",
+      "name": "Vergr\u00f6\u00dfern (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 61"
+    },
+    {
+      "id": "moam-spell-266050",
+      "name": "Wasseratmen (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 64"
+    },
+    {
+      "id": "moam-spell-266038",
+      "name": "Zauberlicht (R)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 53"
+    },
+    {
+      "id": "moam-spell-266046",
+      "name": "Zauberschloss (S)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 66"
+    },
+    {
+      "id": "moam-spell-266045",
+      "name": "Zauberschl\u00fcssel (R)",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 53"
+    },
+    {
+      "id": "moam-spell-266069",
+      "name": "Z\u00fcndersalz",
+      "bonus": 0,
+      "beschreibung": null,
+      "quelle": "MYS5 50"
+    }
+  ],
+  "waffen": [
+    {
+      "id": "moam-weapon-127083",
+      "name": "Armbrust:leicht",
+      "nameFuerSpezialisierung": "Armbrust:leicht",
+      "beschreibung": null,
+      "gewicht": 2.5,
+      "wert": 40.0,
+      "anb": 0,
+      "schb": 0,
+      "abwb": 0,
+      "anzahl": 1,
+      "beinhaltet_in": null,
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-weapon-127080",
+      "name": "Blasrohr:kurz",
+      "nameFuerSpezialisierung": "Blasrohr:kurz",
+      "beschreibung": null,
+      "gewicht": 0.5,
+      "wert": 5.0,
+      "anb": 0,
+      "schb": 0,
+      "abwb": 0,
+      "anzahl": 1,
+      "beinhaltet_in": null,
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-weapon-127081",
+      "name": "Blasrohr:lang",
+      "nameFuerSpezialisierung": "Blasrohr:lang",
+      "beschreibung": null,
+      "gewicht": 2.0,
+      "wert": 8.0,
+      "anb": 0,
+      "schb": 0,
+      "abwb": 0,
+      "anzahl": 1,
+      "beinhaltet_in": null,
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-weapon-127082",
+      "name": "Dolch",
+      "nameFuerSpezialisierung": "Dolch",
+      "beschreibung": null,
+      "gewicht": 0.5,
+      "wert": 5.0,
+      "anb": 0,
+      "schb": 0,
+      "abwb": 0,
+      "anzahl": 1,
+      "beinhaltet_in": null,
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    }
+  ],
+  "ausruestung": [
+    {
+      "id": "moam-armor-48741",
+      "name": "Lederr\u00fcstung",
+      "beschreibung": null,
+      "gewicht": 13.0,
+      "wert": 30.0,
+      "bonus": 0,
+      "anzahl": 1,
+      "beinhaltet_in": null,
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-item-287440",
+      "name": "Armbrustbolzen",
+      "beschreibung": null,
+      "gewicht": 0.15,
+      "wert": 0.3,
+      "anzahl": 30,
+      "beinhaltet_in": null,
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-item-287436",
+      "name": "Blasrohrnadel",
+      "beschreibung": null,
+      "gewicht": 0.02,
+      "wert": 0.1,
+      "anzahl": 20,
+      "beinhaltet_in": null,
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-item-287435",
+      "name": "Decke, warm",
+      "beschreibung": null,
+      "gewicht": 2.0,
+      "wert": 4.0,
+      "anzahl": 1,
+      "beinhaltet_in": "moam-container-47422",
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-item-287437",
+      "name": "Dolchscheide, einfach",
+      "beschreibung": null,
+      "gewicht": 0.1,
+      "wert": 2.0,
+      "anzahl": 1,
+      "beinhaltet_in": null,
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-item-287443",
+      "name": "Feuerstein und Zunder",
+      "beschreibung": null,
+      "gewicht": 0.0,
+      "wert": 1.0,
+      "anzahl": 1,
+      "beinhaltet_in": "moam-container-47422",
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-item-287445",
+      "name": "Heiltrunk (1W6)",
+      "beschreibung": null,
+      "gewicht": 0.0,
+      "wert": 200.0,
+      "anzahl": 1,
+      "beinhaltet_in": "moam-container-47422",
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-item-287439",
+      "name": "K\u00f6cher, Bolzen",
+      "beschreibung": null,
+      "gewicht": 0.3,
+      "wert": 2.0,
+      "anzahl": 0,
+      "beinhaltet_in": null,
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-item-287438",
+      "name": "Kreidest\u00fcck",
+      "beschreibung": null,
+      "gewicht": 0.02,
+      "wert": 0.2,
+      "anzahl": 1,
+      "beinhaltet_in": "moam-container-47422",
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-item-287442",
+      "name": "Seil",
+      "beschreibung": null,
+      "gewicht": 0.075,
+      "wert": 1.0,
+      "anzahl": 20,
+      "beinhaltet_in": "moam-container-47422",
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-item-287444",
+      "name": "Zauber\u00f6l",
+      "beschreibung": null,
+      "gewicht": 0.2,
+      "wert": 20.0,
+      "anzahl": 1,
+      "beinhaltet_in": "moam-container-47422",
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    }
+  ],
+  "behaeltnisse": [
+    {
+      "id": "moam-container-47423",
+      "name": "G\u00fcrteltasche, Leder",
+      "beschreibung": "f\u00fcr 20 M\u00fcnzen",
+      "gewicht": 0.01,
+      "wert": 2.0,
+      "volumen": 0.25,
+      "tragkraft": 1.0,
+      "beinhaltet_in": null,
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-container-47424",
+      "name": "Lederh\u00fclle",
+      "beschreibung": "wasserdicht f\u00fcr Schriftrollen",
+      "gewicht": 0.03,
+      "wert": 3.0,
+      "volumen": 0.3,
+      "tragkraft": 0.5,
+      "beinhaltet_in": null,
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    },
+    {
+      "id": "moam-container-47422",
+      "name": "Lederrucksack",
+      "beschreibung": "f\u00fcr 25 kg",
+      "gewicht": 0.5,
+      "wert": 4.0,
+      "volumen": 25.0,
+      "tragkraft": 25.0,
+      "beinhaltet_in": null,
+      "magisch": {
+        "ist_magisch": false,
+        "abw": 0,
+        "ausgebrannt": false
+      }
+    }
+  ],
+  "transportmittel": [
+  ]
+}

@@ -31,6 +31,7 @@ type AdapterMetadata struct {
 	SupportedExtensions []string `json:"supported_extensions"`
 	SupportedVersions   []string `json:"supported_game_versions"`
 	Capabilities        []string `json:"capabilities"`
+	Description         string   `json:"description"`
 }
 
 // DetectResponse contains the confidence score and detected version
@@ -82,6 +83,7 @@ func metadataHandler(c *gin.Context) {
 		SupportedExtensions: []string{".json"},
 		SupportedVersions:   []string{"5.x"},
 		Capabilities:        []string{"import", "export", "detect"},
+		Description:         "Adapter for importing and exporting characters in the Moam VTT JSON format Supports Characters created for Midgard Version 5.",
 	}
 
 	c.JSON(http.StatusOK, metadata)
@@ -251,6 +253,11 @@ func toBMRT(moam *MoamCharacter) (*importer.CharacterImport, error) {
 	if bmrt.Spezialisierung == nil {
 		bmrt.Spezialisierung = []string{}
 	}
+	if moam.Stand == "" {
+		bmrt.SocialClass = "Mittelschicht" // Default social class if not specified
+	} else {
+		bmrt.SocialClass = moam.Stand
+	}
 
 	// Note: Moam-specific fields like "Stand" are dropped during conversion
 	// If we needed to preserve them, we would store them in Extensions field
@@ -272,6 +279,7 @@ func fromBMRT(bmrt *importer.CharacterImport) (*MoamCharacter, error) {
 	moam := &MoamCharacter{
 		CharacterImport: *bmrt,
 	}
+	moam.Stand = bmrt.SocialClass // Map social class back to Moam's "Stand"
 
 	// Could set Moam-specific defaults here if needed
 	// For example: moam.Stand = "Nicht festgelegt"

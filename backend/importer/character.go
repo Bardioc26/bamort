@@ -179,6 +179,7 @@ type CharacterImport struct {
 	Groesse            int                `json:"groesse"`
 	Gewicht            int                `json:"gewicht"`
 	Glaube             string             `json:"glaube"`
+	SocialClass        string             `json:"social_class"`
 	Hand               string             `json:"hand"`
 	Fertigkeiten       []Fertigkeit       `json:"fertigkeiten"`
 	Zauber             []Zauber           `json:"zauber"`

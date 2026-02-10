@@ -34,6 +34,19 @@ func checkEquipmentOwnership(c *gin.Context, characterID uint) bool {
 	return true
 }
 
+// CreateAusruestung godoc
+// @Summary Create equipment
+// @Description Creates a new equipment item for a character (owner only)
+// @Tags Equipment
+// @Accept json
+// @Produce json
+// @Param equipment body models.EqAusruestung true "Equipment data"
+// @Success 201 {object} models.EqAusruestung "Created equipment"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/equipment [post]
 func CreateAusruestung(c *gin.Context) {
 	var ausruestung models.EqAusruestung
 	if err := c.ShouldBindJSON(&ausruestung); err != nil {
@@ -54,6 +67,17 @@ func CreateAusruestung(c *gin.Context) {
 	c.JSON(http.StatusCreated, ausruestung)
 }
 
+// ListAusruestung godoc
+// @Summary List character equipment
+// @Description Returns all equipment items for a specific character
+// @Tags Equipment
+// @Produce json
+// @Param character_id path int true "Character ID"
+// @Success 200 {array} models.EqAusruestung "List of equipment"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Security BearerAuth
+// @Router /api/equipment/character/{character_id} [get]
 func ListAusruestung(c *gin.Context) {
 	characterID := c.Param("character_id")
 
@@ -66,6 +90,20 @@ func ListAusruestung(c *gin.Context) {
 	c.JSON(http.StatusOK, ausruestung)
 }
 
+// UpdateAusruestung godoc
+// @Summary Update equipment
+// @Description Updates an existing equipment item (owner only)
+// @Tags Equipment
+// @Accept json
+// @Produce json
+// @Param ausruestung_id path int true "Equipment ID"
+// @Param equipment body models.EqAusruestung true "Updated equipment data"
+// @Success 200 {object} models.EqAusruestung "Updated equipment"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/equipment/{ausruestung_id} [put]
 func UpdateAusruestung(c *gin.Context) {
 	ausruestungID := c.Param("ausruestung_id")
 	var ausruestung models.EqAusruestung
@@ -93,6 +131,18 @@ func UpdateAusruestung(c *gin.Context) {
 	c.JSON(http.StatusOK, ausruestung)
 }
 
+// DeleteAusruestung godoc
+// @Summary Delete equipment
+// @Description Deletes an equipment item (owner only)
+// @Tags Equipment
+// @Produce json
+// @Param ausruestung_id path int true "Equipment ID"
+// @Success 200 {object} map[string]string "Equipment deleted successfully"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Failure 404 {object} map[string]string "Equipment not found"
+// @Security BearerAuth
+// @Router /api/equipment/{ausruestung_id} [delete]
 func DeleteAusruestung(c *gin.Context) {
 	ausruestungID := c.Param("ausruestung_id")
 
@@ -119,6 +169,19 @@ func DeleteAusruestung(c *gin.Context) {
 Endpoints for Managing Weapons (Waffen)
 */
 
+// CreateWaffe godoc
+// @Summary Create weapon
+// @Description Creates a new weapon for a character (owner only)
+// @Tags Equipment
+// @Accept json
+// @Produce json
+// @Param weapon body models.EqWaffe true "Weapon data"
+// @Success 201 {object} models.EqWaffe "Created weapon"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/weapons [post]
 func CreateWaffe(c *gin.Context) {
 	var waffe models.EqWaffe
 	if err := c.ShouldBindJSON(&waffe); err != nil {
@@ -139,6 +202,17 @@ func CreateWaffe(c *gin.Context) {
 	c.JSON(http.StatusCreated, waffe)
 }
 
+// ListWaffen godoc
+// @Summary List character weapons
+// @Description Returns all weapons for a specific character
+// @Tags Equipment
+// @Produce json
+// @Param character_id path int true "Character ID"
+// @Success 200 {array} models.EqWaffe "List of weapons"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Security BearerAuth
+// @Router /api/weapons/character/{character_id} [get]
 func ListWaffen(c *gin.Context) {
 	characterID := c.Param("character_id")
 
@@ -151,6 +225,20 @@ func ListWaffen(c *gin.Context) {
 	c.JSON(http.StatusOK, waffen)
 }
 
+// UpdateWaffe godoc
+// @Summary Update weapon
+// @Description Updates an existing weapon (owner only)
+// @Tags Equipment
+// @Accept json
+// @Produce json
+// @Param waffe_id path int true "Weapon ID"
+// @Param weapon body models.EqWaffe true "Updated weapon data"
+// @Success 200 {object} models.EqWaffe "Updated weapon"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/weapons/{waffe_id} [put]
 func UpdateWaffe(c *gin.Context) {
 	waffeID := c.Param("waffe_id")
 	var waffe models.EqWaffe
@@ -178,6 +266,18 @@ func UpdateWaffe(c *gin.Context) {
 	c.JSON(http.StatusOK, waffe)
 }
 
+// DeleteWaffe godoc
+// @Summary Delete weapon
+// @Description Deletes a weapon (owner only)
+// @Tags Equipment
+// @Produce json
+// @Param waffe_id path int true "Weapon ID"
+// @Success 200 {object} map[string]string "Weapon deleted successfully"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Failure 404 {object} map[string]string "Weapon not found"
+// @Security BearerAuth
+// @Router /api/weapons/{waffe_id} [delete]
 func DeleteWaffe(c *gin.Context) {
 	waffeID := c.Param("waffe_id")
 

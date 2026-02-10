@@ -9,6 +9,18 @@ import (
 )
 
 // GetCharacterAuditLog gibt alle Audit-Log-Einträge für einen Charakter zurück
+// GetCharacterAuditLog godoc
+// @Summary Get character audit log
+// @Description Returns audit log of all changes to a character (optionally filtered by field)
+// @Tags Characters
+// @Produce json
+// @Param id path int true "Character ID"
+// @Param field query string false "Filter by field name"
+// @Success 200 {array} models.AuditLogEntry "Audit log entries"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Security BearerAuth
+// @Router /api/characters/{id}/audit-log [get]
 func GetCharacterAuditLog(c *gin.Context) {
 	charID := c.Param("id")
 
@@ -42,6 +54,17 @@ func GetCharacterAuditLog(c *gin.Context) {
 }
 
 // GetAuditLogStats gibt Statistiken über Änderungen zurück
+// GetAuditLogStats godoc
+// @Summary Get audit log statistics
+// @Description Returns statistics about character changes (total changes, by field, etc.)
+// @Tags Characters
+// @Produce json
+// @Param id path int true "Character ID"
+// @Success 200 {object} object "Audit log statistics"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Security BearerAuth
+// @Router /api/characters/{id}/audit-log/stats [get]
 func GetAuditLogStats(c *gin.Context) {
 	charID := c.Param("id")
 

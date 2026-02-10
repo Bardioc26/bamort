@@ -120,6 +120,18 @@ func CalculateStaticFieldsLogic(req CalculateStaticFieldsRequest) StaticFieldsRe
 }
 
 // CalculateStaticFields berechnet alle Felder ohne Würfelwürfe (HTTP Handler)
+// CalculateStaticFields godoc
+// @Summary Calculate static character fields
+// @Description Calculates derived character values without dice rolls (e.g., modifiers, bonuses)
+// @Tags Character Creation
+// @Accept json
+// @Produce json
+// @Param request body object{race_id=int,attributes=object} true "Character attributes and race"
+// @Success 200 {object} object "Calculated static fields"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/calculate-static-fields [post]
 func CalculateStaticFields(c *gin.Context) {
 	var req CalculateStaticFieldsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -136,6 +148,18 @@ func CalculateStaticFields(c *gin.Context) {
 }
 
 // CalculateRolledField berechnet ein Feld mit Würfelwurf
+// CalculateRolledField godoc
+// @Summary Calculate rolled character field
+// @Description Calculates a derived value with dice rolls (e.g., hit points, magic resistance)
+// @Tags Character Creation
+// @Accept json
+// @Produce json
+// @Param request body object{field=string,attributes=object,race_id=int} true "Field name and character data"
+// @Success 200 {object} object "Rolled field result with dice details"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/calculate-rolled-field [post]
 func CalculateRolledField(c *gin.Context) {
 	var req CalculateRolledFieldRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

@@ -26,6 +26,17 @@ type PracticePointActionResponse struct {
 }
 
 // GetPracticePoints gibt die verfügbaren Praxispunkte eines Charakters zurück
+// GetPracticePoints godoc
+// @Summary Get practice points
+// @Description Returns all practice points for a character
+// @Tags Characters
+// @Produce json
+// @Param id path int true "Character ID"
+// @Success 200 {array} PracticePointResponse "Practice points list"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Security BearerAuth
+// @Router /api/characters/{id}/practice-points [get]
 func GetPracticePoints(c *gin.Context) {
 	// Charakter-ID aus der URL abrufen
 	charID := c.Param("id")
@@ -52,6 +63,20 @@ func GetPracticePoints(c *gin.Context) {
 }
 
 // UpdatePracticePoints aktualisiert die Praxispunkte eines Charakters
+// UpdatePracticePoints godoc
+// @Summary Update practice points
+// @Description Updates the practice points for a character (owner only)
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param id path int true "Character ID"
+// @Param practice_points body []PracticePointResponse true "Practice points data"
+// @Success 200 {object} map[string]string "Practice points updated successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/characters/{id}/practice-points [put]
 func UpdatePracticePoints(c *gin.Context) {
 	// Charakter-ID aus der URL abrufen
 	charID := c.Param("id")
@@ -114,6 +139,20 @@ func UpdatePracticePoints(c *gin.Context) {
 
 // AddPracticePoint fügt einen Praxispunkt zu einer Fertigkeit hinzu
 // TODO prüfe speichern der PP für Spells
+// AddPracticePoint godoc
+// @Summary Add practice point
+// @Description Adds a new practice point to a character (owner only)
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param id path int true "Character ID"
+// @Param practice_point body PracticePointResponse true "Practice point data"
+// @Success 200 {object} PracticePointResponse "Added practice point"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/characters/{id}/practice-points/add [post]
 func AddPracticePoint(c *gin.Context) {
 	// Charakter-ID aus der URL abrufen
 	charID := c.Param("id")
@@ -217,6 +256,20 @@ func AddPracticePoint(c *gin.Context) {
 }
 
 // UsePracticePoint verbraucht Praxispunkte für eine spezifische Fertigkeit
+// UsePracticePoint godoc
+// @Summary Use practice point
+// @Description Marks a practice point as used and applies it to skill improvement (owner only)
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param id path int true "Character ID"
+// @Param use_data body object{practice_point_id=int,skill_id=int} true "Practice point usage data"
+// @Success 200 {object} map[string]string "Practice point used successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/characters/{id}/practice-points/use [post]
 func UsePracticePoint(c *gin.Context) {
 	// Charakter-ID aus der URL abrufen
 	charID := c.Param("id")

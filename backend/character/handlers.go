@@ -41,6 +41,15 @@ func checkCharacterOwnership(c *gin.Context, character *models.Char) bool {
 	return true
 }
 
+// ListCharacters godoc
+// @Summary List all characters
+// @Description Returns all characters owned by or shared with the authenticated user
+// @Tags Characters
+// @Produce json
+// @Success 200 {array} models.Char "List of characters"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters [get]
 func ListCharacters(c *gin.Context) {
 	logger.Debug("ListCharacters aufgerufen")
 
@@ -84,6 +93,18 @@ func ListCharacters(c *gin.Context) {
 	c.JSON(http.StatusOK, allCharacters)
 }
 
+// CreateCharacter godoc
+// @Summary Create new character
+// @Description Creates a new character for the authenticated user
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param character body models.Char true "Character data"
+// @Success 201 {object} models.Char "Created character"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters [post]
 func CreateCharacter(c *gin.Context) {
 	var character models.Char
 	if err := c.ShouldBindJSON(&character); err != nil {
@@ -98,6 +119,19 @@ func CreateCharacter(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, character)
 }
+
+// GetCharacter godoc
+// @Summary Get character by ID
+// @Description Returns a specific character by ID (must be owned by or shared with user)
+// @Tags Characters
+// @Produce json
+// @Param id path int true "Character ID"
+// @Success 200 {object} models.Char "Character data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Failure 404 {object} map[string]string "Character not found"
+// @Security BearerAuth
+// @Router /api/characters/{id} [get]
 func GetCharacter(c *gin.Context) {
 	id := c.Param("id")
 	var character models.Char
@@ -109,6 +143,22 @@ func GetCharacter(c *gin.Context) {
 	feChar := ToFeChar(&character)
 	c.JSON(http.StatusOK, feChar)
 }
+
+// UpdateCharacter godoc
+// @Summary Update character
+// @Description Updates an existing character (must be owner)
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param id path int true "Character ID"
+// @Param character body models.Char true "Updated character data"
+// @Success 200 {object} models.Char "Updated character"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Failure 404 {object} map[string]string "Character not found"
+// @Security BearerAuth
+// @Router /api/characters/{id} [put]
 func UpdateCharacter(c *gin.Context) {
 	id := c.Param("id")
 	var character models.Char
@@ -149,6 +199,19 @@ func UpdateCharacter(c *gin.Context) {
 
 	c.JSON(http.StatusOK, character)
 }
+
+// DeleteCharacter godoc
+// @Summary Delete character
+// @Description Deletes a character (must be owner)
+// @Tags Characters
+// @Produce json
+// @Param id path int true "Character ID"
+// @Success 200 {object} map[string]string "Character deleted successfully"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Failure 404 {object} map[string]string "Character not found"
+// @Security BearerAuth
+// @Router /api/characters/{id} [delete]
 func DeleteCharacter(c *gin.Context) {
 	id := c.Param("id")
 	var character models.Char
@@ -244,6 +307,18 @@ type ExperienceAndWealthResponse struct {
 }
 
 // GetCharacterExperienceAndWealth gibt nur die EP und Vermögensdaten eines Charakters zurück
+// GetCharacterExperienceAndWealth godoc
+// @Summary Get character experience and wealth
+// @Description Returns detailed experience points, practice points, and wealth information
+// @Tags Characters
+// @Produce json
+// @Param id path int true "Character ID"
+// @Success 200 {object} object "Experience and wealth data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Failure 404 {object} map[string]string "Character not found"
+// @Security BearerAuth
+// @Router /api/characters/{id}/experience-wealth [get]
 func GetCharacterExperienceAndWealth(c *gin.Context) {
 	id := c.Param("id")
 	var character models.Char
@@ -285,6 +360,20 @@ type UpdateExperienceRequest struct {
 
 // UpdateCharacterExperience aktualisiert die Erfahrungspunkte eines Charakters
 // TODO Wenn EP verändert werden ändert sich auch ES
+// UpdateCharacterExperience godoc
+// @Summary Update character experience
+// @Description Updates character experience points with audit logging
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param id path int true "Character ID"
+// @Param experience body object{experience_points=int,reason=string} true "Experience data"
+// @Success 200 {object} map[string]interface{} "Experience updated successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/characters/{id}/experience [put]
 func UpdateCharacterExperience(c *gin.Context) {
 	id := c.Param("id")
 	var character models.Char
@@ -380,6 +469,20 @@ type UpdateWealthRequest struct {
 }
 
 // UpdateCharacterWealth aktualisiert das Vermögen eines Charakters
+// UpdateCharacterWealth godoc
+// @Summary Update character wealth
+// @Description Updates character wealth (gold, silver, copper) with audit logging
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param id path int true "Character ID"
+// @Param wealth body object{gold=int,silver=int,copper=int,reason=string} true "Wealth data"
+// @Success 200 {object} map[string]interface{} "Wealth updated successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/characters/{id}/wealth [put]
 func UpdateCharacterWealth(c *gin.Context) {
 	id := c.Param("id")
 	var character models.Char
@@ -599,6 +702,20 @@ func getCharacterClass(character *models.Char) string {
 }
 
 // LearnSkill lernt eine neue Fertigkeit und erstellt Audit-Log-Einträge
+// LearnSkill godoc
+// @Summary Learn new skill
+// @Description Adds a new skill to the character with experience cost deduction and audit logging
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param id path int true "Character ID"
+// @Param skill_data body object{skill_id=int,initial_value=int,reward_type=string} true "Skill learning data"
+// @Success 200 {object} object "Skill learned successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/characters/{id}/learn-skill-new [post]
 func LearnSkill(c *gin.Context) {
 	charID := c.Param("id")
 	var character models.Char
@@ -1084,6 +1201,19 @@ func deductResources(char *models.Char, skillName string, currentLevel, finalLev
 	return newEP, newGold, nil
 }
 
+// ImproveSkill godoc
+// @Summary Improve existing skill
+// @Description Increases the value of an existing skill with experience cost deduction and audit logging
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param improve_data body object{character_id=int,skill_id=int,new_value=int,reward_type=string} true "Skill improvement data"
+// @Success 200 {object} object "Skill improved successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/characters/improve-skill-new [post]
 func ImproveSkill(c *gin.Context) {
 	var request gsmaster.LernCostRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -1259,6 +1389,20 @@ func calculateSpellLearningCosts(char *models.Char, request *gsmaster.LernCostRe
 }
 
 // LearnSpell lernt einen neuen Zauber und erstellt Audit-Log-Einträge
+// LearnSpell godoc
+// @Summary Learn new spell
+// @Description Adds a new spell to the character with experience cost deduction and audit logging
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param id path int true "Character ID"
+// @Param spell_data body object{spell_id=int,reward_type=string} true "Spell learning data"
+// @Success 200 {object} object "Spell learned successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/characters/{id}/learn-spell-new [post]
 func LearnSpell(c *gin.Context) {
 	char_ID := c.Param("id")
 	/*
@@ -1375,6 +1519,16 @@ func LearnSpell(c *gin.Context) {
 // GetRewardTypesStatic is deprecated. Use GetRewardTypes instead.
 // This function provides hardcoded reward type mappings.
 // GetRewardTypesStatic liefert verfügbare Belohnungsarten für ein bestimmtes Lernszenario
+// GetRewardTypesStatic godoc
+// @Summary Get reward types
+// @Description Returns available reward types for skill/spell learning contexts
+// @Tags Reference Data
+// @Produce json
+// @Param id path int true "Character ID"
+// @Success 200 {array} string "List of reward types"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/{id}/reward-types [get]
 func GetRewardTypesStatic(c *gin.Context) {
 	characterID := c.Param("id")
 	learningType := c.Query("learning_type") // 'improve', 'learn', 'spell'
@@ -1427,6 +1581,18 @@ func GetRewardTypesStatic(c *gin.Context) {
 }
 
 // GetAvailableSkillsNewSystem gibt alle verfügbaren Fertigkeiten mit Lernkosten zurück (POST mit LernCostRequest)
+// GetAvailableSkillsNewSystem godoc
+// @Summary Get available skills
+// @Description Returns list of skills available to learn for character (excluding already learned)
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param request body object{character_id=int} true "Character ID"
+// @Success 200 {array} object "Available skills with costs"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/available-skills-new [post]
 func GetAvailableSkillsNewSystem(c *gin.Context) {
 	// Parse LernCostRequest aus POST body
 	var baseRequest gsmaster.LernCostRequest
@@ -1564,6 +1730,18 @@ func getCharacterClassCode(className string) (string, error) {
 	return characterClass.Code, nil
 }
 
+// GetAvailableSpellsForCreation godoc
+// @Summary Get spells for character creation
+// @Description Returns list of spells available during character creation with learning costs
+// @Tags Character Creation
+// @Accept json
+// @Produce json
+// @Param request body object{character_class_id=int} true "Character class ID"
+// @Success 200 {array} object "Available spells with creation costs"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/available-spells-creation [post]
 func GetAvailableSpellsForCreation(c *gin.Context) {
 	var request struct {
 		CharacterClass string `json:"characterClass" binding:"required"`
@@ -1614,6 +1792,18 @@ func GetAvailableSpellsForCreation(c *gin.Context) {
 }
 
 // GetAvailableSkillsForCreation returns skills with learning costs for character creation
+// GetAvailableSkillsForCreation godoc
+// @Summary Get skills for character creation
+// @Description Returns list of skills available during character creation with learning costs
+// @Tags Character Creation
+// @Accept json
+// @Produce json
+// @Param request body object{character_class_id=int,race_id=int} true "Character class and race"
+// @Success 200 {array} object "Available skills with creation costs"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/available-skills-creation [post]
 func GetAvailableSkillsForCreation(c *gin.Context) {
 	var request struct {
 		CharacterClass string `json:"characterClass" binding:"required"`
@@ -2239,6 +2429,18 @@ func shouldSkillBeInCategory(skillName, category string) bool {
 }
 
 // GetAvailableSpellsNewSystem gibt alle verfügbaren Zauber mit Lernkosten zurück (POST mit LernCostRequest)
+// GetAvailableSpellsNewSystem godoc
+// @Summary Get available spells
+// @Description Returns list of spells available to learn for character (excluding already learned)
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param request body object{character_id=int} true "Character ID"
+// @Success 200 {array} object "Available spells with costs"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/available-spells-new [post]
 func GetAvailableSpellsNewSystem(c *gin.Context) {
 	//characterID := c.Param("id")
 
@@ -2342,6 +2544,18 @@ func GetAvailableSpellsNewSystem(c *gin.Context) {
 }
 
 // GetSpellDetails gibt detaillierte Informationen zu einem bestimmten Zauber zurück
+// GetSpellDetails godoc
+// @Summary Get spell details
+// @Description Returns detailed information about a specific spell
+// @Tags Reference Data
+// @Produce json
+// @Param spell_id query int true "Spell ID"
+// @Success 200 {object} models.Spell "Spell details"
+// @Failure 400 {object} map[string]string "Invalid spell ID"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Spell not found"
+// @Security BearerAuth
+// @Router /api/characters/spell-details [get]
 func GetSpellDetails(c *gin.Context) {
 	spellName := c.Query("name")
 	if spellName == "" {
@@ -2386,6 +2600,18 @@ func GetSpellDetails(c *gin.Context) {
 // Character Creation Session Management
 
 // CreateCharacterSession erstellt eine neue Charakter-Erstellungssession
+// CreateCharacterSession godoc
+// @Summary Create character creation session
+// @Description Starts a new character creation session for the authenticated user
+// @Tags Character Creation
+// @Accept json
+// @Produce json
+// @Param session_data body object{game_system_id=int} true "Game system ID"
+// @Success 201 {object} models.CharacterCreationSession "Created session"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/create-session [post]
 func CreateCharacterSession(c *gin.Context) {
 	logger.Debug("CreateCharacterSession aufgerufen")
 
@@ -2447,6 +2673,15 @@ func CreateCharacterSession(c *gin.Context) {
 }
 
 // ListCharacterSessions gibt alle aktiven Sessions für einen Benutzer zurück
+// ListCharacterSessions godoc
+// @Summary List character creation sessions
+// @Description Returns all active character creation sessions for the authenticated user
+// @Tags Character Creation
+// @Produce json
+// @Success 200 {array} models.CharacterCreationSession "List of sessions"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/create-sessions [get]
 func ListCharacterSessions(c *gin.Context) {
 	logger.Debug("ListCharacterSessions aufgerufen")
 
@@ -2525,6 +2760,17 @@ func getProgressText(step int) string {
 }
 
 // GetCharacterSession gibt Session-Daten zurück
+// GetCharacterSession godoc
+// @Summary Get character creation session
+// @Description Returns data for an active character creation session
+// @Tags Character Creation
+// @Produce json
+// @Param sessionId path string true "Session ID"
+// @Success 200 {object} models.CharacterCreationSession "Session data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Session not found"
+// @Security BearerAuth
+// @Router /api/characters/create-session/{sessionId} [get]
 func GetCharacterSession(c *gin.Context) {
 	logger.Debug("GetCharacterSession aufgerufen")
 
@@ -2582,6 +2828,19 @@ type UpdateBasicInfoRequest struct {
 }
 
 // UpdateCharacterBasicInfo speichert Grundinformationen
+// UpdateCharacterBasicInfo godoc
+// @Summary Update character basic info
+// @Description Updates basic character information in creation session
+// @Tags Character Creation
+// @Accept json
+// @Produce json
+// @Param sessionId path string true "Session ID"
+// @Param basic_info body object{name=string,race_id=int,class_id=int,origin_id=int} true "Basic character info"
+// @Success 200 {object} models.CharacterCreationSession "Updated session"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/create-session/{sessionId}/basic [put]
 func UpdateCharacterBasicInfo(c *gin.Context) {
 	logger.Debug("UpdateCharacterBasicInfo aufgerufen")
 
@@ -2662,6 +2921,19 @@ type UpdateAttributesRequest struct {
 }
 
 // UpdateCharacterAttributes speichert Grundwerte
+// UpdateCharacterAttributes godoc
+// @Summary Update character attributes
+// @Description Updates character attributes in creation session
+// @Tags Character Creation
+// @Accept json
+// @Produce json
+// @Param sessionId path string true "Session ID"
+// @Param attributes body object{St=int,Gs=int,Ko=int,In=int,Zt=int} true "Character attributes"
+// @Success 200 {object} models.CharacterCreationSession "Updated session"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/create-session/{sessionId}/attributes [put]
 func UpdateCharacterAttributes(c *gin.Context) {
 	logger.Debug("UpdateCharacterAttributes aufgerufen")
 
@@ -2755,6 +3027,19 @@ type UpdateDerivedValuesRequest struct {
 }
 
 // UpdateCharacterDerivedValues speichert abgeleitete Werte
+// UpdateCharacterDerivedValues godoc
+// @Summary Update derived character values
+// @Description Updates derived values (HP, magic resistance, etc.) in creation session
+// @Tags Character Creation
+// @Accept json
+// @Produce json
+// @Param sessionId path string true "Session ID"
+// @Param derived_values body object{LP=int,MR=int,damage_bonus=int} true "Derived values"
+// @Success 200 {object} models.CharacterCreationSession "Updated session"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/create-session/{sessionId}/derived [put]
 func UpdateCharacterDerivedValues(c *gin.Context) {
 	logger.Debug("UpdateCharacterDerivedValues aufgerufen")
 
@@ -2844,6 +3129,19 @@ type UpdateSkillsRequest struct {
 }
 
 // UpdateCharacterSkills speichert Fertigkeiten und Zauber
+// UpdateCharacterSkills godoc
+// @Summary Update character skills
+// @Description Updates character skills and spells in creation session
+// @Tags Character Creation
+// @Accept json
+// @Produce json
+// @Param sessionId path string true "Session ID"
+// @Param skills body object{learned_skills=array,learned_spells=array} true "Skills and spells"
+// @Success 200 {object} models.CharacterCreationSession "Updated session"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/create-session/{sessionId}/skills [put]
 func UpdateCharacterSkills(c *gin.Context) {
 	logger.Debug("UpdateCharacterSkills aufgerufen")
 
@@ -2908,6 +3206,18 @@ func UpdateCharacterSkills(c *gin.Context) {
 }
 
 // FinalizeCharacterCreation schließt die Charakter-Erstellung ab
+// FinalizeCharacterCreation godoc
+// @Summary Finalize character creation
+// @Description Completes character creation session and creates the final character
+// @Tags Character Creation
+// @Accept json
+// @Produce json
+// @Param sessionId path string true "Session ID"
+// @Success 201 {object} models.Char "Created character"
+// @Failure 400 {object} map[string]string "Invalid session data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/create-session/{sessionId}/finalize [post]
 func FinalizeCharacterCreation(c *gin.Context) {
 	logger.Debug("FinalizeCharacterCreation aufgerufen")
 
@@ -3124,6 +3434,17 @@ func FinalizeCharacterCreation(c *gin.Context) {
 }
 
 // DeleteCharacterSession löscht eine Session
+// DeleteCharacterSession godoc
+// @Summary Delete character creation session
+// @Description Deletes an active character creation session
+// @Tags Character Creation
+// @Produce json
+// @Param sessionId path string true "Session ID"
+// @Success 200 {object} map[string]string "Session deleted successfully"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "Session not found"
+// @Security BearerAuth
+// @Router /api/characters/create-session/{sessionId} [delete]
 func DeleteCharacterSession(c *gin.Context) {
 	logger.Debug("DeleteCharacterSession aufgerufen")
 
@@ -3165,6 +3486,15 @@ func DeleteCharacterSession(c *gin.Context) {
 // Reference Data Handlers
 
 // GetRaces gibt verfügbare Rassen zurück
+// GetRaces godoc
+// @Summary Get available races
+// @Description Returns list of all available character races
+// @Tags Character Creation
+// @Produce json
+// @Success 200 {object} object "List of race names"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/races [get]
 func GetRaces(c *gin.Context) {
 	// TODO: Aus Datenbank laden
 	races := []string{
@@ -3175,6 +3505,15 @@ func GetRaces(c *gin.Context) {
 }
 
 // GetCharacterClasses gibt verfügbare Klassen zurück
+// GetCharacterClasses godoc
+// @Summary Get available character classes
+// @Description Returns list of all available character classes
+// @Tags Character Creation
+// @Produce json
+// @Success 200 {array} models.CharacterClass "List of character classes"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/classes [get]
 func GetCharacterClasses(c *gin.Context) {
 	// Get game system from query parameter, default to GameSystemId: 1
 	gameSystem := c.DefaultQuery("game_system", "midgard")
@@ -3196,6 +3535,15 @@ func GetCharacterClasses(c *gin.Context) {
 }
 
 // GetOrigins gibt verfügbare Herkünfte zurück
+// GetOrigins godoc
+// @Summary Get available origins
+// @Description Returns list of available character origins/backgrounds
+// @Tags Character Creation
+// @Produce json
+// @Success 200 {object} object "List of origin names"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/origins [get]
 func GetOrigins(c *gin.Context) {
 	// TODO: Aus Datenbank laden
 	origins := []string{
@@ -3209,6 +3557,16 @@ func GetOrigins(c *gin.Context) {
 }
 
 // SearchBeliefs sucht Glaubensrichtungen
+// SearchBeliefs godoc
+// @Summary Search beliefs
+// @Description Searches for character beliefs/religions by query string
+// @Tags Character Creation
+// @Produce json
+// @Param q query string false "Search query"
+// @Success 200 {array} models.Believe "List of matching beliefs"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/beliefs [get]
 func SearchBeliefs(c *gin.Context) {
 	query := c.Query("q")
 
@@ -3272,6 +3630,17 @@ type TypicalSkill struct {
 }
 
 // GetCharacterClassLearningPoints gibt die Lernpunkte und typischen Fertigkeiten für eine Charakterklasse zurück
+// GetCharacterClassLearningPoints godoc
+// @Summary Get character class learning points
+// @Description Returns learning point allocations for a specific character class
+// @Tags Character Creation
+// @Produce json
+// @Param class_id query int true "Character class ID"
+// @Success 200 {object} object "Learning points data"
+// @Failure 400 {object} map[string]string "Invalid class ID"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/classes/learning-points [get]
 func GetCharacterClassLearningPoints(c *gin.Context) {
 	className := c.Query("class")
 	if className == "" {
@@ -3405,6 +3774,17 @@ func getStandBonusPoints(social_class string) map[string]int {
 }
 
 // GetDatasheetOptions returns all available options for datasheet select boxes
+// GetDatasheetOptions godoc
+// @Summary Get datasheet export options
+// @Description Returns available PDF templates and options for character sheet export
+// @Tags Characters
+// @Produce json
+// @Param id path int true "Character ID"
+// @Success 200 {object} object "Datasheet export options"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Security BearerAuth
+// @Router /api/characters/{id}/datasheet-options [get]
 func GetDatasheetOptions(c *gin.Context) {
 	logger.Debug("GetDatasheetOptions aufgerufen")
 

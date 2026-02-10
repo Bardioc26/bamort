@@ -45,6 +45,16 @@ func resolveGameSystemOrDefault(c *gin.Context) *models.GameSystem {
 	return gs
 }
 
+// GetBelieves godoc
+// @Summary Get beliefs
+// @Description Returns list of all beliefs/religions (maintainer only)
+// @Tags Maintenance
+// @Produce json
+// @Success 200 {array} models.Believe "List of beliefs"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - maintainer access required"
+// @Security BearerAuth
+// @Router /api/maintenance/gsm-believes [get]
 func GetBelieves(c *gin.Context) {
 	gs := resolveGameSystemOrDefault(c)
 	if gs == nil {
@@ -84,6 +94,20 @@ func GetBelieves(c *gin.Context) {
 	})
 }
 
+// UpdateBelieve godoc
+// @Summary Update belief
+// @Description Updates an existing belief/religion (maintainer only)
+// @Tags Maintenance
+// @Accept json
+// @Produce json
+// @Param id path int true "Belief ID"
+// @Param belief body models.Believe true "Updated belief data"
+// @Success 200 {object} models.Believe "Updated belief"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - maintainer access required"
+// @Security BearerAuth
+// @Router /api/maintenance/gsm-believes/{id} [put]
 func UpdateBelieve(c *gin.Context) {
 	gs := resolveGameSystemOrDefault(c)
 	if gs == nil {

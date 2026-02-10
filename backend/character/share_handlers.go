@@ -10,6 +10,18 @@ import (
 )
 
 // GetCharacterShares returns the list of users a character is shared with
+// GetCharacterShares godoc
+// @Summary Get character shares
+// @Description Returns list of users with whom the character is shared
+// @Tags Characters
+// @Produce json
+// @Param id path int true "Character ID"
+// @Success 200 {array} object "List of user shares"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Failure 404 {object} map[string]string "Character not found"
+// @Security BearerAuth
+// @Router /api/characters/{id}/shares [get]
 func GetCharacterShares(c *gin.Context) {
 	charID := c.Param("id")
 
@@ -55,6 +67,20 @@ func GetCharacterShares(c *gin.Context) {
 }
 
 // UpdateCharacterShares updates the list of users a character is shared with
+// UpdateCharacterShares godoc
+// @Summary Update character shares
+// @Description Updates the list of users with whom the character is shared (owner only)
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param id path int true "Character ID"
+// @Param shares body object{user_ids=[]int} true "List of user IDs to share with"
+// @Success 200 {object} map[string]string "Shares updated successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/characters/{id}/shares [put]
 func UpdateCharacterShares(c *gin.Context) {
 	charID := c.Param("id")
 
@@ -108,6 +134,17 @@ func UpdateCharacterShares(c *gin.Context) {
 }
 
 // GetAvailableUsersForSharing returns a list of users (excluding the owner)
+// GetAvailableUsersForSharing godoc
+// @Summary Get available users for sharing
+// @Description Returns list of users available to share character with (excludes owner and current shares)
+// @Tags Characters
+// @Produce json
+// @Param id path int true "Character ID"
+// @Success 200 {array} object "List of available users"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Security BearerAuth
+// @Router /api/characters/{id}/available-users [get]
 func GetAvailableUsersForSharing(c *gin.Context) {
 	charID := c.Param("id")
 

@@ -32,6 +32,15 @@ func GetCharacterClassesHandlerOld(c *gin.Context) {
 }
 */
 // GetSkillCategoriesHandlerStatic gibt alle verfügbaren Fertigkeitskategorien zurück
+// GetSkillCategoriesHandlerStatic godoc
+// @Summary Get skill categories
+// @Description Returns list of all skill categories (static data)
+// @Tags Reference Data
+// @Produce json
+// @Success 200 {array} object "List of skill categories"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/skill-categories [get]
 func GetSkillCategoriesHandlerStatic(c *gin.Context) {
 	categories := map[string]interface{}{
 		"Alltag": map[string]interface{}{

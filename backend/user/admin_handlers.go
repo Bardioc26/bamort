@@ -12,7 +12,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ListUsers returns all users (admin only)
+// ListUsers godoc
+// @Summary List all users
+// @Description Returns a list of all registered users (admin only)
+// @Tags Admin
+// @Produce json
+// @Success 200 {array} User "List of users"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - admin access required"
+// @Security BearerAuth
+// @Router /api/users [get]
 func ListUsers(c *gin.Context) {
 	logger.Debug("Listing all users...")
 
@@ -34,7 +43,19 @@ func ListUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
-// GetUser returns a specific user by ID (admin only, or own profile)
+// GetUser godoc
+// @Summary Get user by ID
+// @Description Returns a specific user by ID (admin only, or own profile)
+// @Tags Admin
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} User "User data"
+// @Failure 400 {object} map[string]string "Invalid user ID"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden"
+// @Failure 404 {object} map[string]string "User not found"
+// @Security BearerAuth
+// @Router /api/users/{id} [get]
 func GetUser(c *gin.Context) {
 	logger.Debug("Fetching user by ID...")
 
@@ -85,6 +106,21 @@ func GetUser(c *gin.Context) {
 }
 
 // UpdateUserRole updates a user's role (admin only)
+// UpdateUserRole godoc
+// @Summary Update user role
+// @Description Updates the role of a specific user (admin only)
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Param role body object{role=string} true "New role ('user' or 'admin')"
+// @Success 200 {object} map[string]string "Role updated successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - admin access required"
+// @Failure 404 {object} map[string]string "User not found"
+// @Security BearerAuth
+// @Router /api/users/{id}/role [put]
 func UpdateUserRole(c *gin.Context) {
 	logger.Debug("Updating user role...")
 
@@ -146,6 +182,19 @@ func UpdateUserRole(c *gin.Context) {
 }
 
 // DeleteUser deletes a user (admin only)
+// DeleteUser godoc
+// @Summary Delete user
+// @Description Deletes a user account (admin only)
+// @Tags Admin
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} map[string]string "User deleted successfully"
+// @Failure 400 {object} map[string]string "Invalid user ID"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - admin access required"
+// @Failure 404 {object} map[string]string "User not found"
+// @Security BearerAuth
+// @Router /api/users/{id} [delete]
 func DeleteUser(c *gin.Context) {
 	logger.Debug("Deleting user...")
 
@@ -199,6 +248,21 @@ func DeleteUser(c *gin.Context) {
 }
 
 // ChangeUserPassword allows admin to change a user's password (admin only)
+// ChangeUserPassword godoc
+// @Summary Change user password (admin)
+// @Description Changes the password for any user (admin only)
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Param password body object{new_password=string} true "New password"
+// @Success 200 {object} map[string]string "Password changed successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - admin access required"
+// @Failure 404 {object} map[string]string "User not found"
+// @Security BearerAuth
+// @Router /api/users/{id}/password [put]
 func ChangeUserPassword(c *gin.Context) {
 	logger.Debug("Admin changing user password...")
 

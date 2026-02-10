@@ -15,6 +15,18 @@ func dummyproc(c *gin.Context) {
 }
 
 // ExportCharacterHandler handles character export requests
+// ExportCharacterHandler godoc
+// @Summary Export character as JSON
+// @Description Exports a character as JSON for API consumption
+// @Tags Import/Export
+// @Produce json
+// @Param id path int true "Character ID"
+// @Success 200 {object} object "Character data in JSON format"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Failure 404 {object} map[string]string "Character not found"
+// @Security BearerAuth
+// @Router /api/transfer/export/{id} [get]
 func ExportCharacterHandler(c *gin.Context) {
 	// Get character ID from URL parameter
 	charIDStr := c.Param("id")
@@ -36,6 +48,18 @@ func ExportCharacterHandler(c *gin.Context) {
 }
 
 // DownloadCharacterHandler exports character as downloadable JSON file
+// DownloadCharacterHandler godoc
+// @Summary Download character as JSON file
+// @Description Downloads a character as a JSON file attachment
+// @Tags Import/Export
+// @Produce application/json
+// @Param id path int true "Character ID"
+// @Success 200 {file} binary "JSON file download"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Failure 404 {object} map[string]string "Character not found"
+// @Security BearerAuth
+// @Router /api/transfer/download/{id} [get]
 func DownloadCharacterHandler(c *gin.Context) {
 	// Get character ID from URL parameter
 	charIDStr := c.Param("id")
@@ -67,6 +91,18 @@ func DownloadCharacterHandler(c *gin.Context) {
 }
 
 // ImportCharacterHandler handles character import requests
+// ImportCharacterHandler godoc
+// @Summary Import character from JSON
+// @Description Imports a character from JSON data
+// @Tags Import/Export
+// @Accept json
+// @Produce json
+// @Param character body object true "Character JSON data"
+// @Success 201 {object} object "Imported character"
+// @Failure 400 {object} map[string]string "Invalid JSON data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/transfer/import [post]
 func ImportCharacterHandler(c *gin.Context) {
 	// Get user ID from context (set by auth middleware)
 	userID, exists := c.Get("userID")
@@ -102,6 +138,16 @@ func ImportCharacterHandler(c *gin.Context) {
 }
 
 // ExportDatabaseHandler handles full database export requests
+// ExportDatabaseHandler godoc
+// @Summary Export full database
+// @Description Exports the entire database as JSON (admin only)
+// @Tags Import/Export
+// @Produce json
+// @Success 200 {object} object "Database export data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - admin access required"
+// @Security BearerAuth
+// @Router /api/transfer/database/export [post]
 func ExportDatabaseHandler(c *gin.Context) {
 	// Use configured export directory
 	exportDir := config.Cfg.ExportTempDir
@@ -126,6 +172,19 @@ func ExportDatabaseHandler(c *gin.Context) {
 }
 
 // ImportDatabaseHandler handles full database import requests
+// ImportDatabaseHandler godoc
+// @Summary Import full database
+// @Description Imports an entire database from JSON (admin only)
+// @Tags Import/Export
+// @Accept json
+// @Produce json
+// @Param database body object true "Database JSON data"
+// @Success 200 {object} object "Import result"
+// @Failure 400 {object} map[string]string "Invalid JSON data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - admin access required"
+// @Security BearerAuth
+// @Router /api/transfer/database/import [post]
 func ImportDatabaseHandler(c *gin.Context) {
 	// Parse request body with filepath
 	var req struct {

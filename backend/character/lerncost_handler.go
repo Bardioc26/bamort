@@ -89,6 +89,18 @@ type MultiLevelCostResponse struct {
 // 5. Wende Belohnungen an
 // 6. Wende PP und Gold-für-EP an
 // 7. Sammle Ergebnisse und sende als JSON-Antwort
+// GetLernCostNewSystem godoc
+// @Summary Calculate learning costs
+// @Description Calculates the experience point cost for learning or improving a skill/spell
+// @Tags Characters
+// @Accept json
+// @Produce json
+// @Param learn_request body object{character_id=int,skill_id=int,spell_id=int,current_value=int,reward_type=string} true "Learning cost request"
+// @Success 200 {object} object "Learning cost calculation result"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/characters/lerncost-new [post]
 func GetLernCostNewSystem(c *gin.Context) {
 	// Request-Parameter abrufen
 	var request gsmaster.LernCostRequest

@@ -556,6 +556,16 @@ func setupCheck(c *gin.Context, db *gorm.DB) {
 
 }
 
+// SetupCheck godoc
+// @Summary System setup check
+// @Description Checks system configuration and database connectivity (maintainer only)
+// @Tags Maintenance
+// @Produce json
+// @Success 200 {object} object "Setup check results"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - maintainer access required"
+// @Security BearerAuth
+// @Router /api/maintenance/setupcheck [get]
 func SetupCheck(c *gin.Context) {
 	logger.Info("Starte Setup-Check...")
 
@@ -601,6 +611,16 @@ func PopulateClassLearningPoints(c *gin.Context) {
 }
 */
 
+// ReconnectDataBase godoc
+// @Summary Reconnect to database
+// @Description Closes and reopens the database connection (maintainer only)
+// @Tags Maintenance
+// @Produce json
+// @Success 200 {object} map[string]string "Database reconnected successfully"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - maintainer access required"
+// @Security BearerAuth
+// @Router /api/maintenance/reconndb [get]
 func ReconnectDataBase(c *gin.Context) {
 	logger.Info("Führe Datenbank-Reconnect durch...")
 
@@ -615,6 +635,16 @@ func ReconnectDataBase(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Database reconnected successfully"})
 }
 
+// ReloadENV godoc
+// @Summary Reload environment variables
+// @Description Reloads environment configuration from .env file (maintainer only)
+// @Tags Maintenance
+// @Produce json
+// @Success 200 {object} map[string]string "Environment reloaded successfully"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - maintainer access required"
+// @Security BearerAuth
+// @Router /api/maintenance/reloadenv [get]
 func ReloadENV(c *gin.Context) {
 	logger.Info("Starte Reload der Umgebungsvariablen...")
 

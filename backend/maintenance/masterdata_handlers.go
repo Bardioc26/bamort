@@ -10,6 +10,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetGameSystems godoc
+// @Summary Get game systems
+// @Description Returns list of all game systems (maintainer only)
+// @Tags Maintenance
+// @Produce json
+// @Success 200 {array} models.GameSystem "List of game systems"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - maintainer access required"
+// @Security BearerAuth
+// @Router /api/maintenance/game-systems [get]
 func GetGameSystems(c *gin.Context) {
 	var systems []models.GameSystem
 	if err := database.DB.Order("code ASC").Find(&systems).Error; err != nil {
@@ -26,6 +36,20 @@ type gameSystemUpdateRequest struct {
 	IsActive    *bool  `json:"is_active"`
 }
 
+// UpdateGameSystem godoc
+// @Summary Update game system
+// @Description Updates an existing game system (maintainer only)
+// @Tags Maintenance
+// @Accept json
+// @Produce json
+// @Param id path int true "Game system ID"
+// @Param system body models.GameSystem true "Updated game system data"
+// @Success 200 {object} models.GameSystem "Updated game system"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - maintainer access required"
+// @Security BearerAuth
+// @Router /api/maintenance/game-systems/{id} [put]
 func UpdateGameSystem(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -75,6 +99,16 @@ type sourceUpdateRequest struct {
 	IsActive    *bool  `json:"is_active"`
 }
 
+// GetLitSources godoc
+// @Summary Get literature sources
+// @Description Returns list of all literature sources (maintainer only)
+// @Tags Maintenance
+// @Produce json
+// @Success 200 {array} models.Source "List of literature sources"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - maintainer access required"
+// @Security BearerAuth
+// @Router /api/maintenance/gsm-lit-sources [get]
 func GetLitSources(c *gin.Context) {
 	gs := resolveGameSystemOrDefault(c)
 	if gs == nil {
@@ -92,6 +126,20 @@ func GetLitSources(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"sources": sources})
 }
 
+// UpdateLitSource godoc
+// @Summary Update literature source
+// @Description Updates an existing literature source (maintainer only)
+// @Tags Maintenance
+// @Accept json
+// @Produce json
+// @Param id path int true "Literature source ID"
+// @Param source body models.Source true "Updated literature source data"
+// @Success 200 {object} models.Source "Updated literature source"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - maintainer access required"
+// @Security BearerAuth
+// @Router /api/maintenance/gsm-lit-sources/{id} [put]
 func UpdateLitSource(c *gin.Context) {
 	gs := resolveGameSystemOrDefault(c)
 	if gs == nil {
@@ -150,6 +198,16 @@ type miscUpdateRequest struct {
 	PageNumber *int   `json:"page_number"`
 }
 
+// GetMisc godoc
+// @Summary Get miscellaneous master data
+// @Description Returns list of all miscellaneous master data entries (maintainer only)
+// @Tags Maintenance
+// @Produce json
+// @Success 200 {array} object "List of miscellaneous data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - maintainer access required"
+// @Security BearerAuth
+// @Router /api/maintenance/gsm-misc [get]
 func GetMisc(c *gin.Context) {
 	gs := resolveGameSystemOrDefault(c)
 	if gs == nil {
@@ -171,6 +229,20 @@ func GetMisc(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"misc": items})
 }
 
+// UpdateMisc godoc
+// @Summary Update miscellaneous master data
+// @Description Updates a miscellaneous master data entry (maintainer only)
+// @Tags Maintenance
+// @Accept json
+// @Produce json
+// @Param id path int true "Misc data ID"
+// @Param data body object true "Updated miscellaneous data"
+// @Success 200 {object} object "Updated miscellaneous data"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - maintainer access required"
+// @Security BearerAuth
+// @Router /api/maintenance/gsm-misc/{id} [put]
 func UpdateMisc(c *gin.Context) {
 	gs := resolveGameSystemOrDefault(c)
 	if gs == nil {
@@ -227,6 +299,16 @@ type skillImprovementUpdateRequest struct {
 	DifficultyID *uint `json:"difficulty_id"`
 }
 
+// GetSkillImprovementCost2 godoc
+// @Summary Get skill improvement costs
+// @Description Returns skill improvement cost table (maintainer only)
+// @Tags Maintenance
+// @Produce json
+// @Success 200 {array} models.SkillImprovementCost "Skill improvement costs"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - maintainer access required"
+// @Security BearerAuth
+// @Router /api/maintenance/skill-improvement-cost2 [get]
 func GetSkillImprovementCost2(c *gin.Context) {
 	var costs []models.SkillImprovementCost
 	if err := database.DB.Order("current_level ASC").Find(&costs).Error; err != nil {
@@ -252,6 +334,20 @@ func GetSkillImprovementCost2(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"costs": responses})
 }
 
+// UpdateSkillImprovementCost2 godoc
+// @Summary Update skill improvement cost
+// @Description Updates a skill improvement cost entry (maintainer only)
+// @Tags Maintenance
+// @Accept json
+// @Produce json
+// @Param id path int true "Cost entry ID"
+// @Param cost body models.SkillImprovementCost true "Updated cost data"
+// @Success 200 {object} models.SkillImprovementCost "Updated cost entry"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Forbidden - maintainer access required"
+// @Security BearerAuth
+// @Router /api/maintenance/skill-improvement-cost2/{id} [put]
 func UpdateSkillImprovementCost2(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {

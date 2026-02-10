@@ -13,6 +13,20 @@ type ImageUpdateRequest struct {
 	Image string `json:"image" binding:"required"`
 }
 
+// UpdateCharacterImage godoc
+// @Summary Update character image
+// @Description Uploads and sets a character portrait image (owner only)
+// @Tags Characters
+// @Accept multipart/form-data
+// @Produce json
+// @Param id path int true "Character ID"
+// @Param image formData file true "Character portrait image"
+// @Success 200 {object} map[string]string "Image updated successfully"
+// @Failure 400 {object} map[string]string "Invalid image file"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied - owner only"
+// @Security BearerAuth
+// @Router /api/characters/{id}/image [put]
 func UpdateCharacterImage(c *gin.Context) {
 	id := c.Param("id")
 	logger.Debug("UpdateCharacterImage called for character ID: %s", id)

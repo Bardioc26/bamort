@@ -21,6 +21,15 @@ type TemplateInfo struct {
 }
 
 // ListTemplates returns a list of available export templates
+// ListTemplates godoc
+// @Summary List PDF templates
+// @Description Returns list of available PDF character sheet templates
+// @Tags PDF Export
+// @Produce json
+// @Success 200 {array} object "List of template names"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/pdf/templates [get]
 func ListTemplates(c *gin.Context) {
 	templatesDir := config.Cfg.TemplatesDir
 
@@ -51,6 +60,20 @@ func ListTemplates(c *gin.Context) {
 //   - showUserName: whether to show user name (default: false)
 //
 // Returns JSON with filename: {"filename": "CharacterName_20231225_143045.pdf"}
+// ExportCharacterToPDF godoc
+// @Summary Export character to PDF
+// @Description Generates a PDF character sheet for the specified character
+// @Tags PDF Export
+// @Produce json
+// @Param id path int true "Character ID"
+// @Param template query string false "Template name (default: Default_A4_Quer)"
+// @Success 200 {object} object "PDF export result with filename and URL"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Failure 404 {object} map[string]string "Character not found"
+// @Security BearerAuth
+// @Router /api/pdf/export/{id} [get]
 func ExportCharacterToPDF(c *gin.Context) {
 	// Get character ID
 	charID := c.Param("id")
@@ -194,6 +217,15 @@ func ExportCharacterToPDF(c *gin.Context) {
 }
 
 // GetPDFFile serves a PDF file from the xporttemp directory
+// GetPDFFile godoc
+// @Summary Get PDF file
+// @Description Downloads a generated PDF file (public endpoint)
+// @Tags PDF Export
+// @Produce application/pdf
+// @Param filename path string true "PDF filename"
+// @Success 200 {file} binary "PDF file"
+// @Failure 404 {object} map[string]string "File not found"
+// @Router /api/pdf/file/{filename} [get]
 func GetPDFFile(c *gin.Context) {
 	filename := c.Param("filename")
 	if filename == "" {
@@ -227,6 +259,15 @@ func GetPDFFile(c *gin.Context) {
 }
 
 // CleanupExportTemp removes PDF files older than 7 days from xporttemp directory
+// CleanupExportTemp godoc
+// @Summary Cleanup old PDF files
+// @Description Removes PDF files older than 1 hour from export_temp directory
+// @Tags PDF Export
+// @Produce json
+// @Success 200 {object} object "Cleanup result with number of files deleted"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/pdf/cleanup [post]
 func CleanupExportTemp(c *gin.Context) {
 	// Clean up files older than 7 days
 	maxAge := 7 * 24 * time.Hour

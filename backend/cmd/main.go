@@ -17,14 +17,43 @@ import (
 	"bamort/user"
 
 	"github.com/gin-gonic/gin"
+
+	// Swagger documentation
+	_ "bamort/docs/swagger"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // @title BaMoRT API
-// @version 1
-// @description This is the API for BaMoRT
+// @version 2.0
+// @description BaMoRT (MOAM Replacement) - Role-playing Game Character Management System API
+// @description
+// @description This API provides comprehensive character management, import/export functionality,
+// @description master data management, and PDF generation for tabletop role-playing games.
+// @description
+// @description ## Authentication
+// @description Most endpoints require authentication via JWT token. Obtain a token by calling POST /login.
+// @description Include the token in the Authorization header: `Authorization: Bearer <token>`
+// @description
+// @description ## Character Import/Export
+// @description The API supports pluggable adapters for importing/exporting characters from various systems.
+// @description Supported formats include MOAM VTT, Foundry VTT, and more via microservice adapters.
+//
+// @contact.name BaMoRT Support
+// @contact.email bamort.support@trokan.de
+//
+// @license.name Custom License
+// @license.url https://github.com/Bardioc26/bamort/blob/main/LICENSE
+//
 // @host localhost:8180
 // @BasePath /
-// @schemes http
+// @schemes http https
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and the JWT token
 func main() {
 	// Verwende die globale Konfigurationsvariable (bereits in config.init() geladen)
 	cfg := config.Cfg
@@ -125,10 +154,14 @@ func main() {
 	pdfrender.RegisterPublicRoutes(r)
 	appsystem.RegisterPublicRoutes(r)
 
+	// Swagger documentation endpoint
+	serverAddress := cfg.GetServerAddress()
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	logger.Info("Swagger UI verfügbar unter: %s/swagger/index.html", serverAddress)
+
 	logger.Info("API-Routen erfolgreich registriert")
 
 	// Server starten
-	serverAddress := cfg.GetServerAddress()
 	logger.Info("Server startet auf Adresse: %s", serverAddress)
 	if err := r.Run(serverAddress); err != nil {
 		logger.Error("Fehler beim Starten des Servers: %s", err.Error())

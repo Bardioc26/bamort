@@ -23,6 +23,17 @@ func respondWithError(c *gin.Context, status int, message string) {
 	c.JSON(status, gin.H{"error": message})
 }
 
+// RegisterUser godoc
+// @Summary Register a new user
+// @Description Creates a new user account with username, email, and password
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param user body object{username=string,email=string,password_hash=string} true "User registration data"
+// @Success 201 {object} map[string]string "User registered successfully"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 500 {object} map[string]string "Failed to create user"
+// @Router /register [post]
 func RegisterUser(c *gin.Context) {
 	logger.Debug("Starte Benutzerregistrierung...")
 
@@ -78,6 +89,7 @@ func RegisterUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully:"})
 }
 
+// GenerateToken creates a JWT token for the given user
 func GenerateToken(u *User) string {
 	logger.Debug("Generiere Token für Benutzer: %s (ID: %d)", u.Username, u.UserID)
 
@@ -150,6 +162,17 @@ func CheckToken(token string) *User {
 	return nil
 }
 
+// LoginUser godoc
+// @Summary User login
+// @Description Authenticates a user and returns a JWT token
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param credentials body object{username=string,password=string} true "Login credentials"
+// @Success 200 {object} map[string]interface{} "Login successful with token and user data"
+// @Failure 400 {object} map[string]string "Invalid request data"
+// @Failure 401 {object} map[string]string "Invalid credentials"
+// @Router /login [post]
 func LoginUser(c *gin.Context) {
 	logger.Debug("Starte Benutzer-Anmeldung...")
 
@@ -273,6 +296,16 @@ func sendResetEmail(email, username, resetHash, frontendURL string) error {
 }
 
 // RequestPasswordReset Handler für Passwort-Reset-Anfrage
+// RequestPasswordReset godoc
+// @Summary Request password reset
+// @Description Sends a password reset email to the user
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param email body object{email=string} true "User email address"
+// @Success 200 {object} map[string]string "Password reset email sent"
+// @Failure 400 {object} map[string]string "Invalid email format"
+// @Router /password-reset/request [post]
 func RequestPasswordReset(c *gin.Context) {
 	logger.Debug("Starte Passwort-Reset-Anfrage...")
 
@@ -335,6 +368,16 @@ func RequestPasswordReset(c *gin.Context) {
 }
 
 // ResetPassword Handler für das Zurücksetzen des Passworts
+// ResetPassword godoc
+// @Summary Reset password
+// @Description Resets user password using a valid reset token
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param reset_data body object{token=string,new_password=string} true "Reset token and new password"
+// @Success 200 {object} map[string]string "Password reset successful"
+// @Failure 400 {object} map[string]string "Invalid token or password"
+// @Router /password-reset/reset [post]
 func ResetPassword(c *gin.Context) {
 	logger.Debug("Starte Passwort-Reset...")
 
@@ -390,6 +433,15 @@ func ResetPassword(c *gin.Context) {
 }
 
 // ValidateResetToken Handler zur Validierung eines Reset-Tokens
+// ValidateResetToken godoc
+// @Summary Validate reset token
+// @Description Validates a password reset token
+// @Tags Authentication
+// @Produce json
+// @Param token path string true "Reset token"
+// @Success 200 {object} map[string]string "Token is valid"
+// @Failure 400 {object} map[string]string "Invalid or expired token"
+// @Router /password-reset/validate/{token} [get]
 func ValidateResetToken(c *gin.Context) {
 	logger.Debug("Validiere Reset-Token...")
 
@@ -423,6 +475,16 @@ func ValidateResetToken(c *gin.Context) {
 }
 
 // GetUserProfile Handler to get current user's profile information
+// GetUserProfile godoc
+// @Summary Get current user profile
+// @Description Returns the profile information of the authenticated user
+// @Tags User
+// @Produce json
+// @Success 200 {object} User "User profile data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 404 {object} map[string]string "User not found"
+// @Security BearerAuth
+// @Router /api/user/profile [get]
 func GetUserProfile(c *gin.Context) {
 	logger.Debug("Lade Benutzerprofil...")
 
@@ -453,6 +515,18 @@ func GetUserProfile(c *gin.Context) {
 }
 
 // UpdateEmail Handler to update user's email address
+// UpdateEmail godoc
+// @Summary Update user email
+// @Description Updates the email address of the authenticated user
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param email body object{email=string} true "New email address"
+// @Success 200 {object} map[string]string "Email updated successfully"
+// @Failure 400 {object} map[string]string "Invalid email format"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/user/email [put]
 func UpdateEmail(c *gin.Context) {
 	logger.Debug("Starte E-Mail-Aktualisierung...")
 
@@ -506,6 +580,18 @@ func UpdateEmail(c *gin.Context) {
 }
 
 // UpdatePassword Handler to update user's password
+// UpdatePassword godoc
+// @Summary Update user password
+// @Description Updates the password of the authenticated user
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param passwords body object{old_password=string,new_password=string} true "Old and new passwords"
+// @Success 200 {object} map[string]string "Password updated successfully"
+// @Failure 400 {object} map[string]string "Invalid password data"
+// @Failure 401 {object} map[string]string "Unauthorized or wrong old password"
+// @Security BearerAuth
+// @Router /api/user/password [put]
 func UpdatePassword(c *gin.Context) {
 	logger.Debug("Starte Passwort-Aktualisierung...")
 
@@ -560,6 +646,18 @@ func UpdatePassword(c *gin.Context) {
 }
 
 // UpdateLanguage Handler to update user's preferred language
+// UpdateLanguage godoc
+// @Summary Update preferred language
+// @Description Updates the preferred language setting for the authenticated user
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param language body object{language=string} true "Language code (e.g., 'en', 'de')"
+// @Success 200 {object} map[string]string "Language updated successfully"
+// @Failure 400 {object} map[string]string "Invalid language code"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/user/language [put]
 func UpdateLanguage(c *gin.Context) {
 	logger.Debug("Starte Sprach-Aktualisierung...")
 
@@ -610,6 +708,18 @@ func UpdateLanguage(c *gin.Context) {
 }
 
 // UpdateDisplayName Handler to update user's display name
+// UpdateDisplayName godoc
+// @Summary Update display name
+// @Description Updates the display name of the authenticated user
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param display_name body object{display_name=string} true "New display name"
+// @Success 200 {object} map[string]string "Display name updated successfully"
+// @Failure 400 {object} map[string]string "Invalid display name"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/user/display-name [put]
 func UpdateDisplayName(c *gin.Context) {
 	logger.Debug("Starte Anzeigenamen-Aktualisierung...")
 

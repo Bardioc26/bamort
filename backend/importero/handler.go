@@ -18,6 +18,18 @@ func respondWithError(c *gin.Context, status int, message string) {
 }
 
 // Upload files
+// UploadFiles godoc
+// @Summary Upload files
+// @Description Uploads files for import processing
+// @Tags Import/Export
+// @Accept multipart/form-data
+// @Produce json
+// @Param files formData file true "File(s) to upload"
+// @Success 200 {object} object "Upload result"
+// @Failure 400 {object} map[string]string "Invalid file upload"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/importer/upload [post]
 func UploadFiles(c *gin.Context) {
 	// Get files from the request
 	file_vtt, err1 := c.FormFile("file_vtt")
@@ -97,6 +109,18 @@ func isValidFileType(filename string) bool {
 // @Success 200 {object} map[string]interface{} "Import successful"
 // @Failure 400 {object} map[string]interface{} "Bad request - missing file parameter, file not found, or invalid file type"
 // @Failure 500 {object} map[string]interface{} "Internal server error - import failed"
+// @Router /api/importer/spells/csv [post]
+// ImportSpellCSVHandler godoc
+// @Summary Import spells from CSV
+// @Description Imports spells from a CSV file
+// @Tags Import/Export
+// @Accept multipart/form-data
+// @Produce json
+// @Param file formData file true "CSV file containing spells"
+// @Success 200 {object} object "Import result"
+// @Failure 400 {object} map[string]string "Invalid CSV file"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
 // @Router /api/importer/spells/csv [post]
 func ImportSpellCSVHandler(c *gin.Context) {
 	// Try to get file from multipart form first
@@ -213,6 +237,18 @@ func ImportSpellCSVHandler(c *gin.Context) {
 // @Failure 404 {object} map[string]interface{} "Character not found"
 // @Failure 500 {object} map[string]interface{} "Internal server error - export failed"
 // @Router /api/importer/export/vtt/{id} [get]
+// ExportCharacterVTTHandler godoc
+// @Summary Export character to VTT JSON
+// @Description Exports a character in Virtual Tabletop (VTT) JSON format
+// @Tags Import/Export
+// @Produce json
+// @Param id path int true "Character ID"
+// @Success 200 {object} object "Character in VTT format"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Failure 404 {object} map[string]string "Character not found"
+// @Security BearerAuth
+// @Router /api/importer/export/vtt/{id} [get]
 func ExportCharacterVTTHandler(c *gin.Context) {
 	// Get character ID from URL parameter
 	charID := c.Param("id")
@@ -259,6 +295,18 @@ func ExportCharacterVTTHandler(c *gin.Context) {
 // @Failure 400 {object} map[string]interface{} "Bad request - invalid character ID"
 // @Failure 404 {object} map[string]interface{} "Character not found"
 // @Failure 500 {object} map[string]interface{} "Internal server error - export failed"
+// @Router /api/importer/export/vtt/{id}/file [get]
+// ExportCharacterVTTFileHandler godoc
+// @Summary Download character as VTT JSON file
+// @Description Downloads a character as a VTT JSON file attachment
+// @Tags Import/Export
+// @Produce application/json
+// @Param id path int true "Character ID"
+// @Success 200 {file} binary "VTT JSON file download"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Failure 404 {object} map[string]string "Character not found"
+// @Security BearerAuth
 // @Router /api/importer/export/vtt/{id}/file [get]
 func ExportCharacterVTTFileHandler(c *gin.Context) {
 	// Get character ID from URL parameter
@@ -315,6 +363,15 @@ func ExportCharacterVTTFileHandler(c *gin.Context) {
 // @Success 200 {file} file "CSV file"
 // @Failure 500 {object} map[string]interface{} "Internal server error - export failed"
 // @Router /api/importer/export/spells/csv [get]
+// ExportSpellsCSVHandler godoc
+// @Summary Export spells to CSV
+// @Description Exports all spells as a CSV file
+// @Tags Import/Export
+// @Produce text/csv
+// @Success 200 {file} binary "CSV file with spells"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Security BearerAuth
+// @Router /api/importer/export/spells/csv [get]
 func ExportSpellsCSVHandler(c *gin.Context) {
 	gameSystem := c.Query("game_system")
 
@@ -365,6 +422,18 @@ func ExportSpellsCSVHandler(c *gin.Context) {
 // @Failure 400 {object} map[string]interface{} "Bad request - invalid character ID"
 // @Failure 404 {object} map[string]interface{} "Character not found"
 // @Failure 500 {object} map[string]interface{} "Internal server error - export failed"
+// @Router /api/importer/export/csv/{id} [get]
+// ExportCharacterCSVHandler godoc
+// @Summary Export character to CSV
+// @Description Exports a character as a CSV file
+// @Tags Import/Export
+// @Produce text/csv
+// @Param id path int true "Character ID"
+// @Success 200 {file} binary "CSV file with character data"
+// @Failure 401 {object} map[string]string "Unauthorized"
+// @Failure 403 {object} map[string]string "Access denied"
+// @Failure 404 {object} map[string]string "Character not found"
+// @Security BearerAuth
 // @Router /api/importer/export/csv/{id} [get]
 func ExportCharacterCSVHandler(c *gin.Context) {
 	// Get character ID from URL parameter

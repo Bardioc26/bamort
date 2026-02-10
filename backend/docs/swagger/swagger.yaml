@@ -1,0 +1,6361 @@
+basePath: /
+definitions:
+  character.PracticePointResponse:
+    properties:
+      amount:
+        type: integer
+      skill_name:
+        type: string
+    type: object
+  importer.ImportResult:
+    properties:
+      adapter_id:
+        type: string
+      character_id:
+        type: integer
+      created_items:
+        additionalProperties:
+          type: integer
+        description: '{"skills": 3, "spells": 1}'
+        type: object
+      import_id:
+        type: integer
+      status:
+        type: string
+      warnings:
+        items:
+          $ref: '#/definitions/importer.ValidationWarning'
+        type: array
+    type: object
+  importer.ValidationWarning:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+      source:
+        type: string
+    type: object
+  importero.Ap:
+    properties:
+      max:
+        type: integer
+      value:
+        type: integer
+    type: object
+  importero.Ausruestung:
+    properties:
+      anzahl:
+        type: integer
+      beinhaltet_in:
+        type: string
+      beschreibung:
+        type: string
+      bonus:
+        type: integer
+      contained_in:
+        type: integer
+      gewicht:
+        type: number
+      id:
+        type: string
+      magisch:
+        $ref: '#/definitions/importero.Magisch'
+      name:
+        type: string
+      wert:
+        type: number
+    type: object
+  importero.B:
+    properties:
+      max:
+        type: integer
+      value:
+        type: integer
+    type: object
+  importero.Behaeltniss:
+    properties:
+      beinhaltet_in:
+        type: string
+      beschreibung:
+        type: string
+      contained_in:
+        type: integer
+      gewicht:
+        type: number
+      id:
+        type: string
+      magisch:
+        $ref: '#/definitions/importero.Magisch'
+      name:
+        type: string
+      tragkraft:
+        type: number
+      volumen:
+        type: number
+      wert:
+        type: number
+    type: object
+  importero.Bennies:
+    properties:
+      gg:
+        type: integer
+      gp:
+        type: integer
+      sg:
+        type: integer
+    type: object
+  importero.CharacterImport:
+    properties:
+      alter:
+        type: integer
+      anrede:
+        type: string
+      ap:
+        $ref: '#/definitions/importero.Ap'
+      ausruestung:
+        items:
+          $ref: '#/definitions/importero.Ausruestung'
+        type: array
+      b:
+        $ref: '#/definitions/importero.B'
+      behaeltnisse:
+        items:
+          $ref: '#/definitions/importero.Behaeltniss'
+        type: array
+      bennies:
+        $ref: '#/definitions/importero.Bennies'
+      eigenschaften:
+        $ref: '#/definitions/importero.Eigenschaften'
+      erfahrungsschatz:
+        $ref: '#/definitions/importero.Erfahrungsschatz'
+      fertigkeiten:
+        items:
+          $ref: '#/definitions/importero.Fertigkeit'
+        type: array
+      gestalt:
+        $ref: '#/definitions/importero.Gestalt'
+      gewicht:
+        type: integer
+      glaube:
+        type: string
+      grad:
+        type: integer
+      groesse:
+        type: integer
+      hand:
+        type: string
+      id:
+        type: string
+      image:
+        type: string
+      lp:
+        $ref: '#/definitions/importero.Lp'
+      merkmale:
+        $ref: '#/definitions/importero.Merkmale'
+      name:
+        type: string
+      rasse:
+        type: string
+      spezialisierung:
+        items:
+          type: string
+        type: array
+      transportmittel:
+        items:
+          $ref: '#/definitions/importero.Transportation'
+        type: array
+      typ:
+        type: string
+      waffen:
+        items:
+          $ref: '#/definitions/importero.Waffe'
+        type: array
+      waffenfertigkeiten:
+        items:
+          $ref: '#/definitions/importero.Waffenfertigkeit'
+        type: array
+      zauber:
+        items:
+          $ref: '#/definitions/importero.Zauber'
+        type: array
+    type: object
+  importero.Eigenschaften:
+    properties:
+      au:
+        type: integer
+      gs:
+        type: integer
+      gw:
+        type: integer
+      in:
+        type: integer
+      ko:
+        type: integer
+      pa:
+        type: integer
+      st:
+        type: integer
+      wk:
+        type: integer
+      zt:
+        type: integer
+    type: object
+  importero.Erfahrungsschatz:
+    properties:
+      value:
+        type: integer
+    type: object
+  importero.Fertigkeit:
+    properties:
+      beschreibung:
+        type: string
+      bonus:
+        type: integer
+      fertigkeitswert:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      pp:
+        type: integer
+      quelle:
+        type: string
+    type: object
+  importero.Gestalt:
+    properties:
+      breite:
+        type: string
+      groesse:
+        type: string
+    type: object
+  importero.Lp:
+    properties:
+      max:
+        type: integer
+      value:
+        type: integer
+    type: object
+  importero.Magisch:
+    properties:
+      abw:
+        type: integer
+      ausgebrannt:
+        type: boolean
+      ist_magisch:
+        type: boolean
+    type: object
+  importero.Merkmale:
+    properties:
+      augenfarbe:
+        type: string
+      haarfarbe:
+        type: string
+      sonstige:
+        type: string
+    type: object
+  importero.Transportation:
+    properties:
+      beinhaltet_in:
+        type: string
+      beschreibung:
+        type: string
+      contained_in:
+        type: integer
+      gewicht:
+        type: integer
+      id:
+        type: string
+      magisch:
+        $ref: '#/definitions/importero.Magisch'
+      name:
+        type: string
+      tragkraft:
+        type: number
+      wert:
+        type: number
+    type: object
+  importero.Waffe:
+    properties:
+      abwb:
+        type: integer
+      anb:
+        type: integer
+      anzahl:
+        type: integer
+      beinhaltet_in:
+        type: string
+      beschreibung:
+        type: string
+      contained_in:
+        type: integer
+      gewicht:
+        type: number
+      id:
+        type: string
+      magisch:
+        $ref: '#/definitions/importero.Magisch'
+      name:
+        type: string
+      nameFuerSpezialisierung:
+        type: string
+      schb:
+        type: integer
+      wert:
+        type: number
+    type: object
+  importero.Waffenfertigkeit:
+    properties:
+      beschreibung:
+        type: string
+      bonus:
+        type: integer
+      fertigkeitswert:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      pp:
+        type: integer
+      quelle:
+        type: string
+    type: object
+  importero.Zauber:
+    properties:
+      beschreibung:
+        type: string
+      bonus:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      quelle:
+        type: string
+    type: object
+  models.Ap:
+    properties:
+      character_id:
+        type: integer
+      id:
+        type: integer
+      max:
+        type: integer
+      value:
+        type: integer
+    type: object
+  models.AttributesData:
+    properties:
+      au:
+        description: Ausstrahlung
+        type: integer
+      gs:
+        description: Geschicklichkeit
+        type: integer
+      gw:
+        description: Gewandtheit
+        type: integer
+      in:
+        description: Intelligenz
+        type: integer
+      ko:
+        description: Konstitution
+        type: integer
+      st:
+        description: Stärke
+        type: integer
+      zt:
+        description: Zaubertalent
+        type: integer
+    type: object
+  models.AuditLogEntry:
+    properties:
+      character_id:
+        type: integer
+      difference:
+        description: NewValue - OldValue
+        type: integer
+      field_name:
+        description: '"experience_points", "gold", "silver", "copper"'
+        type: string
+      id:
+        type: integer
+      new_value:
+        type: integer
+      notes:
+        description: Zusätzliche Informationen
+        type: string
+      old_value:
+        type: integer
+      reason:
+        description: '"manual", "skill_learning", "skill_improvement", "spell_learning",
+          etc.'
+        type: string
+      timestamp:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.B:
+    properties:
+      character_id:
+        type: integer
+      id:
+        type: integer
+      max:
+        type: integer
+      value:
+        type: integer
+    type: object
+  models.Believe:
+    properties:
+      beschreibung:
+        type: string
+      game_system:
+        type: string
+      game_system_id:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      page_number:
+        description: Seitenzahl im Quellenbuch
+        type: integer
+      quelle:
+        description: 'Deprecated: Für Rückwärtskompatibilität'
+        type: string
+      source_id:
+        description: Verweis auf strukturierte Quelle
+        type: integer
+    type: object
+  models.Bennies:
+    properties:
+      character_id:
+        type: integer
+      gg:
+        description: Göttliche Gnade
+        type: integer
+      gp:
+        description: Glückspunkte
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      sg:
+        description: Schicksalsgunst
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  models.Char:
+    properties:
+      abwehr:
+        type: integer
+      alter:
+        type: integer
+      anrede:
+        type: string
+      ap:
+        $ref: '#/definitions/models.Ap'
+      ausruestung:
+        items:
+          $ref: '#/definitions/models.EqAusruestung'
+        type: array
+      b:
+        $ref: '#/definitions/models.B'
+      behaeltnisse:
+        items:
+          $ref: '#/definitions/models.EqContainer'
+        type: array
+      bennies:
+        $ref: '#/definitions/models.Bennies'
+      eigenschaften:
+        items:
+          $ref: '#/definitions/models.Eigenschaft'
+        type: array
+      erfahrungsschatz:
+        $ref: '#/definitions/models.Erfahrungsschatz'
+      fertigkeiten:
+        items:
+          $ref: '#/definitions/models.SkFertigkeit'
+        type: array
+      game_system:
+        type: string
+      game_system_id:
+        type: integer
+      gender:
+        type: string
+      gewicht:
+        type: integer
+      glaube:
+        type: string
+      grad:
+        type: integer
+      groesse:
+        type: integer
+      hand:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      imported_at:
+        type: string
+      imported_from_adapter:
+        description: Import provenance tracking
+        type: string
+      lp:
+        $ref: '#/definitions/models.Lp'
+      merkmale:
+        $ref: '#/definitions/models.Merkmale'
+      name:
+        type: string
+      origin:
+        type: string
+      public:
+        type: boolean
+      rasse:
+        type: string
+      raufen:
+        type: integer
+      resistenz_geist:
+        type: integer
+      resistenz_koerper:
+        description: Static derived values (can increase with grade)
+        type: integer
+      social_class:
+        type: string
+      spezialisierung:
+        items:
+          type: string
+        type: array
+      transportmittel:
+        items:
+          $ref: '#/definitions/models.EqContainer'
+        type: array
+      typ:
+        type: string
+      user:
+        $ref: '#/definitions/user.User'
+      user_id:
+        type: integer
+      vermoegen:
+        $ref: '#/definitions/models.Vermoegen'
+      waffen:
+        items:
+          $ref: '#/definitions/models.EqWaffe'
+        type: array
+      waffenfertigkeiten:
+        items:
+          $ref: '#/definitions/models.SkWaffenfertigkeit'
+        type: array
+      zauber:
+        items:
+          $ref: '#/definitions/models.SkZauber'
+        type: array
+      zaubern:
+        type: integer
+    type: object
+  models.CharacterClass:
+    properties:
+      code:
+        description: z.B. "Hx", "Ma", "Kr"
+        type: string
+      description:
+        description: 'Optional: Beschreibung der Klasse'
+        type: string
+      game_system:
+        type: string
+      game_system_id:
+        type: integer
+      id:
+        type: integer
+      name:
+        description: z.B. "Hexer", "Magier", "Krieger"
+        type: string
+      quelle:
+        description: 'Optional: Quelle der Kategorie, falls abweichend'
+        type: string
+      source:
+        $ref: '#/definitions/models.Source'
+      source_id:
+        description: Verweis auf das Quellenbuch
+        type: integer
+    type: object
+  models.CharacterCreationSession:
+    properties:
+      attributes:
+        $ref: '#/definitions/models.AttributesData'
+      created_at:
+        type: string
+      current_step:
+        description: 1=Basic, 2=Attributes, 3=Derived, 4=Skills
+        type: integer
+      derived_values:
+        $ref: '#/definitions/models.DerivedValuesData'
+      expires_at:
+        type: string
+      geschlecht:
+        type: string
+      glaube:
+        type: string
+      herkunft:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      rasse:
+        type: string
+      skill_points:
+        $ref: '#/definitions/models.SkillPointsData'
+      skills:
+        items:
+          $ref: '#/definitions/models.CharacterCreationSkill'
+        type: array
+      spells:
+        items:
+          $ref: '#/definitions/models.CharacterCreationSpell'
+        type: array
+      stand:
+        type: string
+      typ:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/user.User'
+      user_id:
+        type: integer
+    type: object
+  models.CharacterCreationSkill:
+    properties:
+      category:
+        type: string
+      cost:
+        type: integer
+      level:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.CharacterCreationSpell:
+    properties:
+      cost:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.DerivedValuesData:
+    properties:
+      abwehr:
+        description: Abwehr
+        type: integer
+      abwehr_bonus:
+        description: Abwehr Bonus
+        type: integer
+      angriffs_bonus:
+        description: Angriffs Bonus
+        type: integer
+      ap_max:
+        description: Abenteuerpunkte Maximum
+        type: integer
+      ausdauer_bonus:
+        description: Ausdauer Bonus
+        type: integer
+      b_max:
+        description: Belastung Maximum
+        type: integer
+      gg:
+        description: Göttliche Gnade
+        type: integer
+      gp:
+        description: Glückspunkte
+        type: integer
+      lp_max:
+        description: Lebenspunkte Maximum
+        type: integer
+      pa:
+        description: Persönliche Ausstrahlung
+        type: integer
+      raufen:
+        description: Raufen
+        type: integer
+      resistenz_bonus_geist:
+        description: Resistenz Bonus Geist
+        type: integer
+      resistenz_bonus_koerper:
+        description: Resistenz Bonus Körper
+        type: integer
+      resistenz_geist:
+        description: Resistenz Geist
+        type: integer
+      resistenz_koerper:
+        description: Resistenz Körper
+        type: integer
+      schadens_bonus:
+        description: Schadens Bonus
+        type: integer
+      sg:
+        description: Schicksalsgunst
+        type: integer
+      wk:
+        description: Willenskraft
+        type: integer
+      zauber_bonus:
+        description: Zauber Bonus
+        type: integer
+      zaubern:
+        description: Zaubern
+        type: integer
+    type: object
+  models.Eigenschaft:
+    properties:
+      character_id:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      user_id:
+        type: integer
+      value:
+        type: integer
+    type: object
+  models.EqAusruestung:
+    properties:
+      abw:
+        type: integer
+      anzahl:
+        type: integer
+      ausgebrannt:
+        type: boolean
+      beinhaltet_in:
+        type: string
+      beschreibung:
+        type: string
+      bonus:
+        type: integer
+      character_id:
+        type: integer
+      contained_in:
+        type: integer
+      container_type:
+        type: string
+      gewicht:
+        type: number
+      id:
+        type: integer
+      ist_magisch:
+        type: boolean
+      name:
+        type: string
+      user_id:
+        type: integer
+      wert:
+        type: number
+    type: object
+  models.EqContainer:
+    properties:
+      abw:
+        type: integer
+      ausgebrannt:
+        type: boolean
+      beinhaltet_in:
+        type: string
+      beschreibung:
+        type: string
+      character_id:
+        type: integer
+      contained_in:
+        type: integer
+      ext_id:
+        type: string
+      gewicht:
+        type: number
+      id:
+        type: integer
+      is_transportation:
+        type: boolean
+      ist_magisch:
+        type: boolean
+      name:
+        type: string
+      tragkraft:
+        type: number
+      user_id:
+        type: integer
+      volumen:
+        type: number
+      wert:
+        type: number
+    type: object
+  models.EqWaffe:
+    properties:
+      abw:
+        type: integer
+      abwb:
+        description: Abwehrbonus
+        type: integer
+      anb:
+        description: Angriffsbonus
+        type: integer
+      anzahl:
+        type: integer
+      ausgebrannt:
+        type: boolean
+      beinhaltet_in:
+        type: string
+      beschreibung:
+        type: string
+      character_id:
+        type: integer
+      contained_in:
+        type: integer
+      container_type:
+        type: string
+      gewicht:
+        type: number
+      id:
+        type: integer
+      ist_magisch:
+        type: boolean
+      name:
+        type: string
+      nameFuerSpezialisierung:
+        type: string
+      schb:
+        description: Schadensbonus
+        type: integer
+      user_id:
+        type: integer
+      wert:
+        type: number
+    type: object
+  models.Equipment:
+    properties:
+      beschreibung:
+        type: string
+      game_system:
+        type: string
+      game_system_id:
+        type: integer
+      gewicht:
+        description: in kg
+        type: number
+      id:
+        type: integer
+      name:
+        type: string
+      page_number:
+        description: Seitenzahl im Quellenbuch
+        type: integer
+      personal_item:
+        type: boolean
+      quelle:
+        description: 'Deprecated: Für Rückwärtskompatibilität'
+        type: string
+      source_id:
+        description: Verweis auf strukturierte Quelle
+        type: integer
+      wert:
+        description: in Gold
+        type: number
+    type: object
+  models.Erfahrungsschatz:
+    properties:
+      character_id:
+        type: integer
+      ep:
+        description: Erfahrungspunkte
+        type: integer
+      es:
+        description: Erfahrungsschatz
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.GameSystem:
+    properties:
+      code:
+        type: string
+      createdAt:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      modifiedAt:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.LearnCost:
+    properties:
+      ep:
+        type: integer
+      game_system:
+        type: string
+      game_system_id:
+        type: integer
+      le:
+        type: integer
+      money:
+        type: integer
+      pp:
+        type: integer
+      stufe:
+        type: integer
+      te:
+        type: integer
+    type: object
+  models.Lp:
+    properties:
+      character_id:
+        type: integer
+      id:
+        type: integer
+      max:
+        type: integer
+      value:
+        type: integer
+    type: object
+  models.Merkmale:
+    properties:
+      augenfarbe:
+        type: string
+      breite:
+        type: string
+      character_id:
+        type: integer
+      groesse:
+        type: string
+      haarfarbe:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      sonstige:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.SkFertigkeit:
+    properties:
+      basiswert:
+        type: integer
+      bemerkung:
+        type: string
+      beschreibung:
+        type: string
+      bonus:
+        type: integer
+      category:
+        type: string
+      character_id:
+        type: integer
+      fertigkeitswert:
+        type: integer
+      id:
+        type: integer
+      improvable:
+        type: boolean
+      learncost:
+        $ref: '#/definitions/models.LearnCost'
+      name:
+        type: string
+      pp:
+        description: Praxispunkte
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  models.SkWaffenfertigkeit:
+    properties:
+      basiswert:
+        type: integer
+      bemerkung:
+        type: string
+      beschreibung:
+        type: string
+      bonus:
+        type: integer
+      category:
+        type: string
+      character_id:
+        type: integer
+      fertigkeitswert:
+        type: integer
+      id:
+        type: integer
+      improvable:
+        type: boolean
+      learncost:
+        $ref: '#/definitions/models.LearnCost'
+      name:
+        type: string
+      pp:
+        description: Praxispunkte
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  models.SkZauber:
+    properties:
+      beschreibung:
+        type: string
+      bonus:
+        type: integer
+      character_id:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      quelle:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.SkillImprovementCost:
+    properties:
+      current_level:
+        description: Aktueller Fertigkeitswert
+        type: integer
+      id:
+        type: integer
+      skillCategoryId:
+        description: SkillCategoryID
+        type: integer
+      skillDifficultyId:
+        description: SkillDifficultyID
+        type: integer
+      te_required:
+        description: Benötigte Trainingseinheiten
+        type: integer
+    type: object
+  models.SkillPointsData:
+    additionalProperties:
+      type: integer
+    type: object
+  models.Source:
+    properties:
+      code:
+        description: z.B. "KOD", "ARK", "MYS"
+        type: string
+      description:
+        description: Beschreibung des Werks
+        type: string
+      edition:
+        description: z.B. "5. Edition"
+        type: string
+      full_name:
+        description: z.B. "Midgard Regelwerk - Kodex"
+        type: string
+      game_system:
+        type: string
+      game_system_id:
+        type: integer
+      id:
+        type: integer
+      is_active:
+        description: Ist das Werk aktiv/verfügbar?
+        type: boolean
+      is_core:
+        description: Ist es ein Grundregelwerk?
+        type: boolean
+      name:
+        description: z.B. "Kodex", "Arkanum", "Mysterium"
+        type: string
+      publish_year:
+        description: Erscheinungsjahr
+        type: integer
+      publisher:
+        description: z.B. "Pegasus Spiele"
+        type: string
+    type: object
+  models.Spell:
+    properties:
+      ap:
+        type: string
+      art:
+        type: string
+      beschreibung:
+        type: string
+      bonus:
+        type: integer
+      category:
+        description: spell_school
+        type: string
+      game_system:
+        type: string
+      game_system_id:
+        type: integer
+      id:
+        type: integer
+      learning_category:
+        type: string
+      level:
+        type: integer
+      name:
+        type: string
+      page_number:
+        description: Seitenzahl im Quellenbuch
+        type: integer
+      personal_item:
+        description: House rule / custom item
+        type: boolean
+      quelle:
+        description: 'Deprecated: Für Rückwärtskompatibilität'
+        type: string
+      reichweite:
+        description: in m
+        type: string
+      source_id:
+        description: Verweis auf strukturierte Quelle
+        type: integer
+      ursprung:
+        type: string
+      wirkungsbereich:
+        type: string
+      wirkungsdauer:
+        type: string
+      wirkungsziel:
+        type: string
+      zauberdauer:
+        type: string
+    type: object
+  models.Vermoegen:
+    properties:
+      character_id:
+        type: integer
+      goldstücke:
+        description: GS
+        type: integer
+      id:
+        type: integer
+      kupferstücke:
+        description: KS
+        type: integer
+      name:
+        type: string
+      silberstücke:
+        description: SS
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  models.Weapon:
+    properties:
+      beschreibung:
+        type: string
+      damage:
+        type: string
+      game_system:
+        type: string
+      game_system_id:
+        type: integer
+      gewicht:
+        description: in kg
+        type: number
+      id:
+        type: integer
+      name:
+        type: string
+      page_number:
+        description: Seitenzahl im Quellenbuch
+        type: integer
+      personal_item:
+        type: boolean
+      quelle:
+        description: 'Deprecated: Für Rückwärtskompatibilität'
+        type: string
+      range_far:
+        description: Range in meters for "Fern" (far)
+        type: integer
+      range_middle:
+        description: Range in meters for "Mittel" (medium)
+        type: integer
+      range_near:
+        description: Range in meters for "Nah" (near)
+        type: integer
+      skill_required:
+        type: string
+      source_id:
+        description: Verweis auf strukturierte Quelle
+        type: integer
+      wert:
+        description: in Gold
+        type: number
+    type: object
+  user.User:
+    properties:
+      created_at:
+        type: string
+      display_name:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      preferred_language:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8180
+info:
+  contact:
+    email: bamort.support@trokan.de
+    name: BaMoRT Support
+  description: |-
+    BaMoRT (MOAM Replacement) - Role-playing Game Character Management System API
+
+    This API provides comprehensive character management, import/export functionality,
+    master data management, and PDF generation for tabletop role-playing games.
+
+    ## Authentication
+    Most endpoints require authentication via JWT token. Obtain a token by calling POST /login.
+    Include the token in the Authorization header: `Authorization: Bearer <token>`
+
+    ## Character Import/Export
+    The API supports pluggable adapters for importing/exporting characters from various systems.
+    Supported formats include MOAM VTT, Foundry VTT, and more via microservice adapters.
+  license:
+    name: Custom License
+    url: https://github.com/Bardioc26/bamort/blob/main/LICENSE
+  title: BaMoRT API
+  version: "2.0"
+paths:
+  /api/characters:
+    get:
+      description: Returns all characters owned by or shared with the authenticated
+        user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of characters
+          schema:
+            items:
+              $ref: '#/definitions/models.Char'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all characters
+      tags:
+      - Characters
+    post:
+      consumes:
+      - application/json
+      description: Creates a new character for the authenticated user
+      parameters:
+      - description: Character data
+        in: body
+        name: character
+        required: true
+        schema:
+          $ref: '#/definitions/models.Char'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created character
+          schema:
+            $ref: '#/definitions/models.Char'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create new character
+      tags:
+      - Characters
+  /api/characters/{id}:
+    delete:
+      description: Deletes a character (must be owner)
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Character deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Character not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete character
+      tags:
+      - Characters
+    get:
+      description: Returns a specific character by ID (must be owned by or shared
+        with user)
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Character data
+          schema:
+            $ref: '#/definitions/models.Char'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Character not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get character by ID
+      tags:
+      - Characters
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing character (must be owner)
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated character data
+        in: body
+        name: character
+        required: true
+        schema:
+          $ref: '#/definitions/models.Char'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated character
+          schema:
+            $ref: '#/definitions/models.Char'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Character not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update character
+      tags:
+      - Characters
+  /api/characters/{id}/audit-log:
+    get:
+      description: Returns audit log of all changes to a character (optionally filtered
+        by field)
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Filter by field name
+        in: query
+        name: field
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Audit log entries
+          schema:
+            items:
+              $ref: '#/definitions/models.AuditLogEntry'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get character audit log
+      tags:
+      - Characters
+  /api/characters/{id}/audit-log/stats:
+    get:
+      description: Returns statistics about character changes (total changes, by field,
+        etc.)
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Audit log statistics
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get audit log statistics
+      tags:
+      - Characters
+  /api/characters/{id}/available-users:
+    get:
+      description: Returns list of users available to share character with (excludes
+        owner and current shares)
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of available users
+          schema:
+            items:
+              type: object
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get available users for sharing
+      tags:
+      - Characters
+  /api/characters/{id}/datasheet-options:
+    get:
+      description: Returns available PDF templates and options for character sheet
+        export
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Datasheet export options
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get datasheet export options
+      tags:
+      - Characters
+  /api/characters/{id}/experience:
+    put:
+      consumes:
+      - application/json
+      description: Updates character experience points with audit logging
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Experience data
+        in: body
+        name: experience
+        required: true
+        schema:
+          properties:
+            experience_points:
+              type: integer
+            reason:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Experience updated successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update character experience
+      tags:
+      - Characters
+  /api/characters/{id}/experience-wealth:
+    get:
+      description: Returns detailed experience points, practice points, and wealth
+        information
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Experience and wealth data
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Character not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get character experience and wealth
+      tags:
+      - Characters
+  /api/characters/{id}/image:
+    put:
+      consumes:
+      - multipart/form-data
+      description: Uploads and sets a character portrait image (owner only)
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Character portrait image
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Image updated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid image file
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update character image
+      tags:
+      - Characters
+  /api/characters/{id}/learn-skill-new:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new skill to the character with experience cost deduction
+        and audit logging
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Skill learning data
+        in: body
+        name: skill_data
+        required: true
+        schema:
+          properties:
+            initial_value:
+              type: integer
+            reward_type:
+              type: string
+            skill_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Skill learned successfully
+          schema:
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Learn new skill
+      tags:
+      - Characters
+  /api/characters/{id}/learn-spell-new:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new spell to the character with experience cost deduction
+        and audit logging
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Spell learning data
+        in: body
+        name: spell_data
+        required: true
+        schema:
+          properties:
+            reward_type:
+              type: string
+            spell_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Spell learned successfully
+          schema:
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Learn new spell
+      tags:
+      - Characters
+  /api/characters/{id}/practice-points:
+    get:
+      description: Returns all practice points for a character
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Practice points list
+          schema:
+            items:
+              $ref: '#/definitions/character.PracticePointResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get practice points
+      tags:
+      - Characters
+    put:
+      consumes:
+      - application/json
+      description: Updates the practice points for a character (owner only)
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Practice points data
+        in: body
+        name: practice_points
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/character.PracticePointResponse'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Practice points updated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update practice points
+      tags:
+      - Characters
+  /api/characters/{id}/practice-points/add:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new practice point to a character (owner only)
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Practice point data
+        in: body
+        name: practice_point
+        required: true
+        schema:
+          $ref: '#/definitions/character.PracticePointResponse'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Added practice point
+          schema:
+            $ref: '#/definitions/character.PracticePointResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add practice point
+      tags:
+      - Characters
+  /api/characters/{id}/practice-points/use:
+    post:
+      consumes:
+      - application/json
+      description: Marks a practice point as used and applies it to skill improvement
+        (owner only)
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Practice point usage data
+        in: body
+        name: use_data
+        required: true
+        schema:
+          properties:
+            practice_point_id:
+              type: integer
+            skill_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Practice point used successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Use practice point
+      tags:
+      - Characters
+  /api/characters/{id}/reward-types:
+    get:
+      description: Returns available reward types for skill/spell learning contexts
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of reward types
+          schema:
+            items:
+              type: string
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get reward types
+      tags:
+      - Reference Data
+  /api/characters/{id}/shares:
+    get:
+      description: Returns list of users with whom the character is shared
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of user shares
+          schema:
+            items:
+              type: object
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Character not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get character shares
+      tags:
+      - Characters
+    put:
+      consumes:
+      - application/json
+      description: Updates the list of users with whom the character is shared (owner
+        only)
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: List of user IDs to share with
+        in: body
+        name: shares
+        required: true
+        schema:
+          properties:
+            user_ids:
+              items:
+                type: integer
+              type: array
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Shares updated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update character shares
+      tags:
+      - Characters
+  /api/characters/{id}/wealth:
+    put:
+      consumes:
+      - application/json
+      description: Updates character wealth (gold, silver, copper) with audit logging
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Wealth data
+        in: body
+        name: wealth
+        required: true
+        schema:
+          properties:
+            copper:
+              type: integer
+            gold:
+              type: integer
+            reason:
+              type: string
+            silver:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Wealth updated successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update character wealth
+      tags:
+      - Characters
+  /api/characters/available-skills-creation:
+    post:
+      consumes:
+      - application/json
+      description: Returns list of skills available during character creation with
+        learning costs
+      parameters:
+      - description: Character class and race
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            character_class_id:
+              type: integer
+            race_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Available skills with creation costs
+          schema:
+            items:
+              type: object
+            type: array
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get skills for character creation
+      tags:
+      - Character Creation
+  /api/characters/available-skills-new:
+    post:
+      consumes:
+      - application/json
+      description: Returns list of skills available to learn for character (excluding
+        already learned)
+      parameters:
+      - description: Character ID
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            character_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Available skills with costs
+          schema:
+            items:
+              type: object
+            type: array
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get available skills
+      tags:
+      - Characters
+  /api/characters/available-spells-creation:
+    post:
+      consumes:
+      - application/json
+      description: Returns list of spells available during character creation with
+        learning costs
+      parameters:
+      - description: Character class ID
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            character_class_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Available spells with creation costs
+          schema:
+            items:
+              type: object
+            type: array
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get spells for character creation
+      tags:
+      - Character Creation
+  /api/characters/available-spells-new:
+    post:
+      consumes:
+      - application/json
+      description: Returns list of spells available to learn for character (excluding
+        already learned)
+      parameters:
+      - description: Character ID
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            character_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Available spells with costs
+          schema:
+            items:
+              type: object
+            type: array
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get available spells
+      tags:
+      - Characters
+  /api/characters/beliefs:
+    get:
+      description: Searches for character beliefs/religions by query string
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of matching beliefs
+          schema:
+            items:
+              $ref: '#/definitions/models.Believe'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Search beliefs
+      tags:
+      - Character Creation
+  /api/characters/calculate-rolled-field:
+    post:
+      consumes:
+      - application/json
+      description: Calculates a derived value with dice rolls (e.g., hit points, magic
+        resistance)
+      parameters:
+      - description: Field name and character data
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            attributes:
+              type: object
+            field:
+              type: string
+            race_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Rolled field result with dice details
+          schema:
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Calculate rolled character field
+      tags:
+      - Character Creation
+  /api/characters/calculate-static-fields:
+    post:
+      consumes:
+      - application/json
+      description: Calculates derived character values without dice rolls (e.g., modifiers,
+        bonuses)
+      parameters:
+      - description: Character attributes and race
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            attributes:
+              type: object
+            race_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Calculated static fields
+          schema:
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Calculate static character fields
+      tags:
+      - Character Creation
+  /api/characters/classes:
+    get:
+      description: Returns list of all available character classes
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of character classes
+          schema:
+            items:
+              $ref: '#/definitions/models.CharacterClass'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get available character classes
+      tags:
+      - Character Creation
+  /api/characters/classes/learning-points:
+    get:
+      description: Returns learning point allocations for a specific character class
+      parameters:
+      - description: Character class ID
+        in: query
+        name: class_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Learning points data
+          schema:
+            type: object
+        "400":
+          description: Invalid class ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get character class learning points
+      tags:
+      - Character Creation
+  /api/characters/create-session:
+    post:
+      consumes:
+      - application/json
+      description: Starts a new character creation session for the authenticated user
+      parameters:
+      - description: Game system ID
+        in: body
+        name: session_data
+        required: true
+        schema:
+          properties:
+            game_system_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created session
+          schema:
+            $ref: '#/definitions/models.CharacterCreationSession'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create character creation session
+      tags:
+      - Character Creation
+  /api/characters/create-session/{sessionId}:
+    delete:
+      description: Deletes an active character creation session
+      parameters:
+      - description: Session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Session deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Session not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete character creation session
+      tags:
+      - Character Creation
+    get:
+      description: Returns data for an active character creation session
+      parameters:
+      - description: Session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Session data
+          schema:
+            $ref: '#/definitions/models.CharacterCreationSession'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Session not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get character creation session
+      tags:
+      - Character Creation
+  /api/characters/create-session/{sessionId}/attributes:
+    put:
+      consumes:
+      - application/json
+      description: Updates character attributes in creation session
+      parameters:
+      - description: Session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      - description: Character attributes
+        in: body
+        name: attributes
+        required: true
+        schema:
+          properties:
+            Gs:
+              type: integer
+            In:
+              type: integer
+            Ko:
+              type: integer
+            St:
+              type: integer
+            Zt:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated session
+          schema:
+            $ref: '#/definitions/models.CharacterCreationSession'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update character attributes
+      tags:
+      - Character Creation
+  /api/characters/create-session/{sessionId}/basic:
+    put:
+      consumes:
+      - application/json
+      description: Updates basic character information in creation session
+      parameters:
+      - description: Session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      - description: Basic character info
+        in: body
+        name: basic_info
+        required: true
+        schema:
+          properties:
+            class_id:
+              type: integer
+            name:
+              type: string
+            origin_id:
+              type: integer
+            race_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated session
+          schema:
+            $ref: '#/definitions/models.CharacterCreationSession'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update character basic info
+      tags:
+      - Character Creation
+  /api/characters/create-session/{sessionId}/derived:
+    put:
+      consumes:
+      - application/json
+      description: Updates derived values (HP, magic resistance, etc.) in creation
+        session
+      parameters:
+      - description: Session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      - description: Derived values
+        in: body
+        name: derived_values
+        required: true
+        schema:
+          properties:
+            LP:
+              type: integer
+            MR:
+              type: integer
+            damage_bonus:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated session
+          schema:
+            $ref: '#/definitions/models.CharacterCreationSession'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update derived character values
+      tags:
+      - Character Creation
+  /api/characters/create-session/{sessionId}/finalize:
+    post:
+      consumes:
+      - application/json
+      description: Completes character creation session and creates the final character
+      parameters:
+      - description: Session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created character
+          schema:
+            $ref: '#/definitions/models.Char'
+        "400":
+          description: Invalid session data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Finalize character creation
+      tags:
+      - Character Creation
+  /api/characters/create-session/{sessionId}/skills:
+    put:
+      consumes:
+      - application/json
+      description: Updates character skills and spells in creation session
+      parameters:
+      - description: Session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      - description: Skills and spells
+        in: body
+        name: skills
+        required: true
+        schema:
+          properties:
+            learned_skills:
+              type: array
+            learned_spells:
+              type: array
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated session
+          schema:
+            $ref: '#/definitions/models.CharacterCreationSession'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update character skills
+      tags:
+      - Character Creation
+  /api/characters/create-sessions:
+    get:
+      description: Returns all active character creation sessions for the authenticated
+        user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of sessions
+          schema:
+            items:
+              $ref: '#/definitions/models.CharacterCreationSession'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List character creation sessions
+      tags:
+      - Character Creation
+  /api/characters/improve-skill-new:
+    post:
+      consumes:
+      - application/json
+      description: Increases the value of an existing skill with experience cost deduction
+        and audit logging
+      parameters:
+      - description: Skill improvement data
+        in: body
+        name: improve_data
+        required: true
+        schema:
+          properties:
+            character_id:
+              type: integer
+            new_value:
+              type: integer
+            reward_type:
+              type: string
+            skill_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Skill improved successfully
+          schema:
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Improve existing skill
+      tags:
+      - Characters
+  /api/characters/lerncost-new:
+    post:
+      consumes:
+      - application/json
+      description: Calculates the experience point cost for learning or improving
+        a skill/spell
+      parameters:
+      - description: Learning cost request
+        in: body
+        name: learn_request
+        required: true
+        schema:
+          properties:
+            character_id:
+              type: integer
+            current_value:
+              type: integer
+            reward_type:
+              type: string
+            skill_id:
+              type: integer
+            spell_id:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Learning cost calculation result
+          schema:
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Calculate learning costs
+      tags:
+      - Characters
+  /api/characters/origins:
+    get:
+      description: Returns list of available character origins/backgrounds
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of origin names
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get available origins
+      tags:
+      - Character Creation
+  /api/characters/races:
+    get:
+      description: Returns list of all available character races
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of race names
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get available races
+      tags:
+      - Character Creation
+  /api/characters/skill-categories:
+    get:
+      description: Returns list of all skill categories (static data)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of skill categories
+          schema:
+            items:
+              type: object
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get skill categories
+      tags:
+      - Reference Data
+  /api/characters/spell-details:
+    get:
+      description: Returns detailed information about a specific spell
+      parameters:
+      - description: Spell ID
+        in: query
+        name: spell_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Spell details
+          schema:
+            $ref: '#/definitions/models.Spell'
+        "400":
+          description: Invalid spell ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Spell not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get spell details
+      tags:
+      - Reference Data
+  /api/equipment:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new equipment item for a character (owner only)
+      parameters:
+      - description: Equipment data
+        in: body
+        name: equipment
+        required: true
+        schema:
+          $ref: '#/definitions/models.EqAusruestung'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created equipment
+          schema:
+            $ref: '#/definitions/models.EqAusruestung'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create equipment
+      tags:
+      - Equipment
+  /api/equipment/{ausruestung_id}:
+    delete:
+      description: Deletes an equipment item (owner only)
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: ausruestung_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Equipment deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Equipment not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete equipment
+      tags:
+      - Equipment
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing equipment item (owner only)
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: ausruestung_id
+        required: true
+        type: integer
+      - description: Updated equipment data
+        in: body
+        name: equipment
+        required: true
+        schema:
+          $ref: '#/definitions/models.EqAusruestung'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated equipment
+          schema:
+            $ref: '#/definitions/models.EqAusruestung'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update equipment
+      tags:
+      - Equipment
+  /api/equipment/character/{character_id}:
+    get:
+      description: Returns all equipment items for a specific character
+      parameters:
+      - description: Character ID
+        in: path
+        name: character_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of equipment
+          schema:
+            items:
+              $ref: '#/definitions/models.EqAusruestung'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List character equipment
+      tags:
+      - Equipment
+  /api/import/adapters:
+    get:
+      description: Returns all registered adapters with their health status and capabilities
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of adapters with metadata
+          schema:
+            additionalProperties: true
+            type: object
+        "503":
+          description: Import service not initialized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List available adapters
+      tags:
+      - Import
+  /api/import/detect:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Analyzes uploaded file and returns the most likely adapter with
+        confidence score
+      parameters:
+      - description: Character file to detect (max 10MB)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Detection result with adapter_id, confidence, and suggested_adapter_name
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid file or malformed JSON
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Detection failed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Import service not initialized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Detect character file format
+      tags:
+      - Import
+  /api/import/export/{id}:
+    post:
+      description: Exports character to original or specified adapter format
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Override adapter (uses original if not specified)
+        in: query
+        name: adapter_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Invalid character ID or missing adapter
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: User not authenticated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Character not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Adapter unavailable with suggestions
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Export failed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Import service not initialized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Export character to external format
+      tags:
+      - Import
+  /api/import/history:
+    get:
+      description: Returns paginated list of user's character imports
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Items per page (default: 20, max: 100)'
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Import history with pagination
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: User not authenticated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to fetch history
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user's import history
+      tags:
+      - Import
+  /api/import/history/{id}:
+    get:
+      description: Returns detailed information about a specific import including
+        errors and master data
+      parameters:
+      - description: Import History ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Import details with master data imports
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid import ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: User not authenticated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Import not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get detailed import information
+      tags:
+      - Import
+  /api/import/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Imports character from uploaded file using specified or auto-detected
+        adapter
+      parameters:
+      - description: Character file to import (max 10MB)
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Override auto-detection with specific adapter ID
+        in: query
+        name: adapter_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Import successful with character ID and warnings
+          schema:
+            $ref: '#/definitions/importer.ImportResult'
+        "400":
+          description: Invalid file or request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: User not authenticated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation failed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Import failed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Adapter unavailable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Import character from external format
+      tags:
+      - Import
+  /api/importer/export/csv/{id}:
+    get:
+      description: |-
+        Exports a character to CSV format (MOAM-compatible)
+        Exports a character as a CSV file
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - text/csv
+      - text/csv
+      responses:
+        "200":
+          description: CSV file with character data
+          schema:
+            type: file
+        "400":
+          description: Bad request - invalid character ID
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Character not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error - export failed
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Export character to CSV
+      tags:
+      - importer
+      - Import/Export
+  /api/importer/export/spells/csv:
+    get:
+      description: |-
+        Exports spell master data to CSV format
+        Exports all spells as a CSV file
+      parameters:
+      - description: Game system filter (e.g., 'midgard')
+        in: query
+        name: game_system
+        type: string
+      produces:
+      - text/csv
+      - text/csv
+      responses:
+        "200":
+          description: CSV file with spells
+          schema:
+            type: file
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error - export failed
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Export spells to CSV
+      tags:
+      - importer
+      - Import/Export
+  /api/importer/export/vtt/{id}:
+    get:
+      description: |-
+        Exports a character to VTT JSON format for use in other systems
+        Exports a character in Virtual Tabletop (VTT) JSON format
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: Character in VTT format
+          schema:
+            type: object
+        "400":
+          description: Bad request - invalid character ID
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Character not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error - export failed
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Export character to VTT JSON
+      tags:
+      - importer
+      - Import/Export
+  /api/importer/export/vtt/{id}/file:
+    get:
+      description: |-
+        Exports a character to VTT JSON file and returns it as a download
+        Downloads a character as a VTT JSON file attachment
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: VTT JSON file download
+          schema:
+            type: file
+        "400":
+          description: Bad request - invalid character ID
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Character not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error - export failed
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Download character as VTT JSON file
+      tags:
+      - importer
+      - Import/Export
+  /api/importer/spells/csv:
+    post:
+      consumes:
+      - multipart/form-data
+      - multipart/form-data
+      description: |-
+        Imports spell data from a CSV file into the database. The CSV file should contain spell information with headers matching the database fields.
+        Imports spells from a CSV file
+      parameters:
+      - description: CSV file to import
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: CSV file containing spells
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: Import result
+          schema:
+            type: object
+        "400":
+          description: Invalid CSV file
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error - import failed
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Import spells from CSV
+      tags:
+      - importer
+      - Import/Export
+  /api/importer/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Uploads files for import processing
+      parameters:
+      - description: File(s) to upload
+        in: formData
+        name: files
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Upload result
+          schema:
+            type: object
+        "400":
+          description: Invalid file upload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Upload files
+      tags:
+      - Import/Export
+  /api/maintenance:
+    get:
+      description: Returns a summary of all game system master data (skills, spells,
+        equipment, weapons)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Master data summary
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all master data
+      tags:
+      - Master Data
+  /api/maintenance/equipment:
+    get:
+      description: Returns list of all game system equipment items
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of equipment
+          schema:
+            items:
+              $ref: '#/definitions/models.Equipment'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all equipment
+      tags:
+      - Master Data
+    post:
+      consumes:
+      - application/json
+      description: Creates a new equipment item in the game system (maintainer only)
+      parameters:
+      - description: New equipment data
+        in: body
+        name: equipment
+        required: true
+        schema:
+          $ref: '#/definitions/models.Equipment'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created equipment
+          schema:
+            $ref: '#/definitions/models.Equipment'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add new equipment
+      tags:
+      - Master Data Admin
+  /api/maintenance/equipment/{id}:
+    delete:
+      description: Deletes an equipment item from the game system (maintainer only)
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Equipment deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Equipment not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete equipment
+      tags:
+      - Master Data Admin
+    get:
+      description: Returns a specific equipment item by ID
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Equipment data
+          schema:
+            $ref: '#/definitions/models.Equipment'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Equipment not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get equipment by ID
+      tags:
+      - Master Data
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing equipment item (maintainer only)
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated equipment data
+        in: body
+        name: equipment
+        required: true
+        schema:
+          $ref: '#/definitions/models.Equipment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated equipment
+          schema:
+            $ref: '#/definitions/models.Equipment'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update equipment item
+      tags:
+      - Master Data Admin
+  /api/maintenance/game-systems:
+    get:
+      description: Returns list of all game systems (maintainer only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of game systems
+          schema:
+            items:
+              $ref: '#/definitions/models.GameSystem'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get game systems
+      tags:
+      - Maintenance
+  /api/maintenance/game-systems/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing game system (maintainer only)
+      parameters:
+      - description: Game system ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated game system data
+        in: body
+        name: system
+        required: true
+        schema:
+          $ref: '#/definitions/models.GameSystem'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated game system
+          schema:
+            $ref: '#/definitions/models.GameSystem'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update game system
+      tags:
+      - Maintenance
+  /api/maintenance/gsm-believes:
+    get:
+      description: Returns list of all beliefs/religions (maintainer only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of beliefs
+          schema:
+            items:
+              $ref: '#/definitions/models.Believe'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get beliefs
+      tags:
+      - Maintenance
+  /api/maintenance/gsm-believes/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing belief/religion (maintainer only)
+      parameters:
+      - description: Belief ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated belief data
+        in: body
+        name: belief
+        required: true
+        schema:
+          $ref: '#/definitions/models.Believe'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated belief
+          schema:
+            $ref: '#/definitions/models.Believe'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update belief
+      tags:
+      - Maintenance
+  /api/maintenance/gsm-lit-sources:
+    get:
+      description: Returns list of all literature sources (maintainer only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of literature sources
+          schema:
+            items:
+              $ref: '#/definitions/models.Source'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get literature sources
+      tags:
+      - Maintenance
+  /api/maintenance/gsm-lit-sources/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing literature source (maintainer only)
+      parameters:
+      - description: Literature source ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated literature source data
+        in: body
+        name: source
+        required: true
+        schema:
+          $ref: '#/definitions/models.Source'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated literature source
+          schema:
+            $ref: '#/definitions/models.Source'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update literature source
+      tags:
+      - Maintenance
+  /api/maintenance/gsm-misc:
+    get:
+      description: Returns list of all miscellaneous master data entries (maintainer
+        only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of miscellaneous data
+          schema:
+            items:
+              type: object
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get miscellaneous master data
+      tags:
+      - Maintenance
+  /api/maintenance/gsm-misc/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Updates a miscellaneous master data entry (maintainer only)
+      parameters:
+      - description: Misc data ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated miscellaneous data
+        in: body
+        name: data
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated miscellaneous data
+          schema:
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update miscellaneous master data
+      tags:
+      - Maintenance
+  /api/maintenance/reconndb:
+    get:
+      description: Closes and reopens the database connection (maintainer only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Database reconnected successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Reconnect to database
+      tags:
+      - Maintenance
+  /api/maintenance/reloadenv:
+    get:
+      description: Reloads environment configuration from .env file (maintainer only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Environment reloaded successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Reload environment variables
+      tags:
+      - Maintenance
+  /api/maintenance/setupcheck:
+    get:
+      description: Checks system configuration and database connectivity (maintainer
+        only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Setup check results
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: System setup check
+      tags:
+      - Maintenance
+  /api/maintenance/skill-improvement-cost2:
+    get:
+      description: Returns skill improvement cost table (maintainer only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Skill improvement costs
+          schema:
+            items:
+              $ref: '#/definitions/models.SkillImprovementCost'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get skill improvement costs
+      tags:
+      - Maintenance
+  /api/maintenance/skill-improvement-cost2/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Updates a skill improvement cost entry (maintainer only)
+      parameters:
+      - description: Cost entry ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated cost data
+        in: body
+        name: cost
+        required: true
+        schema:
+          $ref: '#/definitions/models.SkillImprovementCost'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated cost entry
+          schema:
+            $ref: '#/definitions/models.SkillImprovementCost'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update skill improvement cost
+      tags:
+      - Maintenance
+  /api/maintenance/skills:
+    get:
+      description: Returns list of all game system skills
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of skills
+          schema:
+            items:
+              $ref: '#/definitions/models.SkFertigkeit'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all skills
+      tags:
+      - Master Data
+    post:
+      consumes:
+      - application/json
+      description: Creates a new skill in the game system (maintainer only)
+      parameters:
+      - description: New skill data
+        in: body
+        name: skill
+        required: true
+        schema:
+          $ref: '#/definitions/models.SkFertigkeit'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created skill
+          schema:
+            $ref: '#/definitions/models.SkFertigkeit'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add new skill
+      tags:
+      - Master Data Admin
+  /api/maintenance/skills/{id}:
+    delete:
+      description: Deletes a skill from the game system (maintainer only)
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Skill deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Skill not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete skill
+      tags:
+      - Master Data Admin
+    get:
+      description: Returns a specific skill by ID
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Skill data
+          schema:
+            $ref: '#/definitions/models.SkFertigkeit'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Skill not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get skill by ID
+      tags:
+      - Master Data
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing skill (maintainer only)
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated skill data
+        in: body
+        name: skill
+        required: true
+        schema:
+          $ref: '#/definitions/models.SkFertigkeit'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated skill
+          schema:
+            $ref: '#/definitions/models.SkFertigkeit'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update skill
+      tags:
+      - Master Data Admin
+  /api/maintenance/spells:
+    get:
+      description: Returns list of all game system spells
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of spells
+          schema:
+            items:
+              $ref: '#/definitions/models.Spell'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all spells
+      tags:
+      - Master Data
+    post:
+      consumes:
+      - application/json
+      description: Creates a new spell in the game system (maintainer only)
+      parameters:
+      - description: New spell data
+        in: body
+        name: spell
+        required: true
+        schema:
+          $ref: '#/definitions/models.Spell'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created spell
+          schema:
+            $ref: '#/definitions/models.Spell'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add new spell
+      tags:
+      - Master Data Admin
+  /api/maintenance/spells/{id}:
+    delete:
+      description: Deletes a spell from the game system (maintainer only)
+      parameters:
+      - description: Spell ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Spell deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Spell not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete spell
+      tags:
+      - Master Data Admin
+    get:
+      description: Returns a specific spell by ID
+      parameters:
+      - description: Spell ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Spell data
+          schema:
+            $ref: '#/definitions/models.Spell'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Spell not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get spell by ID
+      tags:
+      - Master Data
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing spell (maintainer only)
+      parameters:
+      - description: Spell ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated spell data
+        in: body
+        name: spell
+        required: true
+        schema:
+          $ref: '#/definitions/models.Spell'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated spell
+          schema:
+            $ref: '#/definitions/models.Spell'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update spell
+      tags:
+      - Master Data Admin
+  /api/maintenance/weapons:
+    get:
+      description: Returns list of all game system weapons
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of weapons
+          schema:
+            items:
+              $ref: '#/definitions/models.Weapon'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all weapons
+      tags:
+      - Master Data
+    post:
+      consumes:
+      - application/json
+      description: Creates a new weapon in the game system (maintainer only)
+      parameters:
+      - description: New weapon data
+        in: body
+        name: weapon
+        required: true
+        schema:
+          $ref: '#/definitions/models.Weapon'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created weapon
+          schema:
+            $ref: '#/definitions/models.Weapon'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add new weapon
+      tags:
+      - Master Data Admin
+  /api/maintenance/weapons/{id}:
+    delete:
+      description: Deletes a weapon from the game system (maintainer only)
+      parameters:
+      - description: Weapon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Weapon deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Weapon not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete weapon
+      tags:
+      - Master Data Admin
+    get:
+      description: Returns a specific weapon by ID
+      parameters:
+      - description: Weapon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Weapon data
+          schema:
+            $ref: '#/definitions/models.Weapon'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Weapon not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get weapon by ID
+      tags:
+      - Master Data
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing weapon (maintainer only)
+      parameters:
+      - description: Weapon ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated weapon data
+        in: body
+        name: weapon
+        required: true
+        schema:
+          $ref: '#/definitions/models.Weapon'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated weapon
+          schema:
+            $ref: '#/definitions/models.Weapon'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update weapon
+      tags:
+      - Master Data Admin
+  /api/maintenance/weaponskills:
+    get:
+      description: Returns list of all weapon skills
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of weapon skills
+          schema:
+            items:
+              $ref: '#/definitions/models.SkWaffenfertigkeit'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all weapon skills
+      tags:
+      - Master Data
+    post:
+      consumes:
+      - application/json
+      description: Creates a new weapon skill in the game system (maintainer only)
+      parameters:
+      - description: New weapon skill data
+        in: body
+        name: weaponskill
+        required: true
+        schema:
+          $ref: '#/definitions/models.SkWaffenfertigkeit'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created weapon skill
+          schema:
+            $ref: '#/definitions/models.SkWaffenfertigkeit'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add new weapon skill
+      tags:
+      - Master Data Admin
+  /api/maintenance/weaponskills/{id}:
+    delete:
+      description: Deletes a weapon skill from the game system (maintainer only)
+      parameters:
+      - description: Weapon skill ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Weapon skill deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Weapon skill not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete weapon skill
+      tags:
+      - Master Data Admin
+    get:
+      description: Returns a specific weapon skill by ID
+      parameters:
+      - description: Weapon skill ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Weapon skill data
+          schema:
+            $ref: '#/definitions/models.SkWaffenfertigkeit'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Weapon skill not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get weapon skill by ID
+      tags:
+      - Master Data
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing weapon skill (maintainer only)
+      parameters:
+      - description: Weapon skill ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated weapon skill data
+        in: body
+        name: weaponskill
+        required: true
+        schema:
+          $ref: '#/definitions/models.SkWaffenfertigkeit'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated weapon skill
+          schema:
+            $ref: '#/definitions/models.SkWaffenfertigkeit'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - maintainer access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update weapon skill
+      tags:
+      - Master Data Admin
+  /api/pdf/cleanup:
+    post:
+      description: Removes PDF files older than 1 hour from export_temp directory
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cleanup result with number of files deleted
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cleanup old PDF files
+      tags:
+      - PDF Export
+  /api/pdf/export/{id}:
+    get:
+      description: Generates a PDF character sheet for the specified character
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 'Template name (default: Default_A4_Quer)'
+        in: query
+        name: template
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: PDF export result with filename and URL
+          schema:
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Character not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Export character to PDF
+      tags:
+      - PDF Export
+  /api/pdf/file/{filename}:
+    get:
+      description: Downloads a generated PDF file (public endpoint)
+      parameters:
+      - description: PDF filename
+        in: path
+        name: filename
+        required: true
+        type: string
+      produces:
+      - application/pdf
+      responses:
+        "200":
+          description: PDF file
+          schema:
+            type: file
+        "404":
+          description: File not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get PDF file
+      tags:
+      - PDF Export
+  /api/pdf/templates:
+    get:
+      description: Returns list of available PDF character sheet templates
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of template names
+          schema:
+            items:
+              type: object
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List PDF templates
+      tags:
+      - PDF Export
+  /api/public/systeminfo:
+    get:
+      description: Returns system configuration and environment information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: System information
+          schema:
+            type: object
+      summary: Get system information
+      tags:
+      - System
+  /api/public/version:
+    get:
+      description: Returns the current application version information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Version information
+          schema:
+            type: object
+      summary: Get application version
+      tags:
+      - System
+  /api/systeminfo:
+    get:
+      description: Returns system configuration and environment information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: System information
+          schema:
+            type: object
+      summary: Get system information
+      tags:
+      - System
+  /api/transfer/database/export:
+    post:
+      description: Exports the entire database as JSON (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Database export data
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - admin access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Export full database
+      tags:
+      - Import/Export
+  /api/transfer/database/import:
+    post:
+      consumes:
+      - application/json
+      description: Imports an entire database from JSON (admin only)
+      parameters:
+      - description: Database JSON data
+        in: body
+        name: database
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Import result
+          schema:
+            type: object
+        "400":
+          description: Invalid JSON data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - admin access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Import full database
+      tags:
+      - Import/Export
+  /api/transfer/download/{id}:
+    get:
+      description: Downloads a character as a JSON file attachment
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JSON file download
+          schema:
+            type: file
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Character not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Download character as JSON file
+      tags:
+      - Import/Export
+  /api/transfer/export/{id}:
+    get:
+      description: Exports a character as JSON for API consumption
+      parameters:
+      - description: Character ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Character data in JSON format
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Character not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Export character as JSON
+      tags:
+      - Import/Export
+  /api/transfer/import:
+    post:
+      consumes:
+      - application/json
+      description: Imports a character from JSON data
+      parameters:
+      - description: Character JSON data
+        in: body
+        name: character
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Imported character
+          schema:
+            type: object
+        "400":
+          description: Invalid JSON data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Import character from JSON
+      tags:
+      - Import/Export
+  /api/user/display-name:
+    put:
+      consumes:
+      - application/json
+      description: Updates the display name of the authenticated user
+      parameters:
+      - description: New display name
+        in: body
+        name: display_name
+        required: true
+        schema:
+          properties:
+            display_name:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Display name updated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid display name
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update display name
+      tags:
+      - User
+  /api/user/email:
+    put:
+      consumes:
+      - application/json
+      description: Updates the email address of the authenticated user
+      parameters:
+      - description: New email address
+        in: body
+        name: email
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email updated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid email format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user email
+      tags:
+      - User
+  /api/user/language:
+    put:
+      consumes:
+      - application/json
+      description: Updates the preferred language setting for the authenticated user
+      parameters:
+      - description: Language code (e.g., 'en', 'de')
+        in: body
+        name: language
+        required: true
+        schema:
+          properties:
+            language:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Language updated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid language code
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update preferred language
+      tags:
+      - User
+  /api/user/password:
+    put:
+      consumes:
+      - application/json
+      description: Updates the password of the authenticated user
+      parameters:
+      - description: Old and new passwords
+        in: body
+        name: passwords
+        required: true
+        schema:
+          properties:
+            new_password:
+              type: string
+            old_password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password updated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid password data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized or wrong old password
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user password
+      tags:
+      - User
+  /api/user/profile:
+    get:
+      description: Returns the profile information of the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile data
+          schema:
+            $ref: '#/definitions/user.User'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current user profile
+      tags:
+      - User
+  /api/users:
+    get:
+      description: Returns a list of all registered users (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            items:
+              $ref: '#/definitions/user.User'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - admin access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all users
+      tags:
+      - Admin
+  /api/users/{id}:
+    delete:
+      description: Deletes a user account (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - admin access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete user
+      tags:
+      - Admin
+    get:
+      description: Returns a specific user by ID (admin only, or own profile)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User data
+          schema:
+            $ref: '#/definitions/user.User'
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - Admin
+  /api/users/{id}/password:
+    put:
+      consumes:
+      - application/json
+      description: Changes the password for any user (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: New password
+        in: body
+        name: password
+        required: true
+        schema:
+          properties:
+            new_password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password changed successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - admin access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Change user password (admin)
+      tags:
+      - Admin
+  /api/users/{id}/role:
+    put:
+      consumes:
+      - application/json
+      description: Updates the role of a specific user (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: New role ('user' or 'admin')
+        in: body
+        name: role
+        required: true
+        schema:
+          properties:
+            role:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role updated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden - admin access required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user role
+      tags:
+      - Admin
+  /api/version:
+    get:
+      description: Returns the current application version information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Version information
+          schema:
+            type: object
+      summary: Get application version
+      tags:
+      - System
+  /api/weapons:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new weapon for a character (owner only)
+      parameters:
+      - description: Weapon data
+        in: body
+        name: weapon
+        required: true
+        schema:
+          $ref: '#/definitions/models.EqWaffe'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created weapon
+          schema:
+            $ref: '#/definitions/models.EqWaffe'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create weapon
+      tags:
+      - Equipment
+  /api/weapons/{waffe_id}:
+    delete:
+      description: Deletes a weapon (owner only)
+      parameters:
+      - description: Weapon ID
+        in: path
+        name: waffe_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Weapon deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Weapon not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete weapon
+      tags:
+      - Equipment
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing weapon (owner only)
+      parameters:
+      - description: Weapon ID
+        in: path
+        name: waffe_id
+        required: true
+        type: integer
+      - description: Updated weapon data
+        in: body
+        name: weapon
+        required: true
+        schema:
+          $ref: '#/definitions/models.EqWaffe'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated weapon
+          schema:
+            $ref: '#/definitions/models.EqWaffe'
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied - owner only
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update weapon
+      tags:
+      - Equipment
+  /api/weapons/character/{character_id}:
+    get:
+      description: Returns all weapons for a specific character
+      parameters:
+      - description: Character ID
+        in: path
+        name: character_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of weapons
+          schema:
+            items:
+              $ref: '#/definitions/models.EqWaffe'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Access denied
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List character weapons
+      tags:
+      - Equipment
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns a JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          properties:
+            password:
+              type: string
+            username:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful with token and user data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Invalid credentials
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: User login
+      tags:
+      - Authentication
+  /password-reset/request:
+    post:
+      consumes:
+      - application/json
+      description: Sends a password reset email to the user
+      parameters:
+      - description: User email address
+        in: body
+        name: email
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset email sent
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid email format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Request password reset
+      tags:
+      - Authentication
+  /password-reset/reset:
+    post:
+      consumes:
+      - application/json
+      description: Resets user password using a valid reset token
+      parameters:
+      - description: Reset token and new password
+        in: body
+        name: reset_data
+        required: true
+        schema:
+          properties:
+            new_password:
+              type: string
+            token:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset successful
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid token or password
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Reset password
+      tags:
+      - Authentication
+  /password-reset/validate/{token}:
+    get:
+      description: Validates a password reset token
+      parameters:
+      - description: Reset token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token is valid
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid or expired token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Validate reset token
+      tags:
+      - Authentication
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account with username, email, and password
+      parameters:
+      - description: User registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            password_hash:
+              type: string
+            username:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to create user
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - Authentication
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and the JWT token
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

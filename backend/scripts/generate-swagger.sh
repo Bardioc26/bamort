@@ -11,6 +11,10 @@ echo ""
 # Change to backend directory
 cd "$(dirname "$0")/.."
 
+# Set up Go bin path
+GOPATH="${GOPATH:-$HOME/go}"
+export PATH="$GOPATH/bin:$PATH"
+
 # Check if swag is installed
 if ! command -v swag &> /dev/null; then
     echo "Installing swag..."

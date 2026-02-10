@@ -2,6 +2,13 @@
 
 The `importer/` package provides a pluggable character import/export system using Docker-based microservice adapters.
 
+## Quick Links
+
+- **[Complete Guide](../IMPORT_EXPORT_GUIDE.md)** - Full system documentation
+- **[Adapter Development](../adapters/ADAPTER_DEVELOPMENT.md)** - Create new adapters
+- **[Troubleshooting](./TROUBLESHOOTING.md)** - Common issues and solutions
+- **[API Documentation](http://localhost:8180/swagger/index.html)** - Swagger UI (when server running)
+
 ## Architecture
 
 This package orchestrates character imports from external formats (e.g., Foundry VTT) using isolated adapter microservices:

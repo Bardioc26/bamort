@@ -37,6 +37,10 @@ func ImportCharacter(char *CharacterImport, userID uint, adapterID string, origi
 		Status:       "in_progress",
 	}
 
+	// Default game system (CharacterImport doesn't include game system field)
+	// TODO: Add game system to CharacterImport or detect from adapter metadata
+	gameSystem := "Midgard5"
+
 	// 1. Create ImportHistory record (failed status initially)
 	history := &ImportHistory{
 		UserID:         userID,
@@ -70,7 +74,7 @@ func ImportCharacter(char *CharacterImport, userID uint, adapterID string, origi
 
 	// Reconcile skills
 	for _, skill := range char.Fertigkeiten {
-		_, matchType, err := reconcileSkillWithTx(tx, skill, history.ID, char.Typ)
+		_, matchType, err := reconcileSkillWithTx(tx, skill, history.ID, gameSystem)
 		if err != nil {
 			history.Status = "failed"
 			history.ErrorLog = fmt.Sprintf("Failed to reconcile skill %s: %v", skill.Name, err)
@@ -85,7 +89,7 @@ func ImportCharacter(char *CharacterImport, userID uint, adapterID string, origi
 
 	// Reconcile spells
 	for _, spell := range char.Zauber {
-		_, matchType, err := reconcileSpellWithTx(tx, spell, history.ID, char.Typ)
+		_, matchType, err := reconcileSpellWithTx(tx, spell, history.ID, gameSystem)
 		if err != nil {
 			history.Status = "failed"
 			history.ErrorLog = fmt.Sprintf("Failed to reconcile spell %s: %v", spell.Name, err)
@@ -100,7 +104,7 @@ func ImportCharacter(char *CharacterImport, userID uint, adapterID string, origi
 
 	// Reconcile weapon skills
 	for _, ws := range char.Waffenfertigkeiten {
-		_, matchType, err := reconcileWeaponSkillWithTx(tx, ws, history.ID, char.Typ)
+		_, matchType, err := reconcileWeaponSkillWithTx(tx, ws, history.ID, gameSystem)
 		if err != nil {
 			history.Status = "failed"
 			history.ErrorLog = fmt.Sprintf("Failed to reconcile weapon skill %s: %v", ws.Name, err)
@@ -115,7 +119,7 @@ func ImportCharacter(char *CharacterImport, userID uint, adapterID string, origi
 
 	// Reconcile weapons
 	for _, weapon := range char.Waffen {
-		_, matchType, err := reconcileWeaponWithTx(tx, weapon, history.ID, char.Typ)
+		_, matchType, err := reconcileWeaponWithTx(tx, weapon, history.ID, gameSystem)
 		if err != nil {
 			history.Status = "failed"
 			history.ErrorLog = fmt.Sprintf("Failed to reconcile weapon %s: %v", weapon.Name, err)
@@ -130,7 +134,7 @@ func ImportCharacter(char *CharacterImport, userID uint, adapterID string, origi
 
 	// Reconcile equipment
 	for _, eq := range char.Ausruestung {
-		_, matchType, err := reconcileEquipmentWithTx(tx, eq, history.ID, char.Typ)
+		_, matchType, err := reconcileEquipmentWithTx(tx, eq, history.ID, gameSystem)
 		if err != nil {
 			history.Status = "failed"
 			history.ErrorLog = fmt.Sprintf("Failed to reconcile equipment %s: %v", eq.Name, err)
@@ -145,7 +149,7 @@ func ImportCharacter(char *CharacterImport, userID uint, adapterID string, origi
 
 	// Reconcile containers
 	for _, container := range char.Behaeltnisse {
-		_, matchType, err := reconcileContainerWithTx(tx, container, history.ID, char.Typ)
+		_, matchType, err := reconcileContainerWithTx(tx, container, history.ID, gameSystem)
 		if err != nil {
 			history.Status = "failed"
 			history.ErrorLog = fmt.Sprintf("Failed to reconcile container %s: %v", container.Name, err)
@@ -349,6 +353,9 @@ func decompressData(data []byte) ([]byte, error) {
 
 func reconcileSkillWithTx(tx *gorm.DB, skill Fertigkeit, importHistoryID uint, gameSystem string) (*models.Skill, string, error) {
 	gs := models.GetGameSystem(0, gameSystem)
+	if gs == nil {
+		return nil, "", fmt.Errorf("game system not found: %s (required for master data reconciliation)", gameSystem)
+	}
 
 	var existing models.Skill
 	err := tx.Where("name = ? AND game_system = ?", skill.Name, gs.Name).First(&existing).Error
@@ -392,6 +399,9 @@ func reconcileSkillWithTx(tx *gorm.DB, skill Fertigkeit, importHistoryID uint, g
 
 func reconcileSpellWithTx(tx *gorm.DB, spell Zauber, importHistoryID uint, gameSystem string) (*models.Spell, string, error) {
 	gs := models.GetGameSystem(0, gameSystem)
+	if gs == nil {
+		return nil, "", fmt.Errorf("game system not found: %s (required for master data reconciliation)", gameSystem)
+	}
 
 	var existing models.Spell
 	err := tx.Where("name = ? AND game_system = ?", spell.Name, gs.Name).First(&existing).Error
@@ -430,6 +440,9 @@ func reconcileSpellWithTx(tx *gorm.DB, spell Zauber, importHistoryID uint, gameS
 
 func reconcileWeaponSkillWithTx(tx *gorm.DB, ws Waffenfertigkeit, importHistoryID uint, gameSystem string) (*models.WeaponSkill, string, error) {
 	gs := models.GetGameSystem(0, gameSystem)
+	if gs == nil {
+		return nil, "", fmt.Errorf("game system not found: %s (required for master data reconciliation)", gameSystem)
+	}
 
 	var existing models.WeaponSkill
 	err := tx.Where("name = ? AND game_system = ?", ws.Name, gs.Name).First(&existing).Error
@@ -472,6 +485,9 @@ func reconcileWeaponSkillWithTx(tx *gorm.DB, ws Waffenfertigkeit, importHistoryI
 
 func reconcileWeaponWithTx(tx *gorm.DB, weapon Waffe, importHistoryID uint, gameSystem string) (*models.Weapon, string, error) {
 	gs := models.GetGameSystem(0, gameSystem)
+	if gs == nil {
+		return nil, "", fmt.Errorf("game system not found: %s (required for master data reconciliation)", gameSystem)
+	}
 
 	var existing models.Weapon
 	err := tx.Where("name = ? AND game_system = ?", weapon.Name, gs.Name).First(&existing).Error
@@ -511,6 +527,9 @@ func reconcileWeaponWithTx(tx *gorm.DB, weapon Waffe, importHistoryID uint, game
 
 func reconcileEquipmentWithTx(tx *gorm.DB, eq Ausruestung, importHistoryID uint, gameSystem string) (*models.Equipment, string, error) {
 	gs := models.GetGameSystem(0, gameSystem)
+	if gs == nil {
+		return nil, "", fmt.Errorf("game system not found: %s (required for master data reconciliation)", gameSystem)
+	}
 
 	var existing models.Equipment
 	err := tx.Where("name = ? AND game_system = ?", eq.Name, gs.Name).First(&existing).Error
@@ -548,6 +567,9 @@ func reconcileEquipmentWithTx(tx *gorm.DB, eq Ausruestung, importHistoryID uint,
 
 func reconcileContainerWithTx(tx *gorm.DB, container Behaeltniss, importHistoryID uint, gameSystem string) (*models.Container, string, error) {
 	gs := models.GetGameSystem(0, gameSystem)
+	if gs == nil {
+		return nil, "", fmt.Errorf("game system not found: %s (required for master data reconciliation)", gameSystem)
+	}
 
 	var existing models.Container
 	err := tx.Where("name = ? AND game_system = ?", container.Name, gs.Name).First(&existing).Error

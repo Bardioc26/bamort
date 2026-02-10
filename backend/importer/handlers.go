@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,9 +20,19 @@ func InitializeRegistry(registry *AdapterRegistry) {
 	globalRegistry = registry
 }
 
-// DetectHandler handles format detection for uploaded files
-// POST /api/import/detect
-// Rate limit: 10 requests/minute per user
+// DetectHandler godoc
+// @Summary Detect character file format
+// @Description Analyzes uploaded file and returns the most likely adapter with confidence score
+// @Tags Import
+// @Accept multipart/form-data
+// @Produce json
+// @Param file formData file true "Character file to detect (max 10MB)"
+// @Success 200 {object} map[string]interface{} "Detection result with adapter_id, confidence, and suggested_adapter_name"
+// @Failure 400 {object} map[string]string "Invalid file or malformed JSON"
+// @Failure 500 {object} map[string]string "Detection failed"
+// @Failure 503 {object} map[string]string "Import service not initialized"
+// @Security BearerAuth
+// @Router /api/import/detect [post]
 func DetectHandler(c *gin.Context) {
 	// Accept multipart file upload
 	file, header, err := c.Request.FormFile("file")
@@ -69,9 +80,22 @@ func DetectHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// ImportHandler handles character import from external formats
-// POST /api/import/import
-// Rate limit: 5 requests/minute per user
+// ImportHandler godoc
+// @Summary Import character from external format
+// @Description Imports character from uploaded file using specified or auto-detected adapter
+// @Tags Import
+// @Accept multipart/form-data
+// @Produce json
+// @Param file formData file true "Character file to import (max 10MB)"
+// @Param adapter_id query string false "Override auto-detection with specific adapter ID"
+// @Success 200 {object} ImportResult "Import successful with character ID and warnings"
+// @Failure 400 {object} map[string]string "Invalid file or request"
+// @Failure 401 {object} map[string]string "User not authenticated"
+// @Failure 422 {object} map[string]string "Validation failed"
+// @Failure 500 {object} map[string]string "Import failed"
+// @Failure 503 {object} map[string]string "Adapter unavailable"
+// @Security BearerAuth
+// @Router /api/import/import [post]
 func ImportHandler(c *gin.Context) {
 	// Get user ID from context
 	userID := getUserID(c)
@@ -101,8 +125,11 @@ func ImportHandler(c *gin.Context) {
 		return
 	}
 
-	// Get adapter ID from form or detect
-	adapterID := c.PostForm("adapter_id")
+	// Get adapter ID from query param or form data
+	adapterID := c.Query("adapter_id")
+	if adapterID == "" {
+		adapterID = c.PostForm("adapter_id")
+	}
 	if adapterID == "" {
 		// Auto-detect
 		if globalRegistry == nil {
@@ -128,6 +155,11 @@ func ImportHandler(c *gin.Context) {
 	// Import via adapter
 	charImport, err := globalRegistry.Import(adapterID, data)
 	if err != nil {
+		// Check if error is due to unhealthy adapter
+		if strings.Contains(err.Error(), "adapter is unhealthy") || strings.Contains(err.Error(), "adapter not found") {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": fmt.Sprintf("Adapter unavailable: %v", err)})
+			return
+		}
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": fmt.Sprintf("Import failed: %v", err)})
 		return
 	}
@@ -162,8 +194,15 @@ func ImportHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// ListAdaptersHandler returns all registered adapters
-// GET /api/import/adapters
+// ListAdaptersHandler godoc
+// @Summary List available adapters
+// @Description Returns all registered adapters with their health status and capabilities
+// @Tags Import
+// @Produce json
+// @Success 200 {object} map[string]interface{} "List of adapters with metadata"
+// @Failure 503 {object} map[string]string "Import service not initialized"
+// @Security BearerAuth
+// @Router /api/import/adapters [get]
 func ListAdaptersHandler(c *gin.Context) {
 	if globalRegistry == nil {
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Import service not initialized"})
@@ -177,8 +216,18 @@ func ListAdaptersHandler(c *gin.Context) {
 	})
 }
 
-// ImportHistoryHandler returns user's import history with pagination
-// GET /api/import/history?page=1&per_page=20
+// ImportHistoryHandler godoc
+// @Summary Get user's import history
+// @Description Returns paginated list of user's character imports
+// @Tags Import
+// @Produce json
+// @Param page query int false "Page number (default: 1)"
+// @Param per_page query int false "Items per page (default: 20, max: 100)"
+// @Success 200 {object} map[string]interface{} "Import history with pagination"
+// @Failure 401 {object} map[string]string "User not authenticated"
+// @Failure 500 {object} map[string]string "Failed to fetch history"
+// @Security BearerAuth
+// @Router /api/import/history [get]
 func ImportHistoryHandler(c *gin.Context) {
 	userID := getUserID(c)
 	if userID == 0 {
@@ -224,8 +273,18 @@ func ImportHistoryHandler(c *gin.Context) {
 	})
 }
 
-// ImportDetailsHandler returns detailed information about a specific import
-// GET /api/import/history/:id
+// ImportDetailsHandler godoc
+// @Summary Get detailed import information
+// @Description Returns detailed information about a specific import including errors and master data
+// @Tags Import
+// @Produce json
+// @Param id path int true "Import History ID"
+// @Success 200 {object} map[string]interface{} "Import details with master data imports"
+// @Failure 400 {object} map[string]string "Invalid import ID"
+// @Failure 401 {object} map[string]string "User not authenticated"
+// @Failure 404 {object} map[string]string "Import not found"
+// @Security BearerAuth
+// @Router /api/import/history/{id} [get]
 func ImportDetailsHandler(c *gin.Context) {
 	userID := getUserID(c)
 	if userID == 0 {
@@ -260,8 +319,22 @@ func ImportDetailsHandler(c *gin.Context) {
 	})
 }
 
-// ExportHandler exports a character to an external format
-// POST /api/import/export/:id?adapter_id=foundry-vtt-v1
+// ExportHandler godoc
+// @Summary Export character to external format
+// @Description Exports character to original or specified adapter format
+// @Tags Import
+// @Produce json
+// @Param id path int true "Character ID"
+// @Param adapter_id query string false "Override adapter (uses original if not specified)"
+// @Success 200 {file} application/json "Exported character file"
+// @Failure 400 {object} map[string]string "Invalid character ID or missing adapter"
+// @Failure 401 {object} map[string]string "User not authenticated"
+// @Failure 404 {object} map[string]string "Character not found"
+// @Failure 409 {object} map[string]interface{} "Adapter unavailable with suggestions"
+// @Failure 500 {object} map[string]string "Export failed"
+// @Failure 503 {object} map[string]string "Import service not initialized"
+// @Security BearerAuth
+// @Router /api/import/export/{id} [post]
 func ExportHandler(c *gin.Context) {
 	userID := getUserID(c)
 	if userID == 0 {

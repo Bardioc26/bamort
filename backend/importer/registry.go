@@ -217,8 +217,8 @@ func (r *AdapterRegistry) Export(adapterID string, char *CharacterImport) ([]byt
 	return data, nil
 }
 
-// DetectResponse represents the response from an adapter's detect endpoint
-type DetectResponse struct {
+// AdapterDetectResponse represents the response from an adapter's detect endpoint
+type AdapterDetectResponse struct {
 	Confidence float64 `json:"confidence"`
 	Version    string  `json:"version,omitempty"`
 }
@@ -259,7 +259,7 @@ func (r *AdapterRegistry) Detect(data []byte, filename string) (string, float64,
 		}
 
 		if resp.StatusCode == http.StatusOK {
-			var detectResp DetectResponse
+			var detectResp AdapterDetectResponse
 			if err := json.NewDecoder(resp.Body).Decode(&detectResp); err == nil {
 				if detectResp.Confidence > bestConfidence {
 					bestConfidence = detectResp.Confidence
